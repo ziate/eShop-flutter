@@ -201,7 +201,9 @@ class StateHome extends State<Home> {
           .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
+
       print('response***slider**${response.body.toString()}***$headers');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -225,8 +227,10 @@ class StateHome extends State<Home> {
 
   Future<void> getCat() async {
     try {
-      Response response = await post(getCatApi, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+      var parameter = {PRODUCT_CHECK: "false"};
+      Response response =
+          await post(getCatApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
       print('response***cat**$headers****${response.body.toString()}');
@@ -235,9 +239,8 @@ class StateHome extends State<Home> {
       if (!error) {
         var data = getdata["data"];
 
-        catList = (data as List).map((data) => new Model.fromCat(data)).toList();
-
-
+        catList =
+            (data as List).map((data) => new Model.fromCat(data)).toList();
       } else {
         setSnackbar(msg);
       }
@@ -366,8 +369,7 @@ class StateHome extends State<Home> {
                   title: PRIVACY,
                 ),
               ));
-        }
-        else if (title == TERM) {
+        } else if (title == TERM) {
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -375,8 +377,7 @@ class StateHome extends State<Home> {
                   title: TERM,
                 ),
               ));
-        }
-        else if (title == CONTACT) {
+        } else if (title == CONTACT) {
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -534,14 +535,13 @@ class StateHome extends State<Home> {
               ),
             ),
             onTap: () {
-              Navigator.push(
+              /*      Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => Sub_Category(
-                      title: catList[index].name,
-                      id: catList[index].id,
+                     sub
                     ),
-                  ));
+                  ));*/
             },
           );
         },
@@ -563,7 +563,7 @@ class StateHome extends State<Home> {
 
   _singleSection(int index) {
     return sectionList[index].productList.length > 0
-        ? Stack(
+        ? Column(mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               _getHeading(sectionList[index].title, index),
               _getSection(index),
@@ -589,6 +589,8 @@ class StateHome extends State<Home> {
             ),
             splashColor: primary.withOpacity(0.2),
             onTap: () {
+
+              print('section ****$title}');
               Section_Model model = sectionList[index];
               Navigator.push(
                   context,
@@ -607,13 +609,13 @@ class StateHome extends State<Home> {
 
   _getSection(int i) {
     return GridView.count(
-        padding: EdgeInsets.only(top: 50),
+        padding: EdgeInsets.only(top: 5),
         crossAxisCount: 2,
         shrinkWrap: true,
-        childAspectRatio: 1.25,
+        childAspectRatio: 1.1,
         physics: NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 5,
+        mainAxisSpacing: 7,
+        crossAxisSpacing: 1,
         children: List.generate(
           sectionList[i].productList.length < 4
               ? sectionList[i].productList.length
@@ -626,25 +628,24 @@ class StateHome extends State<Home> {
 
   productItem(int secPos, int index) {
     double width = MediaQuery.of(context).size.width * 0.5 - 20;
-    //double height = MediaQuery.of(context).size.width * 0.5 - 20;
-    // print("length****${sectionList[secPos].productList[index].name}***${sectionList[secPos].productList[index].prVarientList.length}");
-    return Card(
+     return Card(
+      elevation: 0,
       child: InkWell(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Expanded(
-              child: Stack(
-                children: <Widget>[
-                  CachedNetworkImage(
+              child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(5),
+                      topRight: Radius.circular(5)),
+                  child: CachedNetworkImage(
                     imageUrl: sectionList[secPos].productList[index].image,
                     height: double.maxFinite,
                     width: double.maxFinite,
                     fit: BoxFit.fill,
                     placeholder: (context, url) => placeHolder(width),
-                  )
-                ],
-              ),
+                  )),
             ),
             Padding(
               padding: const EdgeInsets.all(5.0),
@@ -655,8 +656,8 @@ class StateHome extends State<Home> {
                       sectionList[secPos].productList[index].name,
                       style: Theme.of(context)
                           .textTheme
-                          .caption
-                          .copyWith(color: Colors.black),
+                          .overline
+                          .copyWith(color: Colors.black,letterSpacing: 0.5),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -681,7 +682,7 @@ class StateHome extends State<Home> {
                             .prVarientList[0]
                             .price,
                     style: Theme.of(context).textTheme.overline.copyWith(
-                          decoration: TextDecoration.lineThrough,
+                          decoration: TextDecoration.lineThrough,letterSpacing: 1
                         ),
                   ),
                   Text(
@@ -705,7 +706,7 @@ class StateHome extends State<Home> {
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
                       model: model,
-                      title: sectionList[secPos].title,
+                    //  title: sectionList[secPos].title,
                     )),
           );
         },

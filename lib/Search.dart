@@ -199,7 +199,7 @@ class _StateSearch extends State<Search> {
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
                       model: model,
-                      title: productList[index].name,
+                     // title: productList[index].name,
                     )),
           );
         },

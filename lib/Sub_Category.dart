@@ -11,24 +11,32 @@ import 'Helper/Model.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'ProductList.dart';
+import 'SubCat.dart';
 
-class Sub_Category extends StatefulWidget {
-  final String id, title;
+class SubCategory extends StatefulWidget {
+  final String title;
 
-  const Sub_Category({Key key, this.id, this.title}) : super(key: key);
+  //const Sub_Category({Key key, this.id, this.title}) : super(key: key);
+
+  final List<Model> subList;
+
+  SubCategory({this.subList, this.title});
 
   @override
-  State<StatefulWidget> createState() => State_Sub();
+  State<StatefulWidget> createState() => StateSub(subList: subList);
 }
 
-class State_Sub extends State<Sub_Category> {
-  bool _isLoading = true;
+class StateSub extends State<SubCategory> {
+  // bool _isLoading = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   List<Model> subList = [];
+
+  StateSub({this.subList});
 
   @override
   void initState() {
-    _getSubCat();
+    //_getSubCat();
     super.initState();
   }
 
@@ -36,55 +44,18 @@ class State_Sub extends State<Sub_Category> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: getAppBar(widget.title, context),
-        body: _isLoading
-            ? getProgress()
-            : subList.length == 0
-                ? getNoItem()
-                : GridView.count(
-                    crossAxisCount: 3,
-                    childAspectRatio: .8,
-                    physics: BouncingScrollPhysics(),
-                    children: List.generate(
-                      subList.length,
-                      (index) {
-                        return listItem(index);
-                      },
-                    )));
-  }
-
-  Future<void> _getSubCat() async {
-    bool avail = await isNetworkAvailable();
-    if (avail) {
-      try {
-        var parameter = {ID: widget.id};
-
-        Response response =
-            await post(getSubcatApi, headers: headers, body: parameter)
-                .timeout(Duration(seconds: timeOut));
-
-        var getdata = json.decode(response.body);
-        print('response***subcat**${response.body.toString()}');
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
-
-          subList =
-              (data as List).map((data) => new Model.fromSubCat(data)).toList();
-        } else {
-          setSnackbar(msg);
-        }
-        setState(() {
-          _isLoading = false;
-        });
-      } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } else
-      setSnackbar(internetMsg);
+        body: subList == null || subList.length == 0
+            ? getNoItem()
+            : GridView.count(
+                crossAxisCount: 3,
+                childAspectRatio: .8,
+                physics: BouncingScrollPhysics(),
+                children: List.generate(
+                  subList.length,
+                  (index) {
+                    return listItem(index);
+                  },
+                )));
   }
 
   setSnackbar(String msg) {
@@ -135,12 +106,12 @@ class State_Sub extends State<Sub_Category> {
             ),
           ),
           onTap: () {
-                      Navigator.push(
+            Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProductList(
-                    name: subList[index].name,
-                    id: subList[index].id,
+                  builder: (context) => SubCat(
+                    subList: subList,
+                    title:widget.title
                   ),
                 ));
           },

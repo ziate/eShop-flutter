@@ -15,9 +15,9 @@ import 'Product_Preview.dart';
 
 class Product_Detail extends StatefulWidget {
   final Product model;
-  final String title;
+  //final String title;
 
-  const Product_Detail({Key key, this.model, this.title}) : super(key: key);
+  const Product_Detail({Key key, this.model}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => StateItem();
@@ -283,7 +283,7 @@ class StateItem extends State<Product_Detail> {
                 style: Theme.of(context)
                     .textTheme
                     .overline
-                    .copyWith(color: primary)),
+                    .copyWith(color: primary,letterSpacing: 0.5)),
             decoration: new BoxDecoration(
                 color: primary.withOpacity(0.2),
                 borderRadius: new BorderRadius.circular(4.0)),
@@ -297,7 +297,7 @@ class StateItem extends State<Product_Detail> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
       child: Text(
-        widget.title,
+        widget.model.name,
         style:
             Theme.of(context).textTheme.headline6.copyWith(color: Colors.black),
       ),

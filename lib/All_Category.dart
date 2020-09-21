@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'Helper/Session.dart';
 import 'Home.dart';
+import 'SubCat.dart';
 import 'Sub_Category.dart';
 
 class All_Category extends StatelessWidget {
@@ -58,15 +59,23 @@ class All_Category extends StatelessWidget {
         ],
       ),
       onTap: (){
+  /*      Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SubCategory(
+                title:catList[index].name,
+               subList: catList[index].subList,
+              ),
+            ));
+*/
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Sub_Category(
+              builder: (context) => SubCat(
                 title:catList[index].name,
-                id: catList[index].id,
+                subList: catList[index].subList,
               ),
             ));
-
 
 
       },

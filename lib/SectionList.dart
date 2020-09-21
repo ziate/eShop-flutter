@@ -9,12 +9,11 @@ import 'Helper/String.dart';
 import 'Product_Detail.dart';
 
 class SectionList extends StatefulWidget {
-
   final String title;
   final Section_Model section_model;
 
-  const SectionList({Key key, this.title, this.section_model}) : super(key: key);
-
+  const SectionList({Key key, this.title, this.section_model})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => StateSection();
@@ -26,46 +25,44 @@ class StateSection extends State<SectionList> {
     return Scaffold(
       appBar: getAppBar(widget.title, context),
       body: GridView.count(
-          padding: EdgeInsets.only(top: 50),
+          padding: EdgeInsets.only(top: 5),
           crossAxisCount: 2,
           shrinkWrap: true,
-          childAspectRatio: 1.25,
-          physics: NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 5,
+          childAspectRatio: 1.1,
+          physics: BouncingScrollPhysics(),
+          mainAxisSpacing: 5,
+          crossAxisSpacing: 2,
           children: List.generate(
-            widget.section_model.productList.length < 4
-                ? widget.section_model.productList.length
-                : 4,
+            widget.section_model.productList.length ,
             (index) {
-              return productItem( index);
+              return productItem(index);
             },
           )),
     );
   }
 
-  productItem( int index) {
+  productItem(int index) {
     double width = MediaQuery.of(context).size.width * 0.5 - 20;
     //double height = MediaQuery.of(context).size.width * 0.5 - 20;
     // print("length****${sectionList[secPos].productList[index].name}***${sectionList[secPos].productList[index].prVarientList.length}");
     return Card(
+      elevation: 0,
       child: InkWell(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Expanded(
-              child: Stack(
-                children: <Widget>[
-                  CachedNetworkImage(
-                    imageUrl: widget.section_model.productList[index].image,
-                    height: double.maxFinite,
-                    width: double.maxFinite,
-                    fit: BoxFit.fill,
-                    placeholder: (context, url) => placeHolder(width),
-                  )
-                ],
+                child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(5), topRight: Radius.circular(5)),
+              child: CachedNetworkImage(
+                imageUrl: widget.section_model.productList[index].image,
+                height: double.maxFinite,
+                width: double.maxFinite,
+                fit: BoxFit.fill,
+                placeholder: (context, url) => placeHolder(width),
               ),
-            ),
+            )),
             Padding(
               padding: const EdgeInsets.all(5.0),
               child: Row(
@@ -96,22 +93,18 @@ class StateSection extends State<SectionList> {
                   Text(
                     CUR_CURRENCY +
                         "" +
-                       widget.section_model
-                            .productList[index]
-                            .prVarientList[0]
+                        widget.section_model.productList[index].prVarientList[0]
                             .price,
                     style: Theme.of(context).textTheme.overline.copyWith(
-                      decoration: TextDecoration.lineThrough,
-                    ),
+                          decoration: TextDecoration.lineThrough,letterSpacing: 1
+                        ),
                   ),
                   Text(
                       " " +
                           CUR_CURRENCY +
                           "" +
-                         widget.section_model
-                              .productList[index]
-                              .prVarientList[0]
-                              .disPrice,
+                          widget.section_model.productList[index]
+                              .prVarientList[0].disPrice,
                       style: TextStyle(color: primary)),
                 ],
               ),
@@ -124,9 +117,9 @@ class StateSection extends State<SectionList> {
             context,
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
-                  model: model,
-                  title: widget.section_model.title,
-                )),
+                      model: model,
+                    //  title: widget.section_model.title,
+                    )),
           );
         },
       ),

@@ -194,7 +194,7 @@ class StateProduct extends State<ProductList> {
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
                       model: model,
-                      title: productList[index].name,
+                    //  title: productList[index].name,
                     )),
           );
         },

@@ -1,46 +1,1 @@
-import 'package:eshop/Helper/Constant.dart';
-
-final String getSliderApi = baseUrl + 'get_slider_images';
-final String getCatApi = baseUrl + 'get_categories';
-final String getSectionApi = baseUrl + 'get_sections';
-final String getSettingApi = baseUrl + 'get_settings';
-final String getSubcatApi = baseUrl + 'get_subcategories_by_category_id';
-final String getProductApi = baseUrl + 'get_products';
-
-const String ID = 'id';
-const String TYPE = 'type';
-const String TYPE_ID = 'type_id';
-const String IMAGE = 'image';
-const String NAME = 'name';
-const String SUBTITLE = 'subtitle';
-const String TAX = 'tax';
-const String SLUG = 'slug';
-const String TITLE = 'title';
-const String PRODUCT_DETAIL = 'product_details';
-const String DESC = 'description';
-const String CATID = 'category_id';
-const String CAT_NAME = 'category_name';
-const String OTHER_IMAGE = 'other_images';
-const String PRODUCT_VARIENT = 'product_variant';
-const String PRODUCT_ID = 'product_id';
-const String PRICE = 'price';
-const String MEASUREMENT = 'measurement';
-const String MEAS_UNIT_ID = 'measurement_unit_id';
-const String SERVE_FOR = 'serve_for';
-const String SHORT_CODE = 'short_code';
-const String STOCK = 'stock';
-const String STOCK_UNIT_ID = 'stock_unit_id';
-const String DIS_PRICE = 'discounted_price';
-const String CURRENCY = 'currency';
-const String SUB_ID = 'subcategory_id';
-const String SORT='sort';
-const String ORDER='order';
-const String LIMIT='limit';
-const String OFFSET='offset';
-const String PRIVACY_POLLICY='privacy_policy';
-const String TERM_COND='terms_conditions';
-const String CONTACT_US='contact_us';
-const String ABOUT_US='about_us';
-const String BANNER='banner';
-
-String CUR_CURRENCY = '';
+import 'package:eshop/Helper/Constant.dart';final String getSliderApi = baseUrl + 'get_slider_images';final String getCatApi = baseUrl + 'get_categories';final String getSectionApi = baseUrl + 'get_sections';final String getSettingApi = baseUrl + 'get_settings';final String getSubcatApi = baseUrl + 'get_subcategories_by_category_id';final String getProductApi = baseUrl + 'get_products';const String ID = 'id';const String TYPE = 'type';const String TYPE_ID = 'type_id';const String IMAGE = 'image';const String NAME = 'name';const String SUBTITLE = 'subtitle';const String TAX = 'tax';const String SLUG = 'slug';const String TITLE = 'title';const String PRODUCT_DETAIL = 'product_details';const String DESC = 'description';const String CATID = 'category_id';const String CAT_NAME = 'category_name';const String OTHER_IMAGE = 'other_images';const String PRODUCT_VARIENT = 'variants';const String PRODUCT_ID = 'product_id';const String PRICE = 'price';const String MEASUREMENT = 'measurement';const String MEAS_UNIT_ID = 'measurement_unit_id';const String SERVE_FOR = 'serve_for';const String SHORT_CODE = 'short_code';const String STOCK = 'stock';const String STOCK_UNIT_ID = 'stock_unit_id';const String DIS_PRICE = 'special_price';const String CURRENCY = 'currency';const String SUB_ID = 'subcategory_id';const String SORT='sort';const String ORDER='order';const String LIMIT='limit';const String OFFSET='offset';const String PRIVACY_POLLICY='privacy_policy';const String TERM_COND='terms_conditions';const String CONTACT_US='contact_us';const String ABOUT_US='about_us';const String BANNER='banner';const String PRODUCT_CHECK='has_empty_categories';String CUR_CURRENCY = '';

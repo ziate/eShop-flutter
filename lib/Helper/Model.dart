@@ -7,7 +7,7 @@ class Model {
 
   String name, subtitle, slug, tax, banner;
 
-  Model children;
+  List<Model> subList;
 
   Model(
       {this.id,
@@ -19,7 +19,7 @@ class Model {
       this.slug,
       this.tax,
       this.banner,
-      this.children});
+      this.subList});
 
   factory Model.fromJson(Map<String, dynamic> parsedJson) {
     return new Model(
@@ -30,26 +30,23 @@ class Model {
   }
 
   factory Model.fromCat(Map<String, dynamic> parsedJson) {
-    var data = parsedJson["children"];
+    print('getting cat****${parsedJson[NAME]}');
 
-    return new Model(
-        id: parsedJson[ID],
-        name: parsedJson[NAME],
-        subtitle: parsedJson[SUBTITLE],
-        image: parsedJson[IMAGE],
-        slug: parsedJson[SLUG],
-        banner: parsedJson[BANNER],
-        tax: parsedJson[TAX],
-        children: new Model.fromCat(data));
-  }
-
-  factory Model.fromSubCat(Map<String, dynamic> parsedJson) {
     return new Model(
       id: parsedJson[ID],
       name: parsedJson[NAME],
       subtitle: parsedJson[SUBTITLE],
       image: parsedJson[IMAGE],
       slug: parsedJson[SLUG],
+      banner: parsedJson[BANNER],
+      tax: parsedJson[TAX],
+      subList: createSubList(parsedJson["children"]),
     );
+  }
+
+  static List<Model> createSubList(List parsedJson) {
+    if (parsedJson == null || parsedJson.isEmpty) return null;
+
+   return parsedJson.map((data) => new Model.fromCat(data)).toList();
   }
 }

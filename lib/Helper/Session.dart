@@ -99,7 +99,7 @@ getProgress() {
   return Center(child: CircularProgressIndicator());
 }
 
-getNoItem() {
+Widget getNoItem() {
   return Center(child: Text(noItem));
 }
 
