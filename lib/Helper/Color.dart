@@ -27,6 +27,11 @@ const Color blue=Color(0xff1977f3);
 
 
 
+const Color lightblack=Color(0xff666666);
+const Color lightblack2=Color(0xff7f7f7f);
+const Color lightgrey=Color(0xffE8E8E8);
+const Color darkgrey=Color(0xff909090);
+const Color white=Color(0xffFFFFFF);
 
 
 

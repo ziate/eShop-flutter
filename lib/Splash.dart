@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:eshop/Intro_Slider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
+import 'Helper/String.dart';
 import 'Home.dart';
 import 'main.dart';
 import 'package:http/http.dart' as http;
@@ -41,12 +43,9 @@ class _SplashScreen extends State<Splash> {
     SystemChrome.setEnabledSystemUIOverlays([]);
     return Scaffold(
       key: _scaffoldKey,
-      body:
-
-      Stack(
+      body: Stack(
         children: <Widget>[
-
-           Container(
+          Container(
             width: double.infinity,
             height: double.infinity,
             decoration: back(),
@@ -60,6 +59,8 @@ class _SplashScreen extends State<Splash> {
           Image.asset(
             'assets/images/doodle.png',
             fit: BoxFit.fill,
+            width: double.infinity,
+            height: double.infinity,
           ),
         ],
       ),
@@ -71,12 +72,22 @@ class _SplashScreen extends State<Splash> {
     return Timer(_duration, checkNetwork);
   }
 
-  void navigationPage() {
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Home(),
-        ));
+  Future<void> navigationPage() async {
+    bool isFirstTime = await getPrefrenceBool(ISFIRSTTIME);
+    print("first ***$isFirstTime");
+    if (isFirstTime) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Home(),
+          ));
+    } else {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Intro_Slider(),
+          ));
+    }
   }
 
   void firNotificationInitialize() {

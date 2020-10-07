@@ -2,8 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eshop/Helper/Model.dart';
-import 'package:eshop/Helper/Section_Model.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -15,6 +14,8 @@ import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
+import 'Login.dart';
+import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
 import 'Search.dart';
 
@@ -28,15 +29,15 @@ class ProductList extends StatefulWidget {
 }
 
 class StateProduct extends State<ProductList> {
-  bool _isLoading = true;
+  bool _isLoading = true, _isProgress = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  List<Product>  productList = [];
+  List<Product> productList = [];
   List<Product> tempList = [];
   String sortBy = 'p.id', orderBy = "DESC";
   int offset = 0;
   int total = 0;
   bool isLoadingmore = true;
-  ScrollController controller=new ScrollController();
+  ScrollController controller = new ScrollController();
 
   @override
   void initState() {
@@ -54,17 +55,11 @@ class StateProduct extends State<ProductList> {
             ? getProgress()
             : productList.length == 0
                 ? getNoItem()
-                : ListView.builder(
-                    controller: controller,
-                    itemCount: (offset < total)
-                        ? productList.length + 1
-                        : productList.length,
-                    physics: BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return (index == productList.length && isLoadingmore)
-                          ? Center(child: CircularProgressIndicator())
-                          : listItem(index);
-                    },
+                : Stack(
+                    children: <Widget>[
+                      _showForm(),
+                      showCircularProgress(_isProgress, primary),
+                    ],
                   ));
   }
 
@@ -75,7 +70,12 @@ class StateProduct extends State<ProductList> {
   }
 
   Widget listItem(int index) {
-    //print("desc*****${productList[index].desc}");
+    print("desc*****${productList[index].desc}");
+
+    double price = double.parse(productList[index].prVarientList[0].disPrice);
+    if (price == 0)
+      price = double.parse(productList[index].prVarientList[0].price);
+
     return Card(
       child: InkWell(
         child: Row(
@@ -84,7 +84,6 @@ class StateProduct extends State<ProductList> {
               imageUrl: productList[index].image,
               height: 90.0,
               width: 90.0,
-              fit: BoxFit.fill,
               placeholder: (context, url) => placeHolder(90),
             ),
             Expanded(
@@ -97,30 +96,51 @@ class StateProduct extends State<ProductList> {
                       productList[index].name,
                       style: Theme.of(context)
                           .textTheme
-                          .bodyText1
+                          .subtitle1
                           .copyWith(color: Colors.black),
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Html(
-                      data: '<p>${productList[index].desc}</p>',
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.star,
+                            color: Colors.yellow,
+                            size: 12,
+                          ),
+                          Text(
+                            " " + productList[index].rating,
+                            style: Theme.of(context).textTheme.overline,
+                          ),
+                          Text(
+                            " (" + productList[index].noOfRating + ")",
+                            style: Theme.of(context).textTheme.overline,
+                          )
+                        ],
+                      ),
+                    ),
+                    /*   Html(
+                      data: '${productList[index].desc}',
 
-                      /*style: {
+                      */ /*style: {
                         "p": Style(
                             margin: EdgeInsets.all(0),
                             color: Colors.grey,
                             fontSize: FontSize.small),
-                      },*/
+                      },*/ /*
                       //maxLines: 2,
                       //  overflow: TextOverflow.ellipsis,
-                    ),
+                    ),*/
                     Row(
                       children: <Widget>[
                         Row(
                           children: <Widget>[
                             InkWell(
                               child: Container(
-                                margin: EdgeInsets.only(right: 8),
+                                margin: EdgeInsets.only(
+                                    right: 8, top: 8, bottom: 8),
                                 child: Icon(
                                   Icons.remove,
                                   size: 12,
@@ -131,50 +151,70 @@ class StateProduct extends State<ProductList> {
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(5))),
                               ),
-                              splashColor: primary.withOpacity(0.2),
-                              onTap: () {},
+                              onTap: () {
+                                if (CUR_USERID != null) {
+                                  if (int.parse(productList[index]
+                                          .prVarientList[0]
+                                          .cartCount) >
+                                      0) removeFromCart(index);
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Login()),
+                                  );
+                                }
+                              },
                             ),
                             Text(
-                              "00",
+                              productList[index].prVarientList[0].cartCount,
                               style: Theme.of(context).textTheme.caption,
                             ),
                             InkWell(
-                              child: Container(
-                                margin: EdgeInsets.only(left: 8),
-                                child: Icon(
-                                  Icons.add,
-                                  size: 12,
-                                  color: Colors.grey,
+                                child: Container(
+                                  margin: EdgeInsets.all(8),
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 12,
+                                    color: Colors.grey,
+                                  ),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(5))),
                                 ),
-                                decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(5))),
-                              ),
-                              splashColor: primary.withOpacity(0.2),
-                              onTap: () {},
-                            ),
+                                onTap: () {
+                                  if (CUR_USERID == null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Login()),
+                                    );
+                                  } else
+                                    addToCart(index);
+                                }),
                           ],
                         ),
                         Spacer(),
                         Row(
                           children: <Widget>[
                             Text(
-                              CUR_CURRENCY +
-                                  "" +
-                                  productList[index].prVarientList[0].price,
-                              style:
-                                  Theme.of(context).textTheme.overline.copyWith(
-                                        decoration: TextDecoration.lineThrough,
-                                      ),
+                              int.parse(productList[index]
+                                          .prVarientList[0]
+                                          .disPrice) !=
+                                      0
+                                  ? CUR_CURRENCY +
+                                      "" +
+                                      productList[index].prVarientList[0].price
+                                  : "",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(
+                                      decoration: TextDecoration.lineThrough,
+                                      letterSpacing: 0.7),
                             ),
-                            Text(
-                                " " +
-                                    CUR_CURRENCY +
-                                    " " +
-                                    productList[index]
-                                        .prVarientList[0]
-                                        .disPrice,
+                            Text(" " + CUR_CURRENCY + " " + price.toString(),
                                 style: Theme.of(context).textTheme.headline6),
                           ],
                         )
@@ -194,7 +234,7 @@ class StateProduct extends State<ProductList> {
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
                       model: model,
-                    //  title: productList[index].name,
+                      //  title: productList[index].name,
                     )),
           );
         },
@@ -206,53 +246,55 @@ class StateProduct extends State<ProductList> {
     bool avail = await isNetworkAvailable();
     if (avail) {
       try {
+        print("product****${widget.id}");
+
         var parameter = {
-          SUB_ID: widget.id,
+          CATID: widget.id,
           SORT: sortBy,
           ORDER: orderBy,
           LIMIT: perPage.toString(),
-          OFFSET: offset.toString()
+          OFFSET: offset.toString(),
         };
 
+        if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
-
-        print('response***product**$parameter****$headers***${response.body.toString()}');
+        print('response***product*$parameter');
+        print('response***product*${response.body.toString()}');
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
         String msg = getdata["message"];
-        total = int.parse(getdata["total"]);
-
-        print('limit *****$offset****$total');
 
         if (!error) {
-
+          total = int.parse(getdata["total"]);
+          print('limit *****$offset****$total');
           if ((offset) < total) {
-
             tempList.clear();
+
             var data = getdata["data"];
-            tempList = (data as List).map((data) => new Product.fromJson(data)).toList();
+            tempList = (data as List)
+                .map((data) => new Product.fromJson(data))
+                .toList();
 
             productList.addAll(tempList);
 
             offset = offset + perPage;
           }
-
         } else {
           if (msg != "Products Not Found !") setSnackbar(msg);
-
+          isLoadingmore = false;
         }
         setState(() {
           _isLoading = false;
-          isLoadingmore = false;
         });
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
         setState(() {
           _isLoading = false;
+          isLoadingmore = false;
         });
       }
     } else
@@ -303,6 +345,14 @@ class StateProduct extends State<ProductList> {
               color: primary,
             ),
             onPressed: () {
+              filterDialog();
+            }),
+        IconButton(
+            icon: Icon(
+              Icons.filter_list,
+              color: primary,
+            ),
+            onPressed: () {
               sortDialog();
             })
       ],
@@ -315,7 +365,7 @@ class StateProduct extends State<ProductList> {
         builder: (BuildContext context) {
           return new CupertinoAlertDialog(
             title: new Text(
-              FILTER,
+              SORT_BY,
               style: Theme.of(context).textTheme.headline6,
             ),
             actions: [
@@ -328,9 +378,9 @@ class StateProduct extends State<ProductList> {
                     sortBy = 'p.date_added';
                     orderBy = 'DESC';
                     setState(() {
-                      _isLoading=true;
-                      total=0;
-                      offset=0;
+                      _isLoading = true;
+                      total = 0;
+                      offset = 0;
                       productList.clear();
                     });
                     getProduct();
@@ -345,9 +395,9 @@ class StateProduct extends State<ProductList> {
                     sortBy = 'p.date_added';
                     orderBy = 'ASC';
                     setState(() {
-                      _isLoading=true;
-                      total=0;
-                      offset=0;
+                      _isLoading = true;
+                      total = 0;
+                      offset = 0;
                       productList.clear();
                     });
                     getProduct();
@@ -362,9 +412,9 @@ class StateProduct extends State<ProductList> {
                     sortBy = 'pv.price';
                     orderBy = 'ASC';
                     setState(() {
-                      _isLoading=true;
-                      total=0;
-                      offset=0;
+                      _isLoading = true;
+                      total = 0;
+                      offset = 0;
                       productList.clear();
                     });
                     getProduct();
@@ -379,9 +429,9 @@ class StateProduct extends State<ProductList> {
                     sortBy = 'pv.price';
                     orderBy = 'DESC';
                     setState(() {
-                      _isLoading=true;
-                      total=0;
-                      offset=0;
+                      _isLoading = true;
+                      total = 0;
+                      offset = 0;
                       productList.clear();
                     });
                     getProduct();
@@ -404,5 +454,134 @@ class StateProduct extends State<ProductList> {
         });
       }
     }
+  }
+
+  Future<void> addToCart(int index) async {
+    try {
+      setState(() {
+        _isProgress = true;
+      });
+      var parameter = {
+        USER_ID: CUR_USERID,
+        PRODUCT_VARIENT_ID: productList[index].prVarientList[0].id,
+        QTY: (int.parse(productList[index].prVarientList[0].cartCount) + 1)
+            .toString(),
+      };
+      Response response =
+          await post(manageCartApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+      print('response***${parameter.toString()}');
+      print('response***slider**${response.body.toString()}***$headers');
+
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        var data = getdata["data"];
+
+        int qty = data['total_quantity'];
+        productList[index].prVarientList[0].cartCount = qty.toString();
+      } else {
+        setSnackbar(msg);
+      }
+      setState(() {
+        _isProgress = false;
+      });
+    } on TimeoutException catch (_) {
+      setSnackbar(somethingMSg);
+      setState(() {
+        _isProgress = false;
+      });
+    }
+  }
+
+  Future<void> removeFromCart(int index) async {
+    try {
+      setState(() {
+        _isProgress = true;
+      });
+
+      var parameter = {
+        PRODUCT_VARIENT_ID: productList[index].prVarientList[0].id,
+        USER_ID: CUR_USERID,
+        QTY: (int.parse(productList[index].prVarientList[0].cartCount) - 1)
+            .toString()
+      };
+      Response response =
+          await post(manageCartApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+
+      print('response***slider**${response.body.toString()}***$headers');
+
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        var data = getdata["data"];
+        int qty = data["total_quantity"];
+
+        productList[index].prVarientList[0].cartCount = qty.toString();
+      } else {
+        setSnackbar(msg);
+      }
+      setState(() {
+        _isProgress = false;
+      });
+    } on TimeoutException catch (_) {
+      setSnackbar(somethingMSg);
+      setState(() {
+        _isProgress = false;
+      });
+    }
+  }
+
+  _showForm() {
+    return ListView.builder(
+      controller: controller,
+      itemCount: (offset < total) ? productList.length + 1 : productList.length,
+      physics: BouncingScrollPhysics(),
+      itemBuilder: (context, index) {
+        print(
+            "loading***$isLoadingmore**$_isLoading***${productList.length}***$offset***$total");
+
+        return (index == productList.length && isLoadingmore)
+            ? Center(child: CircularProgressIndicator())
+            : listItem(index);
+      },
+    );
+  }
+
+  void filterDialog() {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        builder: (builder) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Filter By'),
+                Row(
+                  children: [
+                    Container(
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        child: ListView.builder(   shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: 2,itemBuilder:(context, index) {
+                          return Text('title');
+                            })),
+                  ],
+                ),
+
+              ],
+            );
+          });
+        });
   }
 }

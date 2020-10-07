@@ -27,11 +27,13 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           cursorColor: primary,
           fontFamily: 'josefin',
+
           textTheme: TextTheme(
               headline6: TextStyle(
             color: primary,
             fontWeight: FontWeight.w600,
           ))),
+      debugShowCheckedModeBanner: false,
       home: Splash(),
     );
   }

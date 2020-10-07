@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Color.dart';
 import 'Constant.dart';
+import 'String.dart';
 
 final String isLogin = appName + 'isLogin';
 
@@ -54,7 +55,7 @@ placeHolder(double height) {
     'assets/images/placeholder.png',
     fit: BoxFit.fill,
     height: height,
-    width: double.maxFinite,
+    width: height,
   );
 }
 
@@ -83,6 +84,19 @@ getAppBar(String title, BuildContext context) {
   );
 }
 
+Widget showCircularProgress(bool _isProgress, Color color) {
+  if (_isProgress) {
+    return Center(
+        child: CircularProgressIndicator(
+      valueColor: new AlwaysStoppedAnimation<Color>(color),
+    ));
+  }
+  return Container(
+    height: 0.0,
+    width: 0.0,
+  );
+}
+
 imagePlaceHolder(double size) {
   return new Container(
     height: size,
@@ -95,7 +109,105 @@ imagePlaceHolder(double size) {
   );
 }
 
-getProgress() {
+Future<void> clearUserSession() async {
+  final waitList = <Future<void>>[];
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  waitList.add(prefs.remove(ID));
+  waitList.add(prefs.remove(NAME));
+  waitList.add(prefs.remove(MOBILE));
+  CUR_USERID = '';
+}
+
+Future<void> saveUserDetail(String userId, String name, String email,
+    String mobile,String city,String area, String address,String pincode) async {
+  final waitList = <Future<void>>[];
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  waitList.add(prefs.setString(ID, userId));
+  waitList.add(prefs.setString(USERNAME, name));
+  waitList.add(prefs.setString(EMAIL, email));
+  waitList.add(prefs.setString(MOBILE, mobile));
+  waitList.add(prefs.setString(CITY, city));
+  waitList.add(prefs.setString(AREA, area));
+  waitList.add(prefs.setString(ADDRESS, address));
+  waitList.add(prefs.setString(PINCODE, pincode));
+  await Future.wait(waitList);
+}
+
+
+String validateUserName(String value) {
+  if(value.isEmpty)
+  {
+    return "Username is Required";
+  }
+  if(value.length<=2)
+  {
+    return "Username should be more than 1 character long";
+  }
+  return null;
+}
+
+String validateMob(String value) {
+  if(value.isEmpty)
+  {
+    return "Mobile number required";
+  }
+  if(value.length <=9)
+  {
+    return "Please enter valid mobile number";
+  }
+  return null;
+}
+
+String validateCountryCode(String value) {
+  if(value.isEmpty)
+  {
+    return "Country Code required";
+  }
+  if(value.length<=0)
+  {
+    return "valid country code";
+  }
+  return null;
+}
+
+String validatePass(String value) {
+  if (value.length == 0)
+    return "Password is Required";
+  else if (value.length <= 5)
+    return "Your password should be more then 6 char long";
+  else
+    return null;
+}
+
+String validatePincode(String value) {
+  if(value.isNotEmpty)
+    if(!RegExp(r'^[1-9][0-9]{5}$')
+        .hasMatch(value))
+      return "Please enter valid pincode";
+    else
+      return null;
+}
+
+
+String validateEmail(String value) {
+  if(value.isNotEmpty) {
+    if (!RegExp(
+        r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
+        r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
+        r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+        .hasMatch(value)) {
+      return 'Please enter a valid email Address';
+    }
+  }
+  else {
+    return null;
+  }
+}
+
+
+Widget getProgress() {
   return Center(child: CircularProgressIndicator());
 }
 

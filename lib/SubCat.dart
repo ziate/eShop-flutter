@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'Helper/Model.dart';
+import 'Model/Model.dart';
 import 'Helper/Session.dart';
 import 'ProductList.dart';
 import 'Product_Detail.dart';
@@ -55,7 +55,6 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     setState(() {
       for (int i = 0; i < subList.length; i++) {
         _tabs.add({
-          // 'text': "Tab ${_tabs.length + 1}",
           'text': subList[i].name,
         });
         _views.add(createTabContent(i, subList));
@@ -64,23 +63,13 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     });
   }
 
-  void _removeTab() {
-    setState(() {
-      _tabs.removeLast();
-      _views.removeLast();
-      _tc = _makeNewTabController(_tabs.length - 1);
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        /* actions: <Widget>[
-          IconButton(icon: Icon(Icons.add), onPressed: this._addTab),
-          IconButton(icon: Icon(Icons.remove), onPressed: this._removeTab),
-        ],*/
         bottom: TabBar(
           controller: _tc,
           isScrollable: true,
@@ -153,7 +142,6 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                       imageUrl: subItem[index].image,
                       height: 100.0,
                       width: 100.0,
-                      fit: BoxFit.fill,
                       placeholder: (context, url) => placeHolder(100),
                     ),
                   ),
@@ -178,19 +166,11 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProductList(
-                      name: subList[index].name,
-                      id: subList[index].id,
+                      name: subItem[index].name,
+                      id: subItem[index].id,
                     ),
                   ));
 
-            /*           Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SubCat(
-                      subList: subList,
-                      title:widget.title
-                  ),
-                ));*/
           },
         ),
       ],

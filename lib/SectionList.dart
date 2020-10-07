@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'Helper/Color.dart';
-import 'Helper/Section_Model.dart';
+import 'Model/Section_Model.dart';
 import 'Helper/String.dart';
 import 'Product_Detail.dart';
 
@@ -33,7 +33,7 @@ class StateSection extends State<SectionList> {
           mainAxisSpacing: 5,
           crossAxisSpacing: 2,
           children: List.generate(
-            widget.section_model.productList.length ,
+            widget.section_model.productList.length,
             (index) {
               return productItem(index);
             },
@@ -43,8 +43,11 @@ class StateSection extends State<SectionList> {
 
   productItem(int index) {
     double width = MediaQuery.of(context).size.width * 0.5 - 20;
-    //double height = MediaQuery.of(context).size.width * 0.5 - 20;
-    // print("length****${sectionList[secPos].productList[index].name}***${sectionList[secPos].productList[index].prVarientList.length}");
+    double price = double.parse(
+        widget.section_model.productList[index].prVarientList[0].disPrice);
+    if (price == 0)
+      price = double.parse(
+          widget.section_model.productList[index].prVarientList[0].price);
     return Card(
       elevation: 0,
       child: InkWell(
@@ -52,16 +55,44 @@ class StateSection extends State<SectionList> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Expanded(
-                child: ClipRRect(
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(5), topRight: Radius.circular(5)),
-              child: CachedNetworkImage(
-                imageUrl: widget.section_model.productList[index].image,
-                height: double.maxFinite,
-                width: double.maxFinite,
-                fit: BoxFit.fill,
-                placeholder: (context, url) => placeHolder(width),
-              ),
+                child: Stack(
+              alignment: Alignment.topRight,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(5),
+                      topRight: Radius.circular(5)),
+                  child: CachedNetworkImage(
+                    imageUrl: widget.section_model.productList[index].image,
+                    height: double.maxFinite,
+                    width: double.maxFinite,
+                    placeholder: (context, url) => placeHolder(width),
+                  ),
+                ),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(1.5),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.star,
+                          color: Colors.yellow,
+                          size: 10,
+                        ),
+                        Text(
+                          widget.section_model.productList[index].rating,
+                          style: Theme.of(context)
+                              .textTheme
+                              .overline
+                              .copyWith(letterSpacing: 0.2),
+                        ),
+
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             )),
             Padding(
               padding: const EdgeInsets.all(5.0),
@@ -78,9 +109,16 @@ class StateSection extends State<SectionList> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Icon(
-                    Icons.favorite_border,
-                    size: 15,
+                  InkWell(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 3),
+                      child: Icon(
+                        Icons.favorite_border,
+                        size: 15,
+                      ),
+                    ),
+                    onTap: () {},
                   )
                   // IconButton(icon: Icon(Icons.favorite_border,),iconSize: 10, onPressed: null)
                 ],
@@ -91,20 +129,19 @@ class StateSection extends State<SectionList> {
               child: Row(
                 children: <Widget>[
                   Text(
-                    CUR_CURRENCY +
-                        "" +
-                        widget.section_model.productList[index].prVarientList[0]
-                            .price,
+                    int.parse(widget.section_model.productList[index]
+                                .prVarientList[0].disPrice) !=
+                            0
+                        ? CUR_CURRENCY +
+                            "" +
+                            widget.section_model.productList[index]
+                                .prVarientList[0].price
+                        : "",
                     style: Theme.of(context).textTheme.overline.copyWith(
-                          decoration: TextDecoration.lineThrough,letterSpacing: 1
-                        ),
+                        decoration: TextDecoration.lineThrough,
+                        letterSpacing: 1),
                   ),
-                  Text(
-                      " " +
-                          CUR_CURRENCY +
-                          "" +
-                          widget.section_model.productList[index]
-                              .prVarientList[0].disPrice,
+                  Text(" " + CUR_CURRENCY + " " + price.toString(),
                       style: TextStyle(color: primary)),
                 ],
               ),
@@ -118,7 +155,6 @@ class StateSection extends State<SectionList> {
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
                       model: model,
-                    //  title: widget.section_model.title,
                     )),
           );
         },

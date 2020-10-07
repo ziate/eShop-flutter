@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 import 'Helper/Constant.dart';
-import 'Helper/Model.dart';
+import 'Model/Model.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'ProductList.dart';

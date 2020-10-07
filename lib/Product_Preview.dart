@@ -49,7 +49,7 @@ class StatePreview extends State<Product_Preview> {
                       CachedNetworkImageProvider(sliderList[curPos]));
             }),
         Padding(
-          padding: const EdgeInsets.only(top: 24.0),
+          padding: const EdgeInsets.only(top: 34.0),
           child: new IconButton(
             icon: new Icon(
               Icons.arrow_back_ios,
