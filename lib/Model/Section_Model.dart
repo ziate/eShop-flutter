@@ -2,11 +2,11 @@ import 'package:eshop/Helper/String.dart';
 import 'package:flutter/widgets.dart';
 
 class Section_Model {
-  String id, title, varientId, qty,productId,perItemTotal;
+  String id, title, varientId, qty,productId,perItemTotal,perItemPrice;
   List<Product> productList;
 
   Section_Model(
-      {this.id, this.title, this.productList, this.varientId, this.qty,this.productId,this.perItemTotal});
+      {this.id, this.title, this.productList, this.varientId, this.qty,this.productId,this.perItemTotal,this.perItemPrice});
 
   factory Section_Model.fromJson(Map<String, dynamic> parsedJson) {
 
@@ -29,6 +29,7 @@ class Section_Model {
         varientId: parsedJson[PRODUCT_VARIENT_ID],
         qty: parsedJson[QTY],
         perItemTotal: "0",
+        perItemPrice: "0",
         productList: productList);
   }
 

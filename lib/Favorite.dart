@@ -331,7 +331,7 @@ class StateFav extends State<Favorite> {
       if (!error) {
         var data = getdata["data"];
 
-        int qty = data['total_quantity'];
+        String qty = data['total_quantity'];
 
         favList[index].productList[0].prVarientList[0].cartCount =
             qty.toString();
@@ -393,7 +393,7 @@ class StateFav extends State<Favorite> {
       if (!error) {
         var data = getdata["data"];
 
-        int qty = data['total_quantity'];
+        String qty = data['total_quantity'];
 
         if (remove)
           favList.removeWhere(

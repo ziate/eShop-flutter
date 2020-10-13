@@ -480,7 +480,7 @@ class StateProduct extends State<ProductList> {
       if (!error) {
         var data = getdata["data"];
 
-        int qty = data['total_quantity'];
+        String qty = data['total_quantity'];
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {
         setSnackbar(msg);
@@ -520,7 +520,7 @@ class StateProduct extends State<ProductList> {
       String msg = getdata["message"];
       if (!error) {
         var data = getdata["data"];
-        int qty = data["total_quantity"];
+        String qty = data["total_quantity"];
 
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {

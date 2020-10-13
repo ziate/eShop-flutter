@@ -38,12 +38,12 @@ const String ORIGINAL_PRICE='Original Price';
 const String OFFER_PRICE='Offer Price';
 const String Total_PRICE='Total Price';
 const String DELIVERY_CHARGE='Delivery Charge';
-const String HOME='Home';
+const String HOME_LBL='Home';
 const String FAVORITE='Favorite';
 const String NOTIFICATION='Notification';
 const String TRACK_ORDER='Track Order';
 const String PROFILE='Profile';
-
+const String TAXPER='Tax';
 const String SETTING='Setting';
 
 
@@ -78,6 +78,11 @@ const String noNoti='No Notification Found..!!';
 const String goToLogin='Please login to access favorite..!!';
 const String searchHint='Find Grocery items here..';
 const String selectVarient='Select Varient';
+const String addressWarning='Please Select Address..!!';
+const String dateWarning='Please Select Delivery Date..!!';
+const String timeWarning='Please Select Delivery Time..!!';
+const String payWarning='Please Select Payment Method..!!';
+
 
 
 const String SKIP='Skip ->';
@@ -91,3 +96,39 @@ const String UPDATE_PROFILE='Update Profile';
 const String LOGOUTTXT='Are you sure you want to logout?';
 const String LOGOUTYES='Yes';
 const String LOGOUTNO='No';
+const String CHECKOUT='Checkout';
+const String DELIVERY='Delivery';
+const String ADDRESS_LBL='Address';
+const String PAYMENT='Payment';
+const String APPLY='Apply';
+const String PROMOCODE='Have a Promo Code?';
+const String ORDER_SUMMARY='Order Summary';
+const String PRODUCTNAME='Product Name';
+const String PRICE_LBL='Price';
+const String SUBTOTAL='SubTotal';
+const String QUANTITY='Qty';
+const String ADDADDRESS='Add New Address';
+const String CONTINUE='Continue';
+const String NAME_LBL='Name';
+const String ALT_MOB='Alternate Mobile Number';
+const String LANDMARK_LBL='Landmark';
+const String STATE_LBL='State';
+const String COUNTRY_LBL='Country';
+const String OTHER_LBL='Other';
+const String OFFICE_LBL='Office';
+const String DEFAULT_ADD='Set as a default address';
+const String NOADDRESS='No Address Found..!!';
+const String UPDATEADD='Update Address';
+const String PREFERED_TIME='Preferred Delivery Date/Time';
+const String PAYMENT_METHOD_LBL='Payment Method';
+const String COD_LBL='Cash On Delivery';
+const String PAYPAL_LBL='PayPal';
+const String PAYUMONEY_LBL='PayUMoney';
+const String RAZORPAY_LBL='RazorPay';
+const String PAYSTACK_LBL='Paystack';
+const String FLUTTERWAVE_LBL='Flutterwave';
+const String PROCEED='Proceed';
+const String TOTAL="Total";
+const String CONFIRM_ORDER='Confirm Order';
+const String CONFIRM='Confirm';
+const String CANCEL='Cancel';

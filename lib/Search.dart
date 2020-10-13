@@ -286,7 +286,7 @@ class _StateSearch extends State<Search> {
       if (!error) {
         var data = getdata["data"];
 
-        int qty = data['total_quantity'];
+        String qty = data['total_quantity'];
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {
         setSnackbar(msg);
@@ -327,7 +327,7 @@ class _StateSearch extends State<Search> {
       String msg = getdata["message"];
       if (!error) {
         var data = getdata["data"];
-        int qty = data["total_quantity"];
+        String qty = data["total_quantity"];
 
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {

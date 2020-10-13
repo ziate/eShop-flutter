@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:core';
 
 import 'package:app_review/app_review.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -70,8 +71,6 @@ class StateHome extends State<Home> {
         body: fragments[_curSelected]);
   }
 
-
-
   setSnackbar(String msg) {
     scaffoldKey.currentState.showSnackBar(new SnackBar(
       content: new Text(
@@ -92,7 +91,7 @@ class StateHome extends State<Home> {
         physics: BouncingScrollPhysics(),
         children: <Widget>[
           _getHeader(),
-          _getDrawerItem(HOME, Icons.home),
+          _getDrawerItem(HOME_LBL, Icons.home),
           _getDivider(),
           _getDrawerItem(CART, Icons.add_shopping_cart),
           _getDivider(),
@@ -146,7 +145,7 @@ class StateHome extends State<Home> {
       ),
       onTap: () {
         Navigator.of(context).pop();
-        if (title == HOME) {
+        if (title == HOME_LBL) {
           setState(() {
             _curSelected = 0;
           });
@@ -162,20 +161,19 @@ class StateHome extends State<Home> {
                   MaterialPageRoute(
                     builder: (context) => Cart(),
                   ));
-        }else if (title == PROFILE) {
+        } else if (title == PROFILE) {
           CUR_USERID == null
               ? Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Login(),
-              ))
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Login(),
+                  ))
               : Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Profile(),
-              ));
-        }
-        else if (title == FAVORITE) {
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Profile(),
+                  ));
+        } else if (title == FAVORITE) {
           setState(() {
             _curSelected = 1;
           });
@@ -462,12 +460,15 @@ class StateHomePage extends State<HomePage> {
     double width = MediaQuery.of(context).size.width;
     double height = width / 2;
 
-    print("status***$statusBarHeight***$kToolbarHeight");
     return Scaffold(
       key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
-          Image.asset('assets/images/topimage.png',width: MediaQuery.of(context).size.width),
+          Image.asset(
+            'assets/images/topimage.png',
+            width: width,
+            fit: BoxFit.fitWidth,
+          ),
           Container(
             margin:
                 EdgeInsets.only(left: 20.0, right: 20, top: statusBarHeight),
@@ -1008,9 +1009,6 @@ class StateHomePage extends State<HomePage> {
       String msg = getdata["message"];
       if (!error) {
         sectionList[secPos].productList[index].isFav = "1";
-
-
-
       } else {
         setSnackbar(msg);
       }
@@ -1056,13 +1054,9 @@ class StateHomePage extends State<HomePage> {
       if (!error) {
         sectionList[secPos].productList[index].isFav = "0";
 
-
-
         favList.removeWhere((item) =>
-        item.productList[0].prVarientList[0].id ==
+            item.productList[0].prVarientList[0].id ==
             sectionList[secPos].productList[index].prVarientList[0].id);
-
-
       } else {
         setSnackbar(msg);
       }

@@ -20,6 +20,7 @@ class User {
       name;
 
   String id, date, comment, rating;
+  String type, alt_mob, landmark, areaId, cityId, isDefault,state,country;
 
   User(
       {this.id,
@@ -39,16 +40,19 @@ class User {
       this.fcm_id,
       this.latitude,
       this.longitude,
-        this.user_id,
-        this.name});
+      this.user_id,
+      this.name,
+      this.type,
+      this.alt_mob,
+      this.landmark,
+      this.areaId,
+      this.cityId,
+      this.isDefault,this.state,this.country});
 
   factory User.forReview(Map<String, dynamic> parsedJson) {
     String date = parsedJson['data_added'];
 
-
-
-    date = DateFormat('dd-MM-yyyy')
-        .format(DateTime.parse(date));
+    date = DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
     print('date***$date');
     return new User(
       id: parsedJson[ID],
@@ -77,6 +81,29 @@ class User {
       longitude: parsedJson[LONGITUDE],
       user_id: parsedJson[USER_ID],
       name: parsedJson[NAME],
+    );
+  }
+
+  factory User.fromAddress(Map<String, dynamic> parsedJson) {
+    return new User(
+      id: parsedJson[ID],
+      mobile: parsedJson[MOBILE],
+      address: parsedJson[ADDRESS],
+      alt_mob: parsedJson[ALT_MOBNO],
+      cityId: parsedJson[CITY_ID],
+      areaId: parsedJson[AREA_ID],
+      area: parsedJson[AREA],
+      city: parsedJson[CITY],
+      landmark: parsedJson[LANDMARK],
+      state: parsedJson[STATE],
+      pincode: parsedJson[PINCODE],
+      country: parsedJson[COUNTRY],
+      latitude: parsedJson[LATITUDE],
+      longitude: parsedJson[LONGITUDE],
+      user_id: parsedJson[USER_ID],
+      name: parsedJson[NAME],
+      type: parsedJson[TYPE],
+      isDefault: parsedJson[ISDEFAULT]
     );
   }
 }

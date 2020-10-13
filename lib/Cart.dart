@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:eshop/CheckOut.dart';
 import 'package:eshop/Helper/Constant.dart';
 
 import 'package:eshop/Helper/Session.dart';
@@ -20,18 +21,21 @@ class Cart extends StatefulWidget {
   State<StatefulWidget> createState() => StateCart();
 }
 
+List<Section_Model> cartList = [];
+double totalPrice = 0, oriPrice = 0, delCharge = 0, taxAmt = 0, taxPer = 0;
+
 class StateCart extends State<Cart> {
-  List<Section_Model> productList = [];
+
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool _isProgress = false, _isLoading = true;
-  double totalPrice = 0, oriPrice = 0, delCharge = 0, taxAmt = 0, taxPer = 0;
+
 
   @override
   void initState() {
     super.initState();
     totalPrice = 0;
     oriPrice = 0;
-
+    taxAmt = 0; taxPer = 0;
     delCharge = 0;
     _getCart();
   }
@@ -53,20 +57,25 @@ class StateCart extends State<Cart> {
     //print("desc*****${productList[index].desc}");
     int selectedPos = 0;
     for (int i = 0;
-        i < productList[index].productList[0].prVarientList.length;
+        i < cartList[index].productList[0].prVarientList.length;
         i++) {
-      if (productList[index].varientId ==
-          productList[index].productList[0].prVarientList[i].id)
+      if (cartList[index].varientId ==
+          cartList[index].productList[0].prVarientList[i].id)
         selectedPos = i;
 
-      print("selected pos***$selectedPos***${productList[index].productList[0].prVarientList[i].id}");
+      print(
+          "selected pos***$selectedPos***${cartList[index].productList[0].prVarientList[i].id}");
     }
 
     double price = double.parse(
-        productList[index].productList[0].prVarientList[selectedPos].disPrice);
+        cartList[index].productList[0].prVarientList[selectedPos].disPrice);
     if (price == 0)
       price = double.parse(
-          productList[index].productList[0].prVarientList[selectedPos].price);
+          cartList[index].productList[0].prVarientList[selectedPos].price);
+
+    cartList[index].perItemPrice = price.toString();
+    cartList[index].perItemTotal =
+        (price * double.parse(cartList[index].qty)).toString();
 
     print("price****$oriPrice***$price---$index");
     return Card(
@@ -75,7 +84,7 @@ class StateCart extends State<Cart> {
         child: Row(
           children: <Widget>[
             CachedNetworkImage(
-              imageUrl: productList[index].productList[0].image,
+              imageUrl: cartList[index].productList[0].image,
               height: 90.0,
               width: 90.0,
               placeholder: (context, url) => placeHolder(90),
@@ -92,7 +101,7 @@ class StateCart extends State<Cart> {
                           child: Padding(
                             padding: const EdgeInsets.only(top: 5.0),
                             child: Text(
-                              productList[index].productList[0].name,
+                              cartList[index].productList[0].name,
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle1
@@ -127,12 +136,12 @@ class StateCart extends State<Cart> {
                             size: 12,
                           ),
                           Text(
-                            " " + productList[index].productList[0].rating,
+                            " " + cartList[index].productList[0].rating,
                             style: Theme.of(context).textTheme.overline,
                           ),
                           Text(
                             " (" +
-                                productList[index].productList[0].noOfRating +
+                                cartList[index].productList[0].noOfRating +
                                 ")",
                             style: Theme.of(context).textTheme.overline,
                           )
@@ -142,14 +151,14 @@ class StateCart extends State<Cart> {
                     Row(
                       children: <Widget>[
                         Text(
-                          int.parse(productList[index]
+                          int.parse(cartList[index]
                                       .productList[0]
                                       .prVarientList[selectedPos]
                                       .disPrice) !=
                                   0
                               ? CUR_CURRENCY +
                                   "" +
-                                  productList[index]
+                              cartList[index]
                                       .productList[0]
                                       .prVarientList[selectedPos]
                                       .price
@@ -186,7 +195,7 @@ class StateCart extends State<Cart> {
                               },
                             ),
                             Text(
-                              productList[index].qty,
+                              cartList[index].qty,
                               style: Theme.of(context).textTheme.caption,
                             ),
                             InkWell(
@@ -213,7 +222,7 @@ class StateCart extends State<Cart> {
                             " " +
                                 CUR_CURRENCY +
                                 " " +
-                                productList[index].perItemTotal.toString(),
+                                cartList[index].perItemTotal.toString(),
                             style: Theme.of(context).textTheme.headline6)
                       ],
                     )
@@ -225,7 +234,7 @@ class StateCart extends State<Cart> {
         ),
         splashColor: primary.withOpacity(0.2),
         onTap: () {
-          Product model = productList[index].productList[0];
+          Product model = cartList[index].productList[0];
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -257,10 +266,11 @@ class StateCart extends State<Cart> {
         var data = getdata["data"];
         delCharge = double.parse(getdata[DEL_CHARGE]);
         oriPrice = double.parse(getdata[SUB_TOTAL]);
+        taxAmt = double.parse(getdata[TAX_AMT]);
 
-
-       // print('cart data**********$data');
-        productList = (data as List)
+        totalPrice = delCharge + oriPrice + taxAmt;
+        // print('cart data**********$data');
+        cartList = (data as List)
             .map((data) => new Section_Model.fromCart(data))
             .toList();
       } else {
@@ -281,9 +291,9 @@ class StateCart extends State<Cart> {
         _isProgress = true;
       });
       var parameter = {
-        PRODUCT_VARIENT_ID: productList[index].varientId,
+        PRODUCT_VARIENT_ID: cartList[index].varientId,
         USER_ID: CUR_USERID,
-        QTY: (int.parse(productList[index].qty) + 1).toString(),
+        QTY: (int.parse(cartList[index].qty) + 1).toString(),
       };
       Response response =
           await post(manageCartApi, body: parameter, headers: headers)
@@ -299,10 +309,15 @@ class StateCart extends State<Cart> {
       if (!error) {
         var data = getdata["data"];
 
-        int qty = data['total_quantity'];
+        String qty = data['total_quantity'];
 
         print('total*****add*$qty');
-        productList[index].qty = qty.toString();
+        cartList[index].qty = qty;
+
+        oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
+
+        totalPrice = 0;
+        totalPrice = delCharge + oriPrice + taxAmt;
       } else {
         setSnackbar(msg);
       }
@@ -324,9 +339,9 @@ class StateCart extends State<Cart> {
       });
 
       var parameter = {
-        PRODUCT_VARIENT_ID: productList[index].varientId,
+        PRODUCT_VARIENT_ID: cartList[index].varientId,
         USER_ID: CUR_USERID,
-        QTY: remove ? "0" : (int.parse(productList[index].qty) - 1).toString()
+        QTY: remove ? "0" : (int.parse(cartList[index].qty) - 1).toString()
       };
 
       Response response =
@@ -342,15 +357,20 @@ class StateCart extends State<Cart> {
       if (!error) {
         var data = getdata["data"];
 
-        int qty = data['total_quantity'];
+        String qty = data['total_quantity'];
 
         print('total*****remove*$qty');
-        if (remove)
-          productList.removeWhere(
-              (item) => item.varientId == productList[index].varientId);
-        else {
-          productList[index].qty = qty.toString();
+        if (remove) {
+          oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
+
+          cartList.removeWhere(
+              (item) => item.varientId == cartList[index].varientId);
+        } else {
+          oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
+          cartList[index].qty = qty.toString();
         }
+        totalPrice = 0;
+        totalPrice = delCharge + oriPrice + taxAmt;
       } else {
         setSnackbar(msg);
       }
@@ -380,14 +400,14 @@ class StateCart extends State<Cart> {
   _showContent() {
     return _isLoading
         ? getProgress()
-        : productList.length == 0
+        : cartList.length == 0
             ? Center(child: Text('Cart is empty'))
             : Column(
                 children: <Widget>[
                   Expanded(
                     child: ListView.builder(
                       shrinkWrap: true,
-                      itemCount: productList.length,
+                      itemCount: cartList.length,
                       physics: BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         return listItem(index);
@@ -420,6 +440,19 @@ class StateCart extends State<Cart> {
                       ],
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 35, right: 35, top: 8, bottom: 8),
+                    child: Row(
+                      children: <Widget>[
+                        Text(
+                          TAXPER + "($taxPer %)",
+                        ),
+                        Spacer(),
+                        Text(CUR_CURRENCY + " $taxAmt")
+                      ],
+                    ),
+                  ),
                   Divider(
                     color: Colors.black,
                     thickness: 1,
@@ -440,7 +473,7 @@ class StateCart extends State<Cart> {
                         ),
                         Spacer(),
                         Text(
-                          CUR_CURRENCY,
+                          CUR_CURRENCY + " $totalPrice",
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
@@ -452,12 +485,12 @@ class StateCart extends State<Cart> {
                   InkWell(
                     splashColor: Colors.white,
                     onTap: () {
-                      /* Navigator.push(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Cart(),
+                          builder: (context) => CheckOut(),
                         ),
-                      );*/
+                      );
                     },
                     child: Container(
                       height: 55,
