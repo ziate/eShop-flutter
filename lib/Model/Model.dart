@@ -31,8 +31,8 @@ class Model {
 
   factory Model.fromTimeSlot(Map<String, dynamic> parsedJson) {
     return new Model(
-      id: parsedJson[ID],
-      name: parsedJson[TITLE]
+        id: parsedJson[ID],
+        name: parsedJson[TITLE]
     );
   }
 
@@ -54,6 +54,6 @@ class Model {
   static List<Model> createSubList(List parsedJson) {
     if (parsedJson == null || parsedJson.isEmpty) return null;
 
-    return parsedJson.map((data) => new Model.fromCat(data)).toList();
+   return parsedJson.map((data) => new Model.fromCat(data)).toList();
   }
 }

@@ -11,7 +11,7 @@ import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Privacy_Policy.dart';
 import 'package:eshop/Product_Detail.dart';
 import 'package:eshop/SectionList.dart';
-import 'package:eshop/Sub_Category.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -30,6 +30,7 @@ import 'NotificationLIst.dart';
 import 'Profile.dart';
 import 'Search.dart';
 import 'SubCat.dart';
+import 'Track_Order.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -47,17 +48,24 @@ bool _isCatLoading = true;
 class StateHome extends State<Home> {
   List<Widget> fragments;
   int _curSelected = 0;
+  HomePage home;
 
   @override
   void initState() {
     super.initState();
 
+    getUserData();
+    home = new HomePage(updateHome);
     fragments = [
-      HomePage(),
-      Favorite(),
+      HomePage(updateHome),
+      Favorite(updateHome),
       NotificationList(),
       NotificationList()
     ];
+  }
+
+  updateHome() {
+    setState(() {});
   }
 
   @override
@@ -69,6 +77,31 @@ class StateHome extends State<Home> {
         extendBodyBehindAppBar: true,
         bottomNavigationBar: getBottomBar(),
         body: fragments[_curSelected]);
+  }
+
+  Future<void> getUserData() async {
+    CUR_USERID = await getPrefrence(ID);
+    if (CUR_USERID != null)
+      try {
+        var parameter = {TYPE: USERDATA, USER_ID: CUR_USERID};
+        Response response =
+            await post(getSettingApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+        print('response***setting**$headers***${response.body.toString()}');
+        bool error = getdata["error"];
+        if (!error) {
+          var data = getdata["data"][0];
+          setState(() {
+            print("cart count******$data");
+            CUR_CART_COUNT = (data['cart_total_items']).toString();
+            CUR_BALANCE = data["balance"];
+          });
+        }
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+      }
   }
 
   setSnackbar(String msg) {
@@ -159,7 +192,19 @@ class StateHome extends State<Home> {
               : Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Cart(),
+                    builder: (context) => Cart(this.updateHome),
+                  ));
+        } else if (title == TRACK_ORDER) {
+          CUR_USERID == null
+              ? Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Login(),
+                  ))
+              : Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TrackOrder(),
                   ));
         } else if (title == PROFILE) {
           CUR_USERID == null
@@ -227,32 +272,71 @@ class StateHome extends State<Home> {
   _getAppbar() {
     double width = MediaQuery.of(context).size.width;
     double height = width / 2;
+
+    print("cart count***$CUR_CART_COUNT");
     return AppBar(
       title: Image.asset('assets/images/titleicon.png'),
       centerTitle: true,
       actions: <Widget>[
         InkWell(
-          child: Image.asset(
-            'assets/images/noti_cart.png',
-            width: 40,
-          ),
-          onTap: () {
+          child: new Stack(children: <Widget>[
+            Center(
+              child: Image.asset(
+                'assets/images/noti_cart.png',
+                width: 40,
+              ),
+            ),
+            (CUR_CART_COUNT != null &&
+                    CUR_CART_COUNT.isNotEmpty &&
+                    CUR_CART_COUNT != "0")
+                ? new Positioned(
+                    top: 0.0,
+                    right: 5.0,
+                    bottom: 15,
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle, color: Colors.red),
+                        child: new Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(4),
+                            child: new Text(
+                              CUR_CART_COUNT,
+                              style: TextStyle(fontSize: 8),
+                            ),
+                          ),
+                        )),
+                  )
+                : Container()
+          ]),
+          onTap: () async {
             CUR_USERID == null
                 ? Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => Login(),
                     ))
-                : Navigator.push(
+                : goToCart();
+            /*await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Cart(),
-                    ));
+                      builder: (context) => Cart(updateHome),
+                    ))
+                .then((val) => setState(() => {}));*/
+            //.then((value) => home.updateHomepage);
           },
         ),
-        Image.asset(
-          'assets/images/profile.png',
-          width: 40,
+        InkWell(
+          child: Image.asset(
+            'assets/images/profile.png',
+            width: 40,
+          ),
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Profile(),
+                ));
+          },
         )
       ],
       /* flexibleSpace: Image(
@@ -429,12 +513,29 @@ class StateHome extends State<Home> {
       ),
     );
   }
+
+  goToCart() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Cart(updateHome),
+        )).then((val) => home.updateHomepage());
+    //  if (nav == true || nav == null) home.updateHomepage();
+  }
 }
 
 class HomePage extends StatefulWidget {
+  Function updateHome;
+
+  HomePage(this.updateHome);
+
+  StateHomePage statehome = new StateHomePage();
+
   @override
-  State<StatefulWidget> createState() {
-    return StateHomePage();
+  StateHomePage createState() => StateHomePage();
+
+  updateHomepage() {
+    statehome.getSection();
   }
 }
 
@@ -448,6 +549,10 @@ class StateHomePage extends State<HomePage> {
     super.initState();
     callApi();
     WidgetsBinding.instance.addPostFrameCallback((_) => _animateSlider());
+  }
+
+  updateHomePage() {
+    setState(() {});
   }
 
   @override
@@ -595,7 +700,7 @@ class StateHomePage extends State<HomePage> {
   }
 
   void _animateSlider() {
-    Future.delayed(Duration(seconds: 10)).then((_) {
+    Future.delayed(Duration(seconds: 30)).then((_) {
       if (mounted) {
         int nextPage = _controller.hasClients
             ? _controller.page.round() + 1
@@ -604,18 +709,16 @@ class StateHomePage extends State<HomePage> {
         if (nextPage == sliderList.length) {
           nextPage = 0;
         }
-
-        _controller
-            .animateToPage(nextPage,
-                duration: Duration(seconds: 1), curve: Curves.easeIn)
-            .then((_) => _animateSlider());
+        if (_controller.hasClients)
+          _controller
+              .animateToPage(nextPage,
+                  duration: Duration(seconds: 1), curve: Curves.easeIn)
+              .then((_) => _animateSlider());
       }
     });
   }
 
   _getSearchBar(double height) {
-    double statusBarHeight = MediaQuery.of(context).padding.top;
-
     return InkWell(
       child: SizedBox(
           height: 35, // set this
@@ -646,12 +749,13 @@ class StateHomePage extends State<HomePage> {
                 fillColor: Colors.white30,
                 filled: true),
           )),
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Search(),
+              builder: (context) => Search(widget.updateHome),
             ));
+        setState(() {});
       },
     );
   }
@@ -674,11 +778,15 @@ class StateHomePage extends State<HomePage> {
                 style: Theme.of(context).textTheme.caption,
               ),
             ),
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => All_Category()),
+                MaterialPageRoute(
+                    builder: (context) => All_Category(
+                          updateHome: widget.updateHome,
+                        )),
               );
+              setState(() {});
             },
           ),
         ],
@@ -688,7 +796,7 @@ class StateHomePage extends State<HomePage> {
 
   _catList() {
     return Container(
-      height: 90,
+      height: 100,
       child: ListView.builder(
         itemCount: catList.length < 10 ? catList.length : 10,
         scrollDirection: Axis.horizontal,
@@ -725,34 +833,28 @@ class StateHomePage extends State<HomePage> {
                 ],
               ),
             ),
-            onTap: () {
-              /*      Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Sub_Category(
-                     sub
-                    ),
-                  ));*/
-
+            onTap: () async {
               if (catList[index].subList == null ||
                   catList[index].subList.length == 0) {
-                Navigator.push(
+                await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ProductList(
-                        name: catList[index].name,
-                        id: catList[index].id,
-                      ),
+                          name: catList[index].name,
+                          id: catList[index].id,
+                          updateHome: widget.updateHome),
                     ));
+                setState(() {});
               } else {
-                Navigator.push(
+                await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => SubCat(
-                        title: catList[index].name,
-                        subList: catList[index].subList,
-                      ),
+                          title: catList[index].name,
+                          subList: catList[index].subList,
+                          updateHome: widget.updateHome),
                     ));
+                setState(() {});
               }
             },
           );
@@ -762,15 +864,17 @@ class StateHomePage extends State<HomePage> {
   }
 
   _section() {
-    return ListView.builder(
-      padding: EdgeInsets.all(0),
-      itemCount: sectionList.length,
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) {
-        return _singleSection(index);
-      },
-    );
+    return _isCatLoading
+        ? getProgress()
+        : ListView.builder(
+            padding: EdgeInsets.all(0),
+            itemCount: sectionList.length,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              return _singleSection(index);
+            },
+          );
   }
 
   _singleSection(int index) {
@@ -808,8 +912,9 @@ class StateHomePage extends State<HomePage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => SectionList(
-                      title: title,
+                     index:index,
                       section_model: model,
+                      updateHome: updateHomePage,
                     ),
                   ));
             },
@@ -979,7 +1084,8 @@ class StateHomePage extends State<HomePage> {
             context,
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
-                      model: model,
+                      model: model, updateParent: updateHomePage,
+                      updateHome: widget.updateHome,
                       //  title: sectionList[secPos].title,
                     )),
           );
@@ -1070,7 +1176,6 @@ class StateHomePage extends State<HomePage> {
   }
 
   Future<void> callApi() async {
-    CUR_USERID = await getPrefrence(ID);
     bool avail = await isNetworkAvailable();
     if (avail) {
       getSlider();
@@ -1146,11 +1251,12 @@ class StateHomePage extends State<HomePage> {
 
   Future<void> getSection() async {
     try {
-      var parameter = {USER_ID: CUR_USERID};
+      var parameter = {PRODUCT_LIMIT: "4", PRODUCT_OFFSET: "0"};
 
-      Response response = await post(getSectionApi,
-              body: CUR_USERID != null ? parameter : null, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+      if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+      Response response =
+          await post(getSectionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -1160,17 +1266,21 @@ class StateHomePage extends State<HomePage> {
       String msg = getdata["message"];
       if (!error) {
         var data = getdata["data"];
-
+        sectionList.clear();
         sectionList = (data as List)
             .map((data) => new Section_Model.fromJson(data))
             .toList();
       } else {
         setSnackbar(msg);
       }
-      if (mounted)
-        setState(() {
-          _isCatLoading = false;
-        });
+
+          Future.delayed(const Duration(seconds: 1), () {
+            setState(() {
+              _isCatLoading = false;
+            });
+
+          });
+
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -1193,9 +1303,6 @@ class StateHomePage extends State<HomePage> {
       if (!error) {
         var data = getdata["data"];
         CUR_CURRENCY = data;
-        /*  sectionList = (data as List)
-            .map((data) => new Section_Model.fromJson(data))
-            .toList();*/
       } else {
         setSnackbar(msg);
       }

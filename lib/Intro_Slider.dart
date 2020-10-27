@@ -36,17 +36,17 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
   final slideList = [
     Slide(
       imageUrl: 'assets/images/introimage_a.png',
-      title: TITLE1,
+      title: TITLE1_LBL,
       description: DISCRIPTION1,
     ),
     Slide(
       imageUrl: 'assets/images/introimage_b.png',
-      title: TITLE2,
+      title: TITLE2_LBL,
       description: DISCRIPTION2,
     ),
     Slide(
       imageUrl: 'assets/images/introimage_c.png',
-      title: TITLE3,
+      title: TITLE3_LBL,
       description: DISCRIPTION3,
     ),
   ];
@@ -103,7 +103,7 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: map<Widget>(
                     slideList,
-                    (index, url) {
+                        (index, url) {
                       return Container(
                           width: 10.0,
                           height: 10.0,
@@ -131,40 +131,40 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
         padding: EdgeInsets.only(bottom: 20.0, left: 50.0, right: 50.0),
         child: Center(
             child: RaisedButton(
-          onPressed: () {
-            setPrefrenceBool(ISFIRSTTIME, true);
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Login()),
-            );
-          },
-          shape:
+              onPressed: () {
+                setPrefrenceBool(ISFIRSTTIME, true);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Login()),
+                );
+              },
+              shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-          padding: EdgeInsets.all(0.0),
-          child: Ink(
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primary.withOpacity(0.7), primary],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(30.0)),
-            child: Container(
-              constraints:
+              padding: EdgeInsets.all(0.0),
+              child: Ink(
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [primary.withOpacity(0.7), primary],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(30.0)),
+                child: Container(
+                  constraints:
                   BoxConstraints(maxWidth: width * 0.90, minHeight: 50.0),
-              //decoration: back(),
-              alignment: Alignment.center,
-              child: Text(
-                GET_STARTED,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20.0),
+                  //decoration: back(),
+                  alignment: Alignment.center,
+                  child: Text(
+                    GET_STARTED,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20.0),
+                  ),
+                ),
               ),
-            ),
-          ),
-        )));
+            )));
   }
 
   @override

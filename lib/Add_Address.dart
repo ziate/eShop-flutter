@@ -6,9 +6,11 @@ import 'dart:core';
 import 'package:eshop/CheckOut.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
+import 'package:eshop/Map.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 
 import 'Helper/Color.dart';
@@ -26,6 +28,8 @@ class AddAddress extends StatefulWidget {
     return StateAddress();
   }
 }
+
+String latitude, longitude;
 
 class StateAddress extends State<AddAddress> {
   String name,
@@ -81,6 +85,9 @@ class StateAddress extends State<AddAddress> {
       stateC.text = item.state;
       countryC.text = item.country;
       stateC.text = item.state;
+      latitude = item.latitude;
+      longitude = item.longitude;
+
       type = item.type;
       city = item.cityId;
       area = item.areaId;
@@ -91,8 +98,10 @@ class StateAddress extends State<AddAddress> {
       else
         selectedType = 3;
 
-      print("isdefault**${item.isDefault}");
+      print("isdefault**${item.isDefault}***$area**$city");
       checkedDefault = item.isDefault == "1" ? true : false;
+    } else {
+      getCurrentLoc();
     }
   }
 
@@ -162,12 +171,17 @@ class StateAddress extends State<AddAddress> {
 
   bool validateAndSave() {
     final form = _formkey.currentState;
+
+    print("lat***$latitude***$longitude");
+
     form.save();
     if (form.validate()) {
       if (city == null || city.isEmpty) {
-        setSnackbar('City is Required');
+        setSnackbar(cityWarning);
       } else if (area == null || area.isEmpty) {
-        setSnackbar('Area is Required');
+        setSnackbar(areaWarning);
+      } else if (latitude.trim().isEmpty || longitude.trim().isEmpty) {
+        setSnackbar(locationWarning);
       } else
         return true;
     }
@@ -289,7 +303,7 @@ class StateAddress extends State<AddAddress> {
             city = newValue;
           });
           // print(city);
-          getArea(city);
+          getArea(city, true);
         },
         items: cityList.map((User user) {
           return DropdownMenuItem<String>(
@@ -361,27 +375,54 @@ class StateAddress extends State<AddAddress> {
   setAddress() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        controller: addressC,
-        validator: validateField,
-        onSaved: (String value) {
-          address = value;
-        },
-        decoration: InputDecoration(
-          hintText: "Address",
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
-            borderRadius: BorderRadius.circular(10.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextFormField(
+              keyboardType: TextInputType.text,
+              controller: addressC,
+              validator: validateField,
+              onSaved: (String value) {
+                address = value;
+              },
+              decoration: InputDecoration(
+                hintText: "Address",
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
           ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
+          Container(
+            margin: EdgeInsets.only(left: 7),
+            width: 60,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(color: white),
+                color: white),
+            child: IconButton(
+              icon: new Icon(Icons.my_location),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Map(
+                              latitude: double.parse(latitude),
+                              longitude: double.parse(longitude),
+                              from: ADDADDRESS,
+                            )));
+              },
+            ),
+          )
+        ],
       ),
     );
   }
@@ -419,7 +460,9 @@ class StateAddress extends State<AddAddress> {
     bool avail = await isNetworkAvailable();
     if (avail) {
       getCities();
-      if (widget.update) getArea(addressList[widget.index].cityId);
+      if (widget.update) {
+        getArea(addressList[widget.index].cityId, false);
+      }
     } else {
       setSnackbar(internetMsg);
       setState(() {
@@ -456,7 +499,7 @@ class StateAddress extends State<AddAddress> {
     }
   }
 
-  Future<void> getArea(String city) async {
+  Future<void> getArea(String city, bool clear) async {
     print("selectedcityforarea:$city");
     try {
       var data = {
@@ -475,7 +518,8 @@ class StateAddress extends State<AddAddress> {
 
       if (!error) {
         var data = getdata["data"];
-
+        areaList.clear();
+        if (clear) area = null;
         areaList =
             (data as List).map((data) => new User.fromJson(data)).toList();
       } else {
@@ -607,15 +651,17 @@ class StateAddress extends State<AddAddress> {
         COUNTRY: country,
         TYPE: type,
         ISDEFAULT: checkedDefault.toString() == "true" ? "1" : "0",
-        LATITUDE: "2525",
-        LONGITUDE: "2525"
+        LATITUDE: latitude,
+        LONGITUDE: longitude
       };
       if (widget.update) data[ID] = addressList[widget.index].id;
 
       print('response******param--${data.toString()}');
-      Response response =
-          await post(getAddAddressApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      Response response = await post(
+              widget.update ? updateAddressApi : getAddAddressApi,
+              body: data,
+              headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
       print('response***UpdateUser**$headers***${response.body.toString()}');
@@ -625,10 +671,13 @@ class StateAddress extends State<AddAddress> {
         var data = getdata["data"];
 
         if (checkedDefault.toString() == "true") {
-
-          for(User i in addressList )
-            i.isDefault="0";
-
+          for (User i in addressList) {
+            i.isDefault = "0";
+            print("after***before**${i.name}***${i.isDefault}");
+          }
+          selectedAddress = null;
+          addressList[widget.index].isDefault = "1";
+          selectedAddress = widget.index;
         }
         if (widget.update) {
           User value = new User.fromAddress(data[0]);
@@ -637,7 +686,9 @@ class StateAddress extends State<AddAddress> {
           User value = new User.fromAddress(data[0]);
           addressList.add(value);
         }
-
+        if (checkedDefault.toString() == "true") {
+          for (User i in addressList) i.isDefault = "0";
+        }
         Navigator.of(context).pop();
       } else {
         setSnackbar(msg);
@@ -771,6 +822,7 @@ class StateAddress extends State<AddAddress> {
           value: checkedDefault,
           onChanged: (newValue) {
             setState(() {
+              print("value***$newValue");
               checkedDefault = newValue;
             });
           },
@@ -804,5 +856,13 @@ class StateAddress extends State<AddAddress> {
             ),
           ),
         ));
+  }
+
+  Future<void> getCurrentLoc() async {
+    Position position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    latitude = position.latitude.toString();
+    longitude = position.longitude.toString();
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:eshop/Helper/String.dart';
 
 import 'package:eshop/Verify_Otp.dart';
@@ -29,12 +30,14 @@ class _SignUpPageState extends State<SignUp> {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final mobileController = TextEditingController();
-  final ccodeController=TextEditingController();
+  final ccodeController = TextEditingController();
   final passwordController = TextEditingController();
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
-  String name, email, password, mobile, id,countrycode,mobileno;
+  String name, email, password, mobile, id, countrycode, mobileno,countryName;
   bool _isLoading = false;
   bool _isClickable = true;
+
+
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
@@ -65,7 +68,6 @@ class _SignUpPageState extends State<SignUp> {
     }
   }
 
-
   bool validateAndSave() {
     final form = _formkey.currentState;
     if (form.validate()) {
@@ -93,29 +95,28 @@ class _SignUpPageState extends State<SignUp> {
         MOBILE: mobile,
       };
       Response response =
-          await post(getVerifyUserApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(getVerifyUserApi, body: data, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***verifyuser**$headers***${response.body.toString()}');
+      print('response***verifyuser**$mobile***${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
         setSnackbar(msg);
 
         setPrefrence(NAME, name);
-        setPrefrence(PASSWORD,password);
+        setPrefrence(PASSWORD, password);
         setPrefrence(MOBILE, mobile);
         setPrefrence(EMAIL, email);
 
-
         Future.delayed(Duration(seconds: 1)).then((_) {
-          Navigator.pushReplacement(
+          Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => Verify_Otp(
-                        mobileNumber: mobile,
-                      )));
+                    mobileNumber: mobile,
+                  )));
         });
       } else {
         setSnackbar(msg);
@@ -132,273 +133,232 @@ class _SignUpPageState extends State<SignUp> {
     }
   }
 
-  subLogo()
-  {
+  subLogo() {
     return Container(
       padding: EdgeInsets.only(top: 100.0),
       child: Center(
-        child: new Image.asset('assets/images/sublogo.png',fit: BoxFit.fill),
+        child: new Image.asset('assets/images/sublogo.png', fit: BoxFit.fill),
       ),
     );
   }
 
-  registerTxt()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return  Container(
-        width: width,
+  registerTxt() {
+    return Padding(
         padding: EdgeInsets.only(top: 25.0),
-        child:Center(
+        child: Center(
           child: new Text(USER_REGISTRATION,
-              style: Theme.of(context).textTheme.headline6.copyWith(color: lightblack,fontWeight: FontWeight.bold)),
+              style: Theme.of(context)
+                  .textTheme
+                  .headline6
+                  .copyWith(color: lightblack)),
         ));
-
   }
 
-  setUserName()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return Container(
-      width: width,
-      padding: EdgeInsets.only(left: 20.0,right: 20.0,top: 30.0),
-      child:Center(
-        child: TextFormField(
-          keyboardType: TextInputType.text,
-          controller: nameController,
-          validator:validateUserName,
-          onSaved: (String value) {
-            name= value;
-          },
-          decoration: InputDecoration(
-              prefixIcon: Icon(Icons.person_outline),
-              hintText: 'User name',
-              contentPadding:
-              EdgeInsets.fromLTRB(10.0, 10.0,10.0,10.0),
-
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0)
-
-              )
-          ),
-        ),
+  setUserName() {
+    return Padding(
+      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 30.0),
+      child: TextFormField(
+        keyboardType: TextInputType.text,
+        controller: nameController,
+        validator: validateUserName,
+        onSaved: (String value) {
+          name = value;
+        },
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.person_outline),
+            hintText: NAMEHINT_LBL,
+            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
       ),
     );
   }
+  setCountryCode() {
+    double width = MediaQuery.of(context).size.width/1.5;
+    double height = MediaQuery.of(context).size.height;
+    return Padding(
+        padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 30.0),
+        child:  Container(
+            height: height*0.06,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(color: darkgrey)),
+            alignment: Alignment.bottomCenter,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
 
-  setMobileNo()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return Container(
-      width: width,
-      padding: EdgeInsets.only(left: 20.0,right: 20.0,top:15.0),
-      child:Center(
-        child: Row(
-            children: [
-              Container(
-                  width: width/5,
-                  child:TextFormField(
-                    keyboardType: TextInputType.number,
-                    controller:ccodeController,
-                    inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
-                    validator:validateCountryCode,
-                    onSaved: (String value) {
-                      countrycode = value;
+                children: [
+                  CountryCodePicker(
+                    showCountryOnly: false,
+                    showOnlyCountryWhenClosed: false,
+                    showFlag: true,
+                    onInit: (code)
+                    {
+                      print("on init ${code.name} ${code.dialCode} ${code.name}");
+                      countryName=code.name;
+                      print("current name:$countryName");
+                      countrycode = code.toString().replaceFirst("+", "");
+                      print("New Country selected: " + code.toString());
                     },
-                    decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.call),
-                        hintText: '+',
-                        contentPadding:
-                        EdgeInsets.only(left: 20.0),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0)
-
-                        )
-                    ),
-                  )
-              ),
-
-              Expanded(
-                child:TextFormField(
-                  keyboardType: TextInputType.number,
-                  controller:mobileController,
-                  validator:validateMob,
-                  inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
-                  onSaved: (String value) {
-                    mobileno = value;
-                    mobile=countrycode+mobileno;
-                    print('Mobile no:$mobile');
-                  },
-
-                  decoration: InputDecoration(
-                      hintText: 'Mobile number',
-                      contentPadding:
-                      EdgeInsets.fromLTRB(10.0, 10.0,10.0,10.0),
-
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0)
-
-                      )
+                    onChanged:(CountryCode countryCode)
+                    {
+                      countrycode = countryCode.toString().replaceFirst("+", "");
+                      print("New Country selected: " + countryCode.toString());
+                      countryName=countryCode.name;
+                    },
                   ),
-                ),
-              )]
-        ),
+                  Text(countryName==null?countryName="":countryName,textAlign: TextAlign.center)
+                ]
+            ))
+    );
+  }
+
+  setMobileNo() {
+    return Padding(
+      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+      child: TextFormField(
+        keyboardType: TextInputType.number,
+        controller: mobileController,
+        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        validator: validateMob,
+        onSaved: (String value) {
+          mobileno = value;
+          mobile = countrycode + mobileno;
+          print('Mobile no:$mobile');
+        },
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.call),
+            hintText: MOBILEHINT_LBL,
+            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
       ),
     );
   }
 
-  setEmail()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return Container(
-      width: width,
-      padding: EdgeInsets.only(left: 20.0,right: 20.0,top:15.0),
-      child:Center(
-        child: TextFormField(
-          keyboardType: TextInputType.emailAddress,
-          controller: emailController,
-          validator: validateEmail,
-          onSaved: (String value) {
-            email = value;
-          },
-          decoration: InputDecoration(
-
-              prefixIcon: Icon(Icons.email),
-              hintText: 'Email (optional)',
-              contentPadding:
-              EdgeInsets.fromLTRB(10.0, 10.0,10.0,10.0),
-
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0)
-
-              )
-          ),
-        ),
+  setEmail() {
+    return Padding(
+      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 15.0),
+      child: TextFormField(
+        keyboardType: TextInputType.emailAddress,
+        controller: emailController,
+        validator: validateEmail,
+        onSaved: (String value) {
+          email = value;
+        },
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.email),
+            hintText: EMAILHINT_LBL,
+            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
       ),
     );
   }
 
-  setPass()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return  Container(
-      width: width,
-      padding: EdgeInsets.only(left: 20.0,right: 20.0,top: 15.0),
+  setPass() {
+    return Padding(
+      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 15.0),
       child: TextFormField(
         keyboardType: TextInputType.text,
         obscureText: !this._showPassword,
         controller: passwordController,
         validator: validatePass,
-        onSaved: (val)=>password=val,
+        onSaved: (val) => password = val,
         decoration: InputDecoration(
             prefixIcon: Icon(Icons.lock_outline),
-            hintText: 'Set Password',
-            contentPadding:
-            EdgeInsets.fromLTRB(10.0, 10.0,10.0,10.0),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0)
-            )
-        ),
+            hintText: PASSHINT_LBL,
+            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
       ),
     );
   }
 
-  showPass()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return
-      Container(
-          width: width,
-          padding: EdgeInsets.only(left: 20.0,right: 20.0,top: 15.0),
-          child:Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children:<Widget>[
-              Checkbox(value: _showPassword, onChanged: (bool value)
-              {
+  showPass() {
+    return Padding(
+        padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 15.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            Checkbox(
+              value: _showPassword,
+              onChanged: (bool value) {
                 setState(() {
-                  _showPassword=value;
+                  _showPassword = value;
                 });
               },
-              ),
-              Text(SHOW_PASSWORD,
-                  style: Theme.of(context).textTheme.subhead.copyWith(color: lightblack2,fontWeight: FontWeight.bold))
-
-            ],
-          )
-
-      );
+            ),
+            Text(SHOW_PASSWORD,
+                style: Theme.of(context)
+                    .textTheme
+                    .subhead
+                    .copyWith(color: lightblack2))
+          ],
+        ));
   }
 
-  verifyBtn()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return  Container(
-      width: width,
-      padding: EdgeInsets.only(bottom: 10.0,left: 20.0,right: 20.0,top: 20.0),
+  verifyBtn() {
+    double width = MediaQuery.of(context).size.width;
+    return Padding(
+      padding:
+      EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 20.0),
       child: RaisedButton(
         onPressed: () {
-
-          if (_isClickable)
-            validateAndSubmit();
-
-
+          if (_isClickable) validateAndSubmit();
         },
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+        shape:
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
         padding: EdgeInsets.all(0.0),
         child: Ink(
           decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [primary.withOpacity(0.7),primary],
+                colors: [primary.withOpacity(0.7), primary],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-
               ),
-              borderRadius: BorderRadius.circular(30.0)
-          ),
+              borderRadius: BorderRadius.circular(30.0)),
           child: Container(
-            constraints: BoxConstraints(maxWidth: width*0.90, minHeight: 50.0),
+            constraints:
+            BoxConstraints(maxWidth: width * 0.90, minHeight: 50.0),
             alignment: Alignment.center,
-            child: Text(
-                VERIFY_MOBILE_NUMBER,
+            child: Text(VERIFY_MOBILE_NUMBER,
                 textAlign: TextAlign.center,
-                style:Theme.of(context).textTheme.headline6.copyWith(color: white,fontWeight: FontWeight.normal)
-            ),
+                style: Theme.of(context)
+                    .textTheme
+                    .headline6
+                    .copyWith(color: white)),
           ),
         ),
       ),
     );
   }
 
-  loginTxt()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return   Container(
-      width: width,
-      padding: EdgeInsets.only(left: 20.0,right: 20.0,top: 20.0,bottom: 30.0),
-      child:  Row(
+  loginTxt() {
+    return Padding(
+      padding:
+      EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0, bottom: 30.0),
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-
-
         children: <Widget>[
-          Text(
-              ALREADY_A_CUSTOMER,
-              style: Theme.of(context).textTheme.subhead.copyWith(color: lightblack,fontWeight: FontWeight.normal)),
+          Text(ALREADY_A_CUSTOMER,
+              style: Theme.of(context)
+                  .textTheme
+                  .subhead
+                  .copyWith(color: lightblack)),
           InkWell(
-              onTap: (){
-                Navigator.of(context)
-                    .push(MaterialPageRoute(
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context) => Login(),
                 ));
-
               },
               child: Text(
-                LOG_IN,
-                style: Theme.of(context).textTheme.subhead.copyWith(color: primary,
-                    fontWeight: FontWeight.bold,decoration: TextDecoration.underline),
-              )
-
-          )],
+                LOG_IN_LBL,
+                style: Theme.of(context).textTheme.subhead.copyWith(
+                    color: primary, decoration: TextDecoration.underline),
+              ))
+        ],
       ),
-
     );
   }
 
@@ -423,6 +383,7 @@ class _SignUpPageState extends State<SignUp> {
                         children: <Widget>[
                           registerTxt(),
                           setUserName(),
+                          setCountryCode(),
                           setMobileNo(),
                           setEmail(),
                           setPass(),
@@ -450,10 +411,10 @@ class _SignUpPageState extends State<SignUp> {
                     decoration: back(),
                     child: Center(
                         child: Column(
-                      children: <Widget>[
-                        subLogo(),
-                        expandedBottomView(),
-                      ],
-                    ))))));
+                          children: <Widget>[
+                            subLogo(),
+                            expandedBottomView(),
+                          ],
+                        ))))));
   }
 }

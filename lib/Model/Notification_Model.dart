@@ -11,7 +11,6 @@ class Notification_Model {
     String date = json[DATE];
 
     date = DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
-    print('date***$date');
     return new Notification_Model(
         id: json[ID],
         title: json[TITLE],

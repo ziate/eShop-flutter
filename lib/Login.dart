@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:eshop/Forget_Password.dart';
 import 'package:eshop/Helper/String.dart';
 
@@ -8,12 +9,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:eshop/Home.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
 
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
-import 'Model/User.dart';
 import 'SignUp.dart';
 
 class Login extends StatefulWidget {
@@ -22,19 +23,30 @@ class Login extends StatefulWidget {
 }
 
 class _LoginPageState extends State<Login> {
-
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final mobileController = TextEditingController();
-  final ccodeController = TextEditingController();
   final passwordController = TextEditingController();
+  String countryName;
 
   bool _isLoading = false;
   bool _isClickable = true;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   bool visible = false;
-  String password, mobile, username, email, id,countrycode,mobileno,city,area,pincode,address;
-
-
+  String password,
+      mobile,
+      username,
+      email,
+      id,
+      countrycode,
+      mobileno,
+      city,
+      area,
+      pincode,
+      address,
+      latitude,
+      longitude,
+      dob,
+      image;
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
@@ -95,31 +107,24 @@ class _LoginPageState extends State<Login> {
       List data = getdata["data"];
 
       for (var i in data) {
-        id=i[ID];
-        username=i[USERNAME];
-        email=i[EMAIL];
-        mobile=i[MOBILE];
-        city=i[CITY];
-        area=i[AREA];
-        address=i[ADDRESS];
-        pincode=i[PINCODE];
+        id = i[ID];
+        username = i[USERNAME];
+        email = i[EMAIL];
+        mobile = i[MOBILE];
+        city = i[CITY];
+        area = i[AREA];
+        address = i[ADDRESS];
+        pincode = i[PINCODE];
+        latitude = i[LATITUDE];
+        longitude = i[LONGITUDE];
+        dob = i[DOB];
+        image = i[IMAGE];
       }
 
-
       setSnackbar('Login successfully');
-      CUR_USERID=id;
-      saveUserDetail(id, username, email, mobile, city, area, address, pincode);
-
-      /*setPrefrence(ID, id);
-      setPrefrence(USERNAME, username);
-      setPrefrence(MOBILE, mobile);
-      setPrefrence(EMAIL, email);
-      setPrefrence(CITY, city);
-      setPrefrence(AREA, area);
-      setPrefrence(ADDRESS, address);
-      setPrefrence(PINCODE, pincode);*/
-
-
+      CUR_USERID = id;
+      saveUserDetail(id, username, email, mobile, city, area, address, pincode,
+          latitude, longitude, dob, image);
       Future.delayed(Duration(seconds: 1)).then((_) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Home()));
@@ -132,133 +137,109 @@ class _LoginPageState extends State<Login> {
     });
   }
 
-  String validateMob(String value) {
-    if (value.isEmpty) {
-      return "Mobile number required";
-    }
-    if (value.length < 10) {
-      return "Please enter valid mobile number";
-    }
-    return null;
-  }
-
-  String validatepass(String value) {
-    if (value.length == 0)
-      return "Password is Required";
-    else if (value.length <= 4)
-      return "Your password should be more then 6 char long";
-    else
-      return null;
-  }
-
-  subLogo()
-  {
+  subLogo() {
     return Container(
       padding: EdgeInsets.only(top: 150.0),
       child: Center(
-        child: new Image.asset('assets/images/sublogo.png',
-            fit: BoxFit.fill),
+        child: new Image.asset('assets/images/sublogo.png', fit: BoxFit.fill),
       ),
     );
   }
 
-
-
-  welcomeEshopTxt()
-  {
-    return Container(
-        padding: EdgeInsets.only(top: 50.0,
-            left: 20.0,
-            right: 20.0),
+  welcomeEshopTxt() {
+    return Padding(
+        padding: EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
         child: Align(
           alignment: Alignment.centerLeft,
-          child: new Text(WELCOME_ESHOP,
-            style:
-            Theme.of(context).textTheme.headline6.copyWith(color: lightblack,fontWeight: FontWeight.bold),),
+          child: new Text(
+            WELCOME_ESHOP,
+            style: Theme.of(context)
+                .textTheme
+                .headline6
+                .copyWith(color: lightblack, fontWeight: FontWeight.bold),
+          ),
         ));
   }
 
-  eCommerceforBusinessTxt()
-  {
-    return Container(
-        padding: EdgeInsets.only(top: 10.0,
-            left: 20.0,
-            right: 20.0),
+  eCommerceforBusinessTxt() {
+    return Padding(
+        padding: EdgeInsets.only(top: 10.0, left: 20.0, right: 20.0),
         child: Align(
           alignment: Alignment.centerLeft,
           child: new Text(
             ECOMMERCE_APP_FOR_ALL_BUSINESS,
-            style:
-            Theme.of(context).textTheme.subhead.copyWith(color: lightblack2,fontWeight: FontWeight.normal),),
+            style: Theme.of(context)
+                .textTheme
+                .subhead
+                .copyWith(color: lightblack2, fontWeight: FontWeight.normal),
+          ),
         ));
   }
 
-  setMobileNo()
-  {
-    double width = MediaQuery.of(context).size.width ;
-    return Container(
-      width: width,
-      padding: EdgeInsets.only(left: 20.0,right: 20.0,top:30.0),
-      child:Center(
-        child: Row(
-            children: [
-              Container(
-                  width: width/6,
-                  child:TextFormField(
-                    keyboardType: TextInputType.number,
-                    controller:ccodeController,
-                    inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
-                    validator:validateCountryCode,
-                    onSaved: (String value) {
-                      countrycode = value;
-                    },
-                    decoration: InputDecoration(
-                        hintText: '+',
-                        contentPadding:
-                        EdgeInsets.only(left: 20.0),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0)
+  setCountryCode() {
 
-                        )
-                    ),
-                  )
-              ),
+    return Padding(
+        padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 30.0),
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+            height: 45,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(color: darkgrey)),
 
-              Expanded(
-                child:TextFormField(
-                  keyboardType: TextInputType.number,
-                  controller:mobileController,
-                  inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
-                  validator:validateMob,
-                  onSaved: (String value) {
-                    mobileno = value;
-                    mobile=countrycode+mobileno;
-                    print('Mobile no:$mobile');
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CountryCodePicker(
+                  showCountryOnly: false,
+                  showOnlyCountryWhenClosed: false,
+                  alignLeft: true,
+                  showFlag: true,
+                  onInit: (code) {
+                    print("on init ${code.name} ${code.dialCode} ${code.name}");
+                    countryName = code.name;
+                    print("current name:$countryName");
+                    countrycode = code.toString().replaceFirst("+", "");
+                    print("New Country selected: " + code.toString());
+                  },
+                  onChanged: (CountryCode countryCode) {
+                    countrycode = countryCode.toString().replaceFirst("+", "");
+                    print("New Country selected: " + countryCode.toString());
+                    countryName = countryCode.name;
                   },
 
-                  decoration: InputDecoration(
-                      hintText: 'Mobile number',
-                      contentPadding:
-                      EdgeInsets.fromLTRB(10.0, 10.0,10.0,10.0),
-
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0)
-
-                      )
-                  ),
                 ),
-              )]
-        ),
+                 Text(countryName == null ? countryName = "" : countryName)
+              ],
+            )));
+  }
+
+  setMobileNo() {
+    return Padding(
+      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+      child: TextFormField(
+        keyboardType: TextInputType.number,
+        controller: mobileController,
+        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        validator: validateMob,
+        onSaved: (String value) {
+          mobileno = value;
+          mobile = countrycode + mobileno;
+          print('Mobile no:$mobile');
+        },
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.call),
+            hintText: MOBILEHINT_LBL,
+            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
       ),
     );
   }
 
-  setPass()
-  {
-    return Container(
-      padding: EdgeInsets.only(left: 20.0,
-          right: 20.0,
-          top: 20.0),
+  setPass() {
+    return Padding(
+      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
       child: TextFormField(
         keyboardType: TextInputType.text,
         obscureText: true,
@@ -268,159 +249,139 @@ class _LoginPageState extends State<Login> {
           password = value;
         },
         decoration: InputDecoration(
-            hintText: 'Password',
-            contentPadding:
-            EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(
-                    10.0)
-            )
-        ),
+            prefixIcon: Icon(Icons.lock),
+            hintText: PASSHINT_LBL,
+            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
       ),
     );
   }
 
-  forgetPass()
-  {
-    return Container(
-        padding: EdgeInsets.only(bottom: 10.0,
-            left: 20.0,
-            right: 20.0,
-            top: 20.0),
+  forgetPass() {
+    return Padding(
+        padding:
+            EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 20.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
             InkWell(
               onTap: () {
-                setPrefrence(ID,id);
+                setPrefrence(ID, id);
                 setPrefrence(MOBILE, mobile);
-                Navigator.of(context)
-                    .push(MaterialPageRoute(
-                  builder: (BuildContext context) => ForgotPassWord(),
-                ));
-
+                Future.delayed(Duration(seconds: 1)).then((_) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ForgotPassWord()));
+                });
               },
-              child: Text(
-                  FORGOT_PASSWORD,
-                  style:
-                  Theme.of(context).textTheme.subhead.copyWith(color: lightblack,fontWeight: FontWeight.bold)
-              ),
+              child: Text(FORGOT_PASSWORD_LBL,
+                  style: Theme.of(context)
+                      .textTheme
+                      .subhead
+                      .copyWith(color: lightblack)),
             ),
-          ],));
+          ],
+        ));
   }
 
-  loginBtn()
-  {
+  loginBtn() {
     double width = MediaQuery.of(context).size.width;
-
-    return Container(
-      padding: EdgeInsets.only(bottom: 10.0,
-          left: 20.0,
-          right: 20.0,
-          top: 20.0),
+    return Padding(
+      padding:
+          EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 20.0),
       child: RaisedButton(
         onPressed: () {
-
           validateAndSubmit();
-
-
-
         },
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(80.0)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
         padding: EdgeInsets.all(0.0),
         child: Ink(
           decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [primary.withOpacity(0.7),primary],
+                colors: [primary.withOpacity(0.7), primary],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
-              borderRadius: BorderRadius.circular(30.0)
-          ),
+              borderRadius: BorderRadius.circular(30.0)),
           child: Container(
-            constraints: BoxConstraints(
-                maxWidth: width * 0.90,
-                minHeight: 50.0),
+            constraints:
+                BoxConstraints(maxWidth: width * 0.90, minHeight: 50.0),
             alignment: Alignment.center,
             child: Text(
-              LOGIN,
+              LOGIN_LBL,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headline6.copyWith(color: white,fontWeight: FontWeight.normal),
+              style:
+                  Theme.of(context).textTheme.headline6.copyWith(color: white),
             ),
           ),
         ),
       ),
     );
-
   }
 
-  accSignup()
-  {
-    return Container(
-      padding: EdgeInsets.only(bottom: 30.0,
-          left: 20.0,
-          right: 20.0,
-          top: 20.0),
+  accSignup() {
+    return Padding(
+      padding:
+          EdgeInsets.only(bottom: 30.0, left: 20.0, right: 20.0, top: 20.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-              DONT_HAVE_AN_ACC,
-              style: Theme.of(context).textTheme.subhead.copyWith(color: lightblack2,fontWeight: FontWeight.normal)),
+          Text(DONT_HAVE_AN_ACC,
+              style: Theme.of(context)
+                  .textTheme
+                  .subhead
+                  .copyWith(color: lightblack2, fontWeight: FontWeight.normal)),
           InkWell(
               onTap: () {
-
-                Navigator.of(context)
-                    .push(MaterialPageRoute(
-                  builder: (BuildContext context) => SignUp(),
-                ));
-
+                Future.delayed(Duration(seconds: 1)).then((_) {
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => SignUp()));
+                });
               },
               child: Text(
-                SIGN_UP,
-                style: Theme.of(context).textTheme.subhead.copyWith(color: primary,
-                    fontWeight:FontWeight.bold,decoration: TextDecoration.underline),
-              )
-          )
+                SIGN_UP_LBL,
+                style: Theme.of(context).textTheme.subhead.copyWith(
+                    color: primary, decoration: TextDecoration.underline),
+              ))
         ],
       ),
     );
   }
 
-  skipBtn()
-  {
-    return Container(
-        padding: EdgeInsets.only(top: 40.0,right: 20),
+  skipBtn() {
+    return Padding(
+        padding: EdgeInsets.only(top: 40.0, right: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
             InkWell(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          Home()),
-                );
-
+                Future.delayed(Duration(seconds: 1)).then((_) {
+                  Navigator.pushReplacement(
+                      context, MaterialPageRoute(builder: (context) => Home()));
+                });
               },
-              child: Text(
-                SKIP,
-                style: TextStyle(color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20.0),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  SKIP,
+                  style: TextStyle(
+                      color: Colors.white,
+                      decoration: (TextDecoration.underline)),
+                ),
               ),
             ),
-          ],));
-
+          ],
+        ));
   }
 
-  expandedBottomView()
-  {
+  expandedBottomView() {
     return Expanded(
-        flex:1,
-        child:Container(
+        flex: 1,
+        child: Container(
             width: double.infinity,
             child: SingleChildScrollView(
               child: Column(
@@ -429,34 +390,27 @@ class _LoginPageState extends State<Login> {
                     padding: EdgeInsets.only(top: 40.0),
                     child: Card(
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)
-                      ),
-                      margin: EdgeInsets.all(20.0),
+                          borderRadius: BorderRadius.circular(20)),
+                      margin:
+                          EdgeInsets.only(left: 20.0, right: 20.0, top: 30.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-
                           welcomeEshopTxt(),
                           eCommerceforBusinessTxt(),
+                          setCountryCode(),
                           setMobileNo(),
                           setPass(),
                           forgetPass(),
                           loginBtn(),
                           accSignup(),
-
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-
-
-            )
-
-
-        )
-    );
+            )));
   }
 
   @override

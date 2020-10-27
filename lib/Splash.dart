@@ -76,11 +76,9 @@ class _SplashScreen extends State<Splash> {
     bool isFirstTime = await getPrefrenceBool(ISFIRSTTIME);
     print("first ***$isFirstTime");
     if (isFirstTime) {
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Home(),
-          ));
+
+
+     Navigator.pushReplacementNamed(context, "/home");
     } else {
       Navigator.pushReplacement(
           context,

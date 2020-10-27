@@ -19,6 +19,10 @@ import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
 
 class Search extends StatefulWidget {
+  Function updateHome;
+
+  Search(this.updateHome);
+
   @override
   _StateSearch createState() => _StateSearch();
 }
@@ -29,13 +33,18 @@ class _StateSearch extends State<Search> {
 
   bool _isProgress = false;
   List<Product> productList = [];
+  List<Product> tempList = [];
 
+  int offset = 0, offsetSending = 0;
+  int total = 0;
+  bool isLoadingmore = true;
+  ScrollController controller = new ScrollController();
 
   @override
   void initState() {
     super.initState();
     productList.clear();
-
+    controller.addListener(_scrollListener);
   }
 
   @override
@@ -50,9 +59,6 @@ class _StateSearch extends State<Search> {
           backgroundColor: Colors.white,
           title: TextField(
             controller: _controller,
-            /* style: TextStyle(
-              color: Colors.white,
-            ),*/
             autofocus: true,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -66,7 +72,13 @@ class _StateSearch extends State<Search> {
                 borderSide: BorderSide(color: Colors.white),
               ),
             ),
-            onChanged: getProduct,
+            onChanged: (string) {
+              setState(() {
+                _isProgress = true;
+              });
+              print("onchange****$string");
+              getProduct(string, true);
+            },
           ),
         ),
         body: Stack(
@@ -75,13 +87,16 @@ class _StateSearch extends State<Search> {
             showCircularProgress(_isProgress, primary),
           ],
         ));
-    /* : _isLoading
-            ? getProgress()
-            :getNoItem())*/
   }
 
   Widget listItem(int index) {
-    print("desc*****${productList[index].desc}");
+
+    double price = double.parse(
+        productList[index].prVarientList[0].disPrice);
+    if (price == 0)
+      price = double.parse(
+          productList[index].prVarientList[0].price);
+
     return Card(
       child: InkWell(
         child: Row(
@@ -102,8 +117,7 @@ class _StateSearch extends State<Search> {
                   children: <Widget>[
                     Text(
                       productList[index].name,
-                      style: Theme
-                          .of(context)
+                      style: Theme.of(context)
                           .textTheme
                           .subtitle1
                           .copyWith(color: Colors.black),
@@ -121,26 +135,15 @@ class _StateSearch extends State<Search> {
                           ),
                           Text(
                             " " + productList[index].rating,
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .overline,
+                            style: Theme.of(context).textTheme.overline,
                           ),
                           Text(
                             " (" + productList[index].noOfRating + ")",
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .overline,
+                            style: Theme.of(context).textTheme.overline,
                           )
                         ],
                       ),
                     ),
-                    /*     Html(
-                    data: '${productList[index].desc}',
-                      //maxLines: 2,
-                      //  overflow: TextOverflow.ellipsis,
-                    ),*/
                     Row(
                       children: <Widget>[
                         Row(
@@ -175,11 +178,11 @@ class _StateSearch extends State<Search> {
                               },
                             ),
                             Text(
-                              "00",
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .caption,
+                              productList[index]
+
+                                  .prVarientList[0]
+                                  .cartCount,
+                              style: Theme.of(context).textTheme.caption,
                             ),
                             InkWell(
                               child: Container(
@@ -211,29 +214,25 @@ class _StateSearch extends State<Search> {
                         Row(
                           children: <Widget>[
                             Text(
-                              CUR_CURRENCY +
+                              int.parse(productList[index]
+                                  .prVarientList[0]
+                                  .disPrice) !=
+                                  0
+                                  ? CUR_CURRENCY +
                                   "" +
-                                  productList[index].prVarientList[0].price,
-                              style:
-                              Theme
-                                  .of(context)
+                                  productList[index]
+                                      .prVarientList[0]
+                                      .price
+                                  : "",
+                              style: Theme.of(context)
                                   .textTheme
                                   .overline
                                   .copyWith(
-                                decoration: TextDecoration.lineThrough,
-                              ),
+                                  decoration: TextDecoration.lineThrough,
+                                  letterSpacing: 0.7),
                             ),
-                            Text(
-                                " " +
-                                    CUR_CURRENCY +
-                                    " " +
-                                    productList[index]
-                                        .prVarientList[0]
-                                        .disPrice,
-                                style: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .headline6),
+                            Text(" " + CUR_CURRENCY + " " + price.toString(),
+                                style: Theme.of(context).textTheme.headline6),
                           ],
                         )
                       ],
@@ -248,18 +247,37 @@ class _StateSearch extends State<Search> {
         onTap: () {
           FocusScope.of(context).requestFocus(new FocusNode());
           Product model = productList[index];
+
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    Product_Detail(
-                      model: model,
-                      // title: productList[index].name,
-                    )),
+                builder: (context) => Product_Detail(
+                  model: model,
+                  updateParent: updateSearch,
+                  updateHome: widget.updateHome,
+                )),
           );
         },
       ),
     );
+  }
+
+  _scrollListener() {
+    if (controller.offset >= controller.position.maxScrollExtent &&
+        !controller.position.outOfRange) {
+      if (this.mounted) {
+        setState(() {
+          isLoadingmore = true;
+
+          print("load more****limit *****$offsetSending****$total");
+          if (offsetSending < total) getProduct(_controller.text, false);
+        });
+      }
+    }
+  }
+
+  updateSearch() {
+    setState(() {});
   }
 
   Future<void> addToCart(int index) async {
@@ -287,6 +305,8 @@ class _StateSearch extends State<Search> {
         var data = getdata["data"];
 
         String qty = data['total_quantity'];
+        CUR_CART_COUNT = data['cart_count'];
+
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {
         setSnackbar(msg);
@@ -294,6 +314,8 @@ class _StateSearch extends State<Search> {
       setState(() {
         _isProgress = false;
       });
+     // widget.updateHome();
+
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -310,8 +332,7 @@ class _StateSearch extends State<Search> {
       var parameter = {
         PRODUCT_VARIENT_ID: productList[index].prVarientList[0].id,
         USER_ID: CUR_USERID,
-        QTY:
-        (int.parse(productList[index].prVarientList[0].cartCount) - 1)
+        QTY: (int.parse(productList[index].prVarientList[0].cartCount) - 1)
             .toString()
       };
 
@@ -325,9 +346,12 @@ class _StateSearch extends State<Search> {
 
       bool error = getdata["error"];
       String msg = getdata["message"];
+
       if (!error) {
         var data = getdata["data"];
         String qty = data["total_quantity"];
+        CUR_CART_COUNT = getdata['cart_count'];
+
 
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {
@@ -336,6 +360,10 @@ class _StateSearch extends State<Search> {
       setState(() {
         _isProgress = false;
       });
+
+
+     // widget.updateHome();
+
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -362,38 +390,60 @@ class _StateSearch extends State<Search> {
     setState(() {});
   }*/
 
-  Future<void> getProduct(String searchText) async {
+  Future<void> getProduct(String searchText, bool clear) async {
     bool avail = await isNetworkAvailable();
     if (avail) {
       try {
-        var parameter = {SEARCH:searchText};
+        if (clear) {
+          offset = 0;
+          total = 0;
+          offsetSending = 0;
+        }
+        offsetSending=offset;
+        var parameter = {
+          SEARCH: searchText,
+          LIMIT: perPage.toString(),
+          OFFSET: offset.toString(),
+        };
 
-        Response response = await post(
-          getProductApi,
-          headers: headers,
-          body: parameter
-        ).timeout(Duration(seconds: timeOut));
+        if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+        Response response =
+        await post(getProductApi, headers: headers, body: parameter)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        //  print('response***product**$parameter****$headers***${response.body.toString()}');
+
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
-          var data = getdata["data"];
-          List<Product> searchresult =
-          (data as List).map((data) => new Product.fromJson(data)).toList();
-          productList.clear();
-          productList.addAll(searchresult);
+          total = int.parse(getdata["total"]);
+          print(
+              'response***product**$parameter**$total**$offset***${productList.length}***$offsetSending');
+          if ((offsetSending) < total) {
+            var data = getdata["data"];
+            tempList.clear();
+            print("list added********************${tempList.length}");
+            tempList = (data as List)
+                .map((data) => new Product.fromJson(data))
+                .toList();
+            print("list added*******${productList.length}");
+            if (clear) productList.clear();
+            productList.addAll(tempList);
+
+            offset = offset + perPage;
+          }
         } else {
           if (msg != "Products Not Found !") setSnackbar(msg);
+          isLoadingmore = false;
         }
-         setState(() {
+        setState(() {
+          _isProgress = false;
         });
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
-        /* setState(() {
-          _isLoading = false;
-        });*/
+        setState(() {
+          isLoadingmore = false;
+        });
       }
     } else
       setSnackbar(internetMsg);
@@ -415,10 +465,14 @@ class _StateSearch extends State<Search> {
     return (productList.isNotEmpty || _controller.text.isNotEmpty)
         ? ListView.builder(
         shrinkWrap: true,
+        controller: controller,
         physics: BouncingScrollPhysics(),
-        itemCount: productList.length,
+        itemCount:
+        (offset < total) ? productList.length + 1 : productList.length,
         itemBuilder: (context, i) {
-          return listItem(i);
+            return (i == productList.length && isLoadingmore)
+              ? Center(child: CircularProgressIndicator())
+              : listItem(i);
         })
         : Container();
   }

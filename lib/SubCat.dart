@@ -12,8 +12,9 @@ import 'Product_Detail.dart';
 class SubCat extends StatefulWidget {
   String title;
   List<Model> subList = [];
+  final Function updateHome;
 
-  SubCat({this.subList, this.title});
+  SubCat({this.subList, this.title, this.updateHome});
 
   @override
   _SubCatState createState() => _SubCatState(subList: subList);
@@ -40,7 +41,10 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       );
 
   void _addTab(List<Model> subItem, int index) {
+
     print('add****${subItem[index].name}');
+
+
     setState(() {
       _tabs.add({
         // 'text': "Tab ${_tabs.length + 1}",
@@ -62,8 +66,6 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       _tc = _makeNewTabController(0);
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -91,37 +93,53 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   Widget createTabContent(int i, List<Model> subList) {
     List<Model> subItem = subList[i].subList;
 
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          CachedNetworkImage(
-            imageUrl: subList[i].banner,
-            height: 150,
-            width: double.maxFinite,
-            fit: BoxFit.fill,
-            placeholder: (context, url) => Image.asset(
-              "assets/images/sliderph.png",
-              height: 150,
-              fit: BoxFit.fill,
+    return subItem == null || subItem.length == 0
+        ? Column(
+            children: [
+              CachedNetworkImage(
+                imageUrl: subList[i].banner,
+                height: 150,
+                width: double.maxFinite,
+                fit: BoxFit.fill,
+                placeholder: (context, url) => Image.asset(
+                  "assets/images/sliderph.png",
+                  height: 150,
+                  fit: BoxFit.fill,
+                ),
+              ),
+              Expanded(
+                  child:getNoItem())
+            ],
+          )
+        : SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                CachedNetworkImage(
+                  imageUrl: subList[i].banner,
+                  height: 150,
+                  width: double.maxFinite,
+                  fit: BoxFit.fill,
+                  placeholder: (context, url) => Image.asset(
+                    "assets/images/sliderph.png",
+                    height: 150,
+                    fit: BoxFit.fill,
+                  ),
+                ),
+                GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 3,
+                    childAspectRatio: .8,
+                    physics: NeverScrollableScrollPhysics(),
+                    children: List.generate(
+                      subItem.length,
+                      (index) {
+                        return listItem(index, subItem);
+                      },
+                    ))
+              ],
             ),
-          ),
-          subItem == null || subItem.length == 0
-              ? getNoItem()
-              : GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 3,
-                  childAspectRatio: .8,
-                  physics: NeverScrollableScrollPhysics(),
-                  children: List.generate(
-                    subItem.length,
-                    (index) {
-                      return listItem(index, subItem);
-                    },
-                  ))
-        ],
-      ),
-    );
+          );
   }
 
   Widget listItem(int index, List<Model> subItem) {
@@ -168,9 +186,9 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                     builder: (context) => ProductList(
                       name: subItem[index].name,
                       id: subItem[index].id,
+                      updateHome: widget.updateHome,
                     ),
                   ));
-
           },
         ),
       ],

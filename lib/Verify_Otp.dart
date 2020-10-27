@@ -29,11 +29,13 @@ class Verify_Otp extends StatefulWidget {
 
 class _MobileOTPState extends State<Verify_Otp> {
   final dataKey = new GlobalKey();
-  String password, mobile,username,email,id,city,area,pincode,address,mobileno,countrycode,name;
+  String password, mobile,username,email,id,city,area,pincode,address,mobileno,countrycode,name,latitude,longitude,dob;
   String otp;
   bool isCodeSent = false;
   String _verificationId;
+  String signature = "";
   bool _isLoading = false;
+  bool _isClickable=false;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -43,6 +45,10 @@ class _MobileOTPState extends State<Verify_Otp> {
     super.initState();
     getUserDetails();
     _onVerifyCode();
+    getSingature();
+    Future.delayed(Duration(seconds: 60)).then((_) {
+      _isClickable = true;
+    });
   }
 
   getUserDetails() async {
@@ -52,6 +58,40 @@ class _MobileOTPState extends State<Verify_Otp> {
     password = await getPrefrence(PASSWORD);
     setState(() {});
   }
+  Future<void> getSingature() async {
+    signature = await SmsAutoFill().getAppSignature;
+    await SmsAutoFill().listenForCode;
+  }
+
+  Future<void> checkNetworkOtp() async {
+    bool avail = await isNetworkAvailable();
+    if (avail) {
+      if (_isClickable)
+        _onVerifyCode();
+      else {
+        setSnackbar('Request new OTP after 60 seconds');
+      }
+    } else {
+      setSnackbar(internetMsg);
+
+      Future.delayed(Duration(seconds: 60)).then((_) async {
+        bool avail = await isNetworkAvailable();
+        if (avail) {
+          if (_isClickable)
+            _onVerifyCode();
+          else {
+            setSnackbar('Request new OTP after 60 seconds');
+          }
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          setSnackbar(somethingMSg);
+        }
+      });
+    }
+  }
+
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
@@ -105,19 +145,14 @@ class _MobileOTPState extends State<Verify_Otp> {
           area=i[AREA];
           address=i[ADDRESS];
           pincode=i[PINCODE];
+          latitude=i[LATITUDE];
+          longitude=i[LONGITUDE];
+          dob=i[DOB];
         }
         CUR_USERID=id;
-        saveUserDetail(id, name, email, mobile, city, area, address, pincode);
-        /*setPrefrence(ID, id);
-        setPrefrence(USERNAME, name);
-        setPrefrence(MOBILE, mobile);
-        setPrefrence(EMAIL, email);
-        setPrefrence(CITY, city);
-        setPrefrence(AREA, area);
-        setPrefrence(ADDRESS, address);
-        setPrefrence(PINCODE, pincode);*/
+        saveUserDetail(id, name, email, mobile, city, area, address, pincode,latitude,longitude,dob,"");
         Future.delayed(Duration(seconds: 1)).then((_) {
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => Home()),
@@ -141,7 +176,7 @@ class _MobileOTPState extends State<Verify_Otp> {
         (AuthCredential phoneAuthCredential) {
       _firebaseAuth
           .signInWithCredential(phoneAuthCredential)
-          .then((AuthResult value) {
+          .then((UserCredential value) {
         if (value.user != null) {
           checkNetwork();
 
@@ -153,7 +188,7 @@ class _MobileOTPState extends State<Verify_Otp> {
       });
     };
     final PhoneVerificationFailed verificationFailed =
-        (AuthException authException) {
+        (FirebaseAuthException authException) {
       setSnackbar(authException.message);
       print(authException.message);
       setState(() {
@@ -192,7 +227,7 @@ class _MobileOTPState extends State<Verify_Otp> {
 
     _firebaseAuth
         .signInWithCredential(_authCredential)
-        .then((AuthResult value) {
+        .then((UserCredential value) {
       if (value.user != null) {
         checkNetwork();
       } else {
@@ -213,44 +248,39 @@ class _MobileOTPState extends State<Verify_Otp> {
   }
 
   monoVarifyText() {
-    return Container(
+    return Padding(
         padding: EdgeInsets.only(top: 70.0, left: 20.0, right: 20.0),
         child: Center(
           child: new Text(
               MOBILE_NUMBER_VARIFICATION,
-              style: Theme.of(context).textTheme.headline6.copyWith(color: lightblack,fontWeight: FontWeight.bold)
+              style: Theme.of(context).textTheme.headline6.copyWith(color: lightblack)
           ),
         ));
   }
 
   otpText() {
-    return Container(
+    return Padding(
         padding: EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
-        child: Align(
-          alignment: Alignment.center,
+        child: Center(
           child: new Text(
               ENTER_YOUR_OTP_SENT_TO,
-              style: Theme.of(context).textTheme.headline6.copyWith(color: lightblack,fontWeight: FontWeight.normal)
+              style: Theme.of(context).textTheme.headline6.copyWith(color: lightblack)
           ),
         ));
   }
 
   mobText() {
-    return Container(
-      padding:
-      EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0, top: 10.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text("+$mobile",
-              style: Theme.of(context).textTheme.headline6.copyWith(color: lightblack,fontWeight: FontWeight.bold)),
-        ],
+    return Padding(
+      padding: EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0, top: 10.0),
+      child: Center(
+        child:Text("+$mobile",
+              style: Theme.of(context).textTheme.headline6.copyWith(color: lightblack)),
       ),
     );
   }
 
   otpLayout() {
-    return Container(
+    return Padding(
         padding: EdgeInsets.only(left: 80.0, right: 80.0, top: 30.0),
         child: Center(
           child: PinFieldAutoFill(
@@ -271,9 +301,8 @@ class _MobileOTPState extends State<Verify_Otp> {
   verifyBtn() {
     double width = MediaQuery.of(context).size.width;
 
-    return Container(
-      padding:
-      EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 60.0),
+    return Padding(
+      padding: EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 60.0),
       child: RaisedButton(
         onPressed: () {
           if (otp.length == 6) {
@@ -300,7 +329,7 @@ class _MobileOTPState extends State<Verify_Otp> {
             child: Text(
                 VERIFY_AND_PROCEED,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headline6.copyWith(color: white,fontWeight: FontWeight.normal)
+                style: Theme.of(context).textTheme.headline6.copyWith(color: white)
             ),
           ),
         ),
@@ -309,9 +338,8 @@ class _MobileOTPState extends State<Verify_Otp> {
   }
 
   resendText() {
-    return Container(
-      padding:
-      EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0, top: 25.0),
+    return Padding(
+      padding: EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0, top: 25.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -320,12 +348,12 @@ class _MobileOTPState extends State<Verify_Otp> {
                 fontWeight: FontWeight.normal),),
           InkWell(
               onTap: () {
-                _onVerifyCode();
+               checkNetworkOtp();
               },
               child: Text(
                 RESEND_OTP,
                 style: Theme.of(context).textTheme.subhead.copyWith(color: primary,
-                    fontWeight: FontWeight.bold,decoration: TextDecoration.underline),
+                    decoration: TextDecoration.underline),
               ))
         ],
       ),

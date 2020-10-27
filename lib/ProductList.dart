@@ -21,8 +21,10 @@ import 'Search.dart';
 
 class ProductList extends StatefulWidget {
   final String name, id;
+  final Function updateHome;
 
-  const ProductList({Key key, this.id, this.name}) : super(key: key);
+  const ProductList({Key key, this.id, this.name, this.updateHome})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => StateProduct();
@@ -234,12 +236,18 @@ class StateProduct extends State<ProductList> {
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
                       model: model,
+                      updateParent: updateProductList,
+                      updateHome: widget.updateHome,
                       //  title: productList[index].name,
                     )),
           );
         },
       ),
     );
+  }
+
+  updateProductList() {
+    setState(() {});
   }
 
   Future<void> getProduct() async {
@@ -336,7 +344,8 @@ class StateProduct extends State<ProductList> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Search(),
+                    builder: (context) => Search(widget
+                    .updateHome),
                   ));
             }),
         IconButton(
@@ -481,6 +490,8 @@ class StateProduct extends State<ProductList> {
         var data = getdata["data"];
 
         String qty = data['total_quantity'];
+        CUR_CART_COUNT = data['cart_count'];
+
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {
         setSnackbar(msg);
@@ -488,6 +499,8 @@ class StateProduct extends State<ProductList> {
       setState(() {
         _isProgress = false;
       });
+      widget.updateHome();
+
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -521,7 +534,7 @@ class StateProduct extends State<ProductList> {
       if (!error) {
         var data = getdata["data"];
         String qty = data["total_quantity"];
-
+        CUR_CART_COUNT = data['cart_count'];
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {
         setSnackbar(msg);
@@ -529,6 +542,8 @@ class StateProduct extends State<ProductList> {
       setState(() {
         _isProgress = false;
       });
+
+      widget.updateHome();
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -571,14 +586,15 @@ class StateProduct extends State<ProductList> {
                   children: [
                     Container(
                         width: MediaQuery.of(context).size.width * 0.3,
-                        child: ListView.builder(   shrinkWrap: true,
+                        child: ListView.builder(
+                            shrinkWrap: true,
                             scrollDirection: Axis.horizontal,
-                            itemCount: 2,itemBuilder:(context, index) {
-                          return Text('title');
+                            itemCount: 2,
+                            itemBuilder: (context, index) {
+                              return Text('title');
                             })),
                   ],
                 ),
-
               ],
             );
           });

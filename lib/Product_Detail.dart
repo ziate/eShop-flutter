@@ -15,15 +15,21 @@ import 'Helper/Constant.dart';
 
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
+import 'Home.dart';
 import 'Login.dart';
 import 'Model/Section_Model.dart';
 import 'Model/User.dart';
 import 'Product_Preview.dart';
+import 'Favorite.dart';
 
 class Product_Detail extends StatefulWidget {
   final Product model;
 
-  const Product_Detail({Key key, this.model}) : super(key: key);
+   final Function updateHome;
+  final Function updateParent;
+
+  const Product_Detail({Key key, this.model, this.updateParent, this.updateHome})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => StateItem();
@@ -45,6 +51,10 @@ class StateItem extends State<Product_Detail> {
   bool isLoadingmore = true;
   ScrollController controller = new ScrollController();
   List<User> tempList = [];
+  bool _isCommentEnable = false, _showComment = false;
+  TextEditingController _commentC = new TextEditingController();
+  double initialRate = 0;
+
 
   @override
   void initState() {
@@ -54,6 +64,7 @@ class StateItem extends State<Product_Detail> {
     sliderList.addAll(widget.model.otherImage);
     controller.addListener(_scrollListener);
     getReview();
+
   }
 
   @override
@@ -114,7 +125,6 @@ class StateItem extends State<Product_Detail> {
                             "assets/images/sliderph.png",
                             height: height,
                           ),
-
                           height: height,
                           width: double.maxFinite,
                         )),
@@ -159,12 +169,15 @@ class StateItem extends State<Product_Detail> {
           Align(
               alignment: Alignment.topRight,
               child: widget.model.isFavLoading
-                  ? Container(
-                      height: 10,
-                      width: 10,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 0.7,
-                      ))
+                  ? Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                          height: 10,
+                          width: 10,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 0.7,
+                          )),
+                    )
                   : InkWell(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -226,7 +239,6 @@ class StateItem extends State<Product_Detail> {
                       height: width,
                       width: width,
                     ),
-                    fit: BoxFit.fill,
                     height: width,
                     width: width,
                   )),
@@ -337,18 +349,22 @@ class StateItem extends State<Product_Detail> {
     //Html(data:widget.model.productList[widget.proPos].desc);
   }
 
-  Future<void> setRating(double rating) async {
+  Future<void> setRating(double rating, String comment) async {
     bool avail = await isNetworkAvailable();
     if (avail) {
       try {
         // print("product****${widget.id}");
 
+        setState(() {
+          _isLoading = true;
+        });
         var parameter = {
           USER_ID: CUR_USERID,
           PRODUCT_ID: widget.model.id,
-          RATING: rating.toString(),
+          COMMENT: comment,
         };
 
+        if (rating != 0) parameter[RATING] = rating.toString();
         Response response =
             await post(setRatingApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
@@ -357,9 +373,34 @@ class StateItem extends State<Product_Detail> {
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
+        if (!error) {
+          _showComment = true;
+          reviewList.clear();
+          offset = 0;
+
+          var data = getdata["data"]["product_rating"];
+          widget.model.noOfRating = getdata["data"]["no_of_rating"];
+
+          tempList =
+              (data as List).map((data) => new User.forReview(data)).toList();
+
+          reviewList.addAll(tempList);
+
+          offset = offset + perPage;
+        } else {
+          initialRate = 0;
+        }
+        _isCommentEnable = false;
+        _commentC.text = "";
+        setState(() {
+          _isLoading = false;
+        });
+
         String msg = getdata["message"];
 
         setSnackbar(msg);
+
+        WidgetsBinding.instance.addPostFrameCallback(_onLayoutDone);
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
       }
@@ -489,6 +530,10 @@ class StateItem extends State<Product_Detail> {
                         onSelected: att.length == 1
                             ? null
                             : (bool selected) {
+
+
+
+
                                 setState(() {
                                   available = false;
                                   _selectedIndex[index] = selected ? i : null;
@@ -500,6 +545,9 @@ class StateItem extends State<Product_Detail> {
                                     List<String> attId = widget
                                         .model.attributeList[i].id
                                         .split(',');
+
+                                  //  print("valuae***${attId[_selectedIndex[i]}");
+
                                     selectedId.add(
                                         int.parse(attId[_selectedIndex[i]]));
                                   }
@@ -603,8 +651,7 @@ class StateItem extends State<Product_Detail> {
   applyVarient() {
     Navigator.of(context).pop();
     setState(() {
-      _selVarient=_oldSelVarient;
-
+      _selVarient = _oldSelVarient;
     });
   }
 
@@ -635,10 +682,13 @@ class StateItem extends State<Product_Detail> {
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
+
+          var data = getdata["data"];
+          CUR_CART_COUNT = data['cart_count'];
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Cart(),
+              builder: (context) => Cart(null),
             ),
           );
         } else {
@@ -647,6 +697,9 @@ class StateItem extends State<Product_Detail> {
         setState(() {
           _isProgress = false;
         });
+
+        widget.updateParent();
+        widget.updateHome();
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
         setState(() {
@@ -662,20 +715,25 @@ class StateItem extends State<Product_Detail> {
   }
 
   _ratingReview() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
-      child: Text(
-        'Ratings & Reviews',
-        style: Theme.of(context).textTheme.subtitle1.copyWith(color: primary),
-      ),
-    );
+    return (widget.model.isPurchased == "true" || reviewList.length > 0)
+        ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+            child: Text(
+              'Ratings & Reviews',
+              style: Theme.of(context)
+                  .textTheme
+                  .subtitle1
+                  .copyWith(color: primary),
+            ),
+          )
+        : Container();
   }
 
   _rating() {
     return widget.model.isPurchased == "true"
         ? Center(
             child: RatingBar(
-              initialRating: 0,
+              initialRating: initialRate,
               minRating: 1,
               direction: Axis.horizontal,
               allowHalfRating: true,
@@ -688,8 +746,7 @@ class StateItem extends State<Product_Detail> {
               ),
               onRatingUpdate: (rating) {
                 //print(rating);
-
-                setRating(rating);
+                setRating(rating, "");
               },
             ),
           )
@@ -698,7 +755,11 @@ class StateItem extends State<Product_Detail> {
 
   Future<void> getReview() async {
     try {
-      var parameter = {PRODUCT_ID: widget.model.id};
+      var parameter = {
+        PRODUCT_ID: widget.model.id,
+        LIMIT: perPage.toString(),
+        OFFSET: offset.toString(),
+      };
 
       Response response =
           await post(getRatingApi, body: parameter, headers: headers)
@@ -757,6 +818,9 @@ class StateItem extends State<Product_Detail> {
       String msg = getdata["message"];
       if (!error) {
         widget.model.isFav = "1";
+        widget.updateParent();
+
+      //  home.updateHomepage();
       } else {
         setSnackbar(msg);
       }
@@ -786,6 +850,13 @@ class StateItem extends State<Product_Detail> {
       String msg = getdata["message"];
       if (!error) {
         widget.model.isFav = "0";
+        widget.updateParent();
+
+        favList.removeWhere((item) =>
+            item.productList[0].prVarientList[0].id ==
+            widget.model.prVarientList[0].id);
+
+       // home.updateHomepage();
       } else {
         setSnackbar(msg);
       }
@@ -833,7 +904,7 @@ class StateItem extends State<Product_Detail> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Cart(),
+                builder: (context) => Cart(null),
               ),
             );
           },
@@ -908,20 +979,51 @@ class StateItem extends State<Product_Detail> {
   }
 
   _writeReview() {
-    return widget.model.isPurchased == "true"
-        ? TextField(
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-              prefixIcon: Icon(Icons.search, color: primary),
-              hintText: 'Write your review..',
-              hintStyle: TextStyle(color: primary.withOpacity(0.5)),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
+    return widget.model.isPurchased == "true" && _showComment
+        ? Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _commentC,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  onChanged: (String val) {
+                    if (_commentC.text.trim().isNotEmpty) {
+                      setState(() {
+                        _isCommentEnable = true;
+                      });
+                    } else {
+                      setState(() {
+                        _isCommentEnable = false;
+                      });
+                    }
+                  },
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                    prefixIcon: Icon(Icons.rate_review, color: primary),
+                    hintText: 'Write your review..',
+                    hintStyle: TextStyle(color: primary.withOpacity(0.5)),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                  ),
+                ),
               ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-            ),
+              SizedBox(
+                height: 30,
+                child: IconButton(
+                    icon: Icon(
+                      Icons.send,
+                      color: _isCommentEnable ? primary : Colors.transparent,
+                    ),
+                    onPressed: () => _isCommentEnable == true
+                        ? setRating(0, _commentC.text)
+                        : null),
+              )
+            ],
           )
         : Container();
   }
@@ -986,5 +1088,13 @@ class StateItem extends State<Product_Detail> {
         });
       }
     }
+  }
+
+  void _onLayoutDone(Duration timeStamp) {
+    controller.animateTo(
+      controller.position.maxScrollExtent,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.fastOutSlowIn,
+    );
   }
 }

@@ -17,6 +17,7 @@ import 'Cart.dart';
 import 'Helper/Color.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
+import 'Order_Success.dart';
 
 class CheckOut extends StatefulWidget {
   @override
@@ -26,9 +27,14 @@ class CheckOut extends StatefulWidget {
 }
 
 List<User> addressList = [];
-String latitude="200", longitude="2424", selAddress, payMethod, selTime, selDate;
+String latitude, longitude, selAddress, payMethod, selTime, selDate, promocode;
 int selectedTime, selectedDate, selectedMethod;
-bool _isTimeSlot;
+bool _isTimeSlot,
+    _isPromoValid = false,
+    _isUseWallet = false,
+    _isPayLayShow = true;
+double promoAmt = 0;
+double remWalBal, usedBal = 0;
 
 class StateCheckout extends State<CheckOut> {
   int _curIndex = 0;
@@ -38,8 +44,13 @@ class StateCheckout extends State<CheckOut> {
   @override
   void initState() {
     super.initState();
-
-    fragments = [Delivery(), Address(), Payment()];
+    promoAmt = 0;
+    remWalBal = 0;
+    usedBal = 0;
+    _isPromoValid = false;
+    _isUseWallet = false;
+    _isPayLayShow = true;
+    fragments = [Delivery(updateCheckout), Address(), Payment(updateCheckout)];
   }
 
   @override
@@ -58,10 +69,10 @@ class StateCheckout extends State<CheckOut> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: MediaQuery.of(context).size.width * 0.6,
-              child: Flexible(
-                fit: FlexFit.loose,
+            Flexible(
+              fit: FlexFit.loose,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.6,
                 child: Text(
                   TOTAL + " : " + CUR_CURRENCY + " " + totalPrice.toString(),
                   textAlign: TextAlign.left,
@@ -183,15 +194,17 @@ class StateCheckout extends State<CheckOut> {
     );
   }
 
+  updateCheckout() {
+    setState(() {});
+  }
 
-  confirmOrder(){
-
-   return CupertinoAlertDialog(
+  confirmOrder() {
+    return CupertinoAlertDialog(
         title: Text(
           CONFIRM_ORDER,
           style: Theme.of(context).textTheme.headline6.copyWith(
-            color: lightblack,
-          ),
+                color: lightblack,
+              ),
           textAlign: TextAlign.center,
         ),
         actions: [
@@ -216,11 +229,8 @@ class StateCheckout extends State<CheckOut> {
                     .copyWith(color: primary),
                 textAlign: TextAlign.center,
               ),
-              onPressed: () {
-
-              }),
+              onPressed: () {}),
         ]);
-
   }
 
   setSnackbar(String msg) {
@@ -505,10 +515,17 @@ class StateCheckout extends State<CheckOut> {
         PAYMENT_METHOD: payMethod,
         ADDRESS: selAddress,
         DELIVERY_DATE: selDate,
+        ISWALLETBALUSED: _isUseWallet ? "1" : "0",
+        WALLET_BAL_USED: usedBal.toString(),
       };
 
       if (_isTimeSlot) parameter[DELIVERY_TIME] = selTime;
-print("param****${parameter.toString()}");
+      if (_isPromoValid) {
+        parameter[PROMOCODE] = promocode;
+        parameter[PROMO_DIS] = promoAmt.toString();
+      }
+
+      print("param****${parameter.toString()}");
       Response response =
           await post(placeOrderApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
@@ -518,10 +535,12 @@ print("param****${parameter.toString()}");
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
-        var data = getdata["data"];
-
-        addressList =
-            (data as List).map((data) => new User.fromAddress(data)).toList();
+        CUR_CART_COUNT = "0";
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (BuildContext context) => OrderSuccess()),
+            ModalRoute.withName('/home'));
       } else {
         //if (msg != 'Cart Is Empty !') setSnackbar(msg);
       }
@@ -535,6 +554,10 @@ print("param****${parameter.toString()}");
 }
 
 class Delivery extends StatefulWidget {
+  Function update;
+
+  Delivery(this.update);
+
   @override
   State<StatefulWidget> createState() {
     return StateDelivery();
@@ -542,148 +565,33 @@ class Delivery extends StatefulWidget {
 }
 
 class StateDelivery extends State<Delivery> {
+  TextEditingController promoC = new TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  bool _isProgress = false;
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    PROMOCODE,
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.refresh)
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      contentPadding:
-                          EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                      hintText: 'Promo Code..',
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: primary),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: primary),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: RaisedButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Apply',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    color: primary,
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10.0, top: 20),
-              child: Text(
-                ORDER_SUMMARY,
-                style: Theme.of(context).textTheme.headline6,
-              ),
-            ),
-            Row(
-              children: [
-                Expanded(flex: 5, child: Text(PRODUCTNAME)),
-                Expanded(flex: 1, child: Text(QUANTITY)),
-                Expanded(flex: 2, child: Text(PRICE_LBL)),
-                Expanded(flex: 2, child: Text(SUBTOTAL)),
-              ],
-            ),
-            Divider(),
-            ListView.builder(
-                shrinkWrap: true,
-                itemCount: cartList.length,
-                physics: NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return orderItem(index);
-                }),
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 28, bottom: 8.0, left: 35, right: 35),
-              child: Row(
-                children: <Widget>[
-                  Text(
-                    ORIGINAL_PRICE,
-                  ),
-                  Spacer(),
-                  Text(CUR_CURRENCY + "$oriPrice")
-                ],
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.only(left: 35, right: 35, top: 8, bottom: 8),
-              child: Row(
-                children: <Widget>[
-                  Text(
-                    DELIVERY_CHARGE,
-                  ),
-                  Spacer(),
-                  Text(CUR_CURRENCY + " $delCharge")
-                ],
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.only(left: 35, right: 35, top: 8, bottom: 8),
-              child: Row(
-                children: <Widget>[
-                  Text(
-                    TAXPER + "($taxPer %)",
-                  ),
-                  Spacer(),
-                  Text(CUR_CURRENCY + " $taxAmt")
-                ],
-              ),
-            ),
-            Divider(
-              color: Colors.black,
-              thickness: 1,
-              indent: 20,
-              endIndent: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 8.0, bottom: 8, left: 35, right: 35),
-              child: Row(
-                children: <Widget>[
-                  Text(
-                    Total_PRICE,
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle1
-                        .copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Spacer(),
-                  Text(
-                    CUR_CURRENCY + " $totalPrice",
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle1
-                        .copyWith(fontWeight: FontWeight.bold),
-                  )
-                ],
-              ),
-            ),
-          ],
-        ));
+    return Scaffold(
+      key: _scaffoldKey,
+      body: Stack(
+        children: <Widget>[
+          _deliveryContent(),
+          showCircularProgress(_isProgress, primary),
+        ],
+      ),
+    );
+  }
+
+  setSnackbar(String msg) {
+    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      content: new Text(
+        msg,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.black),
+      ),
+      backgroundColor: Colors.white,
+      elevation: 1.0,
+    ));
   }
 
   orderItem(int index) {
@@ -691,13 +599,290 @@ class StateDelivery extends State<Delivery> {
       padding: const EdgeInsets.symmetric(vertical: 3.0),
       child: Row(
         children: [
-          Expanded(flex: 5, child: Text(cartList[index].productList[0].name)),
-          Expanded(flex: 1, child: Text(cartList[index].qty)),
-          Expanded(flex: 2, child: Text(cartList[index].perItemTotal)),
-          Expanded(flex: 2, child: Text(cartList[index].perItemTotal)),
+          Expanded(
+              flex: 5,
+              child: Text(
+                cartList[index].productList[0].name,
+              )),
+          Expanded(
+              flex: 1,
+              child: Text(
+                cartList[index].qty,
+                textAlign: TextAlign.end,
+              )),
+          Expanded(
+              flex: 2,
+              child: Text(
+                cartList[index].perItemTotal,
+                textAlign: TextAlign.end,
+              )),
+          Expanded(
+              flex: 2,
+              child: Text(
+                cartList[index].perItemTotal,
+                textAlign: TextAlign.end,
+              )),
         ],
       ),
     );
+  }
+
+  Future<void> validatePromo() async {
+    try {
+      setState(() {
+        _isProgress = true;
+      });
+
+      var parameter = {
+        USER_ID: CUR_USERID,
+        PROMOCODE: promoC.text,
+        FINAL_TOTAL: totalPrice.toString()
+      };
+      Response response =
+          await post(validatePromoApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+      print('response***promo*****${response.body.toString()}');
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        var data = getdata["data"][0];
+
+        String disType = data["discount_type"];
+        String dis = data["discount"];
+
+        promocode = data["promo_code"];
+        if (disType.toLowerCase() == "percentage") {
+          promoAmt = (oriPrice * double.parse(dis)) / 100;
+        } else if (disType.toLowerCase() == "amount") {
+          promoAmt = double.parse(dis);
+        }
+        totalPrice = totalPrice - promoAmt;
+
+        _isPromoValid = true;
+        setSnackbar(PROMO_SUCCESS);
+      } else {
+        setSnackbar(msg);
+      }
+      setState(() {
+        _isProgress = false;
+      });
+    } on TimeoutException catch (_) {
+      setSnackbar(somethingMSg);
+    }
+  }
+
+  _deliveryContent() {
+    return SingleChildScrollView(
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        PROMOCODE_LBL,
+                      ),
+                    ),
+                    Spacer(),
+                    InkWell(
+                      child: Icon(Icons.refresh),
+                      onTap: () {
+                        if (promoAmt != 0) {
+                          setState(() {
+                            totalPrice = totalPrice + promoAmt;
+                            promoC.text = '';
+                            _isPromoValid = false;
+                            promoAmt = 0;
+                            promocode = '';
+                            widget.update();
+                          });
+                        }
+                      },
+                    )
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: promoC,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.all(
+                            10,
+                          ),
+                          hintText: 'Promo Code..',
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: primary),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: primary),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: RaisedButton(
+                        onPressed: () {
+                          if (promoC.text.trim().isEmpty)
+                            setSnackbar(ADD_PROMO);
+                          else
+                            validatePromo();
+                        },
+                        child: Text(
+                          'Apply',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        color: primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 15.0, top: 10),
+                  child: Text(
+                    ORDER_SUMMARY,
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(flex: 5, child: Text(PRODUCTNAME)),
+                    Expanded(
+                        flex: 1,
+                        child: Text(
+                          QUANTITY_LBL,
+                          textAlign: TextAlign.end,
+                        )),
+                    Expanded(
+                        flex: 2,
+                        child: Text(
+                          PRICE_LBL,
+                          textAlign: TextAlign.end,
+                        )),
+                    Expanded(
+                        flex: 2,
+                        child: Text(
+                          SUBTOTAL,
+                          textAlign: TextAlign.end,
+                        )),
+                  ],
+                ),
+                Divider(),
+                ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: cartList.length,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      return orderItem(index);
+                    }),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 28, bottom: 8.0, left: 35, right: 35),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        SUB,
+                      ),
+                      Spacer(),
+                      Text(CUR_CURRENCY + "$oriPrice")
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 35, right: 35, top: 8, bottom: 8),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        DELIVERY_CHARGE,
+                      ),
+                      Spacer(),
+                      Text(CUR_CURRENCY + " $delCharge")
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 35, right: 35, top: 8, bottom: 8),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        TAXPER + "($taxPer %)",
+                      ),
+                      Spacer(),
+                      Text(CUR_CURRENCY + " $taxAmt")
+                    ],
+                  ),
+                ),
+                _isPromoValid
+                    ? Padding(
+                        padding: const EdgeInsets.only(
+                            left: 35, right: 35, top: 8, bottom: 8),
+                        child: Row(
+                          children: <Widget>[
+                            Text(
+                              PROMO_LBL + " ($promocode)",
+                            ),
+                            Spacer(),
+                            Text(CUR_CURRENCY + " $promoAmt")
+                          ],
+                        ),
+                      )
+                    : Container(),
+                Divider(
+                  color: Colors.black,
+                  thickness: 1,
+                  indent: 20,
+                  endIndent: 20,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 8.0, bottom: 8, left: 35, right: 35),
+                  child: Row(
+                    children: <Widget>[
+                      Text(
+                        TOTAL_PRICE,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            .copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      Spacer(),
+                      Text(
+                        CUR_CURRENCY + " $totalPrice",
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            .copyWith(fontWeight: FontWeight.bold),
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ));
   }
 }
 
@@ -707,10 +892,10 @@ class Address extends StatefulWidget {
     return StateAddress();
   }
 }
-
+int selectedAddress;
 class StateAddress extends State<Address> {
   bool _isLoading = true;
-  int selectedAddress;
+
 
   @override
   void initState() {
@@ -735,6 +920,10 @@ class StateAddress extends State<Address> {
                           physics: BouncingScrollPhysics(),
                           itemCount: addressList.length,
                           itemBuilder: (context, index) {
+
+                            print("default***b${addressList[index].isDefault}***${addressList[index].name}");
+
+
                             return addressItem(index);
                           }),
             ],
@@ -765,7 +954,7 @@ class StateAddress extends State<Address> {
   }
 
   addressItem(int index) {
-    print("default***${addressList[index].isDefault}");
+    print("default***${addressList[index].isDefault}***${addressList[index].name}**$selectedAddress");
     if (addressList[index].isDefault == "1") {
       selectedAddress = index;
       selAddress = addressList[index].address +
@@ -936,6 +1125,10 @@ class StateAddress extends State<Address> {
 }
 
 class Payment extends StatefulWidget {
+  Function update;
+
+  Payment(this.update);
+
   @override
   State<StatefulWidget> createState() {
     return StatePayment();
@@ -966,85 +1159,149 @@ class StatePayment extends State<Payment> {
   Widget build(BuildContext context) {
     return _isLoading
         ? getProgress()
-        : Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            PREFERED_TIME,
-                            style: Theme.of(context).textTheme.headline6,
+        : SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Card(
+                  child: CUR_BALANCE != "0"
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: CheckboxListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.all(0),
+                            value: _isUseWallet,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _isUseWallet = value;
+
+                                if (value) {
+                                  if (totalPrice <= double.parse(CUR_BALANCE)) {
+                                    remWalBal =
+                                        double.parse(CUR_BALANCE) - totalPrice;
+
+                                    usedBal = totalPrice;
+                                    payMethod = "Wallet";
+                                    _isPayLayShow = false;
+                                  } else {
+                                    remWalBal = 0;
+                                    usedBal = double.parse(CUR_BALANCE);
+                                    _isPayLayShow = true;
+                                  }
+
+                                  totalPrice = totalPrice - usedBal;
+                                } else {
+                                  totalPrice = totalPrice + usedBal;
+                                  remWalBal = double.parse(CUR_BALANCE);
+                                  payMethod = null;
+                                  usedBal = 0;
+                                  _isPayLayShow = true;
+                                }
+
+                                widget.update();
+                              });
+                            },
+                            title: Text(
+                              USE_WALLET,
+                              style: TextStyle(fontSize: 15, color: primary),
+                            ),
+                            subtitle: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Text(
+                                _isUseWallet
+                                    ? REMAIN_BAL +
+                                        " : " +
+                                        CUR_CURRENCY +
+                                        " " +
+                                        remWalBal.toString()
+                                    : TOTAL_BAL +
+                                        " : " +
+                                        CUR_CURRENCY +
+                                        " " +
+                                        CUR_BALANCE,
+                                style: TextStyle(
+                                    fontSize: 15, color: Colors.black),
+                              ),
+                            ),
                           ),
+                        )
+                      : Container(),
+                ),
+                Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          PREFERED_TIME,
+                          style: Theme.of(context).textTheme.headline6,
                         ),
-                        Container(
-                          height: 70,
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: ListView.builder(
+                      ),
+                      Container(
+                        height: 70,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: int.parse(allowDay),
+                            itemBuilder: (context, index) {
+                              return dateCell(index);
+                            }),
+                      ),
+                      Divider(),
+                      _isTimeSlot
+                          ? ListView.builder(
                               shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              itemCount: int.parse(allowDay),
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: timeSlotList.length,
                               itemBuilder: (context, index) {
-                                return dateCell(index);
-                              }),
-                        ),
-                        Divider(),
-                        _isTimeSlot
-                            ? ListView.builder(
+                                return timeSlotItem(index);
+                              })
+                          : Container()
+                    ],
+                  ),
+                ),
+                _isPayLayShow
+                    ? Card(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                PAYMENT_METHOD_LBL,
+                                style: Theme.of(context).textTheme.headline6,
+                              ),
+                            ),
+                            ListView.builder(
                                 shrinkWrap: true,
                                 physics: NeverScrollableScrollPhysics(),
-                                itemCount: timeSlotList.length,
+                                itemCount: 7,
                                 itemBuilder: (context, index) {
-                                  return timeSlotItem(index);
-                                })
-                            : Container()
-                      ],
-                    ),
-                  ),
-                  Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            PAYMENT_METHOD_LBL,
-                            style: Theme.of(context).textTheme.headline6,
-                          ),
+                                  if (index == 0 && cod)
+                                    return paymentItem(index);
+                                  else if (index == 1 && paypal)
+                                    return paymentItem(index);
+                                  else if (index == 2 && paumoney)
+                                    return paymentItem(index);
+                                  else if (index == 3 && razorpay)
+                                    return paymentItem(index);
+                                  else if (index == 4 && paystack)
+                                    return paymentItem(index);
+                                  else if (index == 5 && flutterwave)
+                                    return paymentItem(index);
+                                  else
+                                    return Container();
+                                }),
+                          ],
                         ),
-                        ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: 7,
-                            itemBuilder: (context, index) {
-                              if (index == 0 && cod)
-                                return paymentItem(index);
-                              else if (index == 1 && paypal)
-                                return paymentItem(index);
-                              else if (index == 2 && paumoney)
-                                return paymentItem(index);
-                              else if (index == 3 && razorpay)
-                                return paymentItem(index);
-                              else if (index == 4 && paystack)
-                                return paymentItem(index);
-                              else if (index == 5 && flutterwave)
-                                return paymentItem(index);
-                              else
-                                return Container();
-                            }),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                      )
+                    : Container()
+              ],
             ),
           );
   }
@@ -1119,7 +1376,7 @@ class StatePayment extends State<Payment> {
             .map((timeSlots) => new Model.fromTimeSlot(timeSlots))
             .toList();
 
-        var payment = data["payment_methods"];
+        var payment = data["payment_method"];
         cod = payment["cod_method"] == "1" ? true : false;
         paypal = payment["paypal_payment_method"] == "1" ? true : false;
         paumoney = payment["payumoney_payment_method"] == "1" ? true : false;

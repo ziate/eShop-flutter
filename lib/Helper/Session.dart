@@ -53,7 +53,6 @@ back() {
 placeHolder(double height) {
   return Image.asset(
     'assets/images/placeholder.png',
-    fit: BoxFit.fill,
     height: height,
     width: height,
   );
@@ -120,15 +119,10 @@ Future<void> clearUserSession() async {
   CUR_USERID = '';
 }
 
-Future<void> saveUserDetail(
-    String userId,
-    String name,
-    String email,
-    String mobile,
-    String city,
-    String area,
-    String address,
-    String pincode) async {
+Future<void> saveUserDetail(String userId, String name, String email,
+    String mobile,String city,String area,
+    String address,String pincode,String latitude,
+    String longitude,String dob,String image) async {
   final waitList = <Future<void>>[];
   SharedPreferences prefs = await SharedPreferences.getInstance();
   waitList.add(prefs.setString(ID, userId));
@@ -139,24 +133,34 @@ Future<void> saveUserDetail(
   waitList.add(prefs.setString(AREA, area));
   waitList.add(prefs.setString(ADDRESS, address));
   waitList.add(prefs.setString(PINCODE, pincode));
+  waitList.add(prefs.setString(LATITUDE, latitude));
+  waitList.add(prefs.setString(LONGITUDE, longitude));
+  waitList.add(prefs.setString(DOB, dob));
+  waitList.add(prefs.setString(IMAGE, image));
+
   await Future.wait(waitList);
 }
 
+
 String validateUserName(String value) {
-  if (value.isEmpty) {
+  if(value.isEmpty)
+  {
     return "Username is Required";
   }
-  if (value.length <= 2) {
-    return "Username should be more than 1 character long";
+  if(value.length<=2)
+  {
+    return "Username should be 2 character long";
   }
   return null;
 }
 
 String validateMob(String value) {
-  if (value.isEmpty) {
+  if(value.isEmpty)
+  {
     return "Mobile number required";
   }
-  if (value.length <= 9) {
+  if(value.length <=9)
+  {
     return "Please enter valid mobile number";
   }
   return null;
@@ -176,7 +180,7 @@ String validatePass(String value) {
   if (value.length == 0)
     return "Password is Required";
   else if (value.length <= 5)
-    return "Your password should be more then 6 char long";
+    return "Your password should be  more then 6 char long";
   else
     return null;
 }
@@ -204,12 +208,13 @@ String validatePincode(String value) {
     return null;
 }
 
+
 String validateEmail(String value) {
   if (value.isNotEmpty) {
     if (!RegExp(
-            r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
-            r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
-            r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+        r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
+        r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
+        r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
         .hasMatch(value)) {
       return 'Please enter a valid email Address';
     }
@@ -217,6 +222,7 @@ String validateEmail(String value) {
     return null;
   }
 }
+
 
 Widget getProgress() {
   return Center(child: CircularProgressIndicator());

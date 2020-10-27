@@ -15,8 +15,13 @@ import 'Helper/Color.dart';
 import 'Helper/String.dart';
 import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
+import 'Home.dart';
 
 class Cart extends StatefulWidget {
+  Function updateHome;
+
+  Cart(this.updateHome);
+
   @override
   State<StatefulWidget> createState() => StateCart();
 }
@@ -25,24 +30,28 @@ List<Section_Model> cartList = [];
 double totalPrice = 0, oriPrice = 0, delCharge = 0, taxAmt = 0, taxPer = 0;
 
 class StateCart extends State<Cart> {
-
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool _isProgress = false, _isLoading = true;
-
+  HomePage home;
 
   @override
   void initState() {
     super.initState();
     totalPrice = 0;
     oriPrice = 0;
-    taxAmt = 0; taxPer = 0;
+    taxAmt = 0;
+    taxPer = 0;
     delCharge = 0;
+    cartList.clear();
     _getCart();
+    home = new HomePage(widget.updateHome);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return
+
+      Scaffold(
         key: _scaffoldKey,
         appBar: getAppBar(CART, context),
         body: Stack(
@@ -52,7 +61,34 @@ class StateCart extends State<Cart> {
           ],
         ));
   }
+  Future<bool> getSection() async {
+    try {
+      var parameter = {PRODUCT_LIMIT: "4", PRODUCT_OFFSET: "0"};
 
+      if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+      Response response =
+      await post(getSectionApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+
+      print('section get***');
+      print('response***sec**$headers***${response.body.toString()}');
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        var data = getdata["data"];
+        sectionList.clear();
+        sectionList = (data as List)
+            .map((data) => new Section_Model.fromJson(data))
+            .toList();
+      } else {
+        setSnackbar(msg);
+      }
+    }catch(Exception){}
+    Navigator.of(context).pop(true);
+    return true;
+  }
   Widget listItem(int index) {
     //print("desc*****${productList[index].desc}");
     int selectedPos = 0;
@@ -60,8 +96,7 @@ class StateCart extends State<Cart> {
         i < cartList[index].productList[0].prVarientList.length;
         i++) {
       if (cartList[index].varientId ==
-          cartList[index].productList[0].prVarientList[i].id)
-        selectedPos = i;
+          cartList[index].productList[0].prVarientList[i].id) selectedPos = i;
 
       print(
           "selected pos***$selectedPos***${cartList[index].productList[0].prVarientList[i].id}");
@@ -158,7 +193,7 @@ class StateCart extends State<Cart> {
                                   0
                               ? CUR_CURRENCY +
                                   "" +
-                              cartList[index]
+                                  cartList[index]
                                       .productList[0]
                                       .prVarientList[selectedPos]
                                       .price
@@ -240,12 +275,19 @@ class StateCart extends State<Cart> {
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
                       model: model,
+                      updateParent: updateCart,
+                      updateHome: widget.updateHome,
+
                       //  title: productList[index].name,
                     )),
           );
         },
       ),
     );
+  }
+
+  updateCart() {
+    setState(() {});
   }
 
   Future<void> _getCart() async {
@@ -310,6 +352,7 @@ class StateCart extends State<Cart> {
         var data = getdata["data"];
 
         String qty = data['total_quantity'];
+        CUR_CART_COUNT = data['cart_count'];
 
         print('total*****add*$qty');
         cartList[index].qty = qty;
@@ -324,6 +367,7 @@ class StateCart extends State<Cart> {
       setState(() {
         _isProgress = false;
       });
+      widget.updateHome();
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -358,6 +402,8 @@ class StateCart extends State<Cart> {
         var data = getdata["data"];
 
         String qty = data['total_quantity'];
+        CUR_CART_COUNT = data['cart_count'];
+        if (qty == "0") remove = true;
 
         print('total*****remove*$qty');
         if (remove) {
@@ -377,6 +423,7 @@ class StateCart extends State<Cart> {
       setState(() {
         _isProgress = false;
       });
+      widget.updateHome();
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -465,7 +512,7 @@ class StateCart extends State<Cart> {
                     child: Row(
                       children: <Widget>[
                         Text(
-                          Total_PRICE,
+                          TOTAL_PRICE,
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1

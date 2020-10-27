@@ -15,6 +15,10 @@ import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
 
 class Favorite extends StatefulWidget {
+  Function update;
+
+  Favorite(this.update);
+
   @override
   State<StatefulWidget> createState() => StateFav();
 }
@@ -233,6 +237,8 @@ class StateFav extends State<Favorite> {
             MaterialPageRoute(
                 builder: (context) => Product_Detail(
                       model: model,
+                      updateParent: updateFav,
+                      updateHome: widget.update,
                       //  title: productList[index].name,
                     )),
           );
@@ -241,11 +247,17 @@ class StateFav extends State<Favorite> {
     );
   }
 
+  updateFav() {
+    setState(() {});
+  }
+
   Future<void> _getFav() async {
     try {
       if (CUR_USERID != null) {
         var parameter = {
           USER_ID: CUR_USERID,
+          LIMIT: perPage.toString(),
+          OFFSET: offset.toString(),
         };
         Response response =
             await post(getFavApi, body: parameter, headers: headers)
@@ -332,9 +344,11 @@ class StateFav extends State<Favorite> {
         var data = getdata["data"];
 
         String qty = data['total_quantity'];
-
+        CUR_CART_COUNT = data['cart_count'];
         favList[index].productList[0].prVarientList[0].cartCount =
             qty.toString();
+
+        widget.update();
       } else {
         setSnackbar(msg);
       }
@@ -394,6 +408,7 @@ class StateFav extends State<Favorite> {
         var data = getdata["data"];
 
         String qty = data['total_quantity'];
+        CUR_CART_COUNT = data['cart_count'];
 
         if (remove)
           favList.removeWhere(
@@ -402,6 +417,8 @@ class StateFav extends State<Favorite> {
           favList[index].productList[0].prVarientList[0].cartCount =
               qty.toString();
         }
+
+        widget.update();
       } else {
         setSnackbar(msg);
       }

@@ -16,6 +16,12 @@ import 'SubCat.dart';
 import 'Model/Model.dart';
 
 class All_Category extends StatefulWidget {
+
+  final Function updateHome;
+
+  const All_Category({Key key, this.updateHome}) : super(key: key);
+
+
   @override
   State<StatefulWidget> createState() {
     return StateCat();
@@ -170,6 +176,7 @@ class StateCat extends State<All_Category> {
                 builder: (context) => SubCat(
                   title: catList[index].name,
                   subList: catList[index].subList,
+                  updateHome: widget.updateHome,
                 ),
               ));
         }

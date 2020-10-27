@@ -43,8 +43,8 @@ class StatePreview extends State<Product_Preview> {
             itemBuilder: (BuildContext context, int index) {
               return PhotoView(
                   backgroundDecoration: BoxDecoration(color: Colors.white),
-                  initialScale: PhotoViewComputedScale.contained,
-                  minScale: PhotoViewComputedScale.contained,
+                  initialScale: PhotoViewComputedScale.contained*0.9,
+                  minScale: PhotoViewComputedScale.contained*0.9,
                   imageProvider:
                       CachedNetworkImageProvider(sliderList[curPos]));
             }),
