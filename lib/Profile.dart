@@ -24,11 +24,10 @@ class StateProfile extends State<Profile> {
   String name,
       email,
       mobile,
-      city='',
-      area='',
+      city,
+      area,
       pincode,
       address,
-
       dob,image;
   List<User> cityList=[];
   List<User> areaList=[];
@@ -39,9 +38,7 @@ class StateProfile extends State<Profile> {
   bool isDateSelected = false;
   DateTime birthDate;
   bool isSelected=false;
-  File _image,_imageFile;
-  //Dio dio = new Dio();
-
+  File _image;
 
   @override
   void initState() {
@@ -297,6 +294,8 @@ class StateProfile extends State<Profile> {
 
 
   Future<void> getCities() async {
+    print("city:$city,area:$area");
+    print("image:$image");
     try {
       var response = await http.post(getCitiesApi, headers: headers)
           .timeout(Duration(seconds: timeOut));
@@ -492,6 +491,7 @@ class StateProfile extends State<Profile> {
             color: darkgrey,
           ),
         ),
+
         value: city,
         onChanged: (newValue) {
           setState(() {
@@ -649,7 +649,7 @@ class StateProfile extends State<Profile> {
           keyboardType: TextInputType.number,
           controller: pincodeC,
           style: Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
-          validator: validatePincode,
+          validator: validatePincodeOptional,
           onChanged: (v) => setState(() {
             pincode = v;
           }),
@@ -735,7 +735,7 @@ class StateProfile extends State<Profile> {
         padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 30.0),
         child:Stack(
           children: <Widget>[
-            image!=null?
+            image!=null && image!=""?
             CircleAvatar(  radius: 50,
                 backgroundColor: primary,child:ClipRRect(borderRadius: BorderRadius.circular(50),
                     child:Image.network(image,fit: BoxFit.fill,))):
@@ -774,40 +774,33 @@ class StateProfile extends State<Profile> {
     double width = MediaQuery.of(this.context).size.width;
 
     return Padding(
-      padding:
-      EdgeInsets.only(bottom: 50.0, left: 20.0, right: 20.0, top: 20.0),
-      child: RaisedButton(
-        onPressed: () {
-          setState(() {
-            validateAndSubmit();
-          });
-        },
-        shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-        padding: EdgeInsets.all(0.0),
-        child: Ink(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [primary.withOpacity(0.7), primary],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(30.0)),
-          child: Container(
-            constraints:
-            BoxConstraints(maxWidth: width * 0.90, minHeight: 50.0),
-            alignment: Alignment.center,
-            child: Text(
-              UPDATE_PROFILE_LBL,
-              textAlign: TextAlign.center,
-              style: Theme.of(this.context).textTheme.headline6.copyWith(
-                color: white,
-              ),
+        padding:
+        EdgeInsets.only(bottom: 50.0, left: 20.0, right: 20.0, top: 20.0),
+        child: RaisedButton(
+          color: primaryLight2,
+          onPressed: () {
+            setState(() {
+              validateAndSubmit();
+            });
+          },
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+          padding: EdgeInsets.all(0.0),
+          child: Ink(
+            child: Container(
+              constraints: BoxConstraints(
+                  maxWidth: width * 1.5, minHeight:45),
+              //decoration: back(),
+              alignment: Alignment.center,
+              child: Text(UPDATE_PROFILE_LBL,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      .copyWith(color: white, fontWeight: FontWeight.normal)),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   _showContent() {
@@ -844,7 +837,7 @@ class StateProfile extends State<Profile> {
       body: Stack(
         children: <Widget>[
           _showContent(),
-          showCircularProgress(_isLoading, primary),
+          showCircularProgress(_isLoading, primary)
         ],
       ),
     );

@@ -79,6 +79,7 @@ const String CITYSELECT_LBL='Select City';
 const String AREASELECT_LBL='Select Area';
 const String DOB_LBL='Date of Birth';
 const String GALLARY_LBL="Gallary";
+const String COUNTRY_CODE_LBL="Select country code";
 
 
 

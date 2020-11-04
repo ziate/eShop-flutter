@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/style.dart';
 import 'package:http/http.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -54,7 +55,7 @@ class StateProduct extends State<ProductList> {
         appBar: getAppbar(),
         key: _scaffoldKey,
         body: _isLoading
-            ? getProgress()
+            ? shimmer()
             : productList.length == 0
                 ? getNoItem()
                 : Stack(
@@ -70,7 +71,79 @@ class StateProduct extends State<ProductList> {
     controller.removeListener(() {});
     super.dispose();
   }
+  Widget shimmer() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300],
+        highlightColor: Colors.grey[100],
+        child: Column(
+          children: [0, 1, 2, 3, 4, 5,6]
+              .map((_) =>
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child:
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 80.0,
+                      height: 80.0,
+                      color: Colors.white,
+                    ),
+                    Padding(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 8.0),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 18.0,
+                            color: Colors.white,
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 5.0),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            height: 8.0,
+                            color: Colors.white,
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 5.0),
+                          ),
+                          Container(
+                            width: 100.0,
+                            height: 8.0,
+                            color: Colors.white,
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 5.0),
+                          ),
+                          Container(
+                            width: 20.0,
+                            height: 8.0,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ))
+              .toList(),
+        ),
 
+      ),
+    );
+  }
   Widget listItem(int index) {
     print("desc*****${productList[index].desc}");
 
@@ -82,11 +155,14 @@ class StateProduct extends State<ProductList> {
       child: InkWell(
         child: Row(
           children: <Widget>[
-            CachedNetworkImage(
-              imageUrl: productList[index].image,
-              height: 90.0,
-              width: 90.0,
-              placeholder: (context, url) => placeHolder(90),
+            Hero(
+              tag: "homeSection-11$index",
+              child: CachedNetworkImage(
+                imageUrl: productList[index].image,
+                height: 90.0,
+                width: 90.0,
+                placeholder: (context, url) => placeHolder(90),
+              ),
             ),
             Expanded(
               child: Padding(
@@ -123,18 +199,7 @@ class StateProduct extends State<ProductList> {
                         ],
                       ),
                     ),
-                    /*   Html(
-                      data: '${productList[index].desc}',
 
-                      */ /*style: {
-                        "p": Style(
-                            margin: EdgeInsets.all(0),
-                            color: Colors.grey,
-                            fontSize: FontSize.small),
-                      },*/ /*
-                      //maxLines: 2,
-                      //  overflow: TextOverflow.ellipsis,
-                    ),*/
                     Row(
                       children: <Widget>[
                         Row(
@@ -233,10 +298,13 @@ class StateProduct extends State<ProductList> {
           Product model = productList[index];
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => Product_Detail(
+            PageRouteBuilder(
+            transitionDuration: Duration(seconds: 1),
+            pageBuilder: (_, __, ___) => Product_Detail(
                       model: model,
                       updateParent: updateProductList,
+                      index: index,
+                      secPos: 11,
                       updateHome: widget.updateHome,
                       //  title: productList[index].name,
                     )),

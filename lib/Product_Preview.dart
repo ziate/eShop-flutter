@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class Product_Preview extends StatefulWidget {
-  final int pos;
+  final int pos,secPos;
 
-  const Product_Preview({Key key, this.pos}) : super(key: key);
+  const Product_Preview({Key key, this.pos, this.secPos}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => StatePreview();
@@ -41,12 +41,17 @@ class StatePreview extends State<Product_Preview> {
               });
             },
             itemBuilder: (BuildContext context, int index) {
-              return PhotoView(
-                  backgroundDecoration: BoxDecoration(color: Colors.white),
-                  initialScale: PhotoViewComputedScale.contained*0.9,
-                  minScale: PhotoViewComputedScale.contained*0.9,
-                  imageProvider:
-                      CachedNetworkImageProvider(sliderList[curPos]));
+              return
+
+                Hero(
+                  tag: "homeSection-${widget.secPos}${widget.pos}",
+                  child: PhotoView(
+                    backgroundDecoration: BoxDecoration(color: Colors.white),
+                    initialScale: PhotoViewComputedScale.contained*0.9,
+                    minScale: PhotoViewComputedScale.contained*0.9,
+                    imageProvider:
+                        CachedNetworkImageProvider(sliderList[curPos])),
+                );
             }),
         Padding(
           padding: const EdgeInsets.only(top: 34.0),

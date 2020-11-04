@@ -242,56 +242,54 @@ class StateSection extends State<SectionList> {
   }
 
   Future<void> getSection() async {
+    try {
+      var parameter = {
+        PRODUCT_LIMIT: perPage.toString(),
+        PRODUCT_OFFSET: offset.toString(),
+        SEC_ID: widget.section_model.id
+      };
+      print("section para**${parameter.toString()}");
+      if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+      Response response =
+          await post(getSectionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
-      try {
-        var parameter = {
-          PRODUCT_LIMIT: perPage.toString(),
-          PRODUCT_OFFSET: offset.toString(),
-          SEC_ID: widget.section_model.id
-        };
-        print("section para**${parameter.toString()}");
-        if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
-        Response response =
-            await post(getSectionApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+      var getdata = json.decode(response.body);
 
-        var getdata = json.decode(response.body);
+      print('section get***');
+      print('response***sec**$headers***${response.body.toString()}');
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        var data = getdata["data"];
 
-        print('section get***');
-        print('response***sec**$headers***${response.body.toString()}');
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
+        total = int.parse(data[0]["total"]);
+        if (offset < total) {
+          List<Section_Model> temp = (data as List)
+              .map((data) => new Section_Model.fromJson(data))
+              .toList();
 
-          total = int.parse(data[0]["total"]);
-          if (offset < total) {
-            List<Section_Model> temp = (data as List)
-                .map((data) => new Section_Model.fromJson(data))
-                .toList();
+          print("temp***${temp.length}");
 
-            print("temp***${temp.length}");
-
-            sectionList[widget.index].productList.addAll(temp[0].productList);
-            //temp[0];
-            offset = offset + perPage;
-          }
-        } else {
-          isLoadingmore=false;
-          setSnackbar(msg);
+          sectionList[widget.index].productList.addAll(temp[0].productList);
+          //temp[0];
+          offset = offset + perPage;
         }
-
-        setState(() {
-          _isLoading = false;
-          isLoadingmore = false;
-        });
-      } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
-        setState(() {
-          _isLoading = false;
-        });
+      } else {
+        isLoadingmore = false;
+        setSnackbar(msg);
       }
 
+      setState(() {
+        _isLoading = false;
+        isLoadingmore = false;
+      });
+    } on TimeoutException catch (_) {
+      setSnackbar(somethingMSg);
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   _setFav(int index) async {

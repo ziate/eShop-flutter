@@ -6,6 +6,7 @@ import 'package:eshop/Model/Notification_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -44,7 +45,7 @@ class StateNoti extends State<NotificationList> {
         body: _isLoading
             ? Padding(
                 padding: const EdgeInsets.only(top: kToolbarHeight),
-                child: getProgress())
+                child: shimmer())
             : notiList.length == 0
                 ? Padding(
                     padding: const EdgeInsets.only(top: kToolbarHeight),
@@ -64,6 +65,80 @@ class StateNoti extends State<NotificationList> {
                           : listItem(index);
                     },
                   ));
+  }
+
+  Widget shimmer() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300],
+        highlightColor: Colors.grey[100],
+        child: Column(
+          children: [0, 1, 2, 3, 4, 5]
+              .map((_) =>
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child:
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 80.0,
+                      height: 80.0,
+                      color: Colors.white,
+                    ),
+                    Padding(
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 8.0),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 18.0,
+                            color: Colors.white,
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 5.0),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            height: 8.0,
+                            color: Colors.white,
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 5.0),
+                          ),
+                          Container(
+                            width: 100.0,
+                            height: 8.0,
+                            color: Colors.white,
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 5.0),
+                          ),
+                          Container(
+                            width: 20.0,
+                            height: 8.0,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ))
+              .toList(),
+        ),
+
+      ),
+    );
   }
 
   Widget listItem(int index) {

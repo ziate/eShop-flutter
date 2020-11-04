@@ -66,7 +66,6 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
         itemCount: slideList.length,
         scrollDirection: Axis.horizontal,
         controller: _pageController,
-        reverse: false,
         onPageChanged: _onPageChanged,
         itemBuilder: (BuildContext context, int index) {
           return Column(
@@ -77,23 +76,26 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
               Expanded(
                 child: Image.asset(
                   slideList[index].imageUrl,
+                  fit: BoxFit.contain,
                 ),
               ),
               Container(
-                  padding: EdgeInsets.only(top: 30.0),
                   child: Text(
-                    slideList[index].title,
-                    style: TextStyle(
-                      fontSize: 35,
-                      color: primary,
-                    ),
+                      slideList[index].title,
+                      style:Theme.of(context)
+                          .textTheme
+                          .headline5
+                          .copyWith(color: primary,fontWeight: FontWeight.normal)
                   )),
               Container(
-                padding: EdgeInsets.only(top: 20.0),
+                padding: EdgeInsets.only(top: 20.0,left: 10.0,right: 10.0),
                 child: Text(
-                  slideList[index].description,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 20, color: Colors.black54),
+                    slideList[index].description,
+                    textAlign: TextAlign.center,
+                    style:Theme.of(context)
+                        .textTheme
+                        .headline6
+                        .copyWith(color: lightblack,fontWeight: FontWeight.normal)
                 ),
               ),
               Container(
@@ -111,8 +113,8 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _currentPage == index
-                                ? primary
-                                : primary.withOpacity((0.2)),
+                                ? lightblack
+                                : lightblack2.withOpacity((0.5)),
                           ));
                     },
                   ),
@@ -128,9 +130,10 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
   _btn() {
     double width = MediaQuery.of(context).size.width;
     return Container(
-        padding: EdgeInsets.only(bottom: 20.0, left: 50.0, right: 50.0),
+        padding: EdgeInsets.only(bottom: 20.0, left: 70.0, right: 70.0),
         child: Center(
             child: RaisedButton(
+              color: primaryLight2,
               onPressed: () {
                 setPrefrenceBool(ISFIRSTTIME, true);
                 Navigator.pushReplacement(
@@ -142,25 +145,18 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
               padding: EdgeInsets.all(0.0),
               child: Ink(
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [primary.withOpacity(0.7), primary],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(30.0)),
                 child: Container(
                   constraints:
-                  BoxConstraints(maxWidth: width * 0.90, minHeight: 50.0),
+                  BoxConstraints(maxWidth: width * 1.5, minHeight: 45),
                   //decoration: back(),
                   alignment: Alignment.center,
                   child: Text(
-                    GET_STARTED,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.0),
+                      GET_STARTED,
+                      textAlign: TextAlign.center,
+                      style:Theme.of(context)
+                          .textTheme
+                          .headline6
+                          .copyWith(color: white,fontWeight: FontWeight.normal)
                   ),
                 ),
               ),

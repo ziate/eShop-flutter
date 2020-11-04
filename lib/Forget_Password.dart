@@ -12,10 +12,7 @@ import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 
-
 class ForgotPassWord extends StatefulWidget {
-
-
   @override
   _ForgetPassPageState createState() => new _ForgetPassPageState();
 }
@@ -24,21 +21,11 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool isCodeSent = false;
-  String _verificationId,mobile,name,email,id,otp,mobileno,countrycode;
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  String mobile, name, email, id, otp,  countrycode, countryName;
   final mobileController = TextEditingController();
   final ccodeController = TextEditingController();
   bool _isLoading = false;
   bool _isClickable = true;
-
-
-
-  void _onCountryChange(CountryCode countryCode) {
-    countrycode=  countryCode.toString().replaceFirst("+", "");
-    print("New Country selected: " + countryCode.toString());
-  }
-
-
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
@@ -51,6 +38,7 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
       elevation: 1.0,
     ));
   }
+
   void validateAndSubmit() async {
     if (validateAndSave()) {
       setState(() {
@@ -80,7 +68,6 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
     }
   }
 
-
   bool validateAndSave() {
     final form = _formkey.currentState;
     if (form.validate()) {
@@ -90,8 +77,7 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
     return false;
   }
 
-  bool resetAndClear()
-  {
+  bool resetAndClear() {
     _formkey.currentState.reset();
     mobileController.clear();
   }
@@ -102,25 +88,26 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
         MOBILE: mobile,
       };
       Response response =
-      await post(getVerifyUserApi, body: data, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(getVerifyUserApi, body: data, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
       print('response***verifyuser**$headers***${response.body.toString()}');
       bool error = getdata["error"];
 
-      if (error)
-      {
+      if (error) {
         setPrefrence(MOBILE, mobile);
         Future.delayed(Duration(seconds: 1)).then((_) {
-          Navigator.of(context)
-              .push(MaterialPageRoute(
-            builder: (BuildContext context) => Set_Pass_By_Otp(mobileNumber: mobile,),
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (BuildContext context) => Set_Pass_By_Otp(
+              mobileNumber: mobile,
+              countrycode: countrycode,
+            ),
           ));
         });
-
       } else {
-        setSnackbar("Please first Sign Up! Your mobile number is not resgister");
+        setSnackbar(
+            "Please first Sign Up! Your mobile number is not resgister");
         _isClickable = true;
       }
       setState(() {
@@ -134,183 +121,198 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
     }
   }
 
-  imageView()
-  {
+  imageView() {
     return Container(
-      padding: EdgeInsets.only(top: 150.0),
+      padding: EdgeInsets.only(top: 200.0),
       child: Center(
-        child:
-        new Image.asset('assets/images/sublogo.png', width: 200),
+        child: new Image.asset('assets/images/sublogo.png', width: 200),
       ),
     );
   }
 
-  forgotPassTxt()
-  {
+  forgotPassTxt() {
     return Padding(
-        padding: EdgeInsets.only(
-            top: 70.0, left: 20.0, right: 20.0),
+        padding: EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
         child: Center(
           child: new Text(
             FORGOT_PASSWORDTITILE,
-            style: Theme.of(context).textTheme.headline6.copyWith(color: lightblack,
-                fontWeight: FontWeight.bold),
+            style: Theme.of(context)
+                .textTheme
+                .headline6
+                .copyWith(color: lightblack, fontWeight: FontWeight.bold),
           ),
         ));
   }
 
-  setMob()
-  {
+  setCountryCode() {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Padding(
-      padding: EdgeInsets.only(left: 20.0,right: 20.0,top:15.0),
-      child: Row(
-            children: [
-              Container(
-                decoration:BoxDecoration(borderRadius:BorderRadius.circular(10.0),border:Border.all(color:darkgrey) ),
-                child: CountryCodePicker(
-                  showCountryOnly: false,
-                  showOnlyCountryWhenClosed: false,
-                  onChanged: _onCountryChange,
-                ),
-
+        padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
+        child: Container(
+          width: width,
+          height: 49,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              border: Border.all(color: darkgrey)),
+          child: CountryCodePicker(
+              showCountryOnly: false,
+              searchDecoration: InputDecoration(
+                hintText: COUNTRY_CODE_LBL,
+                fillColor: primary,
               ),
-              Expanded(
-                child:TextFormField(
-                  keyboardType: TextInputType.number,
-                  controller:mobileController,
-                  inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
-                  validator:validateMob,
-                  onSaved: (String value) {
-                    mobileno = value;
-                    mobile=countrycode+mobileno;
-                    print('Mobile no:$mobile');
-                  },
+              showOnlyCountryWhenClosed: false,
+              initialSelection: 'IN',
+              alignLeft: true,
+              dialogSize: Size(width, height),
+              builder: _buildCountryPicker,
+              onChanged: (CountryCode countryCode) {
+                countrycode = countryCode.toString().replaceFirst("+", "");
+                print("New Country selected: " + countryCode.toString());
+                countryName = countryCode.name;
+              },
+              onInit: (code) {
+                print("on init ${code.name} ${code.dialCode} ${code.name}");
+                countrycode = code.toString().replaceFirst("+", "");
+                print("New Country selected: " + code.toString());
+              }),
+        ));
+  }
 
-                  decoration: InputDecoration(
-                      hintText: MOBILEHINT_LBL,
-                      contentPadding:
-                      EdgeInsets.fromLTRB(10.0, 10.0,10.0,10.0),
+  Widget _buildCountryPicker(CountryCode country) => Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: new Image.asset(
+                country.flagUri,
+                package: 'country_code_picker',
+                height: 35,
+                width: 30,
+              ),
+            ),
+          ),
+          new Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: new Text(country.dialCode),
+            ),
+          ),
+          new Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: new Text(
+                country.name,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      );
 
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0)
-
-                      )
-                  ),
-                ),
-              )]
-        ),
+  setMobileNo() {
+    return Padding(
+      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
+      child: TextFormField(
+        keyboardType: TextInputType.number,
+        controller: mobileController,
+        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        validator: validateMob,
+        onSaved: (String value) {
+          //mobileno = value;
+          mobile =  value;
+          print('Mobile no:$mobile');
+        },
+        decoration: InputDecoration(
+            prefixIcon: Icon(Icons.call),
+            hintText: MOBILEHINT_LBL,
+            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
+      ),
     );
   }
 
   getPassBtn() {
     double width = MediaQuery.of(context).size.width;
-
     return Padding(
-      padding: EdgeInsets.only(bottom: 30.0,
-          left: 20.0,
-          right: 20.0,
-          top: 40.0),
-      child: RaisedButton(
-        onPressed: () {
-
-          validateAndSubmit();
-
-        },
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(80.0)),
-        padding: EdgeInsets.all(0.0),
-        child: Ink(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [primary.withOpacity(0.7), primary],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(30.0)
-          ),
-          child: Container(
-            constraints: BoxConstraints(
-                maxWidth: width * 0.90,
-                minHeight: 50.0),
-            alignment: Alignment.center,
-            child: Text(
-              GET_PASSWORD,
-
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headline6.copyWith(color: white,
-                  fontWeight: FontWeight.normal),
+        padding:
+            EdgeInsets.only(bottom: 30.0, left: 30.0, right: 30.0, top: 30.0),
+        child: Center(
+            child: RaisedButton(
+          color: primaryLight2,
+          onPressed: () {
+            validateAndSubmit();
+          },
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+          padding: EdgeInsets.all(0.0),
+          child: Ink(
+            child: Container(
+              constraints: BoxConstraints(maxWidth: width * 1.5, minHeight: 45),
+              //decoration: back(),
+              alignment: Alignment.center,
+              child: Text(GET_PASSWORD,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      .copyWith(color: white, fontWeight: FontWeight.normal)),
             ),
           ),
-        ),
-      ),
-    );
+        )));
   }
 
-  expandedBottomView()
-  {
+  expandedBottomView() {
     return Expanded(
-        flex:1,
-        child:Container(
+        child: Container(
             width: double.infinity,
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
                   Container(
-                    padding: EdgeInsets.only(top: 40.0),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)
-                      ),
-                      margin: EdgeInsets.all(20.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          forgotPassTxt(),
-                          setMob(),
-                          getPassBtn(),
-
-                        ],
+                    padding: EdgeInsets.only(top: 100.0),
+                    child: Form(
+                      key: _formkey,
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        margin: EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            forgotPassTxt(),
+                            setCountryCode(),
+                            setMobileNo(),
+                            getPassBtn(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-
-
-            )
-
-
-        )
-    );
+            )));
   }
-
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         key: _scaffoldKey,
-        body:Form(
-            key: _formkey,
-            child: Container(
-                decoration: back(),
-                child: Center(
-
-                    child:Column(
-                      children: <Widget>[
-
-                        imageView(),
-                        expandedBottomView(),
-
-
-                      ],
-                    )
-                )
-            )
-        )
-    );
+        body: Stack(children: [
+          Container(
+              decoration: back(),
+              child: Center(
+                  child: Column(
+                children: <Widget>[
+                  imageView(),
+                  expandedBottomView(),
+                ],
+              ))),
+          showCircularProgress(_isLoading, Colors.white)
+        ]));
   }
 }
-
-
-

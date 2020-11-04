@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-
+import 'dart:math' as math;
 import 'package:app_review/app_review.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eshop/All_Category.dart';
@@ -16,6 +16,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
+import 'package:like_button/like_button.dart';
 import 'package:share/share.dart';
 import 'package:eshop/ProductList.dart';
 import 'Cart.dart';
@@ -316,13 +317,6 @@ class StateHome extends State<Home> {
                       builder: (context) => Login(),
                     ))
                 : goToCart();
-            /*await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Cart(updateHome),
-                    ))
-                .then((val) => setState(() => {}));*/
-            //.then((value) => home.updateHomepage);
           },
         ),
         InkWell(
@@ -339,22 +333,14 @@ class StateHome extends State<Home> {
           },
         )
       ],
-      /* flexibleSpace: Image(
-        image: AssetImage('assets/images/topimage.png'),
-        fit: BoxFit.cover,
-      ),*/
-      backgroundColor: _curSelected == 0 ? Colors.transparent : primary,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: _curSelected != 0
+          ? Image(
+              image: AssetImage('assets/images/halftopimage.png'),
+              fit: BoxFit.cover,
+            )
+          : Container(),
       elevation: 0,
-      /* bottom: PreferredSize(
-          preferredSize: Size.fromHeight(40.0 + height),
-          //child:_getSearchBar(height)
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: <Widget>[
-              _getSearchBar(height),
-              _slider(),
-            ],
-          )),*/
     );
   }
 
@@ -381,21 +367,14 @@ class StateHome extends State<Home> {
 
                 type: BottomNavigationBarType.fixed,
                 onTap: (int index) {
+                  print("current=====$index");
                   setState(() {
                     _curSelected = index;
                   });
-
-                  /*     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Favorite(
-
-                        )),
-                  );*/
                 },
                 items: [
                   BottomNavigationBarItem(
-                    title: Padding(padding: EdgeInsets.all(0)),
+                    label: '',
                     icon: Image.asset(
                       "assets/images/desel_home.png",
                     ),
@@ -404,7 +383,7 @@ class StateHome extends State<Home> {
                     ),
                   ),
                   BottomNavigationBarItem(
-                    title: Padding(padding: EdgeInsets.all(0)),
+                    label: '',
                     icon: Image.asset(
                       "assets/images/desel_fav.png",
                     ),
@@ -413,7 +392,7 @@ class StateHome extends State<Home> {
                     ),
                   ),
                   BottomNavigationBarItem(
-                    title: Padding(padding: EdgeInsets.all(0)),
+                    label: '',
                     icon: Image.asset(
                       "assets/images/desel_notification.png",
                     ),
@@ -422,7 +401,7 @@ class StateHome extends State<Home> {
                     ),
                   ),
                   BottomNavigationBarItem(
-                    title: Padding(padding: EdgeInsets.all(0)),
+                    label: '',
                     icon: Image.asset(
                       "assets/images/desel_user.png",
                     ),
@@ -543,6 +522,7 @@ class StateHomePage extends State<HomePage> {
   final _controller = PageController();
   int _curSlider = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  bool useMobileLayout;
 
   @override
   void initState() {
@@ -557,51 +537,95 @@ class StateHomePage extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var shortestSide = MediaQuery.of(context).size.shortestSide;
+    useMobileLayout = shortestSide < 600;
     return _home();
   }
 
   Widget _home() {
-    double statusBarHeight = MediaQuery.of(context).padding.top;
     double width = MediaQuery.of(context).size.width;
     double height = width / 2;
+    double appBarHeight = height + 50;
 
     return Scaffold(
-      key: _scaffoldKey,
-      body: Stack(
-        children: <Widget>[
-          Image.asset(
-            'assets/images/topimage.png',
-            width: width,
-            fit: BoxFit.fitWidth,
-          ),
-          Container(
-            margin:
-                EdgeInsets.only(left: 20.0, right: 20, top: statusBarHeight),
-            child: SingleChildScrollView(
-                child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                _getSearchBar(height),
-                _isCatLoading
-                    ? Padding(
-                        padding: const EdgeInsets.all(18.0),
-                        child: getProgress(),
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _slider(),
-                          _catHeading(),
-                          _catList(),
-                          _section()
-                        ],
+        key: _scaffoldKey,
+        body: CustomScrollView(
+          physics: BouncingScrollPhysics(),
+          slivers: <Widget>[
+            SliverAppBar(
+                backgroundColor: Colors.transparent,
+                pinned: true,
+                expandedHeight: appBarHeight,
+                floating: false,
+                collapsedHeight: kToolbarHeight + 1,
+                actionsIconTheme: IconThemeData(opacity: 0.0),
+                flexibleSpace: Stack(
+                  children: <Widget>[
+                    Image.asset(
+                      'assets/images/topimage.png',
+                      width: width,
+                      fit: BoxFit.fitWidth,
+                    ),
+                    _getSearchBar(),
+                    _slider(),
+                  ],
+                )),
+
+            /*     LayoutBuilder(builder: (context, constraints) {
+                  final expandRatio = _calculateExpandRatio(constraints,minHeight,appBarHeight);
+                  final animation = AlwaysStoppedAnimation(expandRatio);
+
+                  return Stack(
+                    children: <Widget>[
+                      Image.asset(
+                        'assets/images/topimage.png',
+                        width: width,
+                        fit: BoxFit.fitWidth,
                       ),
-              ],
-            )),
-          )
-        ],
-      ),
-    );
+                      Align(
+                          alignment: AlignmentTween(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.bottomLeft)
+                              .evaluate(animation),
+                          child: Column(
+                            children: [
+                              _getSearchBar(),
+                              _slider(),
+                            ],
+                          )),
+                    ],
+                  );
+                })),*/
+            SliverList(
+                delegate: SliverChildListDelegate([
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  children: <Widget>[
+                    _isCatLoading
+                        ? Padding(
+                            padding: const EdgeInsets.all(18.0),
+                            child: getProgress(),
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [_catHeading(), _catList(), _section()],
+                          ),
+                  ],
+                ),
+              )
+            ]))
+          ],
+        ));
+  }
+
+  double _calculateExpandRatio(
+      BoxConstraints constraints, double minHeight, double maxHeight) {
+    var expandRatio =
+        (constraints.maxHeight - minHeight) / (maxHeight - minHeight);
+    if (expandRatio > 1.0) expandRatio = 1.0;
+    if (expandRatio < 0.0) expandRatio = 0.0;
+    return expandRatio;
   }
 
   Widget _slider() {
@@ -612,7 +636,8 @@ class StateHomePage extends State<HomePage> {
         ? Container(
             height: height,
             width: double.infinity,
-            padding: EdgeInsets.only(bottom: 5, top: 10),
+            margin: EdgeInsets.only(
+                bottom: 5, top: kToolbarHeight * 1.7 + 50, right: 20, left: 20),
             child: PageView.builder(
               itemCount: sliderList.length,
               scrollDirection: Axis.horizontal,
@@ -718,10 +743,13 @@ class StateHomePage extends State<HomePage> {
     });
   }
 
-  _getSearchBar(double height) {
+  _getSearchBar() {
     return InkWell(
-      child: SizedBox(
-          height: 35, // set this
+      child: Padding(
+        padding: const EdgeInsets.only(
+            top: kToolbarHeight * 1.7, right: 20, left: 20),
+        child: SizedBox(
+          height: 35,
           child: TextField(
             enabled: false,
             textAlign: TextAlign.left,
@@ -748,7 +776,9 @@ class StateHomePage extends State<HomePage> {
                 ),
                 fillColor: Colors.white30,
                 filled: true),
-          )),
+          ),
+        ),
+      ),
       onTap: () async {
         await Navigator.push(
             context,
@@ -906,13 +936,13 @@ class StateHomePage extends State<HomePage> {
             ),
             splashColor: primary.withOpacity(0.2),
             onTap: () {
-              print('section ****$title}');
+
               Section_Model model = sectionList[index];
               Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => SectionList(
-                     index:index,
+                      index: index,
                       section_model: model,
                       updateHome: updateHomePage,
                     ),
@@ -951,6 +981,8 @@ class StateHomePage extends State<HomePage> {
           sectionList[secPos].productList[index].prVarientList[0].price);
 
     double width = MediaQuery.of(context).size.width * 0.5 - 20;
+
+
     return Card(
       elevation: 0,
       child: InkWell(
@@ -965,12 +997,17 @@ class StateHomePage extends State<HomePage> {
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(5),
                           topRight: Radius.circular(5)),
-                      child: CachedNetworkImage(
-                        imageUrl: sectionList[secPos].productList[index].image,
-                        height: double.maxFinite,
-                        width: double.maxFinite,
-                        //fit: BoxFit.fill,
-                        placeholder: (context, url) => placeHolder(width),
+                      child: Hero(
+                        transitionOnUserGestures: true,
+                        tag: "homeSection-$secPos$index",
+                        child: CachedNetworkImage(
+                          imageUrl:
+                              sectionList[secPos].productList[index].image,
+                          height: double.maxFinite,
+                          width: double.maxFinite,
+                          //fit: BoxFit.fill,
+                          placeholder: (context, url) => placeHolder(width),
+                        ),
                       )),
                   Card(
                     child: Padding(
@@ -1046,7 +1083,6 @@ class StateHomePage extends State<HomePage> {
                               );
                             }
                           })
-                  // IconButton(icon: Icon(Icons.favorite_border,),iconSize: 10, onPressed: null)
                 ],
               ),
             ),
@@ -1082,9 +1118,13 @@ class StateHomePage extends State<HomePage> {
           Product model = sectionList[secPos].productList[index];
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => Product_Detail(
-                      model: model, updateParent: updateHomePage,
+            PageRouteBuilder(
+                transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => Product_Detail(
+                      model: model,
+                      updateParent: updateHomePage,
+                      secPos: secPos,
+                      index: index,
                       updateHome: widget.updateHome,
                       //  title: sectionList[secPos].title,
                     )),
@@ -1108,9 +1148,9 @@ class StateHomePage extends State<HomePage> {
           await post(setFavoriteApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
 
-      print("set fav***${parameter.toString()}");
+
       var getdata = json.decode(response.body);
-      print('response***setting**${response.body.toString()}');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -1154,7 +1194,7 @@ class StateHomePage extends State<HomePage> {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***setting**${response.body.toString()}');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -1198,7 +1238,6 @@ class StateHomePage extends State<HomePage> {
 
       var getdata = json.decode(response.body);
 
-      print('response***slider**${response.body.toString()}***$headers');
 
       bool error = getdata["error"];
       String msg = getdata["message"];
@@ -1225,7 +1264,7 @@ class StateHomePage extends State<HomePage> {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***cat****${response.body.toString()}');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -1260,8 +1299,7 @@ class StateHomePage extends State<HomePage> {
 
       var getdata = json.decode(response.body);
 
-      print('section get***');
-      print('response***sec**$headers***${response.body.toString()}');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -1274,13 +1312,11 @@ class StateHomePage extends State<HomePage> {
         setSnackbar(msg);
       }
 
-          Future.delayed(const Duration(seconds: 1), () {
-            setState(() {
-              _isCatLoading = false;
-            });
-
-          });
-
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          _isCatLoading = false;
+        });
+      });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -1309,5 +1345,131 @@ class StateHomePage extends State<HomePage> {
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
+  }
+}
+
+class Header extends StatelessWidget {
+  final double maxHeight;
+  final double minHeight;
+
+  const Header({Key key, this.maxHeight, this.minHeight}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildImage(),
+            //  _buildGradient(animation),
+            //  _buildTitle(animation),
+          ],
+        );
+      },
+    );
+  }
+
+  Image _buildImage() {
+    return Image.network(
+      "https://www.rollingstone.com/wp-content/uploads/2020/02/TheWeeknd.jpg",
+      fit: BoxFit.cover,
+    );
+  }
+}
+
+class _MyAppSpace extends StatelessWidget {
+  const _MyAppSpace({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, c) {
+        final settings = context
+            .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+        final deltaExtent = settings.maxExtent - settings.minExtent;
+        final t =
+            (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent)
+                .clamp(0.0, 1.0) as double;
+        final fadeStart = math.max(0.0, 1.0 - kToolbarHeight / deltaExtent);
+        const fadeEnd = 1.0;
+        final opacity = 1.0 - Interval(fadeStart, fadeEnd).transform(t);
+
+        return Stack(
+          children: [
+            Image.asset(
+              'assets/images/topimage.png',
+              fit: BoxFit.fitWidth,
+            ),
+            Center(
+              child: Opacity(
+                  opacity: 1 - opacity,
+                  child: Text(
+                    'Collapsed Title',
+                  )),
+            ),
+            Opacity(
+              opacity: opacity,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  _getSearchBar(context),
+                  Text(
+                    'expanded Title',
+                  )
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _getSearchBar(BuildContext context) {
+    return InkWell(
+      child: Padding(
+        padding: const EdgeInsets.only(
+            top: kToolbarHeight * 1.5, right: 20, left: 20),
+        child: SizedBox(
+          height: 35,
+          child: TextField(
+            enabled: false,
+            textAlign: TextAlign.left,
+            decoration: InputDecoration(
+                contentPadding: EdgeInsets.fromLTRB(0, 5.0, 0, 5.0),
+                border: new OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(5.0),
+                  ),
+                  borderSide: BorderSide(
+                    width: 0,
+                    style: BorderStyle.none,
+                  ),
+                ),
+                isDense: true,
+                hintText: searchHint,
+                hintStyle: Theme.of(context)
+                    .textTheme
+                    .bodyText2
+                    .copyWith(color: Colors.white70),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.white,
+                ),
+                fillColor: Colors.white30,
+                filled: true),
+          ),
+        ),
+      ),
+      onTap: () async {
+        /*     await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Search(widget.updateHome),
+            ));
+        setState(() {});*/
+      },
+    );
   }
 }

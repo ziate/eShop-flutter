@@ -25,10 +25,17 @@ import 'Favorite.dart';
 class Product_Detail extends StatefulWidget {
   final Product model;
 
-   final Function updateHome;
+  final Function updateHome;
   final Function updateParent;
+  final int secPos, index;
 
-  const Product_Detail({Key key, this.model, this.updateParent, this.updateHome})
+  const Product_Detail(
+      {Key key,
+      this.model,
+      this.updateParent,
+      this.updateHome,
+      this.secPos,
+      this.index})
       : super(key: key);
 
   @override
@@ -55,7 +62,6 @@ class StateItem extends State<Product_Detail> {
   TextEditingController _commentC = new TextEditingController();
   double initialRate = 0;
 
-
   @override
   void initState() {
     super.initState();
@@ -64,7 +70,6 @@ class StateItem extends State<Product_Detail> {
     sliderList.addAll(widget.model.otherImage);
     controller.addListener(_scrollListener);
     getReview();
-
   }
 
   @override
@@ -93,123 +98,139 @@ class StateItem extends State<Product_Detail> {
 
   _slider() {
     double height = MediaQuery.of(context).size.height * .41;
+    print("detail===${widget.model.image}");
 
     return InkWell(
-      child: Stack(
-        children: <Widget>[
-          Container(
-            height: height,
-            width: double.infinity,
-            child: PageView.builder(
-              itemCount: sliderList.length,
-              scrollDirection: Axis.horizontal,
-              controller: _pageController,
-              reverse: false,
-              onPageChanged: (index) {
-                setState(() {
-                  _curSlider = index;
-                });
-              },
-              itemBuilder: (BuildContext context, int index) {
-                return Stack(
-                  children: <Widget>[
-                    ClipRRect(
-                        borderRadius: BorderRadius.circular(4.0),
-                        child: CachedNetworkImage(
-                          imageUrl: sliderList[_curSlider],
-                          placeholder: (context, url) => Image.asset(
-                            "assets/images/sliderph.png",
-                            height: height,
-                          ),
-                          errorWidget: (context, url, error) => Image.asset(
-                            "assets/images/sliderph.png",
-                            height: height,
-                          ),
-                          height: height,
-                          width: double.maxFinite,
-                        )),
-                    Positioned(
-                      bottom: 0,
-                      height: 40,
-                      left: 0,
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: map<Widget>(
-                          sliderList,
-                          (index, url) {
-                            return Container(
-                                width: 8.0,
-                                height: 8.0,
-                                margin: EdgeInsets.symmetric(
-                                    vertical: 10.0, horizontal: 2.0),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: _curSlider == index
-                                      ? primary
-                                      : primary.withOpacity((0.2)),
-                                ));
-                          },
-                        ),
-                      ),
-                    ),
-                    // )
-                  ],
-                );
-              },
-            ),
-          ),
-          IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios,
-                color: primary,
-              ),
-              onPressed: () => Navigator.of(context).pop()),
-          Align(
-              alignment: Alignment.topRight,
-              child: widget.model.isFavLoading
-                  ? Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                          height: 10,
-                          width: 10,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 0.7,
-                          )),
-                    )
-                  : InkWell(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Icon(
-                          widget.model.isFav == "0"
-                              ? Icons.favorite_border
-                              : Icons.favorite,
-                          color: primary,
-                        ),
-                      ),
-                      onTap: () {
-                        if (CUR_USERID != null) {
-                          widget.model.isFav == "0" ? _setFav() : _removeFav();
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => Login()),
-                          );
-                        }
-                      }))
-        ],
-      ),
       splashColor: primary.withOpacity(0.2),
       onTap: () {
         Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => Product_Preview(
+            PageRouteBuilder(
+              transitionDuration: Duration(seconds: 1),
+              pageBuilder: (_, __, ___) => Product_Preview(
                 pos: _curSlider,
+                secPos: widget.secPos,
               ),
             ));
       },
+      child: Hero(
+        tag: "homeSection-${widget.secPos}${widget.index}",
+        child: Stack(
+          children: <Widget>[
+            Container(
+              height: height,
+              width: double.infinity,
+              padding: EdgeInsets.all(8.0),
+              child: PageView.builder(
+                itemCount: sliderList.length,
+                scrollDirection: Axis.horizontal,
+                controller: _pageController,
+                reverse: false,
+                onPageChanged: (index) {
+                  setState(() {
+                    _curSlider = index;
+                  });
+                },
+                itemBuilder: (BuildContext context, int index) {
+                  return Stack(
+                    children: <Widget>[
+                      ClipRRect(
+                          borderRadius: BorderRadius.circular(4.0),
+                          child: CachedNetworkImage(
+                            imageUrl: sliderList[_curSlider],
+                            placeholder: (context, url) => Image.asset(
+                              "assets/images/sliderph.png",
+                              height: height,
+                            ),
+                            errorWidget: (context, url, error) => Image.asset(
+                              "assets/images/sliderph.png",
+                              height: height,
+                            ),
+                            height: height,
+                            width: double.maxFinite,
+                          )),
+                      Positioned(
+                        bottom: 0,
+                        height: 40,
+                        left: 0,
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: map<Widget>(
+                            sliderList,
+                            (index, url) {
+                              return Container(
+                                  width: 8.0,
+                                  height: 8.0,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 10.0, horizontal: 2.0),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _curSlider == index
+                                        ? primary
+                                        : primary.withOpacity((0.2)),
+                                  ));
+                            },
+                          ),
+                        ),
+                      ),
+                      // )
+                    ],
+                  );
+                },
+              ),
+            ),
+            Material(
+              color: Colors.transparent,
+              child: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios,
+                    color: primary,
+                  ),
+                  onPressed: () => Navigator.of(context).pop()),
+            ),
+            Align(
+                alignment: Alignment.topRight,
+                child: widget.model.isFavLoading
+                    ? Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                            height: 10,
+                            width: 10,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 0.7,
+                            )),
+                      )
+                    : Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Icon(
+                                widget.model.isFav == "0"
+                                    ? Icons.favorite_border
+                                    : Icons.favorite,
+                                color: primary,
+                              ),
+                            ),
+                            onTap: () {
+                              if (CUR_USERID != null) {
+                                widget.model.isFav == "0"
+                                    ? _setFav()
+                                    : _removeFav();
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Login()),
+                                );
+                              }
+                            }),
+                      ))
+          ],
+        ),
+      ),
     );
   }
 
@@ -470,18 +491,21 @@ class StateItem extends State<Product_Detail> {
 
     List<String> selList =
         widget.model.prVarientList[0].attribute_value_ids.split(",");
-    _selectedIndex = [widget.model.attributeList.length];
+    // _selectedIndex = [widget.model.attributeList.length];
     for (int i = 0; i < widget.model.attributeList.length; i++) {
       List<String> sinList = widget.model.attributeList[i].id.split(',');
 
-      print("get value***$selList**$sinList");
+      print("$selList**$sinList");
 
       for (int j = 0; j < sinList.length; j++) {
         if (selList.contains(sinList[j])) {
-          print("pos***$i");
+          print("pos***$i**$j*${selList.toString()}=====${sinList[j]}");
           _selectedIndex.insert(i, j);
         }
       }
+      if (_selectedIndex.length == i) _selectedIndex.insert(i, null);
+
+      print("selected***${_selectedIndex.toString()}");
     }
 
     showModalBottomSheet(
@@ -516,95 +540,109 @@ class StateItem extends State<Product_Detail> {
                     List<Widget> chips = new List();
                     List<String> att =
                         widget.model.attributeList[index].value.split(',');
+                    List<String> attId =
+                        widget.model.attributeList[index].id.split(',');
                     int varSelected;
+
+                    List<String> wholeAtt = widget.model.attrIds.split(',');
+
                     for (int i = 0; i < att.length; i++) {
-                      choiceChip = ChoiceChip(
-                        key: ValueKey<String>(att[i]),
-                        selected: _selectedIndex.length > index
-                            ? _selectedIndex[index] == i
-                            : false,
-                        label:
-                            Text(att[i], style: TextStyle(color: Colors.white)),
-                        backgroundColor: primary.withOpacity(0.45),
-                        selectedColor: primary,
-                        onSelected: att.length == 1
-                            ? null
-                            : (bool selected) {
+                      //  print("whole===$wholeAtt===${attId[i]}");
+                      if (wholeAtt.contains(attId[i])) {
+                        choiceChip = ChoiceChip(
+                          //  key: ValueKey<String>(att[i]),
+                          selected: _selectedIndex.length > index
+                              ? _selectedIndex[index] == i
+                              : false,
+                          label: Text(att[i],
+                              style: TextStyle(color: Colors.white)),
+                          backgroundColor: primary.withOpacity(0.45),
+                          selectedColor: primary,
+                          disabledColor: primary.withOpacity(0.5),
+                          onSelected: att.length == 1
+                              ? null
+                              : (bool selected) {
+                                  setState(() {
+                                    available = false;
+                                    _selectedIndex[index] = selected ? i : null;
+                                    List<int> selectedId =
+                                        []; //list where user choosen item id is stored
+                                    List<bool> check = [];
+                                    for (int i = 0;
+                                        i < widget.model.attributeList.length;
+                                        i++) {
+                                      List<String> attId = widget
+                                          .model.attributeList[i].id
+                                          .split(',');
 
+                                      //print("valuae***$i**${_selectedIndex.toString()}***${attId.toString()}**${selectedId.toString()}**}");
 
+                                      // print("${attId[_selectedIndex[i]]}");
 
+                                      if (_selectedIndex[i] != null)
+                                        selectedId.add(int.parse(
+                                            attId[_selectedIndex[i]]));
+                                    }
+                                    check.clear();
+                                    List<String> sinId;
+                                    findMatch:
+                                    for (int i = 0;
+                                        i < widget.model.prVarientList.length;
+                                        i++) {
+                                      sinId = widget.model.prVarientList[i]
+                                          .attribute_value_ids
+                                          .split(",");
 
-                                setState(() {
-                                  available = false;
-                                  _selectedIndex[index] = selected ? i : null;
-                                  List<int> selectedId = [];
-                                  List<bool> check = [];
-                                  for (int i = 0;
-                                      i < widget.model.attributeList.length;
-                                      i++) {
-                                    List<String> attId = widget
-                                        .model.attributeList[i].id
-                                        .split(',');
+                                      print(
+                                          'match****before****${selectedId.toString()}**${sinId.toString()}**${selectedId.length}***${sinId.length}');
+                                      for (int j = 0;
+                                          j < selectedId.length;
+                                          j++) {
+                                        if (sinId.contains(
+                                            selectedId[j].toString())) {
+                                          print(
+                                              'match****${sinId.toString()}****${selectedId[j].toString()}');
+                                          check.add(true);
 
-                                  //  print("valuae***${attId[_selectedIndex[i]}");
-
-                                    selectedId.add(
-                                        int.parse(attId[_selectedIndex[i]]));
-                                  }
-                                  check.clear();
-                                  List<String> sinId;
-                                  findMatch:
-                                  for (int i = 0;
-                                      i < widget.model.prVarientList.length;
-                                      i++) {
-                                    sinId = widget.model.prVarientList[i]
-                                        .attribute_value_ids
-                                        .split(",");
-
-                                    print(
-                                        'match****before****${selectedId.toString()}**${sinId.toString()}**${selectedId.length}***${sinId.length}');
-                                    for (int j = 0;
-                                        j < selectedId.length;
-                                        j++) {
-                                      if (sinId
-                                          .contains(selectedId[j].toString())) {
-                                        print(
-                                            'match****${sinId.toString()}****${selectedId[j].toString()}');
-                                        check.add(true);
-
-                                        if (selectedId.length == sinId.length &&
-                                            check.length == selectedId.length) {
-                                          varSelected = i;
-                                          break findMatch;
+                                          if (selectedId.length ==
+                                                  sinId.length &&
+                                              check.length ==
+                                                  selectedId.length) {
+                                            varSelected = i;
+                                            break findMatch;
+                                          }
+                                        } else {
+                                          print(
+                                              'match****not match==braek**$j');
+                                          break;
                                         }
-                                      } else {
-                                        print('match****not match==braek**$j');
-                                        break;
                                       }
                                     }
-                                  }
 
-                                  print(
-                                      'match******size***${selectedId.length}***${sinId.length}***${check.length}');
-                                  if (selectedId.length == sinId.length &&
-                                      check.length == selectedId.length) {
-                                    available = true;
-                                    _oldSelVarient = varSelected;
-                                  } else {
-                                    available = false;
-                                  }
-                                });
-                              },
-                      );
+                                    print(
+                                        'match******size***${selectedId.length}***${sinId.length}***${check.length}');
+                                    if (selectedId.length == sinId.length &&
+                                        check.length == selectedId.length) {
+                                      available = true;
+                                      _oldSelVarient = varSelected;
+                                    } else {
+                                      available = false;
+                                    }
+                                  });
+                                },
+                        );
 
-                      chips.add(Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 5),
-                          child: choiceChip));
+                        chips.add(Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 5),
+                            child: choiceChip));
+                      }
                     }
 
                     return Column(
                       children: <Widget>[
-                        Text(widget.model.attributeList[index].name),
+                        chips.length > 0
+                            ? Text(widget.model.attributeList[index].name)
+                            : Container(),
                         new Wrap(
                           children: chips.map<Widget>((Widget chip) {
                             return Padding(
@@ -682,7 +720,6 @@ class StateItem extends State<Product_Detail> {
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
-
           var data = getdata["data"];
           CUR_CART_COUNT = data['cart_count'];
           Navigator.push(
@@ -820,7 +857,7 @@ class StateItem extends State<Product_Detail> {
         widget.model.isFav = "1";
         widget.updateParent();
 
-      //  home.updateHomepage();
+        //  home.updateHomepage();
       } else {
         setSnackbar(msg);
       }
@@ -856,7 +893,7 @@ class StateItem extends State<Product_Detail> {
             item.productList[0].prVarientList[0].id ==
             widget.model.prVarientList[0].id);
 
-       // home.updateHomepage();
+        // home.updateHomepage();
       } else {
         setSnackbar(msg);
       }

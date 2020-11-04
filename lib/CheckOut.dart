@@ -510,10 +510,10 @@ class StateCheckout extends State<CheckOut> {
         TAX_AMT: taxAmt.toString(),
         TAX_PER: taxPer.toString(),
         FINAL_TOTAL: totalPrice.toString(),
-        LATITUDE: latitude,
-        LONGITUDE: longitude,
+        /*   LATITUDE: latitude,
+        LONGITUDE: longitude,*/
         PAYMENT_METHOD: payMethod,
-        ADDRESS: selAddress,
+        ADD_ID: selAddress,
         DELIVERY_DATE: selDate,
         ISWALLETBALUSED: _isUseWallet ? "1" : "0",
         WALLET_BAL_USED: usedBal.toString(),
@@ -542,7 +542,7 @@ class StateCheckout extends State<CheckOut> {
                 builder: (BuildContext context) => OrderSuccess()),
             ModalRoute.withName('/home'));
       } else {
-        //if (msg != 'Cart Is Empty !') setSnackbar(msg);
+        setSnackbar(msg);
       }
       setState(() {
         // _isLoading = false;
@@ -892,10 +892,11 @@ class Address extends StatefulWidget {
     return StateAddress();
   }
 }
+
 int selectedAddress;
+
 class StateAddress extends State<Address> {
   bool _isLoading = true;
-
 
   @override
   void initState() {
@@ -920,9 +921,8 @@ class StateAddress extends State<Address> {
                           physics: BouncingScrollPhysics(),
                           itemCount: addressList.length,
                           itemBuilder: (context, index) {
-
-                            print("default***b${addressList[index].isDefault}***${addressList[index].name}");
-
+                            print(
+                                "default***b${addressList[index].isDefault}***${addressList[index].name}");
 
                             return addressItem(index);
                           }),
@@ -954,18 +954,11 @@ class StateAddress extends State<Address> {
   }
 
   addressItem(int index) {
-    print("default***${addressList[index].isDefault}***${addressList[index].name}**$selectedAddress");
+    print(
+        "default***${addressList[index].isDefault}***${addressList[index].name}**$selectedAddress");
     if (addressList[index].isDefault == "1") {
       selectedAddress = index;
-      selAddress = addressList[index].address +
-          ", " +
-          addressList[index].area +
-          ", " +
-          addressList[index].city +
-          ", " +
-          addressList[index].state +
-          ", " +
-          addressList[index].country;
+      selAddress = addressList[index].id;
     }
     return RadioListTile(
       value: (index),
@@ -973,15 +966,7 @@ class StateAddress extends State<Address> {
       onChanged: (val) {
         setState(() {
           selectedAddress = val;
-          selAddress = addressList[index].address +
-              ", " +
-              addressList[index].area +
-              ", " +
-              addressList[index].city +
-              ", " +
-              addressList[index].state +
-              ", " +
-              addressList[index].country;
+          selAddress = addressList[index].id;
         });
       },
       title: Row(
@@ -1157,6 +1142,7 @@ class StatePayment extends State<Payment> {
 
   @override
   Widget build(BuildContext context) {
+    print("cur***$CUR_BALANCE");
     return _isLoading
         ? getProgress()
         : SingleChildScrollView(
@@ -1164,7 +1150,9 @@ class StatePayment extends State<Payment> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Card(
-                  child: CUR_BALANCE != "0"
+                  child: CUR_BALANCE != "0" &&
+                          CUR_BALANCE.isNotEmpty &&
+                          CUR_BALANCE != ""
                       ? Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: CheckboxListTile(

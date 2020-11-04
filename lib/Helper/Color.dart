@@ -24,7 +24,7 @@ const Color primaryLight3=Color(0xff0475cb);
 
 const Color pink=Color(0xffd4001d);
 const Color blue=Color(0xff1977f3);
-
+const Color red=Colors.red;
 
 
 const Color lightblack=Color(0xff666666);

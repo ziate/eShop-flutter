@@ -4,14 +4,11 @@ import 'dart:io';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:eshop/Forget_Password.dart';
 import 'package:eshop/Helper/String.dart';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:eshop/Home.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
-
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
@@ -97,7 +94,7 @@ class _LoginPageState extends State<Login> {
         await post(getUserLoginApi, body: data, headers: headers)
             .timeout(Duration(seconds: timeOut));
 
-    print('response***login***${response.body.toString()}');
+    print('response***login*${data.toString()}**${response.body.toString()}');
     var getdata = json.decode(response.body);
 
     bool error = getdata["error"];
@@ -120,7 +117,6 @@ class _LoginPageState extends State<Login> {
         dob = i[DOB];
         image = i[IMAGE];
       }
-
       setSnackbar('Login successfully');
       CUR_USERID = id;
       saveUserDetail(id, username, email, mobile, city, area, address, pincode,
@@ -139,7 +135,7 @@ class _LoginPageState extends State<Login> {
 
   subLogo() {
     return Container(
-      padding: EdgeInsets.only(top: 150.0),
+      padding: EdgeInsets.only(top: 80.0),
       child: Center(
         child: new Image.asset('assets/images/sublogo.png', fit: BoxFit.fill),
       ),
@@ -148,7 +144,7 @@ class _LoginPageState extends State<Login> {
 
   welcomeEshopTxt() {
     return Padding(
-        padding: EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
+        padding: EdgeInsets.only(top: 50.0, left: 30.0, right: 30.0),
         child: Align(
           alignment: Alignment.centerLeft,
           child: new Text(
@@ -163,68 +159,99 @@ class _LoginPageState extends State<Login> {
 
   eCommerceforBusinessTxt() {
     return Padding(
-        padding: EdgeInsets.only(top: 10.0, left: 20.0, right: 20.0),
+        padding: EdgeInsets.only(top: 10.0, left: 30.0, right: 30.0),
         child: Align(
           alignment: Alignment.centerLeft,
           child: new Text(
             ECOMMERCE_APP_FOR_ALL_BUSINESS,
             style: Theme.of(context)
                 .textTheme
-                .subhead
-                .copyWith(color: lightblack2, fontWeight: FontWeight.normal),
+                .subtitle1
+                .copyWith(color: lightblack2),
           ),
         ));
   }
 
   setCountryCode() {
-
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     return Padding(
-        padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 30.0),
+        padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
         child: Container(
-          width: MediaQuery.of(context).size.width,
-            height: 45,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                border: Border.all(color: darkgrey)),
-
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CountryCodePicker(
-                  showCountryOnly: false,
-                  showOnlyCountryWhenClosed: false,
-                  alignLeft: true,
-                  showFlag: true,
-                  onInit: (code) {
-                    print("on init ${code.name} ${code.dialCode} ${code.name}");
-                    countryName = code.name;
-                    print("current name:$countryName");
-                    countrycode = code.toString().replaceFirst("+", "");
-                    print("New Country selected: " + code.toString());
-                  },
-                  onChanged: (CountryCode countryCode) {
-                    countrycode = countryCode.toString().replaceFirst("+", "");
-                    print("New Country selected: " + countryCode.toString());
-                    countryName = countryCode.name;
-                  },
-
-                ),
-                 Text(countryName == null ? countryName = "" : countryName)
-              ],
-            )));
+          width: width,
+          height: 49,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              border: Border.all(color: darkgrey)),
+          child: CountryCodePicker(
+              showCountryOnly: false,
+              searchDecoration: InputDecoration(
+                hintText: COUNTRY_CODE_LBL,
+                fillColor: primary,
+              ),
+              showOnlyCountryWhenClosed: false,
+              initialSelection: 'IN',
+              alignLeft: true,
+              dialogSize: Size(width, height),
+              builder: _buildCountryPicker,
+              onChanged: (CountryCode countryCode) {
+                countrycode = countryCode.toString().replaceFirst("+", "");
+                print("New Country selected: " + countryCode.toString());
+                countryName = countryCode.name;
+              },
+              onInit: (code) {
+                print("on init ${code.name} ${code.dialCode} ${code.name}");
+                countrycode = code.toString().replaceFirst("+", "");
+                print("New Country selected: " + code.toString());
+              }),
+        ));
   }
+
+  Widget _buildCountryPicker(CountryCode country) => Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: new Image.asset(
+                country.flagUri,
+                package: 'country_code_picker',
+                height: 35,
+                width: 30,
+              ),
+            ),
+          ),
+          new Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: new Text(country.dialCode),
+            ),
+          ),
+          new Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: new Text(
+                country.name,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      );
 
   setMobileNo() {
     return Padding(
-      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
       child: TextFormField(
         keyboardType: TextInputType.number,
         controller: mobileController,
-        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        //inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
         validator: validateMob,
         onSaved: (String value) {
           mobileno = value;
-          mobile = countrycode + mobileno;
+          mobile =  mobileno;
           print('Mobile no:$mobile');
         },
         decoration: InputDecoration(
@@ -239,7 +266,7 @@ class _LoginPageState extends State<Login> {
 
   setPass() {
     return Padding(
-      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
       child: TextFormField(
         keyboardType: TextInputType.text,
         obscureText: true,
@@ -261,7 +288,7 @@ class _LoginPageState extends State<Login> {
   forgetPass() {
     return Padding(
         padding:
-            EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 20.0),
+            EdgeInsets.only(bottom: 10.0, left: 30.0, right: 30.0, top: 20.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
@@ -279,7 +306,7 @@ class _LoginPageState extends State<Login> {
               child: Text(FORGOT_PASSWORD_LBL,
                   style: Theme.of(context)
                       .textTheme
-                      .subhead
+                      .subtitle1
                       .copyWith(color: lightblack)),
             ),
           ],
@@ -289,61 +316,55 @@ class _LoginPageState extends State<Login> {
   loginBtn() {
     double width = MediaQuery.of(context).size.width;
     return Padding(
-      padding:
-          EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 20.0),
-      child: RaisedButton(
-        onPressed: () {
-          validateAndSubmit();
-        },
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-        padding: EdgeInsets.all(0.0),
-        child: Ink(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [primary.withOpacity(0.7), primary],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(30.0)),
-          child: Container(
-            constraints:
-                BoxConstraints(maxWidth: width * 0.90, minHeight: 50.0),
-            alignment: Alignment.center,
-            child: Text(
-              LOGIN_LBL,
-              textAlign: TextAlign.center,
-              style:
-                  Theme.of(context).textTheme.headline6.copyWith(color: white),
+        padding:
+            EdgeInsets.only(bottom: 10.0, left: 30.0, right: 30.0, top: 20.0),
+        child: Center(
+            child: RaisedButton(
+          color: primaryLight2,
+          onPressed: () {
+            validateAndSubmit();
+          },
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+          padding: EdgeInsets.all(0.0),
+          child: Ink(
+            child: Container(
+              constraints: BoxConstraints(maxWidth: width * 1.5, minHeight: 45),
+              //decoration: back(),
+              alignment: Alignment.center,
+              child: Text(LOGIN_LBL,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      .copyWith(color: white, fontWeight: FontWeight.normal)),
             ),
           ),
-        ),
-      ),
-    );
+        )));
   }
 
   accSignup() {
     return Padding(
       padding:
-          EdgeInsets.only(bottom: 30.0, left: 20.0, right: 20.0, top: 20.0),
+          EdgeInsets.only(bottom: 30.0, left: 30.0, right: 30.0, top: 20.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(DONT_HAVE_AN_ACC,
               style: Theme.of(context)
                   .textTheme
-                  .subhead
+                  .subtitle1
                   .copyWith(color: lightblack2, fontWeight: FontWeight.normal)),
           InkWell(
               onTap: () {
                 Future.delayed(Duration(seconds: 1)).then((_) {
-                  Navigator.pushReplacement(context,
+                  Navigator.push(context,
                       MaterialPageRoute(builder: (context) => SignUp()));
                 });
               },
               child: Text(
                 SIGN_UP_LBL,
-                style: Theme.of(context).textTheme.subhead.copyWith(
+                style: Theme.of(context).textTheme.subtitle1.copyWith(
                     color: primary, decoration: TextDecoration.underline),
               ))
         ],
@@ -368,9 +389,8 @@ class _LoginPageState extends State<Login> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   SKIP,
-                  style: TextStyle(
-                      color: Colors.white,
-                      decoration: (TextDecoration.underline)),
+                  style: Theme.of(context).textTheme.subtitle1.copyWith(
+                      color: white, decoration: TextDecoration.underline),
                 ),
               ),
             ),
@@ -380,34 +400,36 @@ class _LoginPageState extends State<Login> {
 
   expandedBottomView() {
     return Expanded(
-        flex: 1,
         child: Container(
             width: double.infinity,
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
                   Container(
-                    padding: EdgeInsets.only(top: 40.0),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      margin:
-                          EdgeInsets.only(left: 20.0, right: 20.0, top: 30.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          welcomeEshopTxt(),
-                          eCommerceforBusinessTxt(),
-                          setCountryCode(),
-                          setMobileNo(),
-                          setPass(),
-                          forgetPass(),
-                          loginBtn(),
-                          accSignup(),
-                        ],
+                    padding: EdgeInsets.only(top: 10.0, bottom: 20),
+                    child: Form(
+                      key: _formkey,
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        margin:
+                            EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            welcomeEshopTxt(),
+                            eCommerceforBusinessTxt(),
+                            setCountryCode(),
+                            setMobileNo(),
+                            setPass(),
+                            forgetPass(),
+                            loginBtn(),
+                            accSignup(),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                  )
                 ],
               ),
             )));
@@ -415,19 +437,24 @@ class _LoginPageState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     return Scaffold(
         key: _scaffoldKey,
-        body: Form(
-            key: _formkey,
-            child: Container(
-                decoration: back(),
-                child: Center(
-                    child: Column(
-                  children: <Widget>[
-                    skipBtn(),
-                    subLogo(),
-                    expandedBottomView(),
-                  ],
-                )))));
+        body: Stack(children: <Widget>[
+          Container(
+              height: height,
+              width: width,
+              decoration: back(),
+              child: Center(
+                  child: Column(
+                children: <Widget>[
+                  skipBtn(),
+                  subLogo(),
+                  expandedBottomView(),
+                ],
+              ))),
+          showCircularProgress(_isLoading, primary),
+        ]));
   }
 }

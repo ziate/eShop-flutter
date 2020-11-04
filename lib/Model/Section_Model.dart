@@ -2,24 +2,43 @@ import 'package:eshop/Helper/String.dart';
 import 'package:flutter/widgets.dart';
 
 class Section_Model {
-  String id, title, varientId, qty,productId,perItemTotal,perItemPrice;
+  String id,
+      title,
+      varientId,
+      qty,
+      productId,
+      perItemTotal,
+      perItemPrice,
+      style,
+      short_desc;
   List<Product> productList;
 
   Section_Model(
-      {this.id, this.title, this.productList, this.varientId, this.qty,this.productId,this.perItemTotal,this.perItemPrice});
+      {this.id,
+      this.title,
+      this.productList,
+      this.varientId,
+      this.qty,
+      this.productId,
+      this.perItemTotal,
+      this.perItemPrice,
+      this.style,
+      this.short_desc});
 
   factory Section_Model.fromJson(Map<String, dynamic> parsedJson) {
-
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
         .map((data) => new Product.fromJson(data))
         .toList();
 
     return Section_Model(
-        id: parsedJson[ID], title: parsedJson[TITLE], productList: productList);
+        id: parsedJson[ID],
+        title: parsedJson[TITLE],
+        style: parsedJson[STYLE],
+        short_desc: parsedJson[SHORT_DESC],
+        productList: productList);
   }
 
   factory Section_Model.fromCart(Map<String, dynamic> parsedJson) {
-
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
         .map((data) => new Product.fromJson(data))
         .toList();
@@ -33,12 +52,7 @@ class Section_Model {
         productList: productList);
   }
 
-
-
-
-
   factory Section_Model.fromFav(Map<String, dynamic> parsedJson) {
-
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
         .map((data) => new Product.fromJson(data))
         .toList();
@@ -51,13 +65,14 @@ class Section_Model {
 }
 
 class Product {
-  String id, name, desc, image, catName, type, rating, noOfRating;
+  String id, name, desc, image, catName, type, rating, noOfRating, attrIds;
   List<String> otherImage;
   List<Product_Varient> prVarientList;
   List<Attribute> attributeList;
   String isFav, isReturnable, isCancelable, isPurchased, isOutofStock;
   bool isFavLoading = false;
- // String cartCount;
+
+  // String cartCount;
 
   Product(
       {this.id,
@@ -75,7 +90,8 @@ class Product {
       this.isPurchased,
       this.isOutofStock,
       this.noOfRating,
-     // this.cartCount,
+      this.attrIds,
+      // this.cartCount,
       this.rating,
       this.isFavLoading});
 
@@ -108,8 +124,9 @@ class Product {
         prVarientList: varientList,
         attributeList: attList,
         isFavLoading: false,
-       // cartCount: json[CART_COUNT]
-    );
+        attrIds: json[ATTR_VALUE]
+        // cartCount: json[CART_COUNT]
+        );
   }
 }
 

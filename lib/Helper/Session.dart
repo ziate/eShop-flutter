@@ -147,7 +147,7 @@ String validateUserName(String value) {
   {
     return "Username is Required";
   }
-  if(value.length<=2)
+  if(value.length<=1)
   {
     return "Username should be 2 character long";
   }
@@ -198,7 +198,13 @@ String validateField(String value) {
   else
     return null;
 }
-
+String validatePincodeOptional(String value) {
+  if (value.isNotEmpty)
+    if (!RegExp(r'^[1-9][0-9]{5}$').hasMatch(value))
+      return "Please enter valid pincode";
+    else
+      return null;
+}
 String validatePincode(String value) {
   if (value.length == 0)
     return "Pincode is Required";
@@ -210,19 +216,21 @@ String validatePincode(String value) {
 
 
 String validateEmail(String value) {
-  if (value.isNotEmpty) {
-    if (!RegExp(
+  if (value.length==0)
+    {
+      return "Email is Required";
+    }
+    else if (!RegExp(
         r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
         r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
         r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
         .hasMatch(value)) {
       return 'Please enter a valid email Address';
     }
-  } else {
+  else {
     return null;
   }
 }
-
 
 Widget getProgress() {
   return Center(child: CircularProgressIndicator());
@@ -234,8 +242,7 @@ Widget getNoItem() {
 
 String getToken() {
   final key = '6b786a4d37763d7e21426f426d625f32716c414e503647323129502a61';
-  final claimSet =
-      new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
+  final claimSet = new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
 
   String token = issueJwtHS256(claimSet, key);
   print("token***$token");
