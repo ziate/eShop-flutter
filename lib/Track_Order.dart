@@ -21,18 +21,24 @@ class TrackOrder extends StatefulWidget {
   }
 }
 
+bool _isLoading = true;
+List<Order_Model> orderList = [];
+int offset = 0;
+int total = 0, _curIndex = 0;
+bool isLoadingmore = true;
+
 class StateTrack extends State<TrackOrder> {
-  bool _isLoading = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  List<Order_Model> orderList = [];
+
   List<Order_Model> tempList = [];
-  int offset = 0;
-  int total = 0, _curIndex = 0;
-  bool isLoadingmore = true;
+
   ScrollController controller = new ScrollController();
 
   @override
   void initState() {
+    offset = 0;
+    total = 0;
+
     getOrder();
     controller.addListener(_scrollListener);
     super.initState();
@@ -42,11 +48,8 @@ class StateTrack extends State<TrackOrder> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      appBar: getAppBar(TRACK_ORDER, context),
       body: _isLoading
-          ? Padding(
-              padding: const EdgeInsets.only(top: kToolbarHeight),
-              child: getProgress())
+          ? shimmer()
           : orderList.length == 0
               ? Padding(
                   padding: const EdgeInsets.only(top: kToolbarHeight),
@@ -105,8 +108,7 @@ class StateTrack extends State<TrackOrder> {
               offset = offset + perPage;
             }
           } else {
-          //  if (msg != 'No Favourite(s) Product Are Added')
-              setSnackbar(msg);
+            if (msg != 'No Order(s) Found !') setSnackbar(msg);
             isLoadingmore = false;
           }
           setState(() {
@@ -233,11 +235,22 @@ class StateTrack extends State<TrackOrder> {
                       Icons.keyboard_arrow_right,
                       color: Colors.black,
                     ),
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => OrderDetail(model: orderList[index],)),
+                        MaterialPageRoute(
+                            builder: (context) => OrderDetail(
+                                  model: orderList[index],
+                                )),
                       );
+
+                      setState(() {
+                        offset = 0;
+                        total = 0;
+                        _isLoading = true;
+                      });
+
+                      getOrder();
                     })
               ],
             ),

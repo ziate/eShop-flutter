@@ -4,6 +4,7 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:eshop/Helper/String.dart';
 
 import 'package:eshop/Verify_Otp.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -19,7 +20,7 @@ class SignUp extends StatefulWidget {
   _SignUpPageState createState() => new _SignUpPageState();
 }
 
-class _SignUpPageState extends State<SignUp> {
+class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   bool _showPassword = false;
   bool visible = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -30,24 +31,25 @@ class _SignUpPageState extends State<SignUp> {
   final passwordController = TextEditingController();
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   String name, email, password, mobile, id, countrycode, countryName;
-  bool _isLoading = false;
-  bool _isClickable = true;
+
+  Animation buttonSqueezeanimation;
+
+  AnimationController buttonController;
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
-      setState(() {
+      /* setState(() {
         _isLoading = true;
-      });
-
-      setState(() {
-        _isClickable = false;
-
-        Future.delayed(Duration(seconds: 30)).then((_) {
-          _isClickable = true;
-        });
-      });
+      });*/
+      _playAnimation();
       checkNetwork();
     }
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
   }
 
   Future<void> checkNetwork() async {
@@ -56,19 +58,29 @@ class _SignUpPageState extends State<SignUp> {
       getVerifyUser();
     } else {
       setSnackbar(internetMsg);
-      setState(() {
+      /* setState(() {
         _isLoading = false;
-      });
+      });*/
+      await buttonController.reverse();
     }
   }
 
   bool validateAndSave() {
     final form = _formkey.currentState;
+    form.save();
     if (form.validate()) {
-      form.save();
+      print("validated**********");
+
       return true;
     }
+    print("not validated**********");
     return false;
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
   }
 
   setSnackbar(String msg) {
@@ -87,6 +99,7 @@ class _SignUpPageState extends State<SignUp> {
     try {
       var data = {
         MOBILE: mobile,
+        EMAIL:email
       };
       Response response =
           await post(getVerifyUserApi, body: data, headers: headers)
@@ -96,6 +109,7 @@ class _SignUpPageState extends State<SignUp> {
       print('response***verifyuser**$mobile***${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
+      await buttonController.reverse();
       if (!error) {
         setSnackbar(msg);
 
@@ -106,7 +120,7 @@ class _SignUpPageState extends State<SignUp> {
         setPrefrence(COUNTRY_CODE, countrycode);
 
         Future.delayed(Duration(seconds: 1)).then((_) {
-          Navigator.push(
+          Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                   builder: (context) => Verify_Otp(
@@ -114,16 +128,16 @@ class _SignUpPageState extends State<SignUp> {
         });
       } else {
         setSnackbar(msg);
-        _isClickable = true;
       }
-      setState(() {
+      /*  setState(() {
         _isLoading = false;
-      });
+      });*/
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-      setState(() {
+      /* setState(() {
         _isLoading = false;
-      });
+      });*/
+      await buttonController.reverse();
     }
   }
 
@@ -161,23 +175,25 @@ class _SignUpPageState extends State<SignUp> {
         decoration: InputDecoration(
             prefixIcon: Icon(Icons.person_outline),
             hintText: NAMEHINT_LBL,
-            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
+                OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
       ),
     );
   }
 
   setCountryCode() {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+    double height = MediaQuery.of(context).size.height * 0.9;
     return Padding(
-        padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
+        padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
         child: Container(
           width: width,
-          height: 49,
+          height: 40,
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.0),
+              borderRadius: BorderRadius.circular(7.0),
               border: Border.all(color: darkgrey)),
           child: CountryCodePicker(
               showCountryOnly: false,
@@ -213,8 +229,8 @@ class _SignUpPageState extends State<SignUp> {
               child: new Image.asset(
                 country.flagUri,
                 package: 'country_code_picker',
-                height: 35,
-                width: 30,
+                height: 40,
+                width: 20,
               ),
             ),
           ),
@@ -239,11 +255,11 @@ class _SignUpPageState extends State<SignUp> {
 
   setMobileNo() {
     return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
+      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
       child: TextFormField(
         keyboardType: TextInputType.number,
         controller: mobileController,
-        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         validator: validateMob,
         onSaved: (String value) {
           // mobileno = value;
@@ -251,18 +267,20 @@ class _SignUpPageState extends State<SignUp> {
           print('Mobile no:$mobile');
         },
         decoration: InputDecoration(
-            prefixIcon: Icon(Icons.call),
+            prefixIcon: Icon(Icons.call_outlined),
             hintText: MOBILEHINT_LBL,
-            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
+                OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
       ),
     );
   }
 
   setEmail() {
     return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
+      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
       child: TextFormField(
         keyboardType: TextInputType.emailAddress,
         controller: emailController,
@@ -271,18 +289,20 @@ class _SignUpPageState extends State<SignUp> {
           email = value;
         },
         decoration: InputDecoration(
-            prefixIcon: Icon(Icons.email),
+            prefixIcon: Icon(Icons.email_outlined),
             hintText: EMAILHINT_LBL,
-            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
+                OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
       ),
     );
   }
 
   setPass() {
     return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
+      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
       child: TextFormField(
         keyboardType: TextInputType.text,
         obscureText: !this._showPassword,
@@ -292,16 +312,21 @@ class _SignUpPageState extends State<SignUp> {
         decoration: InputDecoration(
             prefixIcon: Icon(Icons.lock_outline),
             hintText: PASSHINT_LBL,
-            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
+                OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
       ),
     );
   }
 
   showPass() {
     return Padding(
-        padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
+        padding: EdgeInsets.only(
+          left: 30.0,
+          right: 30.0,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
@@ -321,8 +346,49 @@ class _SignUpPageState extends State<SignUp> {
           ],
         ));
   }
-
   verifyBtn() {
+    return
+      new AnimatedBuilder(
+        builder: _buildBtnAnimation,
+        animation: buttonSqueezeanimation,
+      );
+  }
+
+
+  Widget _buildBtnAnimation(BuildContext context, Widget child) {
+    return CupertinoButton(
+      child: Container(
+        width: buttonSqueezeanimation.value,
+        height: 45,
+        alignment: FractionalOffset.center,
+        decoration: new BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryLight2, primaryLight3],
+              stops: [0, 1]),
+
+          borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
+        ),
+        child: buttonSqueezeanimation.value > 75.0
+            ? Text(VERIFY_MOBILE_NUMBER,
+            textAlign: TextAlign.center,
+            style: Theme
+                .of(context)
+                .textTheme
+                .headline6
+                .copyWith(color: white, fontWeight: FontWeight.normal))
+            : new CircularProgressIndicator(
+          valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      ),
+
+      onPressed: () {
+        validateAndSubmit();
+      },
+    );
+  }
+ /* verifyBtn() {
     double width = MediaQuery.of(context).size.width;
     return Padding(
         padding:
@@ -331,9 +397,7 @@ class _SignUpPageState extends State<SignUp> {
             child: RaisedButton(
           color: primaryLight2,
           onPressed: () {
-            if (_isClickable) {
-              validateAndSubmit();
-            }
+            validateAndSubmit();
           },
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
@@ -341,7 +405,6 @@ class _SignUpPageState extends State<SignUp> {
           child: Ink(
             child: Container(
               constraints: BoxConstraints(maxWidth: width * 1.5, minHeight: 45),
-              //decoration: back(),
               alignment: Alignment.center,
               child: Text(VERIFY_MOBILE_NUMBER,
                   textAlign: TextAlign.center,
@@ -352,7 +415,7 @@ class _SignUpPageState extends State<SignUp> {
             ),
           ),
         )));
-  }
+  }*/
 
   loginTxt() {
     return Padding(
@@ -409,7 +472,8 @@ class _SignUpPageState extends State<SignUp> {
                             setEmail(),
                             setPass(),
                             showPass(),
-                            verifyBtn(),
+                             verifyBtn(),
+                            //appBtn(VERIFY_MOBILE_NUMBER, buttonController, buttonSqueezeanimation, validateAndSubmit),
                             loginTxt(),
                           ],
                         ),
@@ -422,20 +486,35 @@ class _SignUpPageState extends State<SignUp> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        body: Stack(children: [
-          Container(
-              decoration: back(),
-              child: Center(
-                  child: Column(
-                children: <Widget>[
-                  subLogo(),
-                  expandedBottomView(),
-                ],
-              ))),
-          showCircularProgress(_isLoading, primary)
-        ]));
+        body: Container(
+            decoration: back(),
+            child: Center(
+                child: Column(
+              children: <Widget>[
+                subLogo(),
+                expandedBottomView(),
+              ],
+            ))));
   }
 }

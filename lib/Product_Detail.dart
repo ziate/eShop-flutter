@@ -22,20 +22,22 @@ import 'Model/User.dart';
 import 'Product_Preview.dart';
 import 'Favorite.dart';
 
-class Product_Detail extends StatefulWidget {
+class ProductDetail extends StatefulWidget {
   final Product model;
 
   final Function updateHome;
   final Function updateParent;
   final int secPos, index;
+  final bool list;
 
-  const Product_Detail(
+  const ProductDetail(
       {Key key,
       this.model,
       this.updateParent,
       this.updateHome,
       this.secPos,
-      this.index})
+      this.index,
+      this.list})
       : super(key: key);
 
   @override
@@ -44,7 +46,7 @@ class Product_Detail extends StatefulWidget {
 
 List<String> sliderList = [];
 
-class StateItem extends State<Product_Detail> {
+class StateItem extends State<ProductDetail> {
   int _curSlider = 0;
   final _pageController = PageController();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -98,8 +100,6 @@ class StateItem extends State<Product_Detail> {
 
   _slider() {
     double height = MediaQuery.of(context).size.height * .41;
-    print("detail===${widget.model.image}");
-
     return InkWell(
       splashColor: primary.withOpacity(0.2),
       onTap: () {
@@ -107,131 +107,215 @@ class StateItem extends State<Product_Detail> {
             context,
             PageRouteBuilder(
               transitionDuration: Duration(seconds: 1),
-              pageBuilder: (_, __, ___) => Product_Preview(
-                pos: _curSlider,
-                secPos: widget.secPos,
-              ),
+              pageBuilder: (_, __, ___) => ProductPreview(
+                  pos: _curSlider,
+                  secPos: widget.secPos,
+                  index: widget.index,
+                  id: widget.model.id,
+                  list: widget.list),
             ));
       },
-      child: Hero(
-        tag: "homeSection-${widget.secPos}${widget.index}",
-        child: Stack(
-          children: <Widget>[
-            Container(
-              height: height,
-              width: double.infinity,
-              padding: EdgeInsets.all(8.0),
-              child: PageView.builder(
-                itemCount: sliderList.length,
-                scrollDirection: Axis.horizontal,
-                controller: _pageController,
-                reverse: false,
-                onPageChanged: (index) {
-                  setState(() {
-                    _curSlider = index;
-                  });
-                },
-                itemBuilder: (BuildContext context, int index) {
-                  return Stack(
-                    children: <Widget>[
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(4.0),
-                          child: CachedNetworkImage(
-                            imageUrl: sliderList[_curSlider],
-                            placeholder: (context, url) => Image.asset(
-                              "assets/images/sliderph.png",
+      child: Stack(
+        children: <Widget>[
+          Hero(
+              tag: widget.list
+                  ? "${widget.index}${widget.model.id}"
+                  : "${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}",
+              child: Container(
+                height: height,
+                width: double.infinity,
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+                ),
+                child: PageView.builder(
+                  itemCount: sliderList.length,
+                  scrollDirection: Axis.horizontal,
+                  controller: _pageController,
+                  reverse: false,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _curSlider = index;
+                    });
+                  },
+                  itemBuilder: (BuildContext context, int index) {
+                    return Stack(
+                      children: <Widget>[
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(4.0),
+                            child: CachedNetworkImage(
+                              imageUrl: sliderList[_curSlider],
+                              placeholder: (context, url) => Image.asset(
+                                "assets/images/sliderph.png",
+                                height: height,
+                              ),
+                              errorWidget: (context, url, error) => Image.asset(
+                                "assets/images/sliderph.png",
+                                height: height,
+                              ),
                               height: height,
+                              width: double.maxFinite,
+                            )),
+                        Positioned(
+                          bottom: 0,
+                          height: 40,
+                          left: 0,
+                          width: MediaQuery.of(context).size.width,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: map<Widget>(
+                              sliderList,
+                              (index, url) {
+                                return Container(
+                                    width: 8.0,
+                                    height: 8.0,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 10.0, horizontal: 2.0),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _curSlider == index
+                                          ? primary
+                                          : primary.withOpacity((0.2)),
+                                    ));
+                              },
                             ),
-                            errorWidget: (context, url, error) => Image.asset(
-                              "assets/images/sliderph.png",
-                              height: height,
-                            ),
-                            height: height,
-                            width: double.maxFinite,
-                          )),
-                      Positioned(
-                        bottom: 0,
-                        height: 40,
-                        left: 0,
-                        width: MediaQuery.of(context).size.width,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: map<Widget>(
-                            sliderList,
-                            (index, url) {
-                              return Container(
-                                  width: 8.0,
-                                  height: 8.0,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 10.0, horizontal: 2.0),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _curSlider == index
-                                        ? primary
-                                        : primary.withOpacity((0.2)),
-                                  ));
-                            },
                           ),
                         ),
-                      ),
-                      // )
-                    ],
-                  );
-                },
-              ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: primary,
-                  ),
-                  onPressed: () => Navigator.of(context).pop()),
-            ),
-            Align(
-                alignment: Alignment.topRight,
-                child: widget.model.isFavLoading
-                    ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                            height: 10,
-                            width: 10,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 0.7,
-                            )),
-                      )
-                    : Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Icon(
-                                widget.model.isFav == "0"
-                                    ? Icons.favorite_border
-                                    : Icons.favorite,
-                                color: primary,
+                        indicatorImage(),
+                        // )
+                      ],
+                    );
+                  },
+                ),
+              )),
+          Material(
+            color: Colors.transparent,
+            child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  color: primary,
+                ),
+                onPressed: () => Navigator.of(context).pop()),
+          ),
+          Align(
+              alignment: Alignment.topRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  widget.model.isFavLoading
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              height: 10,
+                              width: 10,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 0.7,
+                              )),
+                        )
+                      : Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  widget.model.isFav == "0"
+                                      ? Icons.favorite_border
+                                      : Icons.favorite,
+                                  color: primary,
+                                ),
                               ),
-                            ),
-                            onTap: () {
-                              if (CUR_USERID != null) {
-                                widget.model.isFav == "0"
-                                    ? _setFav()
-                                    : _removeFav();
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => Login()),
-                                );
-                              }
-                            }),
-                      ))
-          ],
-        ),
+                              onTap: () {
+                                if (CUR_USERID != null) {
+                                  widget.model.isFav == "0"
+                                      ? _setFav()
+                                      : _removeFav();
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Login()),
+                                  );
+                                }
+                              }),
+                        ),
+                  Material(
+                    child: InkWell(
+                      child: new Stack(children: <Widget>[
+                        Center(
+                          child: Image.asset(
+                            'assets/images/noti_cart.png',
+                            width: 40,
+                            color: primary,
+                          ),
+                        ),
+                        (CUR_CART_COUNT != null &&
+                                CUR_CART_COUNT.isNotEmpty &&
+                                CUR_CART_COUNT != "0")
+                            ? new Positioned(
+                                top: 0.0,
+                                right: 5.0,
+                                bottom: 15,
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.red),
+                                    child: new Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(4),
+                                        child: new Text(
+                                          CUR_CART_COUNT,
+                                          style: TextStyle(
+                                              fontSize: 8, color: Colors.white),
+                                        ),
+                                      ),
+                                    )),
+                              )
+                            : Container()
+                      ]),
+                      onTap: () async {
+                        CUR_USERID == null
+                            ? Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Login(),
+                                ))
+                            : Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      Cart(widget.updateHome, updateDetail),
+                                ));
+                      },
+                    ),
+                  ),
+                ],
+              ))
+        ],
       ),
     );
+  }
+
+  indicatorImage() {
+    String indicator = widget.model.indicator;
+    print("Indicator:::::$indicator");
+
+    if (indicator == "1") {
+      return Align(
+          alignment: Alignment.bottomRight,
+          child: Image.asset("assets/images/vag.png"));
+    } else if (indicator == "2") {
+      return Align(
+          alignment: Alignment.bottomRight,
+          child: Image.asset("assets/images/nonvag.png"));
+    } else {
+      return Container();
+    }
+  }
+
+  updateDetail() {
+    setState(() {});
   }
 
   _smallImage() {
@@ -363,6 +447,7 @@ class StateItem extends State<Product_Detail> {
   }
 
   _desc() {
+    print("detail===${widget.model.desc}");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Html(data: widget.model.desc),
@@ -693,7 +778,7 @@ class StateItem extends State<Product_Detail> {
     });
   }
 
-  Future<void> addToCart() async {
+  Future<void> addToCart(bool intent) async {
     if (CUR_USERID != null) {
       try {
         setState(() {
@@ -722,12 +807,13 @@ class StateItem extends State<Product_Detail> {
         if (!error) {
           var data = getdata["data"];
           CUR_CART_COUNT = data['cart_count'];
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Cart(null),
-            ),
-          );
+          if (intent)
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Cart(widget.updateHome, updateDetail),
+              ),
+            );
         } else {
           setSnackbar(msg);
         }
@@ -911,6 +997,7 @@ class StateItem extends State<Product_Detail> {
       children: <Widget>[
         Expanded(
           child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
             controller: controller,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -925,6 +1012,7 @@ class StateItem extends State<Product_Detail> {
                 _selectVarientTitle(),
                 _getVarient(_selVarient),
                 _otherDetailsTitle(),
+                _madeIn(),
                 _otherDetail(_selVarient),
                 _cancleable(),
                 _ratingReview(),
@@ -935,32 +1023,92 @@ class StateItem extends State<Product_Detail> {
             ),
           ),
         ),
-        InkWell(
-          splashColor: Colors.white,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Cart(null),
-              ),
-            );
-          },
-          child: InkWell(
-              child: Container(
+        widget.model.availability == "1"
+            ? Row(
+                children: [
+                  Container(
+                    height: 55,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(color: Colors.black26, blurRadius: 10)
+                      ],
+                    ),
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    child: InkWell(
+                      onTap: () {
+                        addToCart(false);
+                      },
+                      child: Center(
+                          child: Text(
+                        ADD_CART,
+                        style: Theme.of(context).textTheme.button.copyWith(
+                            fontWeight: FontWeight.bold, color: primary),
+                      )),
+                    ),
+                  ),
+                  Container(
+                    height: 55,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [primaryLight2, primaryLight3],
+                          stops: [0, 1]),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black26, blurRadius: 10)
+                      ],
+                    ),
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    child: InkWell(
+                      onTap: () {
+                        addToCart(true);
+                      },
+                      child: Center(
+                          child: Text(
+                        BUYNOW,
+                        style: Theme.of(context).textTheme.button.copyWith(
+                            fontWeight: FontWeight.bold, color: Colors.white),
+                      )),
+                    ),
+                  ),
+                ],
+              )
+            : Container(
                 height: 55,
-                decoration: back(),
-                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                ),
+
                 child: Center(
                     child: Text(
-                  ADD_CART,
-                  style: Theme.of(context).textTheme.button.copyWith(
-                      fontWeight: FontWeight.bold, color: Colors.white),
+                  OUT_OF_STOCK_LBL,
+                  style: Theme.of(context)
+                      .textTheme
+                      .button
+                      .copyWith(fontWeight: FontWeight.bold, color: Colors.red),
                 )),
               ),
-              onTap: addToCart),
-        ),
       ],
     );
+  }
+
+  _madeIn() {
+    String madeIn = widget.model.madein;
+    return madeIn != null
+        ? Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: ListTile(
+              trailing: Text(madeIn),
+              dense: true,
+              title: Text(
+                'Made In',
+                style: Theme.of(context).textTheme.subtitle2,
+              ),
+            ),
+          )
+        : Container();
   }
 
   _review() {

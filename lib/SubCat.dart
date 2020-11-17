@@ -129,7 +129,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                 GridView.count(
                     shrinkWrap: true,
                     crossAxisCount: 3,
-                    childAspectRatio: .8,
+                    childAspectRatio: 1,
                     physics: NeverScrollableScrollPhysics(),
                     children: List.generate(
                       subItem.length,
@@ -143,55 +143,54 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   }
 
   Widget listItem(int index, List<Model> subItem) {
-    return Column(
-      children: <Widget>[
-        InkWell(
-          child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                  child: new ClipRRect(
-                    borderRadius: BorderRadius.circular(5.0),
-                    child: new CachedNetworkImage(
-                      imageUrl: subItem[index].image,
-                      height: 100.0,
-                      width: 100.0,
-                      placeholder: (context, url) => placeHolder(100),
-                    ),
+
+    return InkWell(
+      child: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: new ClipRRect(
+                  borderRadius: BorderRadius.circular(5.0),
+                  child: new CachedNetworkImage(
+                    imageUrl: subItem[index].image,
+                    height:double.maxFinite,
+                    width: double.maxFinite,
+                    placeholder: (context, url) => placeHolder(100),
                   ),
                 ),
-                Container(
-                  child: Text(
-                    subItem[index].name,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                    textAlign: TextAlign.center,
-                  ),
-                  width: 100,
-                ),
-              ],
+              ),
             ),
-          ),
-          onTap: () {
-            if (subItem[index].subList != null)
-              _addTab(subItem, index);
-            else
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductList(
-                      name: subItem[index].name,
-                      id: subItem[index].id,
-                      updateHome: widget.updateHome,
-                    ),
-                  ));
-          },
+            Container(
+              child: Text(
+                subItem[index].name,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+              ),
+              width: 100,
+            ),
+          ],
         ),
-      ],
+      ),
+      onTap: () {
+        if (subItem[index].subList != null)
+          _addTab(subItem, index);
+        else
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductList(
+                  name: subItem[index].name,
+                  id: subItem[index].id,
+                  updateHome: widget.updateHome,
+                ),
+              ));
+      },
     );
   }
 }

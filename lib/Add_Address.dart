@@ -180,7 +180,7 @@ class StateAddress extends State<AddAddress> {
         setSnackbar(cityWarning);
       } else if (area == null || area.isEmpty) {
         setSnackbar(areaWarning);
-      } else if (latitude.trim().isEmpty || longitude.trim().isEmpty) {
+      } else if (latitude==null || longitude==null) {
         setSnackbar(locationWarning);
       } else
         return true;
@@ -410,13 +410,19 @@ class StateAddress extends State<AddAddress> {
                 color: white),
             child: IconButton(
               icon: new Icon(Icons.my_location),
-              onPressed: () {
+              onPressed: () async {
+
+
+
+                Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+print("position*****$position");
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => Map(
-                              latitude: double.parse(latitude),
-                              longitude: double.parse(longitude),
+                              latitude: latitude==null?position.latitude:double.parse(latitude),
+                              longitude:longitude==null?position.longitude: double.parse(longitude),
                               from: ADDADDRESS,
                             )));
               },
@@ -859,9 +865,7 @@ class StateAddress extends State<AddAddress> {
   }
 
   Future<void> getCurrentLoc() async {
-    Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     latitude = position.latitude.toString();
     longitude = position.longitude.toString();
   }

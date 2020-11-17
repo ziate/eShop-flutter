@@ -9,7 +9,7 @@ final String iosLink = '';
 
 final String baseUrl = 'http://eshop.wrteam.in/app/v1/api/';
 
-final int timeOut = 30;
+final int timeOut = 50;
 final String internetMsg = 'Check Internet Connection';
 final String somethingMSg = 'Something went wrong. Please try again after some time';
 final String profileCom = 'Please complete your profile to place the order';
@@ -47,7 +47,7 @@ const String TAXPER='Tax';
 const String SETTING='Setting';
 const String SUB='Sub Total';
 const String CHOOSE_LOCATION='Choose Location';
-
+const String BUYNOW='Buy Now';
 
 const String TITLE1_LBL='Search Items';
 const String TITLE2_LBL='Order it';
@@ -64,7 +64,7 @@ const String DONT_HAVE_AN_ACC="Don't have an account? ";
 const String SIGN_UP_LBL='Sign Up';
 const String USER_REGISTRATION='User Registration';
 const String SHOW_PASSWORD='Show Password';
-const String VERIFY_MOBILE_NUMBER='Verify mobile number';
+const String VERIFY_MOBILE_NUMBER='Verify Mobile Number';
 const String ALREADY_A_CUSTOMER='Already a customer? ';
 const String LOG_IN_LBL='Log In';
 const String MOBILE_NUMBER_VARIFICATION='Mobile number Verification';
@@ -102,7 +102,7 @@ const String locationWarning='Please Select Location From Map';
 
 
 const String SKIP='skip';
-const String VERIFY_AND_PROCEED='Verify and proceed';
+const String VERIFY_AND_PROCEED='Verify And Proceed';
 const String DIDNT_GET_THE_CODE="Didn't get the code? ";
 const String RESEND_OTP='Resend OTP';
 const String FORGOT_PASSWORDTITILE='Forgot Password';
@@ -174,3 +174,14 @@ const String ORDER_STATUS='Order Status';
 const String PROMO_CODE_DIS_LBL='Promo Code Discount';
 const String CANCEL_ORDER='Cancel Order';
 const String RETURN_ORDER='Return Order';
+const String ORDER_CNCLE_SUCC='Order Cancled Successfully..!!';
+
+
+const String NO_CART='Your Cart Is Empty';
+const String CART_DESC="Looking like you haven't added anything to your cart yet";
+
+const String NO_INTERNET="No Internet";
+const String NO_INTERNET_DISC="Please check your connection again, or connect to Wi-Fi";
+const String TRY_AGAIN_INT_LBL="Try Again";
+const String SHOP_NOW='Shop Now';
+const String OUT_OF_STOCK_LBL="Out Of Stock";

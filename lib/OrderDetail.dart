@@ -24,6 +24,8 @@ class OrderDetail extends StatefulWidget {
 
 class StateOrder extends State<OrderDetail> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  bool _isCancleable, _isReturnable;
+  bool _isProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -74,197 +76,249 @@ class StateOrder extends State<OrderDetail> {
       }
     }
 
+    _isCancleable = model.isCancleable == "1" ? true : false;
+    _isReturnable = model.isReturnable == "1" ? true : false;
+
+    print("is cancle********$_isCancleable***$_isReturnable");
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: getAppBar(ORDER_DETAIL, context),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          Column(
             children: [
-              Text(ORDER_ID + " : " + model.id),
-              Text(ORDER_DATE + " : " + model.orderDate),
-              Divider(),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: model.itemList.length,
-                physics: NeverScrollableScrollPhysics(),
-                itemBuilder: (context, i) {
-                  OrderItem orderItem = model.itemList[i];
-                  return productItem(orderItem, model);
-                },
-              ),
-              Divider(),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(PRICE_DETAIL,
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle1
-                        .copyWith(color: primary)),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(PRICE_LBL),
-                    Text("+ " + CUR_CURRENCY + " " + model.subTotal)
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(DELIVERY_CHARGE),
-                    Text("+ " + CUR_CURRENCY + " " + model.delCharge)
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(TAXPER + " (" + model.taxPer + ")"),
-                    Text("+ " + CUR_CURRENCY + " " + model.taxAmt)
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(PROMO_CODE_DIS_LBL),
-                    Text("- " + CUR_CURRENCY + " " + model.promoDis)
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(WALLET_BAL),
-                    Text("- " + CUR_CURRENCY + " " + model.walBal)
-                  ],
-                ),
-              ),
-              Divider(),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      TOTAL_PRICE,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(ORDER_ID + " : " + model.id),
+                        Text(ORDER_DATE + " : " + model.orderDate),
+                        Divider(),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: model.itemList.length,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, i) {
+                            OrderItem orderItem = model.itemList[i];
+                            return productItem(orderItem, model);
+                          },
+                        ),
+                        Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(PRICE_DETAIL,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(color: primary)),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(PRICE_LBL),
+                              Text("+ " + CUR_CURRENCY + " " + model.subTotal)
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(DELIVERY_CHARGE),
+                              Text("+ " + CUR_CURRENCY + " " + model.delCharge)
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(TAXPER + " (" + model.taxPer + ")"),
+                              Text("+ " + CUR_CURRENCY + " " + model.taxAmt)
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(PROMO_CODE_DIS_LBL),
+                              Text("- " + CUR_CURRENCY + " " + model.promoDis)
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(WALLET_BAL),
+                              Text("- " + CUR_CURRENCY + " " + model.walBal)
+                            ],
+                          ),
+                        ),
+                        Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                TOTAL_PRICE,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                CUR_CURRENCY + " " + model.total,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ),
+                        ),
+                        Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(OTHER_DETAIL,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(color: primary)),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(NAME_LBL + " : " + model.name),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(MOB_LBL + " : " + model.mobile),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(ADDRESS_LBL + " : " + model.address),
+                        ),
+                        Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            ORDER_STATUS,
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(color: primary),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              getPlaced(pDate),
+                              getProcessed(prDate, cDate),
+                              getShipped(sDate, cDate),
+                              getDelivered(dDate, cDate),
+                              getCanceled(cDate),
+                              getReturned(rDate, model),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      CUR_CURRENCY + " " + model.total,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              /*      _isReturnable || _isCancleable
+                  ? Row(
+                      children: [
+                        _isReturnable ? returnable() : Container(),
+                        _isCancleable ? cancelable() : Container()
+                      ],
                     )
-                  ],
-                ),
-              ),
-              Divider(),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(OTHER_DETAIL,
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle1
-                        .copyWith(color: primary)),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(NAME_LBL + " : " + model.name),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(MOB_LBL + " : " + model.mobile),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(ADDRESS_LBL + " : " + model.address),
-              ),
-              Divider(),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  ORDER_STATUS,
-                  style: Theme.of(context)
-                      .textTheme
-                      .subtitle1
-                      .copyWith(color: primary),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    getPlaced(pDate),
-                    getProcessed(prDate, cDate),
-                    getShipped(sDate, cDate),
-                    getDelivered(dDate, cDate),
-                    getCanceled(cDate),
-                    getReturned(rDate, model),
-                  ],
-                ),
-              ),
+                  : Container(),*/
+
+              (!model.listStatus.contains(DELIVERD) &&
+                      (!model.listStatus.contains(RETURNED)) &&
+                      _isCancleable &&
+                      model.isAlrCancelled == "0")
+                  ? cancelable()
+                  :
+
+              (model.listStatus.contains(DELIVERD) &&
+                  _isReturnable &&
+                  model.isAlrReturned == "0")?
+                 /* ?model.rtnReqSubmitted=="0"? returnable(true,RETURN_ORDER)
+                  :model.rtnReqSubmitted=="2"?returnable(false, text)*/
+              returnable():
+
+              Container(),
             ],
           ),
-        ),
+          showCircularProgress(_isProgress, primary),
+        ],
       ),
-      persistentFooterButtons: [
-        Row(
+    );
+  }
 
-          children: [
-            InkWell(
-              child: Container(
-                width: MediaQuery.of(context).size.width*.47,
-                color: primary,
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  CANCEL_ORDER,
-                  style: Theme.of(context).textTheme.button.copyWith(
-                        color: Colors.white,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              onTap: () {
-                cancelOrder(CANCLED);
-              },
-            ),
-SizedBox(width: 5,),
-            InkWell(
-              child: Container(
-                color: primary,
-                width: MediaQuery.of(context).size.width*.47,
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  RETURN_ORDER,
-                  style: Theme.of(context).textTheme.button.copyWith(
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              onTap: () {
-                cancelOrder(RETURNED);
-              },
-            )
-          ],
+  returnable() {
+    return Container(
+      height: 55,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [primaryLight2, primaryLight3],
+            stops: [0, 1]),
+        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+      ),
+      width: MediaQuery.of(context).size.width,
+      child: InkWell(
+        onTap: () {
+          cancelOrder(RETURNED, updateOrderApi, widget.model.id);
+        },
+        child: Center(
+            child: Text(
+          RETURN_ORDER,
+          style: Theme.of(context)
+              .textTheme
+              .button
+              .copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+        )),
+      ),
+    );
+  }
 
-        ),
-
-      ],
+  cancelable() {
+    return Container(
+      height: 55,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [primaryLight2, primaryLight3],
+            stops: [0, 1]),
+        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+      ),
+      width:  MediaQuery.of(context).size.width,
+      child: InkWell(
+        onTap: () {
+          cancelOrder(CANCLED, updateOrderApi, widget.model.id);
+        },
+        child: Center(
+            child: Text(
+          CANCEL_ORDER,
+          style: Theme.of(context)
+              .textTheme
+              .button
+              .copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+        )),
+      ),
     );
   }
 
@@ -314,7 +368,7 @@ SizedBox(width: 5,),
         rDate = d[0] + "\n" + d[1] + "\n" + d[2];
       }
     }
-
+    print("length=========${model.itemList.length}");
     return Column(
       children: [
         Row(
@@ -357,19 +411,63 @@ SizedBox(width: 5,),
             ],
           ),
         ),
-/*        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            RaisedButton.icon(
-                onPressed: null,
-                icon: Icon(Icons.keyboard_return),
-                label: Text(ITEM_RETURN)),
-            RaisedButton.icon(
-                onPressed: null,
-                icon: Icon(Icons.cancel),
-                label: Text(ITEM_CANCEL))
-          ],
-        ),*/
+        model.itemList.length > 1
+            ? ButtonTheme(
+                child: ButtonBar(
+                  children: <Widget>[
+            /*        orderItem.isReturn == "1"
+                        ? FlatButton(
+                            child: Text(ITEM_RETURN),
+                            onPressed: () {
+                              cancelOrder(
+                                  RETURNED, updateOrderItemApi, orderItem.id);
+                            },
+                          )
+                        : Container(),
+                    orderItem.isCancle == "1"
+                        ? FlatButton(
+                            child: const Text(ITEM_CANCEL),
+                            onPressed: () {
+                              cancelOrder(
+                                  CANCLED, updateOrderItemApi, orderItem.id);
+                            },
+                          )
+                        : Container(),*/
+
+
+                    (!orderItem.listStatus.contains(DELIVERD) &&
+                        (!orderItem.listStatus.contains(RETURNED)) &&
+                        orderItem.isCancle=="1" &&
+                        orderItem.isAlrCancelled == "0")
+                        ? FlatButton(
+                      child: const Text(ITEM_CANCEL),
+                      onPressed: () {
+                        cancelOrder(
+                            CANCLED, updateOrderItemApi, orderItem.id);
+                      },
+                    )
+                        :
+
+                    (orderItem.listStatus.contains(DELIVERD) &&
+                        orderItem.isReturn=="1" &&
+                        orderItem.isAlrReturned == "0")?
+                    /* ?model.rtnReqSubmitted=="0"? returnable(true,RETURN_ORDER)
+                  :model.rtnReqSubmitted=="2"?returnable(false, text)*/
+                    FlatButton(
+                      child: Text(ITEM_RETURN),
+                      onPressed: () {
+                        cancelOrder(
+                            RETURNED, updateOrderItemApi, orderItem.id);
+                      },
+                    ):
+
+                    Container(),
+
+
+                  ],
+                ),
+              )
+            : Container(),
       ],
     );
   }
@@ -671,23 +769,32 @@ SizedBox(width: 5,),
         : Container();
   }
 
-  Future<void> cancelOrder(String status) async {
+  Future<void> cancelOrder(String status, String api, String id) async {
     try {
-      var parameter = {ID: CUR_USERID, STATUS: status};
-      Response response =
-          await post(UPDATE_ORDER_API, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      setState(() {
+        _isProgress = true;
+      });
+
+      var parameter = {ORDERID: id, STATUS: status};
+      Response response = await post(api, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
+      print('param========$parameter');
       print('response***setting**${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
+      setSnackbar(msg);
       if (!error) {
-      } else {
-        setSnackbar(msg);
-      }
 
-      setState(() {});
+        Future.delayed(Duration(seconds: 1)).then((_) async {
+          Navigator.pop(context);
+        });
+      } else {}
+
+      setState(() {
+        _isProgress = false;
+      });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }

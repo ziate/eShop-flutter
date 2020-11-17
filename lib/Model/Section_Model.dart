@@ -69,7 +69,7 @@ class Product {
   List<String> otherImage;
   List<Product_Varient> prVarientList;
   List<Attribute> attributeList;
-  String isFav, isReturnable, isCancelable, isPurchased, isOutofStock;
+  String isFav, isReturnable, isCancelable, isPurchased, availability,madein,indicator;
   bool isFavLoading = false;
 
   // String cartCount;
@@ -88,12 +88,14 @@ class Product {
       this.isCancelable,
       this.isReturnable,
       this.isPurchased,
-      this.isOutofStock,
+      this.availability,
       this.noOfRating,
       this.attrIds,
       // this.cartCount,
       this.rating,
-      this.isFavLoading});
+      this.isFavLoading,
+      this.indicator,
+      this.madein});
 
   factory Product.fromJson(Map<String, dynamic> json) {
     List<Product_Varient> varientList = (json[PRODUCT_VARIENT] as List)
@@ -117,14 +119,16 @@ class Product {
         type: json[TYPE],
         isFav: json[FAV].toString(),
         isCancelable: json[ISCANCLEABLE],
-        isOutofStock: json[ISOUTOFSTOCK].toString(),
+        availability: json[AVAILABILITY].toString(),
         isPurchased: json[ISPURCHASED].toString(),
         isReturnable: json[ISRETURNABLE],
         otherImage: other_image,
         prVarientList: varientList,
         attributeList: attList,
         isFavLoading: false,
-        attrIds: json[ATTR_VALUE]
+        attrIds: json[ATTR_VALUE],
+        madein: json[MADEIN],
+        indicator: json[INDICATOR].toString(),
         // cartCount: json[CART_COUNT]
         );
   }
@@ -139,6 +143,7 @@ class Product_Varient {
       type,
       attr_name,
       varient_value,
+availability,
       cartCount;
 
   Product_Varient(
@@ -149,6 +154,7 @@ class Product_Varient {
       this.price,
       this.disPrice,
       this.attribute_value_ids,
+        this.availability,
       this.cartCount});
 
   factory Product_Varient.fromJson(Map<String, dynamic> json) {
@@ -160,6 +166,7 @@ class Product_Varient {
         varient_value: json[VARIENT_VALUE],
         disPrice: json[DIS_PRICE],
         price: json[PRICE],
+        availability: json[AVAILABILITY].toString(),
         cartCount: json[CART_COUNT]);
   }
 }

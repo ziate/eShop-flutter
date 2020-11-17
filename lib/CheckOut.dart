@@ -94,7 +94,7 @@ class StateCheckout extends State<CheckOut> {
                     else
                       _curIndex = _curIndex + 1;
                   } else if (_curIndex == 2) {
-                    if (selDate == null || selDate.isEmpty)
+                    if (_isTimeSlot && (selDate == null || selDate.isEmpty))
                       setSnackbar(dateWarning);
                     else if (_isTimeSlot &&
                         (selTime == null || selTime.isEmpty))
@@ -514,12 +514,14 @@ class StateCheckout extends State<CheckOut> {
         LONGITUDE: longitude,*/
         PAYMENT_METHOD: payMethod,
         ADD_ID: selAddress,
-        DELIVERY_DATE: selDate,
+
         ISWALLETBALUSED: _isUseWallet ? "1" : "0",
         WALLET_BAL_USED: usedBal.toString(),
       };
 
-      if (_isTimeSlot) parameter[DELIVERY_TIME] = selTime;
+      if (_isTimeSlot) {parameter[DELIVERY_TIME] = selTime;
+      parameter[DELIVERY_DATE]=selDate;
+      }
       if (_isPromoValid) {
         parameter[PROMOCODE] = promocode;
         parameter[PROMO_DIS] = promoAmt.toString();
@@ -1216,7 +1218,7 @@ class StatePayment extends State<Payment> {
                         )
                       : Container(),
                 ),
-                Card(
+                _isTimeSlot?    Card(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -1240,18 +1242,17 @@ class StatePayment extends State<Payment> {
                             }),
                       ),
                       Divider(),
-                      _isTimeSlot
-                          ? ListView.builder(
+                   ListView.builder(
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
                               itemCount: timeSlotList.length,
                               itemBuilder: (context, index) {
                                 return timeSlotItem(index);
                               })
-                          : Container()
+
                     ],
                   ),
-                ),
+                ):Container(),
                 _isPayLayShow
                     ? Card(
                         child: Column(

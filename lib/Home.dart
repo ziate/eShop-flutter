@@ -19,7 +19,9 @@ import 'package:http/http.dart';
 import 'package:like_button/like_button.dart';
 import 'package:share/share.dart';
 import 'package:eshop/ProductList.dart';
+import 'package:shimmer/shimmer.dart';
 import 'Cart.dart';
+import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
@@ -31,6 +33,7 @@ import 'NotificationLIst.dart';
 import 'Profile.dart';
 import 'Search.dart';
 import 'SubCat.dart';
+
 import 'Track_Order.dart';
 
 class Home extends StatefulWidget {
@@ -41,10 +44,11 @@ class Home extends StatefulWidget {
 }
 
 List<Model> catList = [];
-List<Model> sliderList = [];
+List<Model> homeSliderList = [];
 List<Section_Model> sectionList = [];
 final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 bool _isCatLoading = true;
+bool _isNetworkAvail = true;
 
 class StateHome extends State<Home> {
   List<Widget> fragments;
@@ -61,7 +65,7 @@ class StateHome extends State<Home> {
       HomePage(updateHome),
       Favorite(updateHome),
       NotificationList(),
-      NotificationList()
+      TrackOrder()
     ];
   }
 
@@ -75,6 +79,7 @@ class StateHome extends State<Home> {
         key: scaffoldKey,
         appBar: _getAppbar(),
         drawer: _getDrawer(),
+        backgroundColor: Colors.white10,
         extendBodyBehindAppBar: true,
         bottomNavigationBar: getBottomBar(),
         body: fragments[_curSelected]);
@@ -137,8 +142,8 @@ class StateHome extends State<Home> {
           _getDivider(),
           _getDrawerItem(NOTIFICATION, Icons.notifications),
           _getDivider(),
-          _getDrawerItem(SETTING, Icons.settings),
-          _getDivider(),
+          //_getDrawerItem(SETTING, Icons.settings),
+          //_getDivider(),
           _getDrawerItem(RATE_APP, Icons.star),
           _getDivider(),
           _getDrawerItem(SHARE_APP, Icons.share),
@@ -193,7 +198,7 @@ class StateHome extends State<Home> {
               : Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Cart(this.updateHome),
+                    builder: (context) => Cart(this.updateHome, null),
                   ));
         } else if (title == TRACK_ORDER) {
           CUR_USERID == null
@@ -202,11 +207,9 @@ class StateHome extends State<Home> {
                   MaterialPageRoute(
                     builder: (context) => Login(),
                   ))
-              : Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TrackOrder(),
-                  ));
+              : setState(() {
+                  _curSelected = 3;
+                });
         } else if (title == PROFILE) {
           CUR_USERID == null
               ? Navigator.push(
@@ -334,12 +337,17 @@ class StateHome extends State<Home> {
         )
       ],
       backgroundColor: Colors.transparent,
-      flexibleSpace: _curSelected != 0
+      flexibleSpace: _curSelected == 0 && !_isNetworkAvail
           ? Image(
               image: AssetImage('assets/images/halftopimage.png'),
               fit: BoxFit.cover,
             )
-          : Container(),
+          : _curSelected != 0
+              ? Image(
+                  image: AssetImage('assets/images/halftopimage.png'),
+                  fit: BoxFit.cover,
+                )
+              : Container(),
       elevation: 0,
     );
   }
@@ -366,47 +374,151 @@ class StateHome extends State<Home> {
                 currentIndex: _curSelected,
 
                 type: BottomNavigationBarType.fixed,
-                onTap: (int index) {
+                /*   onTap: (int index) {
                   print("current=====$index");
                   setState(() {
                     _curSelected = index;
                   });
-                },
+                },*/
                 items: [
                   BottomNavigationBarItem(
                     label: '',
-                    icon: Image.asset(
-                      "assets/images/desel_home.png",
+                    icon: LikeButton(
+                      onTap: (bool isLiked) {
+                        return onNavigationTap(isLiked, 0);
+                      },
+                      circleColor: CircleColor(
+                          start: primary, end: primary.withOpacity(0.1)),
+                      bubblesColor: BubblesColor(
+                        dotPrimaryColor: primary,
+                        dotSecondaryColor: primary.withOpacity(0.1),
+                      ),
+                      likeBuilder: (bool isLiked) {
+                        return Image.asset(
+                          "assets/images/desel_home.png",
+                        );
+                      },
                     ),
-                    activeIcon: Image.asset(
-                      "assets/images/sel_home.png",
+                    activeIcon: LikeButton(
+                      onTap: (bool isLiked) {
+                        return onNavigationTap(isLiked, 0);
+                      },
+                      circleColor: CircleColor(
+                          start: primary, end: primary.withOpacity(0.1)),
+                      bubblesColor: BubblesColor(
+                        dotPrimaryColor: primary,
+                        dotSecondaryColor: primary.withOpacity(0.1),
+                      ),
+                      likeBuilder: (bool isLiked) {
+                        return Image.asset(
+                          "assets/images/sel_home.png",
+                        );
+                      },
                     ),
                   ),
                   BottomNavigationBarItem(
                     label: '',
-                    icon: Image.asset(
-                      "assets/images/desel_fav.png",
+                    icon: LikeButton(
+                      onTap: (bool isLiked) {
+                        return onNavigationTap(isLiked, 1);
+                      },
+                      circleColor: CircleColor(
+                          start: primary, end: primary.withOpacity(0.1)),
+                      bubblesColor: BubblesColor(
+                        dotPrimaryColor: primary,
+                        dotSecondaryColor: primary.withOpacity(0.1),
+                      ),
+                      likeBuilder: (bool isLiked) {
+                        return Image.asset(
+                          "assets/images/desel_fav.png",
+                        );
+                      },
                     ),
-                    activeIcon: Image.asset(
-                      "assets/images/sel_fav.png",
+                    activeIcon: LikeButton(
+                      onTap: (bool isLiked) {
+                        return onNavigationTap(isLiked, 1);
+                      },
+                      circleColor: CircleColor(
+                          start: primary, end: primary.withOpacity(0.1)),
+                      bubblesColor: BubblesColor(
+                        dotPrimaryColor: primary,
+                        dotSecondaryColor: primary.withOpacity(0.1),
+                      ),
+                      likeBuilder: (bool isLiked) {
+                        return Image.asset(
+                          "assets/images/sel_fav.png",
+                        );
+                      },
                     ),
                   ),
                   BottomNavigationBarItem(
                     label: '',
-                    icon: Image.asset(
-                      "assets/images/desel_notification.png",
+                    icon: LikeButton(
+                      onTap: (bool isLiked) {
+                        return onNavigationTap(isLiked, 2);
+                      },
+                      circleColor: CircleColor(
+                          start: primary, end: primary.withOpacity(0.1)),
+                      bubblesColor: BubblesColor(
+                        dotPrimaryColor: primary,
+                        dotSecondaryColor: primary.withOpacity(0.1),
+                      ),
+                      likeBuilder: (bool isLiked) {
+                        return Image.asset(
+                          "assets/images/desel_notification.png",
+                        );
+                      },
                     ),
-                    activeIcon: Image.asset(
-                      "assets/images/sel_notification.png",
+                    activeIcon: LikeButton(
+                      onTap: (bool isLiked) {
+                        return onNavigationTap(isLiked, 2);
+                      },
+                      circleColor: CircleColor(
+                          start: primary, end: primary.withOpacity(0.1)),
+                      bubblesColor: BubblesColor(
+                        dotPrimaryColor: primary,
+                        dotSecondaryColor: primary.withOpacity(0.1),
+                      ),
+                      likeBuilder: (bool isLiked) {
+                        return Image.asset(
+                          "assets/images/sel_notification.png",
+                        );
+                      },
                     ),
                   ),
                   BottomNavigationBarItem(
                     label: '',
-                    icon: Image.asset(
-                      "assets/images/desel_user.png",
+                    icon: LikeButton(
+                      onTap: (bool isLiked) {
+                        return onNavigationTap(isLiked, 3);
+                      },
+                      circleColor: CircleColor(
+                          start: primary, end: primary.withOpacity(0.1)),
+                      bubblesColor: BubblesColor(
+                        dotPrimaryColor: primary,
+                        dotSecondaryColor: primary.withOpacity(0.1),
+                      ),
+                      likeBuilder: (bool isLiked) {
+                        return Image.asset(
+                          "assets/images/desel_tracks.png",
+                        );
+                      },
                     ),
-                    activeIcon: Image.asset(
-                      "assets/images/sel_user.png",
+                    activeIcon: LikeButton(
+                      onTap: (bool isLiked) {
+                        return onNavigationTap(isLiked, 3);
+                      },
+                      circleColor: CircleColor(
+                          start: primary, end: primary.withOpacity(0.1)),
+                      bubblesColor: BubblesColor(
+                        dotPrimaryColor: primary,
+                        dotSecondaryColor: primary.withOpacity(0.1),
+                      ),
+                      likeBuilder: (bool isLiked) {
+                        return Image.asset(
+                          "assets/images/sel_tracks.png",
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -458,6 +570,13 @@ class StateHome extends State<Home> {
     );
   }
 
+  Future<bool> onNavigationTap(bool isLiked, int index) async {
+    setState(() {
+      _curSelected = index;
+    });
+    return !isLiked;
+  }
+
   _getHeader() {
     return Container(
       decoration: BoxDecoration(
@@ -497,7 +616,7 @@ class StateHome extends State<Home> {
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => Cart(updateHome),
+          builder: (context) => Cart(updateHome, null),
         )).then((val) => home.updateHomepage());
     //  if (nav == true || nav == null) home.updateHomepage();
   }
@@ -518,17 +637,44 @@ class HomePage extends StatefulWidget {
   }
 }
 
-class StateHomePage extends State<HomePage> {
+class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   final _controller = PageController();
   int _curSlider = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool useMobileLayout;
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
 
   @override
   void initState() {
     super.initState();
     callApi();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
     WidgetsBinding.instance.addPostFrameCallback((_) => _animateSlider());
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
   }
 
   updateHomePage() {
@@ -549,97 +695,237 @@ class StateHomePage extends State<HomePage> {
 
     return Scaffold(
         key: _scaffoldKey,
-        body: CustomScrollView(
-          physics: BouncingScrollPhysics(),
-          slivers: <Widget>[
-            SliverAppBar(
-                backgroundColor: Colors.transparent,
-                pinned: true,
-                expandedHeight: appBarHeight,
-                floating: false,
-                collapsedHeight: kToolbarHeight + 1,
-                actionsIconTheme: IconThemeData(opacity: 0.0),
-                flexibleSpace: Stack(
-                  children: <Widget>[
-                    Image.asset(
-                      'assets/images/topimage.png',
-                      width: width,
-                      fit: BoxFit.fitWidth,
-                    ),
-                    _getSearchBar(),
-                    _slider(),
-                  ],
-                )),
-
-            /*     LayoutBuilder(builder: (context, constraints) {
-                  final expandRatio = _calculateExpandRatio(constraints,minHeight,appBarHeight);
-                  final animation = AlwaysStoppedAnimation(expandRatio);
-
-                  return Stack(
-                    children: <Widget>[
-                      Image.asset(
-                        'assets/images/topimage.png',
-                        width: width,
-                        fit: BoxFit.fitWidth,
-                      ),
-                      Align(
-                          alignment: AlignmentTween(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.bottomLeft)
-                              .evaluate(animation),
-                          child: Column(
-                            children: [
+        body: _isNetworkAvail
+            ? _isCatLoading
+                ? homeShimmer()
+                : CustomScrollView(
+                    physics: BouncingScrollPhysics(),
+                    slivers: <Widget>[
+                      SliverAppBar(
+                          backgroundColor: Colors.transparent,
+                          pinned: true,
+                          expandedHeight: appBarHeight,
+                          floating: false,
+                          collapsedHeight: kToolbarHeight + 1,
+                          actionsIconTheme: IconThemeData(opacity: 0.0),
+                          flexibleSpace: Stack(
+                            children: <Widget>[
+                              Image.asset(
+                                'assets/images/topimage.png',
+                                width: width,
+                                fit: BoxFit.fitWidth,
+                              ),
                               _getSearchBar(),
                               _slider(),
                             ],
                           )),
-                    ],
-                  );
-                })),*/
-            SliverList(
-                delegate: SliverChildListDelegate([
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  children: <Widget>[
-                    _isCatLoading
-                        ? Padding(
-                            padding: const EdgeInsets.all(18.0),
-                            child: getProgress(),
-                          )
-                        : Column(
+                      SliverList(
+                          delegate: SliverChildListDelegate([
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [_catHeading(), _catList(), _section()],
                           ),
-                  ],
-                ),
-              )
-            ]))
-          ],
-        ));
+                        )
+                      ]))
+                    ],
+                  )
+            : noInternet(context));
   }
 
-  double _calculateExpandRatio(
-      BoxConstraints constraints, double minHeight, double maxHeight) {
-    var expandRatio =
-        (constraints.maxHeight - minHeight) / (maxHeight - minHeight);
-    if (expandRatio > 1.0) expandRatio = 1.0;
-    if (expandRatio < 0.0) expandRatio = 0.0;
-    return expandRatio;
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(top:kToolbarHeight),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(context),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  getSlider();
+                  getCat();
+                  getSection();
+                  getSetting();
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
+  }
+
+  Widget homeShimmer() {
+    double width = MediaQuery.of(context).size.width;
+    double height = width / 2;
+    return Container(
+      width: double.infinity,
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300],
+        highlightColor: Colors.grey[100],
+        child: SingleChildScrollView(
+            child: Column(
+          children: [
+            Image.asset(
+              'assets/images/topimage.png',
+              width: width,
+              fit: BoxFit.fitWidth,
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              width: double.infinity,
+              height: height,
+              color: Colors.white,
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              width: double.infinity,
+              height: 18.0,
+              color: Colors.white,
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                        .map((_) => Container(
+                              margin: EdgeInsets.symmetric(horizontal: 10),
+                              width: 80.0,
+                              height: 80.0,
+                              color: Colors.white,
+                            ))
+                        .toList()),
+              ),
+            ),
+            Column(
+                children: [0, 1, 2, 3, 4]
+                    .map((_) => Column(
+                          children: [
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 5),
+                              width: double.infinity,
+                              height: 18.0,
+                              color: Colors.white,
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 5),
+                              width: double.infinity,
+                              height: 8.0,
+                              color: Colors.white,
+                            ),
+                            GridView.count(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                crossAxisCount: 2,
+                                shrinkWrap: true,
+                                childAspectRatio: 1.0,
+                                physics: NeverScrollableScrollPhysics(),
+                                mainAxisSpacing: 5,
+                                crossAxisSpacing: 5,
+                                children: List.generate(
+                                  4,
+                                  (index) {
+                                    return Container(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      color: Colors.white,
+                                    );
+                                  },
+                                )),
+                          ],
+                        ))
+                    .toList()),
+
+            /*   Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 80.0,
+                        height: 80.0,
+                        color: Colors.white,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              height: 18.0,
+                              color: Colors.white,
+                            ),
+                            Padding(
+                              padding:
+                              const EdgeInsets.symmetric(vertical: 5.0),
+                            ),
+                            Container(
+                              width: double.infinity,
+                              height: 8.0,
+                              color: Colors.white,
+                            ),
+                            Padding(
+                              padding:
+                              const EdgeInsets.symmetric(vertical: 5.0),
+                            ),
+                            Container(
+                              width: 100.0,
+                              height: 8.0,
+                              color: Colors.white,
+                            ),
+                            Padding(
+                              padding:
+                              const EdgeInsets.symmetric(vertical: 5.0),
+                            ),
+                            Container(
+                              width: 20.0,
+                              height: 8.0,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),*/
+          ],
+        )),
+      ),
+    );
   }
 
   Widget _slider() {
     double width = MediaQuery.of(context).size.width;
     double height = width / 2;
 
-    return sliderList.isNotEmpty
+    return homeSliderList.isNotEmpty
         ? Container(
             height: height,
             width: double.infinity,
             margin: EdgeInsets.only(
                 bottom: 5, top: kToolbarHeight * 1.7 + 50, right: 20, left: 20),
             child: PageView.builder(
-              itemCount: sliderList.length,
+              itemCount: homeSliderList.length,
               scrollDirection: Axis.horizontal,
               controller: _controller,
               reverse: false,
@@ -655,7 +941,7 @@ class StateHomePage extends State<HomePage> {
                       ClipRRect(
                           borderRadius: BorderRadius.circular(4.0),
                           child: CachedNetworkImage(
-                            imageUrl: sliderList[_curSlider].image,
+                            imageUrl: homeSliderList[_curSlider].image,
                             placeholder: (context, url) => Image.asset(
                               "assets/images/sliderph.png",
                               height: height,
@@ -677,7 +963,7 @@ class StateHomePage extends State<HomePage> {
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: map<Widget>(
-                            sliderList,
+                            homeSliderList,
                             (index, url) {
                               return Container(
                                   width: 8.0,
@@ -731,7 +1017,7 @@ class StateHomePage extends State<HomePage> {
             ? _controller.page.round() + 1
             : _controller.initialPage;
 
-        if (nextPage == sliderList.length) {
+        if (nextPage == homeSliderList.length) {
           nextPage = 0;
         }
         if (_controller.hasClients)
@@ -909,71 +1195,245 @@ class StateHomePage extends State<HomePage> {
 
   _singleSection(int index) {
     return sectionList[index].productList.length > 0
-        ? Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              _getHeading(sectionList[index].title, index),
-              _getSection(index),
-            ],
+        ? Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 30),
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [white, primary],
+                            stops: [0, 1]),
+                        borderRadius: BorderRadius.all(Radius.circular(5))),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      _getHeading(sectionList[index].title, index),
+                      _getSection(index),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           )
         : Container();
   }
 
   _getHeading(String title, int index) {
     return Padding(
-      padding: const EdgeInsets.only(top: 20.0, bottom: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Text(
-            title,
-            style: Theme.of(context).textTheme.headline6,
+      padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                title,
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              InkWell(
+                child: Text(
+                  seeAll,
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: primary),
+                ),
+                splashColor: primary.withOpacity(0.2),
+                onTap: () {
+                  Section_Model model = sectionList[index];
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SectionList(
+                          index: index,
+                          section_model: model,
+                          updateHome: updateHomePage,
+                        ),
+                      ));
+                },
+              ),
+            ],
           ),
-          InkWell(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
             child: Text(
-              seeAll,
-              style: Theme.of(context).textTheme.caption,
+              sectionList[index].short_desc,
             ),
-            splashColor: primary.withOpacity(0.2),
-            onTap: () {
-
-              Section_Model model = sectionList[index];
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SectionList(
-                      index: index,
-                      section_model: model,
-                      updateHome: updateHomePage,
-                    ),
-                  ));
-            },
-          )
+          ),
         ],
       ),
     );
   }
 
   _getSection(int i) {
-    return GridView.count(
-        padding: EdgeInsets.only(top: 5),
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        childAspectRatio: 1.1,
-        physics: NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 7,
-        crossAxisSpacing: 1,
-        children: List.generate(
-          sectionList[i].productList.length < 4
-              ? sectionList[i].productList.length
-              : 4,
-          (index) {
-            return productItem(i, index);
-          },
-        ));
+    print('style=====${sectionList[i].style}');
+    return sectionList[i].style == DEFAULT
+        ? Container(
+            decoration: BoxDecoration(
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+            ),
+            child: GridView.count(
+                padding: EdgeInsets.only(top: 5),
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                childAspectRatio: 1.0,
+                physics: NeverScrollableScrollPhysics(),
+                // mainAxisSpacing: 0,
+                // crossAxisSpacing: 0,
+                children: List.generate(
+                  sectionList[i].productList.length < 4
+                      ? sectionList[i].productList.length
+                      : 4,
+                  (index) {
+                    return productItem(i, index, false);
+                  },
+                )),
+          )
+        : sectionList[i].style == STYLE1
+            ? Row(
+                children: [
+                  Flexible(
+                      flex: 3,
+                      fit: FlexFit.loose,
+                      child: Container(
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          child: productItem(i, 0, true))),
+                  Flexible(
+                    flex: 2,
+                    fit: FlexFit.loose,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            height: MediaQuery.of(context).size.height * 0.2,
+                            child: productItemSmall(i, 1)),
+                        Container(
+                            height: MediaQuery.of(context).size.height * 0.2,
+                            child: productItemSmall(i, 2)),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : sectionList[i].style == STYLE2
+                ? Row(
+                    children: [
+                      Flexible(
+                        flex: 2,
+                        fit: FlexFit.loose,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.2,
+                                child: productItemSmall(i, 0)),
+                            Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.2,
+                                child: productItemSmall(i, 1)),
+                          ],
+                        ),
+                      ),
+                      Flexible(
+                          flex: 3,
+                          fit: FlexFit.loose,
+                          child: Container(
+                              height: MediaQuery.of(context).size.height * 0.4,
+                              child: productItem(i, 2, true))),
+                    ],
+                  )
+                : sectionList[i].style == STYLE3
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                              flex: 1,
+                              fit: FlexFit.loose,
+                              child: Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.3,
+                                  child: productItem(i, 0, true))),
+                          Container(
+                            height: MediaQuery.of(context).size.height * 0.2,
+                            child: Row(
+                              children: [
+                                Flexible(
+                                    flex: 1,
+                                    fit: FlexFit.loose,
+                                    child: productItemSmall(i, 1)),
+                                Flexible(
+                                    flex: 1,
+                                    fit: FlexFit.loose,
+                                    child: productItemSmall(i, 2)),
+                                Flexible(
+                                    flex: 1,
+                                    fit: FlexFit.loose,
+                                    child: productItemSmall(i, 3)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : sectionList[i].style == STYLE4
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                  flex: 1,
+                                  fit: FlexFit.loose,
+                                  child: Container(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.3,
+                                      child: productItem(i, 0, true))),
+                              Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.2,
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                        flex: 1,
+                                        fit: FlexFit.loose,
+                                        child: productItemSmall(i, 1)),
+                                    Flexible(
+                                        flex: 1,
+                                        fit: FlexFit.loose,
+                                        child: productItemSmall(i, 2)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
+                        : GridView.count(
+                            padding: EdgeInsets.only(top: 5),
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            childAspectRatio: 1.0,
+                            physics: NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 0,
+                            crossAxisSpacing: 0,
+                            children: List.generate(
+                              sectionList[i].productList.length < 4
+                                  ? sectionList[i].productList.length
+                                  : 4,
+                              (index) {
+                                return productItem(i, index, true);
+                              },
+                            ));
   }
 
-  productItem(int secPos, int index) {
+  Widget productItemSmall(int secPos, int index) {
     double price = double.parse(
         sectionList[secPos].productList[index].prVarientList[0].disPrice);
     if (price == 0)
@@ -981,155 +1441,365 @@ class StateHomePage extends State<HomePage> {
           sectionList[secPos].productList[index].prVarientList[0].price);
 
     double width = MediaQuery.of(context).size.width * 0.5 - 20;
+    print(
+        "tag=============${sectionList[secPos].productList[index].id}${secPos}${index}========home");
 
-
-    return Card(
-      elevation: 0,
-      child: InkWell(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(
-              child: Stack(
-                alignment: Alignment.topRight,
-                children: [
-                  ClipRRect(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(5),
-                          topRight: Radius.circular(5)),
-                      child: Hero(
-                        transitionOnUserGestures: true,
-                        tag: "homeSection-$secPos$index",
-                        child: CachedNetworkImage(
-                          imageUrl:
-                              sectionList[secPos].productList[index].image,
-                          height: double.maxFinite,
-                          width: double.maxFinite,
-                          //fit: BoxFit.fill,
-                          placeholder: (context, url) => placeHolder(width),
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+      ),
+      child: Card(
+        elevation: 0.0,
+        child: InkWell(
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.2,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5.0),
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(5),
+                                topRight: Radius.circular(5)),
+                            child: Hero(
+                              transitionOnUserGestures: true,
+                              tag:
+                                  "${sectionList[secPos].productList[index].id}$secPos$index",
+                              child: CachedNetworkImage(
+                                imageUrl: sectionList[secPos]
+                                    .productList[index]
+                                    .image,
+                                height: double.maxFinite,
+                                width: double.maxFinite,
+                                //fit: BoxFit.fill,
+                                placeholder: (context, url) =>
+                                    placeHolder(width),
+                              ),
+                            )),
+                      ),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(1.5),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.star,
+                                color: Colors.yellow,
+                                size: 10,
+                              ),
+                              Text(
+                                sectionList[secPos].productList[index].rating,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .overline
+                                    .copyWith(letterSpacing: 0.2),
+                              ),
+                            ],
+                          ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Text(
+                    sectionList[secPos].productList[index].name,
+                    style: Theme.of(context)
+                        .textTheme
+                        .overline
+                        .copyWith(color: Colors.black, letterSpacing: 0.5),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 5, left: 5),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                                int.parse(sectionList[secPos]
+                                            .productList[index]
+                                            .prVarientList[0]
+                                            .disPrice) !=
+                                        0
+                                    ? CUR_CURRENCY +
+                                        "" +
+                                        sectionList[secPos]
+                                            .productList[index]
+                                            .prVarientList[0]
+                                            .price
+                                    : "",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .overline
+                                    .copyWith(
+                                        decoration: TextDecoration.lineThrough,
+                                        letterSpacing: 1),
+                                textAlign: TextAlign.left),
+                            Text(
+                              CUR_CURRENCY + " " + price.toString(),
+                              style: TextStyle(color: primary),
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                      sectionList[secPos].productList[index].isFavLoading
+                          ? Container(
+                              height: 15,
+                              width: 15,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 3),
+                              padding: const EdgeInsets.all(3),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 0.7,
+                              ))
+                          : InkWell(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0, vertical: 3),
+                                child: Icon(
+                                  sectionList[secPos]
+                                              .productList[index]
+                                              .isFav ==
+                                          "0"
+                                      ? Icons.favorite_border
+                                      : Icons.favorite,
+                                  size: 15,
+                                  color: primary,
+                                ),
+                              ),
+                              onTap: () {
+                                if (CUR_USERID != null) {
+                                  sectionList[secPos]
+                                              .productList[index]
+                                              .isFav ==
+                                          "0"
+                                      ? _setFav(secPos, index)
+                                      : _removeFav(secPos, index);
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Login()),
+                                  );
+                                }
+                              })
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+          onTap: () {
+            Product model = sectionList[secPos].productList[index];
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                  transitionDuration: Duration(seconds: 1),
+                  pageBuilder: (_, __, ___) => ProductDetail(
+                        model: model,
+                        updateParent: updateHomePage,
+                        secPos: secPos,
+                        index: index,
+                        updateHome: widget.updateHome,
+                        list: false,
+                        //  title: sectionList[secPos].title,
                       )),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(1.5),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.star,
-                            color: Colors.yellow,
-                            size: 10,
-                          ),
-                          Text(
-                            sectionList[secPos].productList[index].rating,
-                            style: Theme.of(context)
-                                .textTheme
-                                .overline
-                                .copyWith(letterSpacing: 0.2),
-                          ),
-                        ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget productItem(int secPos, int index, bool shadow) {
+    double price = double.parse(
+        sectionList[secPos].productList[index].prVarientList[0].disPrice);
+    if (price == 0)
+      price = double.parse(
+          sectionList[secPos].productList[index].prVarientList[0].price);
+
+    double width = MediaQuery.of(context).size.width * 0.5 - 20;
+    print(
+        "tag=============${sectionList[secPos].productList[index].id}${secPos}${index}========home");
+
+    return Container(
+      decoration: shadow
+          ? BoxDecoration(
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+            )
+          : null,
+      child: Card(
+        elevation: 0.2,
+        child: InkWell(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5.0),
+                      child: ClipRRect(
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(5),
+                              topRight: Radius.circular(5)),
+                          child: Hero(
+                            tag:
+                                "${sectionList[secPos].productList[index].id}$secPos$index",
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  sectionList[secPos].productList[index].image,
+                              height: double.maxFinite,
+                              width: double.maxFinite,
+                              //fit: BoxFit.fill,
+                              placeholder: (context, url) => placeHolder(width),
+                            ),
+                          )),
+                    ),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(1.5),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: Colors.yellow,
+                              size: 10,
+                            ),
+                            Text(
+                              sectionList[secPos].productList[index].rating,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(letterSpacing: 0.2),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      sectionList[secPos].productList[index].name,
-                      style: Theme.of(context)
-                          .textTheme
-                          .overline
-                          .copyWith(color: Colors.black, letterSpacing: 0.5),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        sectionList[secPos].productList[index].name,
+                        style: Theme.of(context)
+                            .textTheme
+                            .overline
+                            .copyWith(color: Colors.black, letterSpacing: 0.5),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  sectionList[secPos].productList[index].isFavLoading
-                      ? Container(
-                          height: 10,
-                          width: 10,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 0.7,
-                          ))
-                      : InkWell(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
+                    sectionList[secPos].productList[index].isFavLoading
+                        ? Container(
+                            height: 15,
+                            width: 15,
+                            margin: const EdgeInsets.symmetric(
                                 horizontal: 8.0, vertical: 3),
-                            child: Icon(
-                              sectionList[secPos].productList[index].isFav ==
-                                      "0"
-                                  ? Icons.favorite_border
-                                  : Icons.favorite,
-                              size: 15,
-                              color: primary,
+                            padding: const EdgeInsets.all(3),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 0.7,
+                            ))
+                        : InkWell(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 3),
+                              child: Icon(
+                                sectionList[secPos].productList[index].isFav ==
+                                        "0"
+                                    ? Icons.favorite_border
+                                    : Icons.favorite,
+                                size: 15,
+                                color: primary,
+                              ),
                             ),
-                          ),
-                          onTap: () {
-                            if (CUR_USERID != null) {
-                              sectionList[secPos].productList[index].isFav ==
-                                      "0"
-                                  ? _setFav(secPos, index)
-                                  : _removeFav(secPos, index);
-                            } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Login()),
-                              );
-                            }
-                          })
-                ],
+                            onTap: () {
+                              if (CUR_USERID != null) {
+                                sectionList[secPos].productList[index].isFav ==
+                                        "0"
+                                    ? _setFav(secPos, index)
+                                    : _removeFav(secPos, index);
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Login()),
+                                );
+                              }
+                            })
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 5.0, bottom: 5),
-              child: Row(
-                children: <Widget>[
-                  Text(
-                    int.parse(sectionList[secPos]
-                                .productList[index]
-                                .prVarientList[0]
-                                .disPrice) !=
-                            0
-                        ? CUR_CURRENCY +
-                            "" +
-                            sectionList[secPos]
-                                .productList[index]
-                                .prVarientList[0]
-                                .price
-                        : "",
-                    style: Theme.of(context).textTheme.overline.copyWith(
-                        decoration: TextDecoration.lineThrough,
-                        letterSpacing: 1),
-                  ),
-                  Text(" " + CUR_CURRENCY + " " + price.toString(),
-                      style: TextStyle(color: primary)),
-                ],
-              ),
-            )
-          ],
-        ),
-        onTap: () {
-          Product model = sectionList[secPos].productList[index];
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-                transitionDuration: Duration(seconds: 1),
-                pageBuilder: (_, __, ___) => Product_Detail(
+              Padding(
+                padding: const EdgeInsets.only(left: 5.0, bottom: 5),
+                child: Row(
+                  children: <Widget>[
+                    Text(
+                      int.parse(sectionList[secPos]
+                                  .productList[index]
+                                  .prVarientList[0]
+                                  .disPrice) !=
+                              0
+                          ? CUR_CURRENCY +
+                              "" +
+                              sectionList[secPos]
+                                  .productList[index]
+                                  .prVarientList[0]
+                                  .price
+                          : "",
+                      style: Theme.of(context).textTheme.overline.copyWith(
+                          decoration: TextDecoration.lineThrough,
+                          letterSpacing: 1),
+                    ),
+                    Text(" " + CUR_CURRENCY + " " + price.toString(),
+                        style: TextStyle(color: primary)),
+                  ],
+                ),
+              )
+            ],
+          ),
+          onTap: () {
+            Product model = sectionList[secPos].productList[index];
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                  transitionDuration: Duration(seconds: 1),
+                  pageBuilder: (_, __, ___) => ProductDetail(
                       model: model,
                       updateParent: updateHomePage,
                       secPos: secPos,
                       index: index,
                       updateHome: widget.updateHome,
+                      list: false
                       //  title: sectionList[secPos].title,
-                    )),
-          );
-        },
+                      )),
+            );
+          },
+        ),
       ),
     );
   }
@@ -1147,7 +1817,6 @@ class StateHomePage extends State<HomePage> {
       Response response =
           await post(setFavoriteApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
-
 
       var getdata = json.decode(response.body);
 
@@ -1223,7 +1892,9 @@ class StateHomePage extends State<HomePage> {
       getSection();
       getSetting();
     } else {
-      setSnackbar(internetMsg);
+      setState(() {
+        _isNetworkAvail = false;
+      });
       if (mounted)
         setState(() {
           _isCatLoading = false;
@@ -1238,13 +1909,12 @@ class StateHomePage extends State<HomePage> {
 
       var getdata = json.decode(response.body);
 
-
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
         var data = getdata["data"];
 
-        sliderList =
+        homeSliderList =
             (data as List).map((data) => new Model.fromJson(data)).toList();
       } else {
         setSnackbar(msg);
@@ -1298,7 +1968,6 @@ class StateHomePage extends State<HomePage> {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-
 
       bool error = getdata["error"];
       String msg = getdata["message"];

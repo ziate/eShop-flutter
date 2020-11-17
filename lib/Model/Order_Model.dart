@@ -17,7 +17,12 @@ class Order_Model {
       taxAmt,
       taxPer,
       orderDate,
-      dateTime;
+      dateTime,
+      isCancleable,
+      isReturnable,
+      isAlrCancelled,
+      isAlrReturned,
+      rtnReqSubmitted;
 
   List<OrderItem> itemList;
   List<String> listStatus = [];
@@ -42,7 +47,12 @@ class Order_Model {
       this.dateTime,
       this.itemList,
       this.listStatus,
-      this.listDate});
+      this.listDate,
+      this.isReturnable,
+      this.isCancleable,
+      this.isAlrCancelled,
+      this.isAlrReturned,
+      this.rtnReqSubmitted});
 
   factory Order_Model.fromJson(Map<String, dynamic> parsedJson) {
     List<OrderItem> itemList = (parsedJson[ORDER_ITEMS] as List)
@@ -74,6 +84,11 @@ class Order_Model {
         taxAmt: parsedJson[TOTAL_TAX_AMT],
         taxPer: parsedJson[TOTAL_TAX_PER],
         dateTime: parsedJson[DATE_ADDED],
+        isCancleable: parsedJson[ISCANCLEABLE],
+        isReturnable: parsedJson[ISRETURNABLE],
+        isAlrCancelled: parsedJson[ISALRCANCLE],
+        isAlrReturned: parsedJson[ISALRRETURN],
+        rtnReqSubmitted: parsedJson[ISRTNREQSUBMITTED],
         orderDate: date,
         itemList: itemList,
         listStatus: lStatus,
@@ -82,12 +97,25 @@ class Order_Model {
 }
 
 class OrderItem {
-  String name, qty, price, subTotal, status, image, varientId,isCancle,isReturn;
+  String id,
+      name,
+      qty,
+      price,
+      subTotal,
+      status,
+      image,
+      varientId,
+      isCancle,
+      isReturn,
+      isAlrCancelled,
+      isAlrReturned,
+      rtnReqSubmitted;
   List<String> listStatus = [];
   List<String> listDate = [];
 
   OrderItem(
       {this.qty,
+      this.id,
       this.name,
       this.price,
       this.subTotal,
@@ -95,7 +123,12 @@ class OrderItem {
       this.image,
       this.varientId,
       this.listDate,
-      this.listStatus,this.isCancle,this.isReturn});
+      this.listStatus,
+      this.isCancle,
+      this.isReturn,
+      this.isAlrReturned,
+      this.isAlrCancelled,
+      this.rtnReqSubmitted});
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     List<String> lStatus = [];
@@ -107,18 +140,20 @@ class OrderItem {
       lDate.add(curStatus[1]);
     }
     return new OrderItem(
-        qty: json[QUANTITY],
-        name: json[NAME],
-        image: json[IMAGE],
-        price: json[PRICE],
-        subTotal: json[SUB_TOTAL],
-        varientId: json[PRODUCT_VARIENT_ID],
-        listStatus: lStatus,
-        listDate: lDate,
-    isCancle: json[ISCANCLEABLE],
-      isReturn: json[ISRETURNABLE]
-
-
+      id: json[ID],
+      qty: json[QUANTITY],
+      name: json[NAME],
+      image: json[IMAGE],
+      price: json[PRICE],
+      subTotal: json[SUB_TOTAL],
+      varientId: json[PRODUCT_VARIENT_ID],
+      listStatus: lStatus,
+      listDate: lDate,
+      isCancle: json[ISCANCLEABLE],
+      isReturn: json[ISRETURNABLE],
+      isAlrCancelled: json[ISALRCANCLE],
+      isAlrReturned: json[ISALRRETURN],
+      rtnReqSubmitted: json[ISRTNREQSUBMITTED],
     );
   }
 }

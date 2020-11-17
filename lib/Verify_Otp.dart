@@ -28,7 +28,7 @@ class Verify_Otp extends StatefulWidget {
   _MobileOTPState createState() => new _MobileOTPState();
 }
 
-class _MobileOTPState extends State<Verify_Otp> {
+class _MobileOTPState extends State<Verify_Otp>  with TickerProviderStateMixin{
   final dataKey = new GlobalKey();
   String password,
       mobile,
@@ -49,11 +49,15 @@ class _MobileOTPState extends State<Verify_Otp> {
   bool isCodeSent = false;
   String _verificationId;
   String signature = "";
-  bool _isLoading = false;
+  //bool _isLoading = false;
   bool _isClickable = false;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
+
 
   @override
   void initState() {
@@ -64,6 +68,19 @@ class _MobileOTPState extends State<Verify_Otp> {
     Future.delayed(Duration(seconds: 60)).then((_) {
       _isClickable = true;
     });
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
   }
 
   Future<void> getSingature() async {
@@ -83,8 +100,10 @@ class _MobileOTPState extends State<Verify_Otp> {
   Future<void> checkNetworkOtp() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
-      if (_isClickable)
+      if (_isClickable) {
+        _playAnimation();
         _onVerifyCode();
+      }
       else {
         setSnackbar('Request new OTP after 60 seconds');
       }
@@ -100,13 +119,62 @@ class _MobileOTPState extends State<Verify_Otp> {
             setSnackbar('Request new OTP after 60 seconds');
           }
         } else {
-          setState(() {
+       /*   setState(() {
             _isLoading = false;
-          });
+          });*/
+
+          await buttonController.reverse();
           setSnackbar(somethingMSg);
         }
       });
     }
+  }
+
+  verifyBtn() {
+    return
+      new AnimatedBuilder(
+        builder: _buildBtnAnimation,
+        animation: buttonSqueezeanimation,
+      );
+  }
+
+
+  Widget _buildBtnAnimation(BuildContext context, Widget child) {
+    return CupertinoButton(
+      child: Container(
+        width: buttonSqueezeanimation.value,
+        height: 45,
+        alignment: FractionalOffset.center,
+        decoration: new BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryLight2, primaryLight3],
+              stops: [0, 1]),
+
+          borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
+        ),
+        child: buttonSqueezeanimation.value > 75.0
+            ? Text(VERIFY_AND_PROCEED,
+            textAlign: TextAlign.center,
+            style: Theme
+                .of(context)
+                .textTheme
+                .headline6
+                .copyWith(color: white, fontWeight: FontWeight.normal))
+            : new CircularProgressIndicator(
+          valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      ),
+
+      onPressed: () {
+        if (otp.length == 6) {
+          _onFormSubmitted();
+        } else {
+          setSnackbar("Invalid OTP");
+        }
+      },
+    );
   }
 
   setSnackbar(String msg) {
@@ -124,12 +192,14 @@ class _MobileOTPState extends State<Verify_Otp> {
   Future<void> checkNetwork() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
+      _playAnimation();
       getRegisterUser();
     } else {
       setSnackbar(internetMsg);
-      setState(() {
+     /* setState(() {
         _isLoading = false;
-      });
+      });*/
+      await buttonController.reverse();
     }
   }
 
@@ -151,6 +221,7 @@ class _MobileOTPState extends State<Verify_Otp> {
       print('response***registeruser**$headers***${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
+      await buttonController.reverse();
       if (!error) {
         setSnackbar("User Registered Successfully");
         List data = getdata["data"];
@@ -170,7 +241,7 @@ class _MobileOTPState extends State<Verify_Otp> {
         }
         CUR_USERID = id;
         saveUserDetail(id, name, email, mobile, city, area, address, pincode,
-            latitude, longitude, dob, "");
+            latitude, longitude,  "");
         Future.delayed(Duration(seconds: 1)).then((_) {
           Navigator.pushReplacement(
             context,
@@ -183,6 +254,7 @@ class _MobileOTPState extends State<Verify_Otp> {
       setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
+      await buttonController.reverse();
     }
   }
 
@@ -250,6 +322,7 @@ class _MobileOTPState extends State<Verify_Otp> {
         .then((UserCredential value) {
       if (value.user != null) {
         setSnackbar("OTP verified successfully");
+
         checkNetwork();
       } else {
         setSnackbar("Error validating OTP, try again");
@@ -258,7 +331,11 @@ class _MobileOTPState extends State<Verify_Otp> {
       setSnackbar("Something went wrong");
     });
   }
-
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
   getImage() {
     return Container(
       padding: EdgeInsets.only(top: 100.0),
@@ -266,6 +343,11 @@ class _MobileOTPState extends State<Verify_Otp> {
         child: new Image.asset('assets/images/sublogo.png', width: 200),
       ),
     );
+  }
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
   }
 
   monoVarifyText() {
@@ -325,39 +407,7 @@ class _MobileOTPState extends State<Verify_Otp> {
                 })));
   }
 
-  verifyBtn() {
-    double width = MediaQuery.of(context).size.width;
 
-    return Padding(
-      padding:
-          EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 60.0),
-      child: RaisedButton(
-        color: primaryLight2,
-        onPressed: () {
-          if (otp.length == 6) {
-            _onFormSubmitted();
-          } else {
-            setSnackbar("Invalid OTP");
-          }
-        },
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-        padding: EdgeInsets.all(0.0),
-        child: Ink(
-          child: Container(
-            constraints: BoxConstraints(maxWidth: width * 1.5, minHeight: 45.0),
-            alignment: Alignment.center,
-            child: Text(VERIFY_AND_PROCEED,
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .headline6
-                    .copyWith(color: white, fontWeight: FontWeight.normal)),
-          ),
-        ),
-      ),
-    );
-  }
 
   resendText() {
     return Padding(
@@ -424,18 +474,15 @@ class _MobileOTPState extends State<Verify_Otp> {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        body: Stack(children: [
-          Container(
-              decoration: back(),
-              child: Center(
-                child: Column(
-                  children: <Widget>[
-                    getImage(),
-                    expandedBottomView(),
-                  ],
-                ),
-              )),
-          showCircularProgress(_isLoading, primary)
-        ]));
+        body: Container(
+            decoration: back(),
+            child: Center(
+              child: Column(
+                children: <Widget>[
+                  getImage(),
+                  expandedBottomView(),
+                ],
+              ),
+            )));
   }
 }

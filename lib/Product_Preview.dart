@@ -6,16 +6,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
-class Product_Preview extends StatefulWidget {
-  final int pos,secPos;
+import 'Home.dart';
 
-  const Product_Preview({Key key, this.pos, this.secPos}) : super(key: key);
+class ProductPreview extends StatefulWidget {
+  final int pos, secPos, index;
+  final bool list;
+  final String id;
+
+  const ProductPreview(
+      {Key key, this.pos, this.secPos, this.index, this.list, this.id})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => StatePreview();
 }
 
-class StatePreview extends State<Product_Preview> {
+class StatePreview extends State<ProductPreview> {
   int curPos;
 
   @override
@@ -27,51 +33,54 @@ class StatePreview extends State<Product_Preview> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        // extendBodyBehindAppBar: true,
-        //appBar: getAppBar("", context),
-        body: Stack(
-      children: <Widget>[
-        PageView.builder(
-            itemCount: sliderList.length,
-            controller: PageController(initialPage: curPos),
-            onPageChanged: (index) {
-              setState(() {
-                curPos = index;
-              });
-            },
-            itemBuilder: (BuildContext context, int index) {
-              return
+    // print("tag=======${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}");
 
-                Hero(
-                  tag: "homeSection-${widget.secPos}${widget.pos}",
-                  child: PhotoView(
+    return Scaffold(
+        body: Hero(
+      tag: widget.list
+          ? "${widget.id}"
+          : "${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}",
+      child: Stack(
+        children: <Widget>[
+          PageView.builder(
+              itemCount: sliderList.length,
+              controller: PageController(initialPage: curPos),
+              onPageChanged: (index) {
+                setState(() {
+                  curPos = index;
+                });
+              },
+              itemBuilder: (BuildContext context, int index) {
+                return PhotoView(
                     backgroundDecoration: BoxDecoration(color: Colors.white),
-                    initialScale: PhotoViewComputedScale.contained*0.9,
-                    minScale: PhotoViewComputedScale.contained*0.9,
+                    initialScale: PhotoViewComputedScale.contained * 0.9,
+                    minScale: PhotoViewComputedScale.contained * 0.9,
                     imageProvider:
-                        CachedNetworkImageProvider(sliderList[curPos])),
-                );
-            }),
-        Padding(
-          padding: const EdgeInsets.only(top: 34.0),
-          child: new IconButton(
-            icon: new Icon(
-              Icons.arrow_back_ios,
-              color: primary,
+                        CachedNetworkImageProvider(sliderList[curPos]));
+              }),
+          Padding(
+            padding: const EdgeInsets.only(top: 34.0),
+            child: Material(
+              color: Colors.transparent,
+              child: new IconButton(
+                icon: new Icon(
+                  Icons.arrow_back_ios,
+                  color: primary,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
             ),
-            onPressed: () => Navigator.of(context).pop(),
           ),
-        ),
-        Positioned(
-            bottom: 10.0,
-            left: 25.0,
-            right: 25.0,
-            child: SelectedPhoto(
-              numberOfDots: sliderList.length,
-              photoIndex: curPos,
-            )),
-      ],
+          Positioned(
+              bottom: 10.0,
+              left: 25.0,
+              right: 25.0,
+              child: SelectedPhoto(
+                numberOfDots: sliderList.length,
+                photoIndex: curPos,
+              )),
+        ],
+      ),
     ));
   }
 }

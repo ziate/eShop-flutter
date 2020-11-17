@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:eshop/Set_Pass_By_Otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:eshop/Home.dart';
 import 'package:flutter/services.dart';
@@ -17,15 +18,19 @@ class ForgotPassWord extends StatefulWidget {
   _ForgetPassPageState createState() => new _ForgetPassPageState();
 }
 
-class _ForgetPassPageState extends State<ForgotPassWord> {
+class _ForgetPassPageState extends State<ForgotPassWord> with TickerProviderStateMixin {
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool isCodeSent = false;
   String mobile, name, email, id, otp,  countrycode, countryName;
   final mobileController = TextEditingController();
   final ccodeController = TextEditingController();
-  bool _isLoading = false;
+  //bool _isLoading = false;
   bool _isClickable = true;
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
+
+
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
@@ -38,12 +43,34 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
       elevation: 1.0,
     ));
   }
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+  }
 
+  @override
+  void initState() {
+    super.initState();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
   void validateAndSubmit() async {
     if (validateAndSave()) {
-      setState(() {
+     /* setState(() {
         _isLoading = true;
-      });
+      });*/
 
       setState(() {
         _isClickable = false;
@@ -52,20 +79,72 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
           _isClickable = true;
         });
       });
+      _playAnimation();
       checkNetwork();
     }
   }
 
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
   Future<void> checkNetwork() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
       getVerifyUser();
     } else {
       setSnackbar(internetMsg);
-      setState(() {
+      await buttonController.reverse();
+    /*  setState(() {
         _isLoading = false;
-      });
+      });*/
     }
+  }
+
+
+
+  getPwdBtn() {
+    return
+      new AnimatedBuilder(
+        builder: _buildBtnAnimation,
+        animation: buttonSqueezeanimation,
+      );
+  }
+
+
+  Widget _buildBtnAnimation(BuildContext context, Widget child) {
+    return CupertinoButton(
+      child: Container(
+        width: buttonSqueezeanimation.value,
+        height: 45,
+        alignment: FractionalOffset.center,
+        decoration: new BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryLight2, primaryLight3],
+              stops: [0, 1]),
+
+          borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
+        ),
+        child: buttonSqueezeanimation.value > 75.0
+            ? Text(GET_PASSWORD,
+            textAlign: TextAlign.center,
+            style: Theme
+                .of(context)
+                .textTheme
+                .headline6
+                .copyWith(color: white, fontWeight: FontWeight.normal))
+            : new CircularProgressIndicator(
+          valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      ),
+
+      onPressed: () {
+        validateAndSubmit();
+      },
+    );
   }
 
   bool validateAndSave() {
@@ -94,30 +173,31 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
       var getdata = json.decode(response.body);
       print('response***verifyuser**$headers***${response.body.toString()}');
       bool error = getdata["error"];
-
+      await buttonController.reverse();
       if (error) {
         setPrefrence(MOBILE, mobile);
-        Future.delayed(Duration(seconds: 1)).then((_) {
+
           Navigator.of(context).push(MaterialPageRoute(
             builder: (BuildContext context) => Set_Pass_By_Otp(
               mobileNumber: mobile,
               countrycode: countrycode,
             ),
           ));
-        });
+
       } else {
         setSnackbar(
             "Please first Sign Up! Your mobile number is not resgister");
         _isClickable = true;
       }
-      setState(() {
+     /* setState(() {
         _isLoading = false;
-      });
+      });*/
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-      setState(() {
+   /*   setState(() {
         _isLoading = false;
-      });
+      });*/
+      await buttonController.reverse();
     }
   }
 
@@ -236,7 +316,7 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
     );
   }
 
-  getPassBtn() {
+ /* getPassBtn() {
     double width = MediaQuery.of(context).size.width;
     return Padding(
         padding:
@@ -264,7 +344,7 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
             ),
           ),
         )));
-  }
+  }*/
 
   expandedBottomView() {
     return Expanded(
@@ -287,7 +367,7 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
                             forgotPassTxt(),
                             setCountryCode(),
                             setMobileNo(),
-                            getPassBtn(),
+                            getPwdBtn(),
                           ],
                         ),
                       ),
@@ -302,17 +382,14 @@ class _ForgetPassPageState extends State<ForgotPassWord> {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        body: Stack(children: [
-          Container(
-              decoration: back(),
-              child: Center(
-                  child: Column(
-                children: <Widget>[
-                  imageView(),
-                  expandedBottomView(),
-                ],
-              ))),
-          showCircularProgress(_isLoading, Colors.white)
-        ]));
+        body: Container(
+            decoration: back(),
+            child: Center(
+                child: Column(
+              children: <Widget>[
+                imageView(),
+                expandedBottomView(),
+              ],
+            ))));
   }
 }

@@ -40,6 +40,10 @@ class _SplashScreen extends State<Splash> {
 
   @override
   Widget build(BuildContext context) {
+
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
+
     SystemChrome.setEnabledSystemUIOverlays([]);
     return Scaffold(
       key: _scaffoldKey,
@@ -69,16 +73,14 @@ class _SplashScreen extends State<Splash> {
 
   startTime() async {
     var _duration = Duration(seconds: 2);
-    return Timer(_duration, checkNetwork);
+    return Timer(_duration,     navigationPage);
   }
 
   Future<void> navigationPage() async {
     bool isFirstTime = await getPrefrenceBool(ISFIRSTTIME);
     print("first ***$isFirstTime");
     if (isFirstTime) {
-
-
-     Navigator.pushReplacementNamed(context, "/home");
+      Navigator.pushReplacementNamed(context, "/home");
     } else {
       Navigator.pushReplacement(
           context,
@@ -247,14 +249,14 @@ class _SplashScreen extends State<Splash> {
     });
   }
 
-  Future<void> checkNetwork() async {
+/*  Future<void> checkNetwork() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
       navigationPage();
     } else {
       setSnackbar(internetMsg);
     }
-  }
+  }*/
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(

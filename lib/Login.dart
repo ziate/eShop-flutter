@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:eshop/Forget_Password.dart';
 import 'package:eshop/Helper/String.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:eshop/Home.dart';
 import 'package:flutter/services.dart';
@@ -19,13 +20,12 @@ class Login extends StatefulWidget {
   _LoginPageState createState() => new _LoginPageState();
 }
 
-class _LoginPageState extends State<Login> {
+class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final mobileController = TextEditingController();
   final passwordController = TextEditingController();
   String countryName;
 
-  bool _isLoading = false;
   bool _isClickable = true;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   bool visible = false;
@@ -42,14 +42,14 @@ class _LoginPageState extends State<Login> {
       address,
       latitude,
       longitude,
-      dob,
       image;
+  Animation buttonSqueezeanimation;
+
+  AnimationController buttonController;
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
-      setState(() {
-        _isLoading = true;
-      });
+      _playAnimation();
       checkNetwork();
     }
   }
@@ -60,16 +60,14 @@ class _LoginPageState extends State<Login> {
       getLoginUser();
     } else {
       setSnackbar(internetMsg);
-      setState(() {
-        _isLoading = false;
-      });
+      await buttonController.reverse();
     }
   }
 
   bool validateAndSave() {
     final form = _formkey.currentState;
+    form.save();
     if (form.validate()) {
-      form.save();
       return true;
     }
     return false;
@@ -91,36 +89,36 @@ class _LoginPageState extends State<Login> {
     var data = {MOBILE: mobile, PASSWORD: password};
 
     Response response =
-        await post(getUserLoginApi, body: data, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+    await post(getUserLoginApi, body: data, headers: headers)
+        .timeout(Duration(seconds: timeOut));
 
     print('response***login*${data.toString()}**${response.body.toString()}');
     var getdata = json.decode(response.body);
 
     bool error = getdata["error"];
     String msg = getdata["message"];
-
+    await buttonController.reverse();
     if (!error) {
-      List data = getdata["data"];
+      var i = getdata["data"][0];
 
-      for (var i in data) {
-        id = i[ID];
-        username = i[USERNAME];
-        email = i[EMAIL];
-        mobile = i[MOBILE];
-        city = i[CITY];
-        area = i[AREA];
-        address = i[ADDRESS];
-        pincode = i[PINCODE];
-        latitude = i[LATITUDE];
-        longitude = i[LONGITUDE];
-        dob = i[DOB];
-        image = i[IMAGE];
-      }
+      //   for (var i in data) {
+      id = i[ID];
+      username = i[USERNAME];
+      email = i[EMAIL];
+      mobile = i[MOBILE];
+      city = i[CITY];
+      area = i[AREA];
+      address = i[ADDRESS];
+      pincode = i[PINCODE];
+      latitude = i[LATITUDE];
+      longitude = i[LONGITUDE];
+
+      image = i[IMAGE];
+      //}
       setSnackbar('Login successfully');
       CUR_USERID = id;
       saveUserDetail(id, username, email, mobile, city, area, address, pincode,
-          latitude, longitude, dob, image);
+          latitude, longitude, image);
       Future.delayed(Duration(seconds: 1)).then((_) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Home()));
@@ -128,12 +126,12 @@ class _LoginPageState extends State<Login> {
     } else {
       setSnackbar(msg);
     }
-    setState(() {
+    /*setState(() {
       _isLoading = false;
-    });
+    });*/
   }
 
-  subLogo() {
+  _subLogo() {
     return Container(
       padding: EdgeInsets.only(top: 80.0),
       child: Center(
@@ -173,15 +171,16 @@ class _LoginPageState extends State<Login> {
   }
 
   setCountryCode() {
-    double height = MediaQuery.of(context).size.height;
+    double height = MediaQuery.of(context).size.height * 0.9;
     double width = MediaQuery.of(context).size.width;
     return Padding(
         padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
         child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           width: width,
-          height: 49,
+          height: 40,
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.0),
+              borderRadius: BorderRadius.circular(7.0),
               border: Border.all(color: darkgrey)),
           child: CountryCodePicker(
               showCountryOnly: false,
@@ -208,65 +207,72 @@ class _LoginPageState extends State<Login> {
   }
 
   Widget _buildCountryPicker(CountryCode country) => Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          new Flexible(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: new Image.asset(
-                country.flagUri,
-                package: 'country_code_picker',
-                height: 35,
-                width: 30,
-              ),
-            ),
+    mainAxisAlignment: MainAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    children: <Widget>[
+      new Flexible(
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: new Image.asset(
+            country.flagUri,
+            package: 'country_code_picker',
+            height: 40,
+            width: 20,
           ),
-          new Flexible(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: new Text(country.dialCode),
-            ),
+        ),
+      ),
+      new Flexible(
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: new Text(
+            country.dialCode,
+            style: TextStyle(fontSize: 12),
           ),
-          new Flexible(
-            child: Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: new Text(
-                country.name,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+        ),
+      ),
+      new Flexible(
+        child: Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: new Text(
+            country.name,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      );
+        ),
+      ),
+    ],
+  );
 
   setMobileNo() {
     return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
+      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
       child: TextFormField(
         keyboardType: TextInputType.number,
         controller: mobileController,
-        //inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         validator: validateMob,
         onSaved: (String value) {
           mobileno = value;
-          mobile =  mobileno;
+          mobile = mobileno;
           print('Mobile no:$mobile');
         },
         decoration: InputDecoration(
-            prefixIcon: Icon(Icons.call),
+            prefixIcon: Icon(
+              Icons.call_outlined,
+            ),
             hintText: MOBILEHINT_LBL,
-            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
+            OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
       ),
     );
   }
 
   setPass() {
     return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
+      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
       child: TextFormField(
         keyboardType: TextInputType.text,
         obscureText: true,
@@ -276,11 +282,13 @@ class _LoginPageState extends State<Login> {
           password = value;
         },
         decoration: InputDecoration(
-            prefixIcon: Icon(Icons.lock),
+            prefixIcon: Icon(Icons.lock_outline),
             hintText: PASSHINT_LBL,
-            contentPadding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
             border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(10.0))),
+            OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
       ),
     );
   }
@@ -288,7 +296,7 @@ class _LoginPageState extends State<Login> {
   forgetPass() {
     return Padding(
         padding:
-            EdgeInsets.only(bottom: 10.0, left: 30.0, right: 30.0, top: 20.0),
+        EdgeInsets.only(bottom: 10.0, left: 30.0, right: 30.0, top: 20.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
@@ -296,12 +304,12 @@ class _LoginPageState extends State<Login> {
               onTap: () {
                 setPrefrence(ID, id);
                 setPrefrence(MOBILE, mobile);
-                Future.delayed(Duration(seconds: 1)).then((_) {
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ForgotPassWord()));
-                });
+
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ForgotPassWord()));
+
               },
               child: Text(FORGOT_PASSWORD_LBL,
                   style: Theme.of(context)
@@ -313,40 +321,10 @@ class _LoginPageState extends State<Login> {
         ));
   }
 
-  loginBtn() {
-    double width = MediaQuery.of(context).size.width;
-    return Padding(
-        padding:
-            EdgeInsets.only(bottom: 10.0, left: 30.0, right: 30.0, top: 20.0),
-        child: Center(
-            child: RaisedButton(
-          color: primaryLight2,
-          onPressed: () {
-            validateAndSubmit();
-          },
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-          padding: EdgeInsets.all(0.0),
-          child: Ink(
-            child: Container(
-              constraints: BoxConstraints(maxWidth: width * 1.5, minHeight: 45),
-              //decoration: back(),
-              alignment: Alignment.center,
-              child: Text(LOGIN_LBL,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      .copyWith(color: white, fontWeight: FontWeight.normal)),
-            ),
-          ),
-        )));
-  }
-
   accSignup() {
     return Padding(
       padding:
-          EdgeInsets.only(bottom: 30.0, left: 30.0, right: 30.0, top: 20.0),
+      EdgeInsets.only(bottom: 30.0, left: 30.0, right: 30.0, top: 20.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -357,10 +335,10 @@ class _LoginPageState extends State<Login> {
                   .copyWith(color: lightblack2, fontWeight: FontWeight.normal)),
           InkWell(
               onTap: () {
-                Future.delayed(Duration(seconds: 1)).then((_) {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => SignUp()));
-                });
+
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SignUp()));
+
               },
               child: Text(
                 SIGN_UP_LBL,
@@ -372,7 +350,7 @@ class _LoginPageState extends State<Login> {
     );
   }
 
-  skipBtn() {
+  _skipBtn() {
     return Padding(
         padding: EdgeInsets.only(top: 40.0, right: 20),
         child: Row(
@@ -398,7 +376,7 @@ class _LoginPageState extends State<Login> {
         ));
   }
 
-  expandedBottomView() {
+  _expandedBottomView() {
     return Expanded(
         child: Container(
             width: double.infinity,
@@ -413,7 +391,7 @@ class _LoginPageState extends State<Login> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20)),
                         margin:
-                            EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+                        EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -424,6 +402,7 @@ class _LoginPageState extends State<Login> {
                             setPass(),
                             forgetPass(),
                             loginBtn(),
+                            //  appBtn(LOGIN_LBL, buttonController, buttonSqueezeanimation, validateAndSubmit),
                             accSignup(),
                           ],
                         ),
@@ -434,6 +413,78 @@ class _LoginPageState extends State<Login> {
               ),
             )));
   }
+  loginBtn() {
+    return
+      new AnimatedBuilder(
+        builder: _buildBtnAnimation,
+        animation: buttonController,
+      );
+  }
+
+
+  Widget _buildBtnAnimation(BuildContext context, Widget child) {
+    return CupertinoButton(
+      child: Container(
+        width: buttonSqueezeanimation.value,
+        height: 45,
+        alignment: FractionalOffset.center,
+        decoration: new BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryLight2, primaryLight3],
+              stops: [0, 1]),
+
+          borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
+        ),
+        child: buttonSqueezeanimation.value > 75.0
+            ? Text(LOGIN_LBL,
+            textAlign: TextAlign.center,
+            style: Theme
+                .of(context)
+                .textTheme
+                .headline6
+                .copyWith(color: white, fontWeight: FontWeight.normal))
+            : new CircularProgressIndicator(
+          valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      ),
+
+      onPressed: () {
+        validateAndSubmit();
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -441,20 +492,17 @@ class _LoginPageState extends State<Login> {
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
         key: _scaffoldKey,
-        body: Stack(children: <Widget>[
-          Container(
-              height: height,
-              width: width,
-              decoration: back(),
-              child: Center(
-                  child: Column(
-                children: <Widget>[
-                  skipBtn(),
-                  subLogo(),
-                  expandedBottomView(),
-                ],
-              ))),
-          showCircularProgress(_isLoading, primary),
-        ]));
+        body: Container(
+            height: height,
+            width: width,
+            decoration: back(),
+            child: Center(
+                child: Column(
+                  children: <Widget>[
+                    _skipBtn(),
+                    _subLogo(),
+                    _expandedBottomView(),
+                  ],
+                ))));
   }
 }

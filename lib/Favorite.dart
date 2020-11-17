@@ -82,12 +82,14 @@ class StateFav extends State<Favorite> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+        Hero(
+        tag: "$index${favList[index].productList[0].id}",child:
             CachedNetworkImage(
               imageUrl: favList[index].productList[0].image,
               height: 90.0,
               width: 90.0,
               placeholder: (context, url) => placeHolder(90),
-            ),
+            )),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
@@ -235,11 +237,15 @@ class StateFav extends State<Favorite> {
           Product model = favList[index].productList[0];
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => Product_Detail(
+            PageRouteBuilder(
+                transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
                       model: model,
                       updateParent: updateFav,
                       updateHome: widget.update,
+                      secPos: 0,
+                      index: index,
+                      list: true,
                       //  title: productList[index].name,
                     )),
           );
@@ -289,6 +295,8 @@ class StateFav extends State<Favorite> {
           if (msg != 'No Favourite(s) Product Are Added') setSnackbar(msg);
           isLoadingmore = false;
         }
+
+        if(mounted)
         setState(() {
           _isFavLoading = false;
         });
@@ -504,77 +512,5 @@ class StateFav extends State<Favorite> {
               );
   }
 
-  Widget shimmer() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      child: Shimmer.fromColors(
-        baseColor: Colors.grey[300],
-        highlightColor: Colors.grey[100],
-        child: Column(
-          children: [0, 1, 2, 3, 4, 5]
-              .map((_) =>
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child:
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 80.0,
-                      height: 80.0,
-                      color: Colors.white,
-                    ),
-                    Padding(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            height: 18.0,
-                            color: Colors.white,
-                          ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.symmetric(vertical: 5.0),
-                          ),
-                          Container(
-                            width: double.infinity,
-                            height: 8.0,
-                            color: Colors.white,
-                          ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.symmetric(vertical: 5.0),
-                          ),
-                          Container(
-                            width: 100.0,
-                            height: 8.0,
-                            color: Colors.white,
-                          ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.symmetric(vertical: 5.0),
-                          ),
-                          Container(
-                            width: 20.0,
-                            height: 8.0,
-                            color: Colors.white,
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ))
-              .toList(),
-        ),
 
-      ),
-    );
-  }
 }

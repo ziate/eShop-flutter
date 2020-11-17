@@ -6,18 +6,20 @@ import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Model/User.dart';
 import 'package:eshop/map.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
+
 import 'Helper/Constant.dart';
-import 'package:http/http.dart'as http;
+import 'package:http/http.dart' as http;
 
 class Profile extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => StateProfile();
 }
 
-String lat,long;
+String lat, long;
 
 class StateProfile extends State<Profile> {
 
@@ -28,16 +30,16 @@ class StateProfile extends State<Profile> {
       area,
       pincode,
       address,
-      dob,image;
-  List<User> cityList=[];
-  List<User> areaList=[];
+       image;
+  List<User> cityList = [];
+  List<User> areaList = [];
   bool _isLoading = false;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  TextEditingController nameC, emailC, mobileC, pincodeC, addressC, dobC;
+  TextEditingController nameC, emailC, mobileC, pincodeC, addressC;
   bool isDateSelected = false;
   DateTime birthDate;
-  bool isSelected=false;
+  bool isSelected = false;
   File _image;
 
   @override
@@ -49,7 +51,6 @@ class StateProfile extends State<Profile> {
     emailC = new TextEditingController();
     pincodeC = new TextEditingController();
     addressC = new TextEditingController();
-    dobC = new TextEditingController();
     getUserDetails();
     callApi();
   }
@@ -64,9 +65,8 @@ class StateProfile extends State<Profile> {
     pincode = await getPrefrence(PINCODE);
     address = await getPrefrence(ADDRESS);
 
-    dob = await getPrefrence(DOB);
-    image=await getPrefrence(IMAGE);
 
+    image = await getPrefrence(IMAGE);
 
 
     mobileC.text = "+$mobile";
@@ -74,7 +74,7 @@ class StateProfile extends State<Profile> {
     emailC.text = email;
     pincodeC.text = pincode;
     addressC.text = address;
-    dobC.text = dob;
+
 
 
     setState(() {});
@@ -84,11 +84,9 @@ class StateProfile extends State<Profile> {
     bool avail = await isNetworkAvailable();
     if (avail) {
       getCities();
-      if(city!=null && city!="")
-      {
+      if (city != null && city != "") {
         getArea();
       }
-
     } else {
       setSnackbar(internetMsg);
       setState(() {
@@ -121,8 +119,7 @@ class StateProfile extends State<Profile> {
   bool validateAndSave() {
     final form = _formkey.currentState;
 
-    if (form.validate())
-    {
+    if (form.validate()) {
       form.save();
       return true;
     }
@@ -144,17 +141,19 @@ class StateProfile extends State<Profile> {
       var response = await request.send();
       var responseData = await response.stream.toBytes();
       var responseString = String.fromCharCodes(responseData);
+
+      print("profile====$responseString*****${_image.path}");
+
       var getdata = json.decode(responseString);
       bool error = getdata["error"];
       String msg = getdata['message'];
       if (!error) {
         setSnackbar('Profile Picture updated successfully');
         List data = getdata["data"];
-        for(var i in data)
-        {
-          image=i[IMAGE];
+        for (var i in data) {
+          image = i[IMAGE];
         }
-        setPrefrence(IMAGE,image);
+        setPrefrence(IMAGE, image);
         print("current image:*****$image");
       } else {
         setSnackbar(msg);
@@ -171,44 +170,34 @@ class StateProfile extends State<Profile> {
   }
 
   Future<void> setUpdateUser() async {
-
     print(
-        "Area:$area,City:$city,latitude:$lat,longitude:$long,dob:$dob,Id:$CUR_USERID");
+        "Area:$area,City:$city,latitude:$lat,longitude:$long,Id:$CUR_USERID");
     try {
       var data = {
-        USER_ID:CUR_USERID,
-        USERNAME:name,
-        EMAIL:email
+        USER_ID: CUR_USERID,
+        USERNAME: name,
+        EMAIL: email
       };
 
 
-      if(city!=null && city!="")
-      {
-        data[CITY]=city;
+      if (city != null && city != "") {
+        data[CITY] = city;
       }
-      if(area!=null && area!="")
-      {
-        data[AREA]=area;
+      if (area != null && area != "") {
+        data[AREA] = area;
       }
-      if(address!=null && address!="")
-      {
-        data[ADDRESS]=address;
+      if (address != null && address != "") {
+        data[ADDRESS] = address;
       }
-      if(pincode!=null && pincode!="")
-      {
-        data[PINCODE]=pincode;
+      if (pincode != null && pincode != "") {
+        data[PINCODE] = pincode;
       }
-      if(dob!=null && dob!="")
-      {
-        data[DOB]=dob;
+
+      if (lat != null && lat != "") {
+        data[LATITUDE] = lat;
       }
-      if(lat!=null && lat!="")
-      {
-        data[LATITUDE]=lat;
-      }
-      if(long!=null && long!="")
-      {
-        data[LONGITUDE]=long;
+      if (long != null && long != "") {
+        data[LONGITUDE] = long;
       }
 
 
@@ -223,10 +212,10 @@ class StateProfile extends State<Profile> {
       String msg = getdata["message"];
       if (!error) {
         setSnackbar("User Update Successfully");
-        List data = getdata["data"];
+        var i  = getdata["data"][0];
 
-        for (var i in data) {
-          CUR_USERID= i[ID];
+
+          CUR_USERID = i[ID];
           name = i[USERNAME];
           email = i[EMAIL];
           mobile = i[MOBILE];
@@ -236,12 +225,22 @@ class StateProfile extends State<Profile> {
           pincode = i[PINCODE];
           lat = i[LATITUDE];
           long = i[LONGITUDE];
-          dob = i[DOB];
-        }
+
+
 
         print("City:$city,Area:$area,image:$image");
-        saveUserDetail(CUR_USERID, name, email, mobile, city, area, address,
-            pincode, lat, long, dob,image);
+        saveUserDetail(
+            CUR_USERID,
+            name,
+            email,
+            mobile,
+            city,
+            area,
+            address,
+            pincode,
+            lat,
+            long,
+            image);
       } else {
         setSnackbar(msg);
       }
@@ -254,15 +253,16 @@ class StateProfile extends State<Profile> {
   }
 
   _imgFromGallery() async {
-    final image1 = await ImagePicker.pickImage (
-        source: ImageSource.gallery
-    );
+    File image = await FilePicker.getFile(type: FileType.image);
 
-    if(image1!=null) {
+    if(image!=null)
+    {
+
+      print('path**${image.path}');
       setState(() {
-        _image = image1;
-        setProfilePic(_image);
+        _isLoading = true;
       });
+      setProfilePic(image);
     }
   }
 
@@ -291,8 +291,6 @@ class StateProfile extends State<Profile> {
   }
 
 
-
-
   Future<void> getCities() async {
     print("city:$city,area:$area");
     print("image:$image");
@@ -309,8 +307,6 @@ class StateProfile extends State<Profile> {
         var data = getdata["data"];
         cityList =
             (data as List).map((data) => new User.fromJson(data)).toList();
-
-
       } else {
         setSnackbar(msg);
       }
@@ -324,7 +320,6 @@ class StateProfile extends State<Profile> {
       });
     }
   }
-
 
 
   Future<void> getArea() async {
@@ -350,8 +345,6 @@ class StateProfile extends State<Profile> {
 
         areaList =
             (data as List).map((data) => new User.fromJson(data)).toList();
-
-
       } else {
         setSnackbar(msg);
       }
@@ -384,18 +377,27 @@ class StateProfile extends State<Profile> {
       child: TextFormField(
         keyboardType: TextInputType.text,
         controller: nameC,
-        style: Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+        style: Theme
+            .of(this.context)
+            .textTheme
+            .subtitle1
+            .copyWith(color: darkgrey),
         validator: validateUserName,
-        onChanged: (v) => setState(() {
-          name = v;
-        }),
+        onChanged: (v) =>
+            setState(() {
+              name = v;
+            }),
         onSaved: (String value) {
           name = value;
         },
         decoration: InputDecoration(
           hintText: NAMEHINT_LBL,
           hintStyle:
-          Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+          Theme
+              .of(this.context)
+              .textTheme
+              .subtitle1
+              .copyWith(color: darkgrey),
           filled: true,
           fillColor: Colors.white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
@@ -420,11 +422,19 @@ class StateProfile extends State<Profile> {
           keyboardType: TextInputType.number,
           controller: mobileC,
           readOnly: true,
-          style: Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+          style: Theme
+              .of(this.context)
+              .textTheme
+              .subtitle1
+              .copyWith(color: darkgrey),
           decoration: InputDecoration(
             hintText: MOBILEHINT_LBL,
             hintStyle:
-            Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+            Theme
+                .of(this.context)
+                .textTheme
+                .subtitle1
+                .copyWith(color: darkgrey),
             filled: true,
             fillColor: Colors.white,
             contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
@@ -449,18 +459,27 @@ class StateProfile extends State<Profile> {
         child: TextFormField(
           keyboardType: TextInputType.emailAddress,
           controller: emailC,
-          style: Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+          style: Theme
+              .of(this.context)
+              .textTheme
+              .subtitle1
+              .copyWith(color: darkgrey),
           validator: validateEmail,
-          onChanged: (v) => setState(() {
-            email = v;
-          }),
+          onChanged: (v) =>
+              setState(() {
+                email = v;
+              }),
           onSaved: (String value) {
             email = value;
           },
           decoration: InputDecoration(
             hintText: EMAILHINT_LBL,
             hintStyle:
-            Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+            Theme
+                .of(this.context)
+                .textTheme
+                .subtitle1
+                .copyWith(color: darkgrey),
             filled: true,
             fillColor: Colors.white,
             contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
@@ -487,7 +506,11 @@ class StateProfile extends State<Profile> {
         iconEnabledColor: darkgrey,
         hint: new Text(
           CITYSELECT_LBL,
-          style: Theme.of(this.context).textTheme.subtitle1.copyWith(
+          style: Theme
+              .of(this.context)
+              .textTheme
+              .subtitle1
+              .copyWith(
             color: darkgrey,
           ),
         ),
@@ -496,7 +519,7 @@ class StateProfile extends State<Profile> {
         onChanged: (newValue) {
           setState(() {
             areaList.clear();
-            area=null;
+            area = null;
             city = newValue;
           });
           print(city);
@@ -508,7 +531,11 @@ class StateProfile extends State<Profile> {
             child: Text(
               user.name,
               style:
-              Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+              Theme
+                  .of(this.context)
+                  .textTheme
+                  .subtitle1
+                  .copyWith(color: darkgrey),
             ),
           );
         }).toList(),
@@ -538,7 +565,11 @@ class StateProfile extends State<Profile> {
         isDense: true,
         hint: new Text(
           AREASELECT_LBL,
-          style: Theme.of(this.context).textTheme.subtitle1.copyWith(
+          style: Theme
+              .of(this.context)
+              .textTheme
+              .subtitle1
+              .copyWith(
             color: darkgrey,
           ),
         ),
@@ -560,7 +591,11 @@ class StateProfile extends State<Profile> {
             child: Text(
               user.name,
               style:
-              Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+              Theme
+                  .of(this.context)
+                  .textTheme
+                  .subtitle1
+                  .copyWith(color: darkgrey),
             ),
           );
         }).toList(),
@@ -590,19 +625,22 @@ class StateProfile extends State<Profile> {
               child: TextFormField(
                 keyboardType: TextInputType.text,
                 controller: addressC,
-                style: Theme.of(this.context)
+                style: Theme
+                    .of(this.context)
                     .textTheme
                     .subtitle1
                     .copyWith(color: darkgrey),
-                onChanged: (v) => setState(() {
-                  address = v;
-                }),
+                onChanged: (v) =>
+                    setState(() {
+                      address = v;
+                    }),
                 onSaved: (String value) {
                   address = value;
                 },
                 decoration: InputDecoration(
                   hintText: ADDRESS_LBL,
-                  hintStyle: Theme.of(this.context)
+                  hintStyle: Theme
+                      .of(this.context)
                       .textTheme
                       .subtitle1
                       .copyWith(color: darkgrey),
@@ -629,9 +667,20 @@ class StateProfile extends State<Profile> {
                   color: white),
               child: IconButton(
                 icon: new Icon(Icons.my_location),
-                onPressed: () {
+                onPressed: () async {
+
+
+                  Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
                   Navigator.push(
-                      this.context, MaterialPageRoute(builder: (context) => Map()));
+                      this.context,
+                      MaterialPageRoute(builder: (context) => Map(
+
+                        latitude: lat==null?position.latitude:double.parse(lat),
+                        longitude:long==null?position.longitude: double.parse(long),
+                        from: PROFILE,
+
+                      )));
                 },
               ),
             )
@@ -640,7 +689,10 @@ class StateProfile extends State<Profile> {
   }
 
   setPincode() {
-    double width = MediaQuery.of(this.context).size.width;
+    double width = MediaQuery
+        .of(this.context)
+        .size
+        .width;
     return Container(
       width: width,
       padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
@@ -648,18 +700,27 @@ class StateProfile extends State<Profile> {
         child: TextFormField(
           keyboardType: TextInputType.number,
           controller: pincodeC,
-          style: Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+          style: Theme
+              .of(this.context)
+              .textTheme
+              .subtitle1
+              .copyWith(color: darkgrey),
           validator: validatePincodeOptional,
-          onChanged: (v) => setState(() {
-            pincode = v;
-          }),
+          onChanged: (v) =>
+              setState(() {
+                pincode = v;
+              }),
           onSaved: (String value) {
             pincode = value;
           },
           decoration: InputDecoration(
             hintText: PINCODEHINT_LBL,
             hintStyle:
-            Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+            Theme
+                .of(this.context)
+                .textTheme
+                .subtitle1
+                .copyWith(color: darkgrey),
             filled: true,
             fillColor: Colors.white,
             contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
@@ -677,6 +738,7 @@ class StateProfile extends State<Profile> {
     );
   }
 
+/*
   setDob() {
     return Padding(
         padding:
@@ -684,11 +746,19 @@ class StateProfile extends State<Profile> {
         child: TextFormField(
             controller: dobC,
             readOnly: true,
-            style: Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+            style: Theme
+                .of(this.context)
+                .textTheme
+                .subtitle1
+                .copyWith(color: darkgrey),
             decoration: InputDecoration(
               hintText: DOB_LBL,
               hintStyle:
-              Theme.of(this.context).textTheme.subtitle1.copyWith(color: darkgrey),
+              Theme
+                  .of(this.context)
+                  .textTheme
+                  .subtitle1
+                  .copyWith(color: darkgrey),
               filled: true,
               fillColor: Colors.white,
               contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
@@ -720,25 +790,25 @@ class StateProfile extends State<Profile> {
                   if (dayStr.length == 1) {
                     dayStr = "0" + dayStr;
                   }
-                  dob = "${dayStr}/${monthStr}/${birthDate.year}";
-                  print(dob);
-                  dobC.text = dob;
+
                 });
               }
             }
 
         ));
   }
+*/
 
   profileImage() {
     return Container(
         padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 30.0),
-        child:Stack(
+        child: Stack(
           children: <Widget>[
-            image!=null && image!=""?
-            CircleAvatar(  radius: 50,
-                backgroundColor: primary,child:ClipRRect(borderRadius: BorderRadius.circular(50),
-                    child:Image.network(image,fit: BoxFit.fill,))):
+            image != null && image != "" ?
+            CircleAvatar(radius: 50,
+                backgroundColor: primary,
+                child: ClipRRect(borderRadius: BorderRadius.circular(50),
+                    child: Image.network(image, fit: BoxFit.fill,width: 100,height: 100,))) :
             CircleAvatar(
               radius: 50,
               backgroundColor: primary,
@@ -747,33 +817,46 @@ class StateProfile extends State<Profile> {
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(50),
                       border: Border.all(color: primary)),
-                  child: Icon(Icons.person,size:100)
+                  child: Icon(Icons.person, size: 100)
 
               ),
             ),
-            Positioned(bottom: 1, right:1 ,child: Container(
-              height:40, width: 40,
-              child: IconButton(icon:Icon(Icons.edit, color:primary,),
-                onPressed:()
-                {
+            Positioned(bottom: 1, right: 1, child: Container(
+              height: 30, width: 30,
+              child: IconButton(icon: Icon(Icons.edit, color: primary,size: 15,),
+                onPressed: () {
                   setState(() {
-                    _showPicker(context);
+                    _imgFromGallery();
+                    //_showPicker(context);
                   });
                 },
               ),
               decoration: BoxDecoration(
-                  color:white,
-                  borderRadius: BorderRadius.all(Radius.circular(20),), border: Border.all(color: primary)
+                  color: white,
+                  borderRadius: BorderRadius.all(Radius.circular(20),),
+                  border: Border.all(color: primary)
               ),
             )
             ),
           ],
         ));
   }
-  updateBtn() {
-    double width = MediaQuery.of(this.context).size.width;
 
-    return Padding(
+  updateBtn() {
+    double width = MediaQuery
+        .of(this.context)
+        .size
+        .width;
+
+
+     List<Color> _fill = <Color>[
+      Colors.grey[200],
+      Color(0xFFf8fbf8),
+      Colors.white
+    ];
+
+
+     return Padding(
         padding:
         EdgeInsets.only(bottom: 50.0, left: 20.0, right: 20.0, top: 20.0),
         child: RaisedButton(
@@ -790,14 +873,40 @@ class StateProfile extends State<Profile> {
             child: Container(
               constraints: BoxConstraints(
                   maxWidth: width * 1.5, minHeight:45),
-              //decoration: back(),
+
+              decoration: BoxDecoration(
+                color: primary,
+                borderRadius: BorderRadius.all(Radius.circular(30)),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: _fill,
+                  stops: [0.1, 0.5, 0.9],
+                ),
+              ),
+            
+         /*     decoration: BoxDecoration(
+                  color: Color(0xFFf8fbf8),
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey[200],
+                        offset: Offset(10.0, 10.0),
+                        blurRadius: 10.0,
+                        spreadRadius: 2.0),
+                    BoxShadow(
+                        color: Colors.white,
+                        offset: Offset(-10.0, -10.0),
+                        blurRadius: 10.0,
+                        spreadRadius: 2.0)
+                  ]),*/
               alignment: Alignment.center,
               child: Text(UPDATE_PROFILE_LBL,
                   textAlign: TextAlign.center,
                   style: Theme.of(context)
                       .textTheme
                       .headline6
-                      .copyWith(color: white, fontWeight: FontWeight.normal)),
+                      .copyWith(color: primary, fontWeight: FontWeight.normal)),
             ),
           ),
         ));
@@ -819,7 +928,7 @@ class StateProfile extends State<Profile> {
                 setArea(),
                 setAddress(),
                 setPincode(),
-                setDob(),
+                //setDob(),
                 updateBtn(),
               ],
             ),

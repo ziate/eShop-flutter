@@ -18,9 +18,9 @@ import 'Product_Detail.dart';
 import 'Home.dart';
 
 class Cart extends StatefulWidget {
-  Function updateHome;
+  final Function updateHome, updateParent;
 
-  Cart(this.updateHome);
+  Cart(this.updateHome, this.updateParent);
 
   @override
   State<StatefulWidget> createState() => StateCart();
@@ -49,9 +49,7 @@ class StateCart extends State<Cart> {
 
   @override
   Widget build(BuildContext context) {
-    return
-
-      Scaffold(
+    return Scaffold(
         key: _scaffoldKey,
         appBar: getAppBar(CART, context),
         body: Stack(
@@ -61,14 +59,15 @@ class StateCart extends State<Cart> {
           ],
         ));
   }
+
   Future<bool> getSection() async {
     try {
       var parameter = {PRODUCT_LIMIT: "4", PRODUCT_OFFSET: "0"};
 
       if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
       Response response =
-      await post(getSectionApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(getSectionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -85,10 +84,11 @@ class StateCart extends State<Cart> {
       } else {
         setSnackbar(msg);
       }
-    }catch(Exception){}
+    } catch (Exception) {}
     Navigator.of(context).pop(true);
     return true;
   }
+
   Widget listItem(int index) {
     //print("desc*****${productList[index].desc}");
     int selectedPos = 0;
@@ -118,12 +118,14 @@ class StateCart extends State<Cart> {
       child: InkWell(
         child: Row(
           children: <Widget>[
-            CachedNetworkImage(
-              imageUrl: cartList[index].productList[0].image,
-              height: 90.0,
-              width: 90.0,
-              placeholder: (context, url) => placeHolder(90),
-            ),
+            Hero(
+                tag: "$index${cartList[index].productList[0].id}",
+                child: CachedNetworkImage(
+                  imageUrl: cartList[index].productList[0].image,
+                  height: 90.0,
+                  width: 90.0,
+                  placeholder: (context, url) => placeHolder(90),
+                )),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
@@ -268,19 +270,30 @@ class StateCart extends State<Cart> {
           ],
         ),
         splashColor: primary.withOpacity(0.2),
-        onTap: () {
+        onTap: () async {
           Product model = cartList[index].productList[0];
-          Navigator.push(
+        await  Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => Product_Detail(
+            PageRouteBuilder(
+                transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
                       model: model,
                       updateParent: updateCart,
                       updateHome: widget.updateHome,
-
+                      secPos: 0,
+                      index: index,
+                      list: true,
                       //  title: productList[index].name,
                     )),
           );
+
+          totalPrice = 0;
+          oriPrice = 0;
+          taxAmt = 0;
+          taxPer = 0;
+          delCharge = 0;
+          cartList.clear();
+          _getCart();
         },
       ),
     );
@@ -423,7 +436,8 @@ class StateCart extends State<Cart> {
       setState(() {
         _isProgress = false;
       });
-      widget.updateHome();
+      if (widget.updateHome != null) widget.updateHome();
+      if (widget.updateParent != null) widget.updateParent();
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
@@ -446,9 +460,9 @@ class StateCart extends State<Cart> {
 
   _showContent() {
     return _isLoading
-        ? getProgress()
+        ? shimmer()
         : cartList.length == 0
-            ? Center(child: Text('Cart is empty'))
+            ? cartEmpty()
             : Column(
                 children: <Widget>[
                   Expanded(
@@ -555,5 +569,79 @@ class StateCart extends State<Cart> {
                   ),
                 ],
               );
+  }
+
+  cartEmpty() {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noCartImage(context),
+          noCartText(context),
+          noCartDec(context),
+          shopNow()
+        ]),
+      ),
+    );
+  }
+
+  noCartImage(BuildContext context) {
+    return Image.asset(
+      'assets/images/empty_cart.png',
+      fit: BoxFit.contain,
+    );
+  }
+
+  noCartText(BuildContext context) {
+    return Container(
+        child: Text(NO_CART,
+            style: Theme.of(context)
+                .textTheme
+                .headline5
+                .copyWith(color: primary, fontWeight: FontWeight.normal)));
+  }
+
+  noCartDec(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0),
+      child: Text(CART_DESC,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headline6.copyWith(
+                color: lightblack,
+                fontWeight: FontWeight.normal,
+              )),
+    );
+  }
+
+  shopNow() {
+    return Padding(
+      padding: const EdgeInsets.only(top:28.0),
+      child: CupertinoButton(
+        child: Container(
+            width: deviceWidth * 0.7,
+            height: 45,
+            alignment: FractionalOffset.center,
+            decoration: new BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [primaryLight2, primaryLight3],
+                  stops: [0, 1]),
+              borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
+            ),
+            child: Text(SHOP_NOW,
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .headline6
+                    .copyWith(color: white, fontWeight: FontWeight.normal))),
+        onPressed: () {
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => Home()),
+              ModalRoute.withName('/'));
+        },
+      ),
+    );
   }
 }

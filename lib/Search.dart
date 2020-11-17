@@ -90,23 +90,22 @@ class _StateSearch extends State<Search> {
   }
 
   Widget listItem(int index) {
-
-    double price = double.parse(
-        productList[index].prVarientList[0].disPrice);
+    double price = double.parse(productList[index].prVarientList[0].disPrice);
     if (price == 0)
-      price = double.parse(
-          productList[index].prVarientList[0].price);
+      price = double.parse(productList[index].prVarientList[0].price);
 
     return Card(
       child: InkWell(
         child: Row(
           children: <Widget>[
-            CachedNetworkImage(
-              imageUrl: productList[index].image,
-              height: 90.0,
-              width: 90.0,
-              placeholder: (context, url) => placeHolder(90),
-            ),
+            Hero(
+                tag: "$index${productList[index].id}",
+                child: CachedNetworkImage(
+                  imageUrl: productList[index].image,
+                  height: 90.0,
+                  width: 90.0,
+                  placeholder: (context, url) => placeHolder(90),
+                )),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -160,13 +159,13 @@ class _StateSearch extends State<Search> {
                                 decoration: BoxDecoration(
                                     border: Border.all(color: Colors.grey),
                                     borderRadius:
-                                    BorderRadius.all(Radius.circular(5))),
+                                        BorderRadius.all(Radius.circular(5))),
                               ),
                               onTap: () {
                                 if (CUR_USERID != null) {
                                   if (int.parse(productList[index]
-                                      .prVarientList[0]
-                                      .cartCount) >
+                                          .prVarientList[0]
+                                          .cartCount) >
                                       0) removeFromCart(index);
                                 } else {
                                   Navigator.push(
@@ -178,10 +177,7 @@ class _StateSearch extends State<Search> {
                               },
                             ),
                             Text(
-                              productList[index]
-
-                                  .prVarientList[0]
-                                  .cartCount,
+                              productList[index].prVarientList[0].cartCount,
                               style: Theme.of(context).textTheme.caption,
                             ),
                             InkWell(
@@ -195,7 +191,7 @@ class _StateSearch extends State<Search> {
                                 decoration: BoxDecoration(
                                     border: Border.all(color: Colors.grey),
                                     borderRadius:
-                                    BorderRadius.all(Radius.circular(5))),
+                                        BorderRadius.all(Radius.circular(5))),
                               ),
                               onTap: () {
                                 if (CUR_USERID == null) {
@@ -215,21 +211,19 @@ class _StateSearch extends State<Search> {
                           children: <Widget>[
                             Text(
                               int.parse(productList[index]
-                                  .prVarientList[0]
-                                  .disPrice) !=
-                                  0
+                                          .prVarientList[0]
+                                          .disPrice) !=
+                                      0
                                   ? CUR_CURRENCY +
-                                  "" +
-                                  productList[index]
-                                      .prVarientList[0]
-                                      .price
+                                      "" +
+                                      productList[index].prVarientList[0].price
                                   : "",
                               style: Theme.of(context)
                                   .textTheme
                                   .overline
                                   .copyWith(
-                                  decoration: TextDecoration.lineThrough,
-                                  letterSpacing: 0.7),
+                                      decoration: TextDecoration.lineThrough,
+                                      letterSpacing: 0.7),
                             ),
                             Text(" " + CUR_CURRENCY + " " + price.toString(),
                                 style: Theme.of(context).textTheme.headline6),
@@ -250,12 +244,16 @@ class _StateSearch extends State<Search> {
 
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => Product_Detail(
-                  model: model,
-                  updateParent: updateSearch,
-                  updateHome: widget.updateHome,
-                )),
+            PageRouteBuilder(
+                transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
+                      model: model,
+                      updateParent: updateSearch,
+                      updateHome: widget.updateHome,
+                      secPos: 0,
+                      index: index,
+                      list: true,
+                    )),
           );
         },
       ),
@@ -292,8 +290,8 @@ class _StateSearch extends State<Search> {
             .toString(),
       };
       Response response =
-      await post(manageCartApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(manageCartApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
       print('response***${parameter.toString()}');
@@ -314,7 +312,7 @@ class _StateSearch extends State<Search> {
       setState(() {
         _isProgress = false;
       });
-     // widget.updateHome();
+      // widget.updateHome();
 
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
@@ -337,8 +335,8 @@ class _StateSearch extends State<Search> {
       };
 
       Response response =
-      await post(manageCartApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(manageCartApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -352,7 +350,6 @@ class _StateSearch extends State<Search> {
         String qty = data["total_quantity"];
         CUR_CART_COUNT = getdata['cart_count'];
 
-
         productList[index].prVarientList[0].cartCount = qty.toString();
       } else {
         setSnackbar(msg);
@@ -361,8 +358,7 @@ class _StateSearch extends State<Search> {
         _isProgress = false;
       });
 
-
-     // widget.updateHome();
+      // widget.updateHome();
 
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
@@ -399,7 +395,7 @@ class _StateSearch extends State<Search> {
           total = 0;
           offsetSending = 0;
         }
-        offsetSending=offset;
+        offsetSending = offset;
         var parameter = {
           SEARCH: searchText,
           LIMIT: perPage.toString(),
@@ -408,8 +404,8 @@ class _StateSearch extends State<Search> {
 
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
         Response response =
-        await post(getProductApi, headers: headers, body: parameter)
-            .timeout(Duration(seconds: timeOut));
+            await post(getProductApi, headers: headers, body: parameter)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -464,16 +460,16 @@ class _StateSearch extends State<Search> {
   _showContent() {
     return (productList.isNotEmpty || _controller.text.isNotEmpty)
         ? ListView.builder(
-        shrinkWrap: true,
-        controller: controller,
-        physics: BouncingScrollPhysics(),
-        itemCount:
-        (offset < total) ? productList.length + 1 : productList.length,
-        itemBuilder: (context, i) {
-            return (i == productList.length && isLoadingmore)
-              ? Center(child: CircularProgressIndicator())
-              : listItem(i);
-        })
+            shrinkWrap: true,
+            controller: controller,
+            physics: BouncingScrollPhysics(),
+            itemCount:
+                (offset < total) ? productList.length + 1 : productList.length,
+            itemBuilder: (context, i) {
+              return (i == productList.length && isLoadingmore)
+                  ? Center(child: CircularProgressIndicator())
+                  : listItem(i);
+            })
         : Container();
   }
 }

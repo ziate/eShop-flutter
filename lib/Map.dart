@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:eshop/Add_Address.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -34,8 +35,10 @@ class _MapState extends State<Map> {
   //LatLng _mainLocation;
 
   Future getCurrentLocation() async {
-    List placemark = await Geolocator()
-        .placemarkFromCoordinates(widget.latitude, widget.longitude);
+
+
+
+    List<Placemark> placemark = await placemarkFromCoordinates(widget.latitude, widget.longitude);
 
     print("lat**${widget.latitude}***${widget.longitude}");
     setState(() {
@@ -131,6 +134,8 @@ class _MapState extends State<Map> {
                   lat=latlong.latitude.toString();
                   long=latlong.longitude.toString();
                 }
+
+                Navigator.pop(context);
               },
             ),
           ],
@@ -153,8 +158,9 @@ class _MapState extends State<Map> {
   }
 
   Future<void> getLocation() async {
-    List placemark = await Geolocator()
-        .placemarkFromCoordinates(latlong.latitude, latlong.longitude);
+    List<Placemark> placemark = await placemarkFromCoordinates(widget.latitude, widget.longitude);
+
+
     var address;
     address = placemark[0].name;
     address = address + "," + placemark[0].subLocality;

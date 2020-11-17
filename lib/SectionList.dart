@@ -28,7 +28,8 @@ class SectionList extends StatefulWidget {
   State<StatefulWidget> createState() => StateSection();
 }
 
-int offset = 4;
+int offset;
+
 int total = 0;
 
 class StateSection extends State<SectionList> {
@@ -40,9 +41,8 @@ class StateSection extends State<SectionList> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
+    offset = widget.section_model.productList.length;
     getSection();
     controller.addListener(_scrollListener);
   }
@@ -108,15 +108,19 @@ class StateSection extends State<SectionList> {
                 child: Stack(
               alignment: Alignment.topRight,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(5),
-                      topRight: Radius.circular(5)),
-                  child: CachedNetworkImage(
-                    imageUrl: widget.section_model.productList[index].image,
-                    height: double.maxFinite,
-                    width: double.maxFinite,
-                    placeholder: (context, url) => placeHolder(width),
+                Hero(
+                  tag:
+                      "${sectionList[widget.index].productList[index].id}${widget.index}${index}",
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(5),
+                        topRight: Radius.circular(5)),
+                    child: CachedNetworkImage(
+                      imageUrl: widget.section_model.productList[index].image,
+                      height: double.maxFinite,
+                      width: double.maxFinite,
+                      placeholder: (context, url) => placeHolder(width),
+                    ),
                   ),
                 ),
                 Card(
@@ -160,12 +164,17 @@ class StateSection extends State<SectionList> {
                   ),
 
                   widget.section_model.productList[index].isFavLoading
+
                       ? Container(
-                          height: 10,
-                          width: 10,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 0.7,
-                          ))
+                      height: 15,
+                      width: 15,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 3),
+                      padding: const EdgeInsets.all(3),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 0.7,
+                      ))
+
                       : InkWell(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
@@ -225,12 +234,15 @@ class StateSection extends State<SectionList> {
           Product model = widget.section_model.productList[index];
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => Product_Detail(
-                      model: model,
-                      updateParent: updateSectionList,
-                      updateHome: widget.updateHome,
-                    )),
+            PageRouteBuilder(
+                transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
+                    model: model,
+                    updateParent: updateSectionList,
+                    updateHome: widget.updateHome,
+                    secPos: widget.index,
+                    index: index,
+                list: false,)),
           );
         },
       ),
