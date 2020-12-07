@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart';
 
+import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/String.dart';
 import 'Model/Section_Model.dart';
@@ -29,10 +30,13 @@ class Cart extends StatefulWidget {
 List<Section_Model> cartList = [];
 double totalPrice = 0, oriPrice = 0, delCharge = 0, taxAmt = 0, taxPer = 0;
 
-class StateCart extends State<Cart> {
+class StateCart extends State<Cart> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool _isProgress = false, _isLoading = true;
   HomePage home;
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
+  bool _isNetworkAvail = true;
 
   @override
   void initState() {
@@ -45,6 +49,64 @@ class StateCart extends State<Cart> {
     cartList.clear();
     _getCart();
     home = new HomePage(widget.updateHome);
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
+
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
   }
 
   @override
@@ -52,12 +114,14 @@ class StateCart extends State<Cart> {
     return Scaffold(
         key: _scaffoldKey,
         appBar: getAppBar(CART, context),
-        body: Stack(
-          children: <Widget>[
-            _showContent(),
-            showCircularProgress(_isProgress, primary),
-          ],
-        ));
+        body: _isNetworkAvail
+            ? Stack(
+                children: <Widget>[
+                  _showContent(),
+                  showCircularProgress(_isProgress, primary),
+                ],
+              )
+            : noInternet(context));
   }
 
   Future<bool> getSection() async {
@@ -142,7 +206,7 @@ class StateCart extends State<Cart> {
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle1
-                                  .copyWith(color: Colors.black),
+                                  .copyWith(color: black),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -209,6 +273,7 @@ class StateCart extends State<Cart> {
                         ),
                       ],
                     ),
+                    cartList[index].productList[0].availability == "1" || cartList[index].productList[0].stockType=="null"?
                     Row(
                       children: <Widget>[
                         Row(
@@ -262,7 +327,7 @@ class StateCart extends State<Cart> {
                                 cartList[index].perItemTotal.toString(),
                             style: Theme.of(context).textTheme.headline6)
                       ],
-                    )
+                    ):Container()
                   ],
                 ),
               ),
@@ -272,7 +337,7 @@ class StateCart extends State<Cart> {
         splashColor: primary.withOpacity(0.2),
         onTap: () async {
           Product model = cartList[index].productList[0];
-        await  Navigator.push(
+          await Navigator.push(
             context,
             PageRouteBuilder(
                 transitionDuration: Duration(seconds: 1),
@@ -304,144 +369,165 @@ class StateCart extends State<Cart> {
   }
 
   Future<void> _getCart() async {
-    try {
-      var parameter = {
-        USER_ID: CUR_USERID,
-      };
-      Response response =
-          await post(getCartApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          USER_ID: CUR_USERID,
+        };
+        Response response =
+            await post(getCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
-      var getdata = json.decode(response.body);
-      print(
-          'response***setting**${parameter.toString()}****${response.body.toString()}');
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
-        delCharge = double.parse(getdata[DEL_CHARGE]);
-        oriPrice = double.parse(getdata[SUB_TOTAL]);
-        taxAmt = double.parse(getdata[TAX_AMT]);
-
-        totalPrice = delCharge + oriPrice + taxAmt;
-        // print('cart data**********$data');
-        cartList = (data as List)
-            .map((data) => new Section_Model.fromCart(data))
-            .toList();
-      } else {
-        if (msg != 'Cart Is Empty !') setSnackbar(msg);
+        var getdata = json.decode(response.body);
+        print(
+            'response***setting**${parameter.toString()}****${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+          delCharge = double.parse(getdata[DEL_CHARGE]);
+          oriPrice = double.parse(getdata[SUB_TOTAL]);
+          taxAmt = double.parse(getdata[TAX_AMT]);
+taxPer=double.parse(getdata[TAX_PER]);
+          totalPrice = delCharge + oriPrice + taxAmt;
+          // print('cart data**********$data');
+          cartList = (data as List)
+              .map((data) => new Section_Model.fromCart(data))
+              .toList();
+        } else {
+          if (msg != 'Cart Is Empty !') setSnackbar(msg);
+        }
+        setState(() {
+          _isLoading = false;
+        });
+        setState(() {});
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
       }
+    } else {
       setState(() {
-        _isLoading = false;
+        _isNetworkAvail = false;
       });
-      setState(() {});
-    } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
     }
   }
 
   Future<void> addToCart(int index) async {
-    try {
-      setState(() {
-        _isProgress = true;
-      });
-      var parameter = {
-        PRODUCT_VARIENT_ID: cartList[index].varientId,
-        USER_ID: CUR_USERID,
-        QTY: (int.parse(cartList[index].qty) + 1).toString(),
-      };
-      Response response =
-          await post(manageCartApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        setState(() {
+          _isProgress = true;
+        });
+        var parameter = {
+          PRODUCT_VARIENT_ID: cartList[index].varientId,
+          USER_ID: CUR_USERID,
+          QTY: (int.parse(cartList[index].qty) + 1).toString(),
+        };
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
-      var getdata = json.decode(response.body);
+        var getdata = json.decode(response.body);
 
-      print('response***slider**${parameter.toString()}***$headers');
+        print('response***slider**${parameter.toString()}***$headers');
 
-      print('response***${response.body.toString()}');
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
+        print('response***${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
 
-        String qty = data['total_quantity'];
-        CUR_CART_COUNT = data['cart_count'];
+          String qty = data['total_quantity'];
+          CUR_CART_COUNT = data['cart_count'];
 
-        print('total*****add*$qty');
-        cartList[index].qty = qty;
+          print('total*****add*$qty');
+          cartList[index].qty = qty;
 
-        oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
+          oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
 
-        totalPrice = 0;
-        totalPrice = delCharge + oriPrice + taxAmt;
-      } else {
-        setSnackbar(msg);
+          totalPrice = 0;
+          totalPrice = delCharge + oriPrice + taxAmt;
+        } else {
+          setSnackbar(msg);
+        }
+        setState(() {
+          _isProgress = false;
+        });
+        widget.updateHome();
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+        setState(() {
+          _isProgress = false;
+        });
       }
+    } else {
       setState(() {
-        _isProgress = false;
-      });
-      widget.updateHome();
-    } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
-      setState(() {
-        _isProgress = false;
+        _isNetworkAvail = false;
       });
     }
   }
 
   removeFromCart(int index, bool remove) async {
-    try {
-      setState(() {
-        _isProgress = true;
-      });
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        setState(() {
+          _isProgress = true;
+        });
 
-      var parameter = {
-        PRODUCT_VARIENT_ID: cartList[index].varientId,
-        USER_ID: CUR_USERID,
-        QTY: remove ? "0" : (int.parse(cartList[index].qty) - 1).toString()
-      };
+        var parameter = {
+          PRODUCT_VARIENT_ID: cartList[index].varientId,
+          USER_ID: CUR_USERID,
+          QTY: remove ? "0" : (int.parse(cartList[index].qty) - 1).toString()
+        };
 
-      Response response =
-          await post(manageCartApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
-      var getdata = json.decode(response.body);
+        var getdata = json.decode(response.body);
 
-      print('response***slider**${parameter.toString()}***$headers');
+        print('response***slider**${parameter.toString()}***$headers');
 
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
 
-        String qty = data['total_quantity'];
-        CUR_CART_COUNT = data['cart_count'];
-        if (qty == "0") remove = true;
+          String qty = data['total_quantity'];
+          CUR_CART_COUNT = data['cart_count'];
+          if (qty == "0") remove = true;
 
-        print('total*****remove*$qty');
-        if (remove) {
-          oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
+          print('total*****remove*$qty');
+          if (remove) {
+            oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
 
-          cartList.removeWhere(
-              (item) => item.varientId == cartList[index].varientId);
+            cartList.removeWhere(
+                (item) => item.varientId == cartList[index].varientId);
+          } else {
+            oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
+            cartList[index].qty = qty.toString();
+          }
+          totalPrice = 0;
+          totalPrice = delCharge + oriPrice + taxAmt;
         } else {
-          oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
-          cartList[index].qty = qty.toString();
+          setSnackbar(msg);
         }
-        totalPrice = 0;
-        totalPrice = delCharge + oriPrice + taxAmt;
-      } else {
-        setSnackbar(msg);
+        setState(() {
+          _isProgress = false;
+        });
+        if (widget.updateHome != null) widget.updateHome();
+        if (widget.updateParent != null) widget.updateParent();
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+        setState(() {
+          _isProgress = false;
+        });
       }
+    } else {
       setState(() {
-        _isProgress = false;
-      });
-      if (widget.updateHome != null) widget.updateHome();
-      if (widget.updateParent != null) widget.updateParent();
-    } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
-      setState(() {
-        _isProgress = false;
+        _isNetworkAvail = false;
       });
     }
   }
@@ -451,9 +537,9 @@ class StateCart extends State<Cart> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
@@ -515,7 +601,7 @@ class StateCart extends State<Cart> {
                     ),
                   ),
                   Divider(
-                    color: Colors.black,
+                    color: black,
                     thickness: 1,
                     indent: 20,
                     endIndent: 20,
@@ -544,7 +630,7 @@ class StateCart extends State<Cart> {
                     ),
                   ),
                   InkWell(
-                    splashColor: Colors.white,
+                    splashColor: white,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -563,7 +649,7 @@ class StateCart extends State<Cart> {
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: Colors.white),
+                            .copyWith(color: white),
                       )),
                     ),
                   ),
@@ -606,7 +692,7 @@ class StateCart extends State<Cart> {
       child: Text(CART_DESC,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headline6.copyWith(
-                color: lightblack,
+                color: lightBlack2,
                 fontWeight: FontWeight.normal,
               )),
     );
@@ -614,7 +700,7 @@ class StateCart extends State<Cart> {
 
   shopNow() {
     return Padding(
-      padding: const EdgeInsets.only(top:28.0),
+      padding: const EdgeInsets.only(top: 28.0),
       child: CupertinoButton(
         child: Container(
             width: deviceWidth * 0.7,
@@ -624,7 +710,7 @@ class StateCart extends State<Cart> {
               gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [primaryLight2, primaryLight3],
+                  colors: [grad1Color, grad2Color],
                   stops: [0, 1]),
               borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
             ),
@@ -637,8 +723,7 @@ class StateCart extends State<Cart> {
         onPressed: () {
           Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(
-                  builder: (BuildContext context) => Home()),
+              MaterialPageRoute(builder: (BuildContext context) => Home()),
               ModalRoute.withName('/'));
         },
       ),

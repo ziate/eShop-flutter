@@ -47,18 +47,28 @@ back() {
     gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [primaryLight2, primaryLight3],
+        colors: [grad1Color, grad2Color],
         stops: [0, 1]),
   );
 }
+
+shadow(){
+  return BoxDecoration(
+    boxShadow: [BoxShadow(color: Color(0x1a0400ff),offset:Offset(0,0), blurRadius: 30)],
+  );
+}
+
 
 placeHolder(double height) {
   return Image.asset(
     'assets/images/placeholder.png',
     height: height,
-    width: height,
+    width: double.maxFinite,
+    fit: BoxFit.fill,
   );
 }
+
+
 
 errorWidget(double size) {
   return Icon(
@@ -70,24 +80,34 @@ errorWidget(double size) {
 
 getAppBar(String title, BuildContext context) {
   return AppBar(
-    leading: IconButton(
-      icon: Icon(Icons.arrow_back_ios, color: primary),
-      onPressed: () => Navigator.of(context).pop(),
-    ),
+    leading: Builder(builder: (BuildContext context) {
+      return Container(
+        margin: EdgeInsets.all(10),
+        decoration: shadow(),
+        child: Card(
+          elevation: 0,
+          child: Padding(
+            padding: const EdgeInsets.only(right:4.0),
+            child: InkWell(
+              child: Icon(Icons.keyboard_arrow_left, color: primary),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ),
+      );
+    }),
     title: Text(
       title,
       style: TextStyle(
-        color: primary,
+        color: fontColor,
       ),
     ),
-    backgroundColor: Colors.white,
+    backgroundColor: white,
     elevation: 5,
   );
 }
 
-
-
-noIntImage(BuildContext context) {
+noIntImage() {
   return Image.asset(
     'assets/images/no_internet.png',
     fit: BoxFit.contain,
@@ -109,12 +129,11 @@ noIntDec(BuildContext context) {
     child: Text(NO_INTERNET_DISC,
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.headline6.copyWith(
-              color: lightblack,
+              color: lightBlack2,
               fontWeight: FontWeight.normal,
             )),
   );
 }
-
 
 /*appBtn(String ttl,AnimationController btnCntrl,Animation btnSqeez,Function performFunc) {
  title=ttl;
@@ -153,7 +172,7 @@ Widget _buildBtnAnimation(BuildContext context, Widget child) {
               .headline6
               .copyWith(color: white, fontWeight: FontWeight.normal))
           : new CircularProgressIndicator(
-        valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+        valueColor: new AlwaysStoppedAnimation<Color>(white),
       ),
     ),
 
@@ -182,7 +201,7 @@ imagePlaceHolder(double size) {
     width: size,
     child: Icon(
       Icons.account_circle,
-      color: Colors.grey,
+      color: white,
       size: size,
     ),
   );
@@ -197,6 +216,7 @@ Future<void> clearUserSession() async {
   waitList.add(prefs.remove(NAME));
   waitList.add(prefs.remove(MOBILE));
   CUR_USERID = '';
+  CUR_USERNAME="";
 }
 
 Future<void> saveUserDetail(
@@ -204,6 +224,7 @@ Future<void> saveUserDetail(
     String name,
     String email,
     String mobile,
+   // String countrycode,
     String city,
     String area,
     String address,
@@ -217,6 +238,7 @@ Future<void> saveUserDetail(
   waitList.add(prefs.setString(USERNAME, name));
   waitList.add(prefs.setString(EMAIL, email));
   waitList.add(prefs.setString(MOBILE, mobile));
+  //waitList.add(prefs.setString(COUNTRY_CODE, countrycode));
   waitList.add(prefs.setString(CITY, city));
   waitList.add(prefs.setString(AREA, area));
   waitList.add(prefs.setString(ADDRESS, address));
@@ -337,7 +359,7 @@ Widget shimmer() {
                         Container(
                           width: 80.0,
                           height: 80.0,
-                          color: Colors.white,
+                          color: white,
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -349,7 +371,7 @@ Widget shimmer() {
                               Container(
                                 width: double.infinity,
                                 height: 18.0,
-                                color: Colors.white,
+                                color: white,
                               ),
                               Padding(
                                 padding:
@@ -358,7 +380,7 @@ Widget shimmer() {
                               Container(
                                 width: double.infinity,
                                 height: 8.0,
-                                color: Colors.white,
+                                color: white,
                               ),
                               Padding(
                                 padding:
@@ -367,7 +389,7 @@ Widget shimmer() {
                               Container(
                                 width: 100.0,
                                 height: 8.0,
-                                color: Colors.white,
+                                color: white,
                               ),
                               Padding(
                                 padding:
@@ -376,7 +398,7 @@ Widget shimmer() {
                               Container(
                                 width: 20.0,
                                 height: 8.0,
-                                color: Colors.white,
+                                color: white,
                               ),
                             ],
                           ),
@@ -392,11 +414,10 @@ Widget shimmer() {
 }
 
 String getToken() {
-  final key = '6b786a4d37763d7e21426f426d625f32716c414e503647323129502a61';
+
   final claimSet =
       new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
-
-  String token = issueJwtHS256(claimSet, key);
+  String token = issueJwtHS256(claimSet, jwtKey);
   print("token***$token");
   return token;
 }

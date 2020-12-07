@@ -5,12 +5,13 @@ import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Model/User.dart';
-import 'package:eshop/map.dart';
+import 'package:eshop/Map.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
 import 'package:http/http.dart' as http;
 
@@ -21,7 +22,7 @@ class Profile extends StatefulWidget {
 
 String lat, long;
 
-class StateProfile extends State<Profile> {
+class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
   String name,
       email,
@@ -30,7 +31,7 @@ class StateProfile extends State<Profile> {
       area,
       pincode,
       address,
-       image;
+      image;
   List<User> cityList = [];
   List<User> areaList = [];
   bool _isLoading = false;
@@ -40,7 +41,9 @@ class StateProfile extends State<Profile> {
   bool isDateSelected = false;
   DateTime birthDate;
   bool isSelected = false;
-  File _image;
+  bool _isNetworkAvail = true;
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
 
   @override
   void initState() {
@@ -53,11 +56,41 @@ class StateProfile extends State<Profile> {
     addressC = new TextEditingController();
     getUserDetails();
     callApi();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    mobileC?.dispose();
+    nameC?.dispose();
+    addressC.dispose();
+    pincodeC?.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
   }
 
   getUserDetails() async {
     CUR_USERID = await getPrefrence(ID);
     mobile = await getPrefrence(MOBILE);
+   // countrycode = await getPrefrence(COUNTRY_CODE);
     name = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
     city = await getPrefrence(CITY);
@@ -65,19 +98,47 @@ class StateProfile extends State<Profile> {
     pincode = await getPrefrence(PINCODE);
     address = await getPrefrence(ADDRESS);
 
-
     image = await getPrefrence(IMAGE);
 
 
-    mobileC.text = "+$mobile";
+    mobileC.text = mobile;
     nameC.text = name;
     emailC.text = email;
     pincodeC.text = pincode;
     addressC.text = address;
+  }
 
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
 
-
-    setState(() {});
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
   }
 
   Future<void> callApi() async {
@@ -88,8 +149,9 @@ class StateProfile extends State<Profile> {
         getArea();
       }
     } else {
-      setSnackbar(internetMsg);
+
       setState(() {
+        _isNetworkAvail = false;
         _isLoading = false;
       });
     }
@@ -97,21 +159,22 @@ class StateProfile extends State<Profile> {
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
-      setState(() {
-        _isLoading = true;
-      });
+      _playAnimation();
       checkNetwork();
     }
   }
 
   Future<void> checkNetwork() async {
-    bool avail = await isNetworkAvailable();
-    if (avail) {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
       setUpdateUser();
     } else {
-      setSnackbar(internetMsg);
-      setState(() {
-        _isLoading = false;
+      Future.delayed(Duration(seconds: 2)).then((_) async {
+
+        await buttonController.reverse();
+        setState(() {
+          _isNetworkAvail = false;
+        });
       });
     }
   }
@@ -128,127 +191,110 @@ class StateProfile extends State<Profile> {
   }
 
   Future<void> setProfilePic(File _image) async {
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      var request = http.MultipartRequest("POST", Uri.parse(getUpdateUserApi));
-      request.headers.addAll(headers);
-      request.fields[USER_ID] = CUR_USERID;
-      var pic = await http.MultipartFile.fromPath(IMAGE, _image.path);
-      request.files.add(pic);
-
-      var response = await request.send();
-      var responseData = await response.stream.toBytes();
-      var responseString = String.fromCharCodes(responseData);
-
-      print("profile====$responseString*****${_image.path}");
-
-      var getdata = json.decode(responseString);
-      bool error = getdata["error"];
-      String msg = getdata['message'];
-      if (!error) {
-        setSnackbar('Profile Picture updated successfully');
-        List data = getdata["data"];
-        for (var i in data) {
-          image = i[IMAGE];
-        }
-        setPrefrence(IMAGE, image);
-        print("current image:*****$image");
-      } else {
-        setSnackbar(msg);
-      }
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
       setState(() {
-        _isLoading = false;
+        _isLoading = true;
       });
-    } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      try {
+        var request =
+        http.MultipartRequest("POST", Uri.parse(getUpdateUserApi));
+        request.headers.addAll(headers);
+        request.fields[USER_ID] = CUR_USERID;
+        var pic = await http.MultipartFile.fromPath(IMAGE, _image.path);
+        request.files.add(pic);
+
+        var response = await request.send();
+        var responseData = await response.stream.toBytes();
+        var responseString = String.fromCharCodes(responseData);
+
+        print("profile====$responseString*****${_image.path}");
+
+        var getdata = json.decode(responseString);
+        bool error = getdata["error"];
+        String msg = getdata['message'];
+        if (!error) {
+          setSnackbar('Profile Picture updated successfully');
+          List data = getdata["data"];
+          for (var i in data) {
+            image = i[IMAGE];
+          }
+          setPrefrence(IMAGE, image);
+          print("current image:*****$image");
+        } else {
+          setSnackbar(msg);
+        }
+        setState(() {
+          _isLoading = false;
+        });
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } else {
       setState(() {
-        _isLoading = false;
+        _isNetworkAvail = false;
       });
     }
   }
 
   Future<void> setUpdateUser() async {
-    print(
-        "Area:$area,City:$city,latitude:$lat,longitude:$long,Id:$CUR_USERID");
-    try {
-      var data = {
-        USER_ID: CUR_USERID,
-        USERNAME: name,
-        EMAIL: email
-      };
+    var data = {USER_ID: CUR_USERID, USERNAME: name, EMAIL: email};
+    if (city != null && city != "") {
+      data[CITY] = city;
+    }
+    if (area != null && area != "") {
+      data[AREA] = area;
+    }
+    if (address != null && address != "") {
+      data[ADDRESS] = address;
+    }
+    if (pincode != null && pincode != "") {
+      data[PINCODE] = pincode;
+    }
+
+    if (lat != null && lat != "") {
+      data[LATITUDE] = lat;
+    }
+    if (long != null && long != "") {
+      data[LONGITUDE] = long;
+    }
+
+    http.Response response = await http
+        .post(getUpdateUserApi, body: data, headers: headers)
+        .timeout(Duration(seconds: timeOut));
+
+    var getdata = json.decode(response.body);
+
+    print('response***UpdateUser**$headers***${response.body.toString()}');
+    bool error = getdata["error"];
+    String msg = getdata["message"];
+    await buttonController.reverse();
+    if (!error) {
+      setSnackbar("User Update Successfully");
+      var i = getdata["data"][0];
 
 
-      if (city != null && city != "") {
-        data[CITY] = city;
-      }
-      if (area != null && area != "") {
-        data[AREA] = area;
-      }
-      if (address != null && address != "") {
-        data[ADDRESS] = address;
-      }
-      if (pincode != null && pincode != "") {
-        data[PINCODE] = pincode;
-      }
-
-      if (lat != null && lat != "") {
-        data[LATITUDE] = lat;
-      }
-      if (long != null && long != "") {
-        data[LONGITUDE] = long;
-      }
-
-
-      http.Response response =
-      await http.post(getUpdateUserApi, body: data, headers: headers)
-          .timeout(Duration(seconds: timeOut));
-
-      var getdata = json.decode(response.body);
-
-      print('response***UpdateUser**$headers***${response.body.toString()}');
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        setSnackbar("User Update Successfully");
-        var i  = getdata["data"][0];
-
-
-          CUR_USERID = i[ID];
-          name = i[USERNAME];
-          email = i[EMAIL];
-          mobile = i[MOBILE];
-          city = i[CITY];
-          area = i[AREA];
-          address = i[ADDRESS];
-          pincode = i[PINCODE];
-          lat = i[LATITUDE];
-          long = i[LONGITUDE];
+      CUR_USERID = i[ID];
+      name = i[USERNAME];
+      email = i[EMAIL];
+      mobile = i[MOBILE];
+      city = i[CITY];
+      area = i[AREA];
+      address = i[ADDRESS];
+      pincode = i[PINCODE];
+      lat = i[LATITUDE];
+      long = i[LONGITUDE];
 
 
 
-        print("City:$city,Area:$area,image:$image");
-        saveUserDetail(
-            CUR_USERID,
-            name,
-            email,
-            mobile,
-            city,
-            area,
-            address,
-            pincode,
-            lat,
-            long,
-            image);
-      } else {
-        setSnackbar(msg);
-      }
-      setState(() {
-        _isLoading = false;
-      });
-    } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      print("City:$city,Area:$area,image:$image");
+      saveUserDetail(CUR_USERID, name, email, mobile,city, area,
+          address, pincode, lat, long,  image);
+    } else {
+      setSnackbar(msg);
     }
   }
 
@@ -266,29 +312,6 @@ class StateProfile extends State<Profile> {
     }
   }
 
-  void _showPicker(context) {
-    showModalBottomSheet(
-        context: this.context,
-        builder: (BuildContext bc) {
-          return SafeArea(
-            child: Container(
-              child: new Wrap(
-                children: <Widget>[
-                  new ListTile(
-                      leading: new Icon(Icons.photo_library),
-                      title: new Text(GALLARY_LBL),
-                      onTap: () {
-                        _imgFromGallery();
-                        Navigator.of(context).pop();
-                      }),
-
-                ],
-              ),
-            ),
-          );
-        }
-    );
-  }
 
 
   Future<void> getCities() async {
@@ -366,7 +389,7 @@ class StateProfile extends State<Profile> {
         textAlign: TextAlign.center,
         style: TextStyle(color: primary),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
@@ -381,7 +404,7 @@ class StateProfile extends State<Profile> {
             .of(this.context)
             .textTheme
             .subtitle1
-            .copyWith(color: darkgrey),
+            .copyWith(color: fontColor),
         validator: validateUserName,
         onChanged: (v) =>
             setState(() {
@@ -397,16 +420,16 @@ class StateProfile extends State<Profile> {
               .of(this.context)
               .textTheme
               .subtitle1
-              .copyWith(color: darkgrey),
+              .copyWith(color: lightBlack),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -426,7 +449,7 @@ class StateProfile extends State<Profile> {
               .of(this.context)
               .textTheme
               .subtitle1
-              .copyWith(color: darkgrey),
+              .copyWith(color: fontColor),
           decoration: InputDecoration(
             hintText: MOBILEHINT_LBL,
             hintStyle:
@@ -434,16 +457,16 @@ class StateProfile extends State<Profile> {
                 .of(this.context)
                 .textTheme
                 .subtitle1
-                .copyWith(color: darkgrey),
+                .copyWith(color: lightBlack),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: white,
             contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+              borderSide: BorderSide(color: white),
               borderRadius: BorderRadius.circular(10.0),
             ),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+              borderSide: BorderSide(color: white),
               borderRadius: BorderRadius.circular(10.0),
             ),
           ),
@@ -463,7 +486,7 @@ class StateProfile extends State<Profile> {
               .of(this.context)
               .textTheme
               .subtitle1
-              .copyWith(color: darkgrey),
+              .copyWith(color: fontColor),
           validator: validateEmail,
           onChanged: (v) =>
               setState(() {
@@ -479,16 +502,16 @@ class StateProfile extends State<Profile> {
                 .of(this.context)
                 .textTheme
                 .subtitle1
-                .copyWith(color: darkgrey),
+                .copyWith(color: lightBlack),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: white,
             contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+              borderSide: BorderSide(color: white),
               borderRadius: BorderRadius.circular(10.0),
             ),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+              borderSide: BorderSide(color: white),
               borderRadius: BorderRadius.circular(10.0),
             ),
           ),
@@ -503,7 +526,7 @@ class StateProfile extends State<Profile> {
       child: DropdownButtonFormField(
         iconSize: 40,
         isDense: true,
-        iconEnabledColor: darkgrey,
+        iconEnabledColor: fontColor,
         hint: new Text(
           CITYSELECT_LBL,
           style: Theme
@@ -511,7 +534,7 @@ class StateProfile extends State<Profile> {
               .textTheme
               .subtitle1
               .copyWith(
-            color: darkgrey,
+            color: fontColor,
           ),
         ),
 
@@ -535,20 +558,20 @@ class StateProfile extends State<Profile> {
                   .of(this.context)
                   .textTheme
                   .subtitle1
-                  .copyWith(color: darkgrey),
+                  .copyWith(color: fontColor),
             ),
           );
         }).toList(),
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -561,7 +584,7 @@ class StateProfile extends State<Profile> {
       padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
       child: DropdownButtonFormField(
         iconSize: 40,
-        iconEnabledColor: darkgrey,
+        iconEnabledColor: fontColor,
         isDense: true,
         hint: new Text(
           AREASELECT_LBL,
@@ -570,7 +593,7 @@ class StateProfile extends State<Profile> {
               .textTheme
               .subtitle1
               .copyWith(
-            color: darkgrey,
+            color: fontColor,
           ),
         ),
         value: area,
@@ -595,20 +618,20 @@ class StateProfile extends State<Profile> {
                   .of(this.context)
                   .textTheme
                   .subtitle1
-                  .copyWith(color: darkgrey),
+                  .copyWith(color: fontColor),
             ),
           );
         }).toList(),
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -629,7 +652,7 @@ class StateProfile extends State<Profile> {
                     .of(this.context)
                     .textTheme
                     .subtitle1
-                    .copyWith(color: darkgrey),
+                    .copyWith(color: fontColor),
                 onChanged: (v) =>
                     setState(() {
                       address = v;
@@ -643,16 +666,16 @@ class StateProfile extends State<Profile> {
                       .of(this.context)
                       .textTheme
                       .subtitle1
-                      .copyWith(color: darkgrey),
+                      .copyWith(color: lightBlack),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: white,
                   contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: white),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: white),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
@@ -704,7 +727,7 @@ class StateProfile extends State<Profile> {
               .of(this.context)
               .textTheme
               .subtitle1
-              .copyWith(color: darkgrey),
+              .copyWith(color: fontColor),
           validator: validatePincodeOptional,
           onChanged: (v) =>
               setState(() {
@@ -720,16 +743,16 @@ class StateProfile extends State<Profile> {
                 .of(this.context)
                 .textTheme
                 .subtitle1
-                .copyWith(color: darkgrey),
+                .copyWith(color: lightBlack),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: white,
             contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+              borderSide: BorderSide(color: white),
               borderRadius: BorderRadius.circular(10.0),
             ),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+              borderSide: BorderSide(color: white),
               borderRadius: BorderRadius.circular(10.0),
             ),
           ),
@@ -760,14 +783,14 @@ class StateProfile extends State<Profile> {
                   .subtitle1
                   .copyWith(color: darkgrey),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: white,
               contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
+                borderSide: BorderSide(color: white),
                 borderRadius: BorderRadius.circular(10.0),
               ),
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
+                borderSide: BorderSide(color: white),
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
@@ -843,73 +866,14 @@ class StateProfile extends State<Profile> {
   }
 
   updateBtn() {
-    double width = MediaQuery
-        .of(this.context)
-        .size
-        .width;
-
-
-     List<Color> _fill = <Color>[
-      Colors.grey[200],
-      Color(0xFFf8fbf8),
-      Colors.white
-    ];
-
-
-     return Padding(
-        padding:
-        EdgeInsets.only(bottom: 50.0, left: 20.0, right: 20.0, top: 20.0),
-        child: RaisedButton(
-          color: primaryLight2,
-          onPressed: () {
-            setState(() {
-              validateAndSubmit();
-            });
-          },
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-          padding: EdgeInsets.all(0.0),
-          child: Ink(
-            child: Container(
-              constraints: BoxConstraints(
-                  maxWidth: width * 1.5, minHeight:45),
-
-              decoration: BoxDecoration(
-                color: primary,
-                borderRadius: BorderRadius.all(Radius.circular(30)),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: _fill,
-                  stops: [0.1, 0.5, 0.9],
-                ),
-              ),
-            
-         /*     decoration: BoxDecoration(
-                  color: Color(0xFFf8fbf8),
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.grey[200],
-                        offset: Offset(10.0, 10.0),
-                        blurRadius: 10.0,
-                        spreadRadius: 2.0),
-                    BoxShadow(
-                        color: Colors.white,
-                        offset: Offset(-10.0, -10.0),
-                        blurRadius: 10.0,
-                        spreadRadius: 2.0)
-                  ]),*/
-              alignment: Alignment.center,
-              child: Text(UPDATE_PROFILE_LBL,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      .copyWith(color: primary, fontWeight: FontWeight.normal)),
-            ),
-          ),
-        ));
+    return AppBtn(
+      title: UPDATE_PROFILE_LBL,
+      btnAnim: buttonSqueezeanimation,
+      btnCntrl: buttonController,
+      onBtnSelected: () {
+        validateAndSubmit();
+      },
+    );
   }
 
   _showContent() {
@@ -918,7 +882,7 @@ class StateProfile extends State<Profile> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(
+            child: _isNetworkAvail?Column(
               children: <Widget>[
                 profileImage(),
                 setUserName(),
@@ -931,7 +895,7 @@ class StateProfile extends State<Profile> {
                 //setDob(),
                 updateBtn(),
               ],
-            ),
+            ):noInternet(context),
           ),
         ));
   }
@@ -941,7 +905,7 @@ class StateProfile extends State<Profile> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: lightgrey,
+      backgroundColor: lightWhite,
       appBar: getAppBar(PROFILE, context),
       body: Stack(
         children: <Widget>[

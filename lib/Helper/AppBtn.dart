@@ -35,10 +35,10 @@ class AppBtn extends StatelessWidget {
           gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [primaryLight2, primaryLight3],
+              colors: [grad1Color, grad2Color],
               stops: [0, 1]),
 
-          borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
+          borderRadius: new BorderRadius.all(const Radius.circular(10.0)),
         ),
         child: btnAnim.value > 75.0
             ? Text(title,
@@ -49,7 +49,7 @@ class AppBtn extends StatelessWidget {
                 .headline6
                 .copyWith(color: white, fontWeight: FontWeight.normal))
             : new CircularProgressIndicator(
-          valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+          valueColor: new AlwaysStoppedAnimation<Color>(white),
         ),
       ),
 

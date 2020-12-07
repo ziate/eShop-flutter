@@ -37,51 +37,51 @@ class StatePreview extends State<ProductPreview> {
 
     return Scaffold(
         body: Hero(
-      tag: widget.list
-          ? "${widget.id}"
-          : "${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}",
-      child: Stack(
-        children: <Widget>[
-          PageView.builder(
-              itemCount: sliderList.length,
-              controller: PageController(initialPage: curPos),
-              onPageChanged: (index) {
-                setState(() {
-                  curPos = index;
-                });
-              },
-              itemBuilder: (BuildContext context, int index) {
-                return PhotoView(
-                    backgroundDecoration: BoxDecoration(color: Colors.white),
-                    initialScale: PhotoViewComputedScale.contained * 0.9,
-                    minScale: PhotoViewComputedScale.contained * 0.9,
-                    imageProvider:
+          tag: widget.list
+              ? "${widget.id}"
+              : "${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}",
+          child: Stack(
+            children: <Widget>[
+              PageView.builder(
+                  itemCount: sliderList.length,
+                  controller: PageController(initialPage: curPos),
+                  onPageChanged: (index) {
+                    setState(() {
+                      curPos = index;
+                    });
+                  },
+                  itemBuilder: (BuildContext context, int index) {
+                    return PhotoView(
+                        backgroundDecoration: BoxDecoration(color: white),
+                        initialScale: PhotoViewComputedScale.contained * 0.9,
+                        minScale: PhotoViewComputedScale.contained * 0.9,
+                        imageProvider:
                         CachedNetworkImageProvider(sliderList[curPos]));
-              }),
-          Padding(
-            padding: const EdgeInsets.only(top: 34.0),
-            child: Material(
-              color: Colors.transparent,
-              child: new IconButton(
-                icon: new Icon(
-                  Icons.arrow_back_ios,
-                  color: primary,
+                  }),
+              Padding(
+                padding: const EdgeInsets.only(top: 34.0),
+                child: Material(
+                  color: Colors.transparent,
+                  child: new IconButton(
+                    icon: new Icon(
+                      Icons.arrow_back_ios,
+                      color: primary,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
                 ),
-                onPressed: () => Navigator.of(context).pop(),
               ),
-            ),
+              Positioned(
+                  bottom: 10.0,
+                  left: 25.0,
+                  right: 25.0,
+                  child: SelectedPhoto(
+                    numberOfDots: sliderList.length,
+                    photoIndex: curPos,
+                  )),
+            ],
           ),
-          Positioned(
-              bottom: 10.0,
-              left: 25.0,
-              right: 25.0,
-              child: SelectedPhoto(
-                numberOfDots: sliderList.length,
-                photoIndex: curPos,
-              )),
-        ],
-      ),
-    ));
+        ));
   }
 }
 

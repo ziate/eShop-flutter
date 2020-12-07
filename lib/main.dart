@@ -16,8 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    //systemNavigationBarColor: Colors.blue, // navigation bar color
-    statusBarColor: primary, // status bar color
+    statusBarColor: lightWhite, // status bar color
   ));
   runApp(MyApp());
 }
@@ -25,7 +24,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       supportedLocales: [
         Locale('en'),
         Locale('it'),
@@ -39,17 +38,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           primarySwatch: primary_app,
           cursorColor: primary,
-          fontFamily: 'josefin',
+          fontFamily: 'opensans',
           textTheme: TextTheme(
               headline6: TextStyle(
-            color: primary,
-            fontWeight: FontWeight.w600,
-          ))),
+                color: fontColor,
+                fontWeight: FontWeight.w600,
+              ),
+              subtitle1: TextStyle(color: fontColor,fontWeight: FontWeight.bold)
+
+          )),
       debugShowCheckedModeBanner: false,
       //home: Splash(),
       initialRoute: '/',
       routes: {
-        // When navigating to the "/" route, build the FirstScreen widget.
         '/': (context) => Splash(),
         '/home': (context) => Home(),
       },

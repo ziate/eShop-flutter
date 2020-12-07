@@ -10,9 +10,11 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
 
+import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
+import 'Home.dart';
 import 'Login.dart';
 
 class SignUp extends StatefulWidget {
@@ -30,20 +32,34 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   final ccodeController = TextEditingController();
   final passwordController = TextEditingController();
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
-  String name, email, password, mobile, id, countrycode, countryName;
-
+  String name,
+      email,
+      password,
+      mobile,
+      id,
+      countrycode,
+      city,
+      area,
+      pincode,
+      address,
+      latitude,
+      longitude;
+  bool _isNetworkAvail = true;
   Animation buttonSqueezeanimation;
 
   AnimationController buttonController;
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
-      /* setState(() {
-        _isLoading = true;
-      });*/
       _playAnimation();
       checkNetwork();
     }
+  }
+
+  getUserDetails() async {
+    mobile = await getPrefrence(MOBILE);
+    countrycode = await getPrefrence(COUNTRY_CODE);
+    setState(() {});
   }
 
   Future<Null> _playAnimation() async {
@@ -55,13 +71,14 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   Future<void> checkNetwork() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
-      getVerifyUser();
+      getRegisterUser();
     } else {
-      setSnackbar(internetMsg);
-      /* setState(() {
-        _isLoading = false;
-      });*/
-      await buttonController.reverse();
+      Future.delayed(Duration(seconds: 2)).then((_) async {
+        setState(() {
+          _isNetworkAvail = false;
+        });
+        await buttonController.reverse();
+      });
     }
   }
 
@@ -88,237 +105,235 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: fontColor),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: lightWhite,
       elevation: 1.0,
     ));
   }
 
-  Future<void> getVerifyUser() async {
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(top: kToolbarHeight),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
+  }
+
+  Future<void> getRegisterUser() async {
     try {
+      print("data****$mobile***$name****$email***$password");
       var data = {
         MOBILE: mobile,
-        EMAIL:email
+        NAME: name,
+        EMAIL: email,
+        PASSWORD: password,
+        COUNTRY_CODE: countrycode
       };
       Response response =
-          await post(getVerifyUserApi, body: data, headers: headers)
+          await post(getUserSignUpApi, body: data, headers: headers)
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***verifyuser**$mobile***${response.body.toString()}');
+      print('response***registeruser**$headers***${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
       await buttonController.reverse();
       if (!error) {
-        setSnackbar(msg);
+        setSnackbar("User Registered Successfully");
+        var i = getdata["data"][0];
 
-        setPrefrence(NAME, name);
-        setPrefrence(PASSWORD, password);
-        setPrefrence(MOBILE, mobile);
-        setPrefrence(EMAIL, email);
-        setPrefrence(COUNTRY_CODE, countrycode);
+        id = i[ID];
+        name = i[USERNAME];
+        email = i[EMAIL];
+        mobile = i[MOBILE];
+        //countrycode=i[COUNTRY_CODE];
+        CUR_USERID = id;
+        CUR_USERNAME = name;
+        saveUserDetail(id, name, email, mobile, city, area, address, pincode,
+            latitude, longitude, "");
 
-        Future.delayed(Duration(seconds: 1)).then((_) {
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => Verify_Otp(
-                      mobileNumber: mobile, countryCode: countrycode)));
-        });
+        Navigator.pushReplacementNamed(context, "/home");
       } else {
         setSnackbar(msg);
       }
-      /*  setState(() {
-        _isLoading = false;
-      });*/
+      setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-      /* setState(() {
-        _isLoading = false;
-      });*/
       await buttonController.reverse();
     }
   }
 
   subLogo() {
     return Container(
-      padding: EdgeInsets.only(top: 100.0),
+      padding: EdgeInsets.only(top: 80.0),
       child: Center(
-        child: new Image.asset('assets/images/sublogo.png', fit: BoxFit.fill),
+        child: new Image.asset('assets/images/homelogo.png', fit: BoxFit.fill),
       ),
     );
   }
 
   registerTxt() {
     return Padding(
-        padding: EdgeInsets.only(top: 25.0),
+        padding: EdgeInsets.only(top: 30.0),
         child: Center(
-          child: new Text(USER_REGISTRATION,
+          child: new Text(USER_REGISTRATION_DETAILS,
               style: Theme.of(context)
                   .textTheme
-                  .headline6
-                  .copyWith(color: lightblack)),
+                  .subtitle1
+                  .copyWith(color: fontColor, fontWeight: FontWeight.bold)),
         ));
   }
 
   setUserName() {
     return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 30.0),
+      padding: EdgeInsets.only(
+        top: 30.0,
+        left: 25.0,
+        right: 25.0,
+      ),
       child: TextFormField(
         keyboardType: TextInputType.text,
         controller: nameController,
+        style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
         validator: validateUserName,
         onSaved: (String value) {
           name = value;
         },
         decoration: InputDecoration(
-            prefixIcon: Icon(Icons.person_outline),
-            hintText: NAMEHINT_LBL,
-            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
-      ),
-    );
-  }
-
-  setCountryCode() {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height * 0.9;
-    return Padding(
-        padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
-        child: Container(
-          width: width,
-          height: 40,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7.0),
-              border: Border.all(color: darkgrey)),
-          child: CountryCodePicker(
-              showCountryOnly: false,
-              searchDecoration: InputDecoration(
-                hintText: COUNTRY_CODE_LBL,
-                fillColor: primary,
-              ),
-              showOnlyCountryWhenClosed: false,
-              initialSelection: 'IN',
-              dialogSize: Size(width, height),
-              alignLeft: true,
-              builder: _buildCountryPicker,
-              onChanged: (CountryCode countryCode) {
-                countrycode = countryCode.toString().replaceFirst("+", "");
-                print("New Country selected: " + countryCode.toString());
-                countryName = countryCode.name;
-              },
-              onInit: (code) {
-                print("on init ${code.name} ${code.dialCode} ${code.name}");
-                countrycode = code.toString().replaceFirst("+", "");
-                print("New Country selected: " + code.toString());
-              }),
-        ));
-  }
-
-  Widget _buildCountryPicker(CountryCode country) => Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          new Flexible(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: new Image.asset(
-                country.flagUri,
-                package: 'country_code_picker',
-                height: 40,
-                width: 20,
-              ),
-            ),
+          prefixIcon: Icon(
+            Icons.person_outline,
+            color: fontColor,
+            size: 17,
           ),
-          new Flexible(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: new Text(country.dialCode),
-            ),
+          hintText: NAMEHINT_LBL,
+          hintStyle: Theme.of(this.context)
+              .textTheme
+              .subtitle2
+              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          filled: true,
+          fillColor: lightWhite,
+          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: fontColor),
+            borderRadius: BorderRadius.circular(10.0),
           ),
-          new Flexible(
-            child: Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: new Text(
-                country.name,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: lightWhite),
+            borderRadius: BorderRadius.circular(10.0),
           ),
-        ],
-      );
-
-  setMobileNo() {
-    return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
-      child: TextFormField(
-        keyboardType: TextInputType.number,
-        controller: mobileController,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        validator: validateMob,
-        onSaved: (String value) {
-          // mobileno = value;
-          mobile = value;
-          print('Mobile no:$mobile');
-        },
-        decoration: InputDecoration(
-            prefixIcon: Icon(Icons.call_outlined),
-            hintText: MOBILEHINT_LBL,
-            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
+        ),
       ),
     );
   }
 
   setEmail() {
     return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
+      padding: EdgeInsets.only(
+        top: 10.0,
+        left: 25.0,
+        right: 25.0,
+      ),
       child: TextFormField(
-        keyboardType: TextInputType.emailAddress,
+        keyboardType: TextInputType.text,
         controller: emailController,
+        style:TextStyle(color: fontColor, fontWeight: FontWeight.normal),
         validator: validateEmail,
         onSaved: (String value) {
           email = value;
         },
         decoration: InputDecoration(
-            prefixIcon: Icon(Icons.email_outlined),
-            hintText: EMAILHINT_LBL,
-            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
+          prefixIcon: Icon(
+            Icons.email_outlined,
+            color: fontColor,
+            size: 17,
+          ),
+          hintText: EMAILHINT_LBL,
+          hintStyle: Theme.of(this.context)
+              .textTheme
+              .subtitle2
+              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+          filled: true,
+          fillColor: lightWhite,
+          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: fontColor),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: lightWhite),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
       ),
     );
   }
 
   setPass() {
     return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        obscureText: !this._showPassword,
-        controller: passwordController,
-        validator: validatePass,
-        onSaved: (val) => password = val,
-        decoration: InputDecoration(
-            prefixIcon: Icon(Icons.lock_outline),
+        padding: EdgeInsets.only(left: 25.0, right: 25.0, top: 10.0),
+        child: TextFormField(
+          keyboardType: TextInputType.text,
+          obscureText: !this._showPassword,
+          style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
+          controller: passwordController,
+          validator: validatePass,
+          onSaved: (String value) {
+            password = value;
+          },
+          decoration: InputDecoration(
+            prefixIcon: Icon(
+              Icons.lock_outline,
+              color: fontColor,
+              size: 17,
+            ),
             hintText: PASSHINT_LBL,
-            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
-      ),
-    );
+            hintStyle: Theme.of(this.context)
+                .textTheme
+                .subtitle2
+                .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+            filled: true,
+            fillColor: lightWhite,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: fontColor),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: lightWhite),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+        ));
   }
 
   showPass() {
@@ -332,6 +347,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
           children: <Widget>[
             Checkbox(
               value: _showPassword,
+              checkColor: fontColor,
+              activeColor: lightWhite,
               onChanged: (bool value) {
                 setState(() {
                   _showPassword = value;
@@ -339,96 +356,34 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               },
             ),
             Text(SHOW_PASSWORD,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyText1
-                    .copyWith(color: lightblack2))
+                style:TextStyle(color: fontColor, fontWeight: FontWeight.normal))
           ],
         ));
   }
+
   verifyBtn() {
-    return
-      new AnimatedBuilder(
-        builder: _buildBtnAnimation,
-        animation: buttonSqueezeanimation,
-      );
-  }
-
-
-  Widget _buildBtnAnimation(BuildContext context, Widget child) {
-    return CupertinoButton(
-      child: Container(
-        width: buttonSqueezeanimation.value,
-        height: 45,
-        alignment: FractionalOffset.center,
-        decoration: new BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [primaryLight2, primaryLight3],
-              stops: [0, 1]),
-
-          borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
-        ),
-        child: buttonSqueezeanimation.value > 75.0
-            ? Text(VERIFY_MOBILE_NUMBER,
-            textAlign: TextAlign.center,
-            style: Theme
-                .of(context)
-                .textTheme
-                .headline6
-                .copyWith(color: white, fontWeight: FontWeight.normal))
-            : new CircularProgressIndicator(
-          valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
-        ),
-      ),
-
-      onPressed: () {
+    return AppBtn(
+      title: VERIFY_MOBILE_NUMBER,
+      btnAnim: buttonSqueezeanimation,
+      btnCntrl: buttonController,
+      onBtnSelected: () async {
         validateAndSubmit();
       },
     );
   }
- /* verifyBtn() {
-    double width = MediaQuery.of(context).size.width;
-    return Padding(
-        padding:
-            EdgeInsets.only(bottom: 10.0, left: 30.0, right: 30.0, top: 10.0),
-        child: Center(
-            child: RaisedButton(
-          color: primaryLight2,
-          onPressed: () {
-            validateAndSubmit();
-          },
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-          padding: EdgeInsets.all(0.0),
-          child: Ink(
-            child: Container(
-              constraints: BoxConstraints(maxWidth: width * 1.5, minHeight: 45),
-              alignment: Alignment.center,
-              child: Text(VERIFY_MOBILE_NUMBER,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      .copyWith(color: white, fontWeight: FontWeight.normal)),
-            ),
-          ),
-        )));
-  }*/
 
   loginTxt() {
     return Padding(
       padding:
-          EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0, bottom: 30.0),
+          EdgeInsets.only(bottom: 30.0, left: 25.0, right: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(ALREADY_A_CUSTOMER,
               style: Theme.of(context)
                   .textTheme
-                  .bodyText1
-                  .copyWith(color: lightblack)),
+                  .caption
+                  .copyWith(color: fontColor, fontWeight: FontWeight.normal)),
           InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
@@ -437,8 +392,10 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               },
               child: Text(
                 LOG_IN_LBL,
-                style: Theme.of(context).textTheme.bodyText1.copyWith(
-                    color: primary, decoration: TextDecoration.underline),
+                style: Theme.of(context).textTheme.caption.copyWith(
+                    color: fontColor,
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.normal),
               ))
         ],
       ),
@@ -446,48 +403,43 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   }
 
   expandedBottomView() {
-    double width = MediaQuery.of(context).size.width;
+    double width = deviceWidth;
     return Expanded(
-        child: Container(
-            width: double.infinity,
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    width: width,
-                    padding: EdgeInsets.only(top: 20.0),
-                    child: Form(
-                      key: _formkey,
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        margin: EdgeInsets.all(20.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            registerTxt(),
-                            setUserName(),
-                            setCountryCode(),
-                            setMobileNo(),
-                            setEmail(),
-                            setPass(),
-                            showPass(),
-                             verifyBtn(),
-                            //appBtn(VERIFY_MOBILE_NUMBER, buttonController, buttonSqueezeanimation, validateAndSubmit),
-                            loginTxt(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            )));
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 100.0,
+          ),
+          child: SingleChildScrollView(
+
+      child: Form(
+          key: _formkey,
+          child: Card(
+            elevation: 0.0,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                registerTxt(),
+                setUserName(),
+                setEmail(),
+                setPass(),
+                showPass(),
+                verifyBtn(),
+                loginTxt(),
+              ],
+            ),
+          ),
+      ),
+    ),
+        ));
   }
 
   @override
   void initState() {
     super.initState();
+    getUserDetails();
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
 
@@ -507,14 +459,18 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        body: Container(
-            decoration: back(),
-            child: Center(
+        body: _isNetworkAvail
+            ? Container(
+                color: lightWhite,
+                padding: EdgeInsets.only(
+                  bottom: 20.0,
+                ),
                 child: Column(
-              children: <Widget>[
-                subLogo(),
-                expandedBottomView(),
-              ],
-            ))));
+                  children: <Widget>[
+                    subLogo(),
+                    expandedBottomView(),
+                  ],
+                ))
+            : noInternet(context));
   }
 }

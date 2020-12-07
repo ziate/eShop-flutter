@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eshop/Helper/AppBtn.dart';
+import 'package:eshop/Helper/SimBtn.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -112,7 +113,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     return Center(
       child: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          noIntImage(context),
+          noIntImage(),
           noIntText(context),
           noIntDec(context),
           AppBtn(
@@ -141,13 +142,13 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   }
 
   noIntBtn(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    double width = deviceWidth;
 
     return Container(
         padding: EdgeInsets.only(bottom: 10.0, top: 50.0),
         child: Center(
             child: RaisedButton(
-          color: primaryLight2,
+          color: primary,
           onPressed: () {
             Navigator.pushReplacement(
                 context,
@@ -172,7 +173,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   }
 
   Widget listItem(int index) {
-    print("desc*****${productList[index].desc}");
+    print(
+        "desc***** ${productList[index].availability}====${productList[index].stockType}");
 
     double price = double.parse(productList[index].prVarientList[0].disPrice);
     if (price == 0)
@@ -180,8 +182,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
     return Card(
       child: InkWell(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+            Widget>[
           productList[index].availability == "0"
               ? Text(OUT_OF_STOCK_LBL,
                   style: Theme.of(context)
@@ -211,7 +213,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: Colors.black),
+                            .copyWith(color: black),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -235,68 +237,77 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           ],
                         ),
                       ),
-                   Row(
+                      Row(
                         children: <Widget>[
-                          productList[index].availability == "1"?   Row(
-                            children: <Widget>[
-                              InkWell(
-                                child: Container(
-                                  margin: EdgeInsets.only(
-                                      right: 8, top: 8, bottom: 8),
-                                  child: Icon(
-                                    Icons.remove,
-                                    size: 12,
-                                    color: Colors.grey,
-                                  ),
-                                  decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(5))),
-                                ),
-                                onTap: () {
-                                  if (CUR_USERID != null) {
-                                    if (int.parse(productList[index]
-                                            .prVarientList[0]
-                                            .cartCount) >
-                                        0) removeFromCart(index);
-                                  } else {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => Login()),
-                                    );
-                                  }
-                                },
-                              ),
-                              Text(
-                                productList[index].prVarientList[0].cartCount,
-                                style: Theme.of(context).textTheme.caption,
-                              ),
-                              InkWell(
-                                  child: Container(
-                                    margin: EdgeInsets.all(8),
-                                    child: Icon(
-                                      Icons.add,
-                                      size: 12,
-                                      color: Colors.grey,
+                          productList[index].availability == "1" ||
+                                  productList[index].stockType == "null"
+                              ? Row(
+                                  children: <Widget>[
+                                    InkWell(
+                                      child: Container(
+                                        margin: EdgeInsets.only(
+                                            right: 8, top: 8, bottom: 8),
+                                        child: Icon(
+                                          Icons.remove,
+                                          size: 12,
+                                          color: Colors.grey,
+                                        ),
+                                        decoration: BoxDecoration(
+                                            border:
+                                                Border.all(color: Colors.grey),
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(5))),
+                                      ),
+                                      onTap: () {
+                                        if (CUR_USERID != null) {
+                                          if (int.parse(productList[index]
+                                                  .prVarientList[0]
+                                                  .cartCount) >
+                                              0) removeFromCart(index);
+                                        } else {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => Login()),
+                                          );
+                                        }
+                                      },
                                     ),
-                                    decoration: BoxDecoration(
-                                        border: Border.all(color: Colors.grey),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(5))),
-                                  ),
-                                  onTap: () {
-                                    if (CUR_USERID == null) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Login()),
-                                      );
-                                    } else
-                                      addToCart(index);
-                                  }),
-                            ],
-                          ):Container(),
+                                    Text(
+                                      productList[index]
+                                          .prVarientList[0]
+                                          .cartCount,
+                                      style:
+                                          Theme.of(context).textTheme.caption,
+                                    ),
+                                    InkWell(
+                                        child: Container(
+                                          margin: EdgeInsets.all(8),
+                                          child: Icon(
+                                            Icons.add,
+                                            size: 12,
+                                            color: Colors.grey,
+                                          ),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Colors.grey),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(5))),
+                                        ),
+                                        onTap: () {
+                                          if (CUR_USERID == null) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      Login()),
+                                            );
+                                          } else
+                                            addToCart(index);
+                                        }),
+                                  ],
+                                )
+                              : Container(),
                           Spacer(),
                           Row(
                             children: <Widget>[
@@ -345,7 +356,6 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                       secPos: 0,
                       updateHome: widget.updateHome,
                       list: true,
-                      //  title: productList[index].name,
                     )),
           );
         },
@@ -435,55 +445,105 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
 
   getAppbar() {
     return AppBar(
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios, color: primary),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
       title: Text(
         widget.name,
         style: TextStyle(
-          color: primary,
+          color: fontColor,
         ),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
+      elevation: 5,
+      leading: Builder(builder: (BuildContext context) {
+        return Container(
+          margin: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          ),
+          child: Card(
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: InkWell(
+                child: Icon(Icons.keyboard_arrow_left, color: primary),
+                onTap: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ),
+        );
+      }),
       actions: <Widget>[
-        IconButton(
-            icon: Icon(
-              Icons.search,
-              color: primary,
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          ),
+          child: Card(
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: InkWell(
+                  child: Icon(
+                    Icons.search,
+                    color: primary,
+                    size: 22,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Search(
+                              updateHome: widget.updateHome,
+                              menuopen: false),
+                        ));
+                  }),
             ),
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Search(widget.updateHome),
-                  ));
-            }),
-        IconButton(
-            icon: Icon(
-              Icons.tune,
-              color: primary,
+          ),
+        ),
+        Container(
+            margin: EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
             ),
-            onPressed: () {
-              if (filterList.length != 0) return filterDialog();
-            }),
-        IconButton(
-            icon: Icon(
-              Icons.filter_list,
-              color: primary,
+            child: Card(
+                elevation: 0,
+                child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: InkWell(
+                        child: Icon(
+                          Icons.tune,
+                          color: primary,
+                          size: 22,
+                        ),
+                        onTap: () {
+                          if (filterList.length != 0) return filterDialog();
+                        })))),
+        Container(
+            margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+            decoration: BoxDecoration(
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
             ),
-            onPressed: () {
-              sortDialog();
-            })
+            child: Card(
+                elevation: 0,
+                child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: InkWell(
+                        child: Icon(
+                          Icons.filter_list,
+                          color: primary,
+                          size: 22,
+                        ),
+                        onTap: () {
+                          if (productList.length != 0) return sortDialog();
+                        }))))
       ],
     );
   }
@@ -711,13 +771,13 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                   Expanded(
-                      flex: 1,
+                      flex: 2,
                       child: Container(
-                          color: lightgrey,
+                          color: lightBlack2,
                           child: ListView.builder(
                             shrinkWrap: true,
                             scrollDirection: Axis.vertical,
-                            padding: EdgeInsets.only(top: 15.0),
+                            padding: EdgeInsets.only(top: 10.0),
                             itemCount: filterList.length,
                             itemBuilder: (context, index) {
                               print(
@@ -735,36 +795,31 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                 filter = filterList[0]["name"];
                               }
 
-                              return Padding(
-                                  padding: EdgeInsets.all(
-                                    8.0,
-                                  ),
-                                  child: InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          filter = filterList[index]['name'];
-                                        });
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.only(
-                                            left: 20.0, right: 20.0),
-                                        alignment: Alignment.centerLeft,
-                                        height: 30.0,
-                                        color:
-                                            filter == filterList[index]['name']
-                                                ? white
-                                                : lightgrey,
-                                        child: Text(
-                                          filterList[index]['name'],
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .subtitle1,
-                                        ),
-                                      )));
+                              return InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      filter = filterList[index]['name'];
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.only(
+                                        left: 20, top: 7.0, bottom: 7.0),
+                                    alignment: Alignment.centerLeft,
+                                    color: filter == filterList[index]['name']
+                                        ? white
+                                        : lightBlack2,
+                                    child: new Text(
+                                      filterList[index]['name'],
+                                      style:
+                                          Theme.of(context).textTheme.subtitle1,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                    ),
+                                  ));
                             },
                           ))),
                   Expanded(
-                      flex: 2,
+                      flex: 3,
                       child: ListView.builder(
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
@@ -823,9 +878,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(right: 18.0, bottom: 8),
               child: Align(
                 alignment: Alignment.bottomRight,
-                child: RaisedButton(
-                  color: primary,
-                  onPressed: () {
+                child: SimBtn(
+                  size: deviceWidth * 0.2,
+                  title: APPLY,
+                  onBtnSelected: () {
                     if (selectedId != null) {
                       print("seletIDDDDD****${selectedId.toString()}");
                       String sId = selectedId.toString();
@@ -841,10 +897,6 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                       Navigator.pop(context, 'Product Filter');
                     }
                   },
-                  child: Text(
-                    'Apply',
-                    style: TextStyle(color: Colors.white),
-                  ),
                 ),
               ),
             )

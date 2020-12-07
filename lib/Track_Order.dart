@@ -6,13 +6,16 @@ import 'package:eshop/Model/Order_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 
+import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Login.dart';
 import 'OrderDetail.dart';
+import 'Helper/SimBtn.dart';
 
 class TrackOrder extends StatefulWidget {
   @override
@@ -23,64 +26,158 @@ class TrackOrder extends StatefulWidget {
 
 bool _isLoading = true;
 List<Order_Model> orderList = [];
-int offset = 0;
-int total = 0, _curIndex = 0;
-bool isLoadingmore = true;
+List<Order_Model> deliveredList = [];
+List<Order_Model> orderProgressList = [];
 
-class StateTrack extends State<TrackOrder> {
+//int offset = 0;
+//int total = 0, _curIndex = 0;
+//bool isLoadingmore = true;
+
+class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  List<Order_Model> tempList = [];
+  //List<Order_Model> tempList = [];
 
-  ScrollController controller = new ScrollController();
+  // ScrollController controller = new ScrollController();
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
+  bool _isNetworkAvail = true;
 
   @override
   void initState() {
-    offset = 0;
-    total = 0;
-
     getOrder();
-    controller.addListener(_scrollListener);
+
+    getDeliveredOrder();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
+
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  getOrder();
+                  getDeliveredOrder();
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      body: _isLoading
-          ? shimmer()
-          : orderList.length == 0
-              ? Padding(
-                  padding: const EdgeInsets.only(top: kToolbarHeight),
-                  child: Center(child: Text(noItem)),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  controller: controller,
-                  itemCount: (offset < total)
-                      ? orderList.length + 1
-                      : orderList.length,
-                  physics: BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    //  print("load more****$offset***$total***${favList.length}***$isLoadingmore**$index");
-                    return (index == orderList.length && isLoadingmore)
-                        ? Center(child: CircularProgressIndicator())
-                        : orderItem(index);
-                  },
-                ),
+      backgroundColor: lightWhite,
+      // appBar: getAppBar(TRACK_ORDER, context),
+      body: _isNetworkAvail
+          ? _isLoading
+              ? shimmer()
+              : orderList.length == 0 && deliveredList.length == 0
+                  ? Center(child: Text(noItem))
+                  : SingleChildScrollView(
+                      physics: BouncingScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            orderList.length != 0
+                                ? Text(
+                                    "Your Orders",
+                                    style:
+                                        Theme.of(context).textTheme.subtitle1,
+                                  )
+                                : Container(),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: orderList.length,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                //  print("load more****$offset***$total***${favList.length}***$isLoadingmore**$index");
+                                return orderItem(index);
+                              },
+                            ),
+                            deliveredList.length != 0
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10.0),
+                                    child: Text(
+                                      "Completed Orders",
+                                      style:
+                                          Theme.of(context).textTheme.subtitle1,
+                                    ),
+                                  )
+                                : Container(),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: deliveredList.length,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemBuilder: (context, index) {
+                                //  print("load more****$offset***$total***${favList.length}***$isLoadingmore**$index");
+                                return deliveredOrderItem(index);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+          : noInternet(context),
     );
   }
 
   Future<void> getOrder() async {
-    bool avail = await isNetworkAvailable();
-    if (avail) {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
       try {
         if (CUR_USERID != null) {
+          String status="$PLACED, $SHIPED, $PROCESSED, $CANCLED, $RETURNED";
           var parameter = {
             USER_ID: CUR_USERID,
-            LIMIT: perPage.toString(),
-            OFFSET: offset.toString(),
+            ACTIVE_STATUS: status
           };
           Response response =
               await post(getOrderApi, body: parameter, headers: headers)
@@ -91,26 +188,15 @@ class StateTrack extends State<TrackOrder> {
           print('response***fav****${response.body.toString()}');
           bool error = getdata["error"];
           String msg = getdata["message"];
-
+          orderList.clear();
           print('section get***favorite get');
           if (!error) {
-            total = int.parse(getdata["total"]);
-
-            if ((offset) < total) {
-              tempList.clear();
-              var data = getdata["data"];
-              tempList = (data as List)
-                  .map((data) => new Order_Model.fromJson(data))
-                  .toList();
-              if (offset == 0) orderList.clear();
-              orderList.addAll(tempList);
-
-              offset = offset + perPage;
-            }
-          } else {
-            if (msg != 'No Order(s) Found !') setSnackbar(msg);
-            isLoadingmore = false;
+            var data = getdata["data"];
+            orderList = (data as List)
+                .map((data) => new Order_Model.fromJson(data))
+                .toList();
           }
+
           setState(() {
             _isLoading = false;
           });
@@ -131,11 +217,62 @@ class StateTrack extends State<TrackOrder> {
         setSnackbar(somethingMSg);
         setState(() {
           _isLoading = false;
-          isLoadingmore = false;
         });
       }
     } else {
-      setSnackbar(internetMsg);
+      setState(() {
+        _isNetworkAvail = false;
+      });
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+        });
+    }
+  }
+
+  Future<void> getDeliveredOrder() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (CUR_USERID != null) {
+          var parameter = {USER_ID: CUR_USERID, ACTIVE_STATUS: DELIVERD};
+          Response response =
+              await post(getOrderApi, body: parameter, headers: headers)
+                  .timeout(Duration(seconds: timeOut));
+
+          var getdata = json.decode(response.body);
+          print('response***fav****par***${parameter.toString()}');
+          print('response***fav****${response.body.toString()}');
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+
+          print('section get***favorite get');
+          if (!error) {
+            var data = getdata["data"];
+            deliveredList.clear();
+            deliveredList = (data as List)
+                .map((data) => new Order_Model.fromJson(data))
+                .toList();
+          }
+          setState(() {
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+            //msg = goToLogin;
+          });
+        }
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        _isNetworkAvail = false;
+      });
       if (mounted)
         setState(() {
           _isLoading = false;
@@ -148,9 +285,9 @@ class StateTrack extends State<TrackOrder> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
@@ -164,7 +301,7 @@ class StateTrack extends State<TrackOrder> {
 
       if (pDate != null) {
         List d = pDate.split(" ");
-        pDate = d[0] + "\n" + d[1] + d[2];
+        pDate = d[0] + "\n" + d[1];
       }
     }
     if (orderList[index].listStatus.contains(PROCESSED)) {
@@ -172,7 +309,7 @@ class StateTrack extends State<TrackOrder> {
           .listDate[orderList[index].listStatus.indexOf(PROCESSED)];
       if (prDate != null) {
         List d = prDate.split(" ");
-        prDate = d[0] + "\n" + d[1] + d[2];
+        prDate = d[0] + "\n" + d[1];
       }
     }
     if (orderList[index].listStatus.contains(SHIPED)) {
@@ -180,7 +317,7 @@ class StateTrack extends State<TrackOrder> {
           .listDate[orderList[index].listStatus.indexOf(SHIPED)];
       if (sDate != null) {
         List d = sDate.split(" ");
-        sDate = d[0] + "\n" + d[1] + d[2];
+        sDate = d[0] + "\n" + d[1];
       }
     }
     if (orderList[index].listStatus.contains(DELIVERD)) {
@@ -188,7 +325,7 @@ class StateTrack extends State<TrackOrder> {
           .listDate[orderList[index].listStatus.indexOf(DELIVERD)];
       if (dDate != null) {
         List d = dDate.split(" ");
-        dDate = d[0] + "\n" + d[1] + d[2];
+        dDate = d[0] + "\n" + d[1];
       }
     }
     if (orderList[index].listStatus.contains(CANCLED)) {
@@ -196,7 +333,7 @@ class StateTrack extends State<TrackOrder> {
           .listDate[orderList[index].listStatus.indexOf(CANCLED)];
       if (cDate != null) {
         List d = cDate.split(" ");
-        cDate = d[0] + "\n" + d[1] + d[2];
+        cDate = d[0] + "\n" + d[1];
       }
     }
     if (orderList[index].listStatus.contains(RETURNED)) {
@@ -204,57 +341,31 @@ class StateTrack extends State<TrackOrder> {
           .listDate[orderList[index].listStatus.indexOf(RETURNED)];
       if (rDate != null) {
         List d = rDate.split(" ");
-        rDate = d[0] + "\n" + d[1] + "\n" + d[2];
+        rDate = d[0] + "\n" + d[1];
       }
     }
 
     return Card(
+      elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(ORDER_ID + " : " + orderList[index].id),
-                      Text(ORDER_DATE + " : " + orderList[index].orderDate),
-                      Text(TOTAL_PRICE +
-                          ":" +
-                          CUR_CURRENCY +
-                          " " +
-                          orderList[index].total),
-                    ],
-                  ),
+                Text(
+                  ORDER_ID_LBL + " : " + orderList[index].id,
+                  style: Theme.of(context).textTheme.subtitle2.copyWith(
+                      color: fontColor, fontWeight: FontWeight.bold),
                 ),
-                IconButton(
-                    icon: Icon(
-                      Icons.keyboard_arrow_right,
-                      color: Colors.black,
-                    ),
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OrderDetail(
-                                  model: orderList[index],
-                                )),
-                      );
-
-                      setState(() {
-                        offset = 0;
-                        total = 0;
-                        _isLoading = true;
-                      });
-
-                      getOrder();
-                    })
+                Text(ORDER_DATE + " : " + orderList[index].orderDate),
+                Text(orderList[index].itemList[0].name +
+                    "${orderList[index].itemList.length > 1 ? " and more items" : ""} "),
               ],
             ),
-            Divider(),
+            /*  Divider(),
             ListView.builder(
               shrinkWrap: true,
               itemCount: orderList[index].itemList.length,
@@ -264,7 +375,7 @@ class StateTrack extends State<TrackOrder> {
                 return productItem(index, orderItem);
               },
             ),
-            Divider(),
+            Divider(),*/
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -278,14 +389,97 @@ class StateTrack extends State<TrackOrder> {
                   getReturned(rDate, index),
                 ],
               ),
-            )
+            ),
+            SimBtn(
+              title: MORE_DETAIL,
+              size: deviceWidth * 0.4,
+              onBtnSelected: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => OrderDetail(
+                            model: orderList[index],
+                          )),
+                );
+                setState(() {
+                  _isLoading = true;
+                });
+
+                getOrder();
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  _scrollListener() {
+  deliveredOrderItem(int index) {
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ORDER_ID_LBL + " : " + deliveredList[index].id,
+                        style: Theme.of(context).textTheme.subtitle2.copyWith(
+                            color: fontColor, fontWeight: FontWeight.bold),
+                      ),
+                      Text(ORDER_DATE + " : " + deliveredList[index].orderDate),
+                      Text(deliveredList[index].itemList[0].name +
+                          "${deliveredList[index].itemList.length > 1 ? " and more items" : ""} "),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: primary,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(DELIVERED_LBL),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                IconButton(
+                    icon: Icon(
+                      Icons.keyboard_arrow_right,
+                      color: black,
+                    ),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => OrderDetail(
+                                  model: deliveredList[index],
+                                )),
+                      );
+
+                      setState(() {
+                        _isLoading = true;
+                      });
+
+                      getDeliveredOrder();
+                    })
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+/*  _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
@@ -297,9 +491,11 @@ class StateTrack extends State<TrackOrder> {
         });
       }
     }
-  }
+  }*/
 
   productItem(int index, OrderItem orderItem) {
+    print("detail=========${orderItem.image}*********${orderItem.name}");
+
     return Row(
       children: [
         CachedNetworkImage(
@@ -334,7 +530,7 @@ class StateTrack extends State<TrackOrder> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Icon(
-            Icons.radio_button_checked,
+            Icons.check_circle,
             color: primary,
           ),
         ),
@@ -370,9 +566,7 @@ class StateTrack extends State<TrackOrder> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Icon(
-                        prDate == null
-                            ? Icons.radio_button_unchecked
-                            : Icons.radio_button_checked,
+                        prDate == null ? Icons.stop_circle : Icons.check_circle,
                         color: prDate == null ? Colors.grey : primary,
                       ),
                     ),
@@ -407,7 +601,7 @@ class StateTrack extends State<TrackOrder> {
                           textAlign: TextAlign.center,
                         ),
                         Icon(
-                          Icons.radio_button_checked,
+                          Icons.check_circle,
                           color: primary,
                         ),
                         Text(
@@ -446,9 +640,7 @@ class StateTrack extends State<TrackOrder> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Icon(
-                        sDate == null
-                            ? Icons.radio_button_unchecked
-                            : Icons.radio_button_checked,
+                        sDate == null ? Icons.stop_circle : Icons.check_circle,
                         color: sDate == null ? Colors.grey : primary,
                       ),
                     ),
@@ -482,7 +674,7 @@ class StateTrack extends State<TrackOrder> {
                           textAlign: TextAlign.center,
                         ),
                         Icon(
-                          Icons.radio_button_checked,
+                          Icons.check_circle,
                           color: primary,
                         ),
                         Text(
@@ -520,8 +712,8 @@ class StateTrack extends State<TrackOrder> {
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Icon(
                         dDate == null
-                            ? Icons.radio_button_unchecked
-                            : Icons.radio_button_checked,
+                            ? Icons.stop_circle
+                            : Icons.check_circle,
                         color: dDate == null ? Colors.grey : primary,
                       ),
                     ),
@@ -560,7 +752,7 @@ class StateTrack extends State<TrackOrder> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Icon(
-                        Icons.radio_button_checked,
+                        Icons.cancel_rounded,
                         color: Colors.red,
                       ),
                     ),
@@ -600,7 +792,7 @@ class StateTrack extends State<TrackOrder> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Icon(
-                        Icons.radio_button_checked,
+                        Icons.cancel_rounded,
                         color: Colors.red,
                       ),
                     ),

@@ -2,9 +2,14 @@ import 'dart:async';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
+import 'package:eshop/Product_Detail.dart';
+import 'package:eshop/SignInUpAcc.dart';
 
 import 'package:flutter/material.dart';
+
+import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
+import 'Home.dart';
 import 'Login.dart';
 
 class Intro_Slider extends StatefulWidget {
@@ -12,19 +17,36 @@ class Intro_Slider extends StatefulWidget {
   _GettingStartedScreenState createState() => _GettingStartedScreenState();
 }
 
-class _GettingStartedScreenState extends State<Intro_Slider> {
+class _GettingStartedScreenState extends State<Intro_Slider>
+    with TickerProviderStateMixin {
   int _currentPage = 0;
   final PageController _pageController = PageController(initialPage: 0);
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
 
   @override
   void initState() {
     super.initState();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
   }
 
   @override
   void dispose() {
     super.dispose();
     _pageController.dispose();
+    buttonController.dispose();
   }
 
   _onPageChanged(int index) {
@@ -68,59 +90,32 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
         controller: _pageController,
         onPageChanged: _onPageChanged,
         itemBuilder: (BuildContext context, int index) {
-          return Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Expanded(
-                child: Image.asset(
-                  slideList[index].imageUrl,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              Container(
-                  child: Text(
-                      slideList[index].title,
-                      style:Theme.of(context)
-                          .textTheme
-                          .headline5
-                          .copyWith(color: primary,fontWeight: FontWeight.normal)
-                  )),
-              Container(
-                padding: EdgeInsets.only(top: 20.0,left: 10.0,right: 10.0),
-                child: Text(
-                    slideList[index].description,
-                    textAlign: TextAlign.center,
-                    style:Theme.of(context)
-                        .textTheme
-                        .headline6
-                        .copyWith(color: lightblack,fontWeight: FontWeight.normal)
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.only(bottom: 40, top: 20.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: map<Widget>(
-                    slideList,
-                        (index, url) {
-                      return Container(
-                          width: 10.0,
-                          height: 10.0,
-                          margin: EdgeInsets.symmetric(horizontal: 10.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _currentPage == index
-                                ? lightblack
-                                : lightblack2.withOpacity((0.5)),
-                          ));
-                    },
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  height: MediaQuery.of(context).size.height * .5,
+                  child: Image.asset(
+                    slideList[index].imageUrl,
                   ),
                 ),
-              ),
-            ],
+                Container(
+                    margin: EdgeInsets.only(top: 20),
+                    child: Text(slideList[index].title,
+                        style: Theme.of(context).textTheme.headline5.copyWith(
+                            color: fontColor, fontWeight: FontWeight.bold))),
+                Container(
+                  padding: EdgeInsets.only(top: 30.0, left: 15.0, right: 15.0),
+                  child: Text(slideList[index].description,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+                          color: fontColor, fontWeight: FontWeight.normal)),
+                ),
+
+              ],
+            ),
           );
         },
       ),
@@ -128,58 +123,177 @@ class _GettingStartedScreenState extends State<Intro_Slider> {
   }
 
   _btn() {
-    double width = MediaQuery.of(context).size.width;
-    return Container(
-        padding: EdgeInsets.only(bottom: 20.0, left: 70.0, right: 70.0),
-        child: Center(
-            child: RaisedButton(
-              color: primaryLight2,
-              onPressed: () {
-                setPrefrenceBool(ISFIRSTTIME, true);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => Login()),
-                );
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.only(bottom: 20, top: 30.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: map<Widget>(
+              slideList,
+                  (index, url) {
+                return Container(
+                    width: 10.0,
+                    height: 10.0,
+                    margin: EdgeInsets.symmetric(horizontal: 5.0),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentPage == index
+                          ? fontColor
+                          : fontColor.withOpacity((0.5)),
+                    ));
               },
-              shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-              padding: EdgeInsets.all(0.0),
-              child: Ink(
-                child: Container(
-                  constraints:
-                  BoxConstraints(maxWidth: width * 1.5, minHeight: 45),
-                  //decoration: back(),
-                  alignment: Alignment.center,
-                  child: Text(
-                      GET_STARTED,
-                      textAlign: TextAlign.center,
-                      style:Theme.of(context)
-                          .textTheme
-                          .headline6
-                          .copyWith(color: white,fontWeight: FontWeight.normal)
-                  ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 28.0),
+          child: Center(
+              child: AppBtn(
+                  title: _currentPage == 0 || _currentPage == 1
+                      ? NEXT_LBL
+                      : GET_STARTED,
+                  btnAnim: buttonSqueezeanimation,
+                  btnCntrl: buttonController,
+                  onBtnSelected: () {
+                    if (_currentPage == 2) {
+                      setPrefrenceBool(ISFIRSTTIME, true);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => SignInUpAcc()),
+                      );
+                    } else {
+                      _currentPage = _currentPage + 1;
+                      _pageController.animateToPage(_currentPage,
+                          curve: Curves.decelerate,
+                          duration: Duration(milliseconds: 300));
+                    }
+                  })),
+        ),
+      ],
+    );
+  }
+
+  skipBtn() {
+    return _currentPage == 0 || _currentPage == 1
+        ? Padding(
+            padding: EdgeInsets.only(top: 50.0, right: 10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                InkWell(
+                  onTap: () {
+                    setPrefrenceBool(ISFIRSTTIME, true);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => SignInUpAcc()),
+                    );
+                  },
+                  child: Row(children: [
+                    Text(SKIP,
+                        style: Theme.of(context).textTheme.caption.copyWith(
+                              color: fontColor,
+                            )),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: fontColor,
+                      size: 12.0,
+                    ),
+                  ]),
                 ),
-              ),
-            )));
+              ],
+            ))
+        : Container(
+            margin: EdgeInsets.only(top: 50.0),
+            height: 15,
+          );
   }
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-        body: SafeArea(
-            child: Container(
-                width: width,
-                height: height,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _slider(),
-                    _btn(),
-                  ],
-                ))));
+        body:
+
+     /*   IntroViewsFlutter(
+          [
+            PageViewModel(
+                pageColor: const Color(0xFF03A9F4),
+                // iconImageAssetPath: 'assets/air-hostess.png',
+                // bubble: Image.asset('assets/air-hostess.png'),
+                body: Text(slideList[0].description,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.subtitle1.copyWith(
+                      color: fontColor, fontWeight: FontWeight.normal),),
+                title:  Text(slideList[0].title,
+                    style: Theme.of(context).textTheme.headline5.copyWith(
+                        color: fontColor, fontWeight: FontWeight.bold)),
+               // titleTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
+               // bodyTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
+                mainImage: Image.asset(
+                  slideList[0].imageUrl,
+                  alignment: Alignment.center,
+                ),),
+            PageViewModel(
+              pageColor: primary.withOpacity(0.1),
+              iconImageAssetPath: 'assets/waiter.png',
+              body:  Text(slideList[1].description,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.subtitle1.copyWith(
+                    color: fontColor, fontWeight: FontWeight.normal),),
+              title: Text(slideList[1].title,
+    style: Theme.of(context).textTheme.headline5.copyWith(
+    color: fontColor, fontWeight: FontWeight.bold)),
+              mainImage: Image.asset(
+                slideList[1].imageUrl,
+                alignment: Alignment.center,
+              ),
+              titleTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
+              bodyTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
+            ),
+            PageViewModel(
+              pageColor: lightWhite,
+              iconImageAssetPath: 'assets/taxi-driver.png',
+              body:  Text(slideList[2].description,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.subtitle1.copyWith(
+                    color: fontColor, fontWeight: FontWeight.normal),),
+              title:  Text(slideList[2].title,
+                  style: Theme.of(context).textTheme.headline5.copyWith(
+                      color: fontColor, fontWeight: FontWeight.bold)),
+              mainImage: Image.asset(
+                slideList[2].imageUrl,
+                alignment: Alignment.center,
+              ),
+              titleTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
+              bodyTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
+            ),
+          ],
+          showNextButton: true,
+          showBackButton: true,
+          onTapDoneButton: () {
+
+          },
+          pageButtonTextStyles: TextStyle(
+            color: Colors.white,
+            fontSize: 18.0,
+          ),
+        ), //IntroViewsFlutter
+*/
+       Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        skipBtn(),
+        _slider(),
+        _btn(),
+      ],
+    ));
   }
+
+
 }
 
 class Slide {

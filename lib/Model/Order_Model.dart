@@ -22,7 +22,7 @@ class Order_Model {
       isReturnable,
       isAlrCancelled,
       isAlrReturned,
-      rtnReqSubmitted;
+      rtnReqSubmitted,activeStatus;
 
   List<OrderItem> itemList;
   List<String> listStatus = [];
@@ -52,7 +52,7 @@ class Order_Model {
       this.isCancleable,
       this.isAlrCancelled,
       this.isAlrReturned,
-      this.rtnReqSubmitted});
+      this.rtnReqSubmitted,this.activeStatus});
 
   factory Order_Model.fromJson(Map<String, dynamic> parsedJson) {
     List<OrderItem> itemList = (parsedJson[ORDER_ITEMS] as List)
@@ -92,7 +92,8 @@ class Order_Model {
         orderDate: date,
         itemList: itemList,
         listStatus: lStatus,
-        listDate: lDate);
+        listDate: lDate,
+    activeStatus: parsedJson[ACTIVE_STATUS]);
   }
 }
 

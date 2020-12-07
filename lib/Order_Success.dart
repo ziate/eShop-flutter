@@ -1,34 +1,1 @@
-import 'package:eshop/Helper/Session.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
-import 'Helper/Constant.dart';
-
-class OrderSuccess extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return StateSuccess();
-  }
-}
-
-class StateSuccess extends State<OrderSuccess> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: getAppBar(ORDER_PLACED, context),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(ORD_PLC),
-            ),
-            Text(ORD_PLC_SUCC)
-          ],
-        ),
-      ),
-    );
-  }
-}
+import 'package:eshop/Helper/Color.dart';import 'package:eshop/Helper/Session.dart';import 'package:flutter/cupertino.dart';import 'package:flutter/material.dart';import 'Helper/String.dart';import 'Helper/Constant.dart';import 'Home.dart';class OrderSuccess extends StatefulWidget {  @override  State<StatefulWidget> createState() {    return StateSuccess();  }}class StateSuccess extends State<OrderSuccess> {  @override  Widget build(BuildContext context) {    return Scaffold(      backgroundColor: lightWhite,      appBar: getAppBar(ORDER_PLACED, context),      body: Center(        child: SingleChildScrollView(            child: Column(          crossAxisAlignment: CrossAxisAlignment.center,          mainAxisAlignment: MainAxisAlignment.center,          children: [            Padding(              padding: const EdgeInsets.all(8.0),              child: Text(                ORD_PLC,                style: Theme.of(context).textTheme.subtitle1,              ),            ),            Text(              ORD_PLC_SUCC,              style: TextStyle(color: fontColor),            ),            Container(              padding: EdgeInsets.all(25),              margin: EdgeInsets.symmetric(vertical: 40),              child: Image.asset("assets/images/orderplaced.png"),              decoration: BoxDecoration(                  color: white,                  borderRadius: BorderRadius.all(Radius.circular(20))),            ),            Padding(              padding: const EdgeInsets.only(top: 28.0),              child: CupertinoButton(                child: Container(                    width: deviceWidth * 0.7,                    height: 45,                    alignment: FractionalOffset.center,                    decoration: new BoxDecoration(                      gradient: LinearGradient(                          begin: Alignment.topLeft,                          end: Alignment.bottomRight,                          colors: [grad1Color, grad2Color],                          stops: [0, 1]),                      borderRadius:                          new BorderRadius.all(const Radius.circular(10.0)),                    ),                    child: Text(CONTINUE_SHOPPING,                        textAlign: TextAlign.center,                        style: Theme.of(context).textTheme.headline6.copyWith(                            color: white, fontWeight: FontWeight.normal))),                onPressed: () {                  Navigator.pushAndRemoveUntil(                      context,                      MaterialPageRoute(                          builder: (BuildContext context) => Home()),                      ModalRoute.withName('/'));                },              ),            )          ],        )),      ),    );  }}

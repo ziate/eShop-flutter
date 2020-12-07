@@ -7,6 +7,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import 'Helper/Color.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Profile.dart';
@@ -81,11 +82,11 @@ class _MapState extends State<Map> {
         appBar: getAppBar(CHOOSE_LOCATION, context),
         body: SafeArea(
             child: Column(
-          children: <Widget>[
-            Expanded(
-              child: Stack(children: [
-                (latlong != null)
-                    ? GoogleMap(
+              children: <Widget>[
+                Expanded(
+                  child: Stack(children: [
+                    (latlong != null)
+                        ? GoogleMap(
                         initialCameraPosition: _cameraPosition,
                         onMapCreated: (GoogleMapController controller) {
                           _controller = (controller);
@@ -98,48 +99,48 @@ class _MapState extends State<Map> {
                             latlong = latLng;
                           });
                         })
-                    : Container(),
+                        : Container(),
 
-              ]),
-            ),
-            TextField(
-              cursorColor: Colors.black,
-              controller: locationController,
-              readOnly: true,
-              decoration: InputDecoration(
-                icon: Container(
-                  margin: EdgeInsets.only(left: 20, top: 0),
-                  width: 10,
-                  height: 10,
-                  child: Icon(
-                    Icons.location_on,
-                    color: Colors.green,
+                  ]),
+                ),
+                TextField(
+                  cursorColor: black,
+                  controller: locationController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    icon: Container(
+                      margin: EdgeInsets.only(left: 20, top: 0),
+                      width: 10,
+                      height: 10,
+                      child: Icon(
+                        Icons.location_on,
+                        color: Colors.green,
+                      ),
+                    ),
+                    hintText: "pick up",
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(left: 15.0, top: 12.0),
                   ),
                 ),
-                hintText: "pick up",
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.only(left: 15.0, top: 12.0),
-              ),
-            ),
-            RaisedButton(
-              child: Text("Update Location"),
-              onPressed: () {
-                print("updated***$latlong");
+                RaisedButton(
+                  child: Text("Update Location"),
+                  onPressed: () {
+                    print("updated***$latlong");
 
-                if(widget.from==ADDADDRESS)
-                  {
-                    latitude=latlong.latitude.toString();
-                    longitude=latlong.longitude.toString();
-                  }else if(widget.from==PROFILE){
-                  lat=latlong.latitude.toString();
-                  long=latlong.longitude.toString();
-                }
+                    if(widget.from==ADDADDRESS)
+                    {
+                      latitude=latlong.latitude.toString();
+                      longitude=latlong.longitude.toString();
+                    }else if(widget.from==PROFILE){
+                      lat=latlong.latitude.toString();
+                      long=latlong.longitude.toString();
+                    }
 
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        )));
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            )));
   }
 
   Set<Marker> myMarker() {

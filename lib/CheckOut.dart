@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:flutter_paystack/flutter_paystack.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:eshop/Add_Address.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Home.dart';
@@ -12,7 +14,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-
+import 'Helper/AppBtn.dart';
+import 'Helper/SimBtn.dart';
+import 'Test.dart';
 import 'Cart.dart';
 import 'Helper/Color.dart';
 import 'Helper/Session.dart';
@@ -35,11 +39,18 @@ bool _isTimeSlot,
     _isPayLayShow = true;
 double promoAmt = 0;
 double remWalBal, usedBal = 0;
+String razorpayId, paystackId;
 
-class StateCheckout extends State<CheckOut> {
+StateCheckout stateCheck;
+
+class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   int _curIndex = 0;
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  Razorpay _razorpay;
+  static GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   List<Widget> fragments;
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
+  bool _isNetworkAvail = true, _isProgress = false;
 
   @override
   void initState() {
@@ -50,21 +61,95 @@ class StateCheckout extends State<CheckOut> {
     _isPromoValid = false;
     _isUseWallet = false;
     _isPayLayShow = true;
+    stateCheck = new StateCheckout();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+
+
     fragments = [Delivery(updateCheckout), Address(), Payment(updateCheckout)];
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+    _razorpay.clear();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
+
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      backgroundColor: lightWhite,
       appBar: getAppBar(CHECKOUT, context),
-      body: Column(
-        children: [
-          stepper(),
-          Divider(),
-          Expanded(child: fragments[_curIndex]),
-        ],
-      ),
+      body: _isNetworkAvail
+          ? Stack(
+              children: <Widget>[
+                Column(
+                  children: [
+                    stepper(),
+                    Divider(),
+                    Expanded(child: fragments[_curIndex]),
+                  ],
+                ),
+                showCircularProgress(_isProgress, primary),
+              ],
+            )
+          : noInternet(context),
       persistentFooterButtons: [
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -72,51 +157,63 @@ class StateCheckout extends State<CheckOut> {
             Flexible(
               fit: FlexFit.loose,
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.6,
+                width: deviceWidth * 0.6,
                 child: Text(
                   TOTAL + " : " + CUR_CURRENCY + " " + totalPrice.toString(),
                   textAlign: TextAlign.left,
                 ),
               ),
             ),
-            RaisedButton.icon(
-              icon: Icon(
-                _curIndex == 2 ? Icons.check : Icons.navigate_next,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                setState(() {
-                  if (_curIndex == 0) {
-                    _curIndex = _curIndex + 1;
-                  } else if (_curIndex == 1) {
-                    if (selAddress == null || selAddress.isEmpty)
-                      setSnackbar(addressWarning);
-                    else
-                      _curIndex = _curIndex + 1;
-                  } else if (_curIndex == 2) {
-                    if (_isTimeSlot && (selDate == null || selDate.isEmpty))
-                      setSnackbar(dateWarning);
-                    else if (_isTimeSlot &&
-                        (selTime == null || selTime.isEmpty))
-                      setSnackbar(timeWarning);
-                    else if (payMethod == null || payMethod.isEmpty)
-                      setSnackbar(payWarning);
-                    else
-                      placeOrder();
-                  }
-                });
-
-                /*  Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PaypalWebviewActivity()),
-                );*/
-              },
-              label: Text(
-                _curIndex == 2 ? PROCEED : CONTINUE,
-                style: TextStyle(color: Colors.white),
-              ),
-              color: primary,
-            ),
+            Container(
+                alignment: Alignment.center,
+                height: 35,
+                width: deviceWidth * 0.3,
+                decoration: new BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [grad1Color, grad2Color],
+                      stops: [0, 1]),
+                  borderRadius:
+                      new BorderRadius.all(const Radius.circular(10.0)),
+                ),
+                child: TextButton.icon(
+                    icon: Icon(
+                      _curIndex == 2 ? Icons.check : Icons.navigate_next,
+                      color: white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (_curIndex == 0) {
+                          _curIndex = _curIndex + 1;
+                        } else if (_curIndex == 1) {
+                          if (selAddress == null || selAddress.isEmpty)
+                            setSnackbar(addressWarning);
+                          else
+                            _curIndex = _curIndex + 1;
+                        } else if (_curIndex == 2) {
+                          if (_isTimeSlot &&
+                              (selDate == null || selDate.isEmpty))
+                            setSnackbar(dateWarning);
+                          else if (_isTimeSlot &&
+                              (selTime == null || selTime.isEmpty))
+                            setSnackbar(timeWarning);
+                          else if (payMethod == null || payMethod.isEmpty)
+                            setSnackbar(payWarning);
+                          else if (payMethod == PAYPAL_LBL)
+                            placeOrder('');
+                          else if (payMethod == RAZORPAY_LBL)
+                            razorpayPayment();
+                          else if (payMethod == PAYSTACK_LBL)
+                            paystackPayment(context);
+                          else
+                            placeOrder('');
+                        }
+                      });
+                    },
+                    label: Text(_curIndex == 2 ? PROCEED : CONTINUE,
+                        style: Theme.of(context).textTheme.button.copyWith(
+                            color: white, fontWeight: FontWeight.normal))))
           ],
         )
       ],
@@ -178,12 +275,12 @@ class StateCheckout extends State<CheckOut> {
                   : RaisedButton.icon(
                       icon: Icon(
                         Icons.navigate_next,
-                        color: Colors.white,
+                        color: white,
                       ),
                       onPressed: onStepContinue,
                       label: Text(
                         CONTINUE,
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: white),
                       ),
                       color: primary,
                     ),
@@ -192,6 +289,107 @@ class StateCheckout extends State<CheckOut> {
         },
       ),*/
     );
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    print("SUCCESS: " + response.paymentId + "===" + response.toString());
+
+    placeOrder(response.paymentId);
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    print("ERROR: " + response.code.toString() + " - " + response.message);
+    setSnackbar(response.message);
+    setState(() {
+      _isProgress = false;
+    });
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    print("EXTERNAL_WALLET: " + response.walletName);
+  }
+
+  razorpayPayment() async {
+    String contact = await getPrefrence(MOBILE);
+    String email = await getPrefrence(EMAIL);
+
+    print("phone***********$contact****$email");
+    double amt = totalPrice * 100;
+    print("total==========$totalPrice***$amt");
+
+    if (contact != '' && email != '') {
+      var options = {
+        KEY: razorpayId,
+        AMOUNT: amt.toString(),
+        NAME: CUR_USERNAME,
+        // 'description': 'Fine T-Shirt',
+        'prefill': {CONTACT: contact, EMAIL: email},
+        'external': {
+          'wallets': ['paytm']
+        }
+      };
+
+      try {
+        _razorpay.open(options);
+      } catch (e) {
+        debugPrint(e);
+      }
+    } else {
+      if (email == '')
+        setSnackbar(emailWarning);
+      else if (contact == '') setSnackbar(phoneWarning);
+    }
+  }
+
+  paystackPayment(BuildContext context) async {
+    setState(() {
+      _isProgress = true;
+    });
+
+    String email = await getPrefrence(EMAIL);
+
+    Charge charge = Charge()
+      ..amount = totalPrice.toInt()
+      ..reference = _getReference()
+      ..email = email;
+
+    try {
+      CheckoutResponse response = await PaystackPlugin.checkout(
+        context,
+        method: CheckoutMethod.card,
+        charge: charge,
+
+      );
+if(response.status)
+  {
+    placeOrder(response.reference);
+  }else{
+  //print("ERROR: " + response.code.toString() + " - " + response.message);
+  setSnackbar(response.message);
+  setState(() {
+    _isProgress = false;
+  });
+  }
+
+     // setState(() => _isProgress = false);
+      //_updateStatus(response.reference, '$response');
+      print("response=========${response.reference}====$response");
+    } catch (e) {
+      setState(() => _isProgress = false);
+      // _showMessage("Check console for error");
+      rethrow;
+    }
+  }
+
+  String _getReference() {
+    String platform;
+    if (Platform.isIOS) {
+      platform = 'iOS';
+    } else {
+      platform = 'Android';
+    }
+
+    return 'ChargedFrom${platform}_${DateTime.now().millisecondsSinceEpoch}';
   }
 
   updateCheckout() {
@@ -203,7 +401,7 @@ class StateCheckout extends State<CheckOut> {
         title: Text(
           CONFIRM_ORDER,
           style: Theme.of(context).textTheme.headline6.copyWith(
-                color: lightblack,
+                color: lightBlack2,
               ),
           textAlign: TextAlign.center,
         ),
@@ -238,9 +436,9 @@ class StateCheckout extends State<CheckOut> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
@@ -283,7 +481,7 @@ class StateCheckout extends State<CheckOut> {
                 onPressed: () {},
                 child: Text(
                   'Apply',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: white),
                 ),
                 color: primary,
               ),
@@ -356,7 +554,7 @@ class StateCheckout extends State<CheckOut> {
           ),
         ),
         Divider(
-          color: Colors.black,
+          color: black,
           thickness: 1,
           indent: 20,
           endIndent: 20,
@@ -409,7 +607,7 @@ class StateCheckout extends State<CheckOut> {
                   child: Center(
                     child: Text(
                       "1",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: white),
                     ),
                   ),
                 ),
@@ -437,7 +635,7 @@ class StateCheckout extends State<CheckOut> {
                   child: Center(
                     child: Text(
                       "2",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: white),
                     ),
                   ),
                 ),
@@ -467,7 +665,7 @@ class StateCheckout extends State<CheckOut> {
                   child: Center(
                     child: Text(
                       "3",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: white),
                     ),
                   ),
                 ),
@@ -488,69 +686,171 @@ class StateCheckout extends State<CheckOut> {
     );
   }
 
-  Future<void> placeOrder() async {
-    String mob = await getPrefrence(MOBILE);
-    String varientId, quantity;
-    for (Section_Model sec in cartList) {
-      varientId =
-          varientId != null ? varientId + "," + sec.varientId : sec.varientId;
-      quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
+  Future<void> placeOrder(String tranId) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      String mob = await getPrefrence(MOBILE);
+      String varientId, quantity;
+      for (Section_Model sec in cartList) {
+        varientId =
+            varientId != null ? varientId + "," + sec.varientId : sec.varientId;
+        quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
+      }
+
+      print("after***$varientId***$quantity");
+
+      try {
+        var parameter = {
+          USER_ID: CUR_USERID,
+          MOBILE: mob,
+          PRODUCT_VARIENT_ID: varientId,
+          QUANTITY: quantity,
+          TOTAL: oriPrice.toString(),
+          DELIVERY_CHARGE: delCharge.toString(),
+          TAX_AMT: taxAmt.toString(),
+          TAX_PER: taxPer.toString(),
+          FINAL_TOTAL: totalPrice.toString(),
+          /*   LATITUDE: latitude,
+        LONGITUDE: longitude,*/
+          PAYMENT_METHOD: payMethod,
+          ADD_ID: selAddress,
+          ISWALLETBALUSED: _isUseWallet ? "1" : "0",
+          WALLET_BAL_USED: usedBal.toString(),
+        };
+
+        if (_isTimeSlot) {
+          parameter[DELIVERY_TIME] = selTime;
+          parameter[DELIVERY_DATE] = selDate;
+        }
+        if (_isPromoValid) {
+          parameter[PROMOCODE] = promocode;
+          parameter[PROMO_DIS] = promoAmt.toString();
+        }
+
+        if (payMethod == PAYPAL_LBL) {
+          parameter[ACTIVE_STATUS] = WAITING;
+        }
+
+        print("param****${parameter.toString()}");
+        Response response =
+            await post(placeOrderApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+        print('response***setting****$CUR_USERID**${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          String orderId = getdata["order_id"].toString();
+          if (payMethod == RAZORPAY_LBL) {
+            AddTransaction(tranId, orderId, SUCCESS, msg);
+          } else if (payMethod == PAYPAL_LBL) {
+            paypalPayment(orderId);
+          } else {
+            CUR_CART_COUNT = "0";
+
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => OrderSuccess()),
+                ModalRoute.withName('/home'));
+          }
+        } else {
+          setSnackbar(msg);
+        }
+        setState(() {
+          _isProgress = false;
+        });
+      } on TimeoutException catch (_) {
+        setState(() {
+          _isProgress = false;
+        });
+        //  setSnackbar(somethingMSg);
+      }
+    } else {
+      setState(() {
+        _isNetworkAvail = false;
+      });
     }
+  }
 
-    print("after***$varientId***$quantity");
-
+  Future<void> paypalPayment(String orderId) async {
     try {
       var parameter = {
         USER_ID: CUR_USERID,
-        MOBILE: mob,
-        PRODUCT_VARIENT_ID: varientId,
-        QUANTITY: quantity,
-        TOTAL: oriPrice.toString(),
-        DELIVERY_CHARGE: delCharge.toString(),
-        TAX_AMT: taxAmt.toString(),
-        TAX_PER: taxPer.toString(),
-        FINAL_TOTAL: totalPrice.toString(),
-        /*   LATITUDE: latitude,
-        LONGITUDE: longitude,*/
-        PAYMENT_METHOD: payMethod,
-        ADD_ID: selAddress,
-
-        ISWALLETBALUSED: _isUseWallet ? "1" : "0",
-        WALLET_BAL_USED: usedBal.toString(),
+        ORDER_ID: orderId,
       };
-
-      if (_isTimeSlot) {parameter[DELIVERY_TIME] = selTime;
-      parameter[DELIVERY_DATE]=selDate;
-      }
-      if (_isPromoValid) {
-        parameter[PROMOCODE] = promocode;
-        parameter[PROMO_DIS] = promoAmt.toString();
-      }
-
-      print("param****${parameter.toString()}");
       Response response =
-          await post(placeOrderApi, body: parameter, headers: headers)
+          await post(paypalTransactionApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
+      print('response***${parameter.toString()}');
 
       var getdata = json.decode(response.body);
-      print('response***setting****$CUR_USERID**${response.body.toString()}');
+
+      print('response***slider**${response.body.toString()}***$headers');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
+        String data = getdata["data"];
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (BuildContext context) => PaypalWebview(
+                      url: data,
+                    )));
+
+        /*      CUR_CART_COUNT = "0";
+
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (BuildContext context) => OrderSuccess()),
+            ModalRoute.withName('/home'));*/
+      } else {
+        setSnackbar(msg);
+      }
+    } on TimeoutException catch (_) {
+      setSnackbar(somethingMSg);
+    }
+  }
+
+  Future<void> AddTransaction(
+      String tranId, String orderID, String status, String msg) async {
+    try {
+      var parameter = {
+        USER_ID: CUR_USERID,
+        ORDER_ID: orderID,
+        TYPE: payMethod,
+        TXNID: tranId,
+        AMOUNT: totalPrice.toString(),
+        STATUS: status,
+        MSG: msg
+      };
+      Response response =
+          await post(addTransactionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+      print('response***${parameter.toString()}');
+      print('response***slider**${response.body.toString()}***$headers');
+
+      bool error = getdata["error"];
+      String msg1 = getdata["message"];
+      if (!error) {
+        //var data = getdata["data"];
         CUR_CART_COUNT = "0";
+
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
                 builder: (BuildContext context) => OrderSuccess()),
             ModalRoute.withName('/home'));
       } else {
-        setSnackbar(msg);
+        setSnackbar(msg1);
       }
-      setState(() {
-        // _isLoading = false;
-      });
     } on TimeoutException catch (_) {
-      //  setSnackbar(somethingMSg);
+      setSnackbar(somethingMSg);
     }
   }
 }
@@ -566,35 +866,104 @@ class Delivery extends StatefulWidget {
   }
 }
 
-class StateDelivery extends State<Delivery> {
+class StateDelivery extends State<Delivery> with TickerProviderStateMixin {
   TextEditingController promoC = new TextEditingController();
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  // static   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool _isProgress = false;
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
+  bool _isNetworkAvail = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-      body: Stack(
-        children: <Widget>[
-          _deliveryContent(),
-          showCircularProgress(_isProgress, primary),
-        ],
+      backgroundColor: lightWhite,
+      body: _isNetworkAvail
+          ? Stack(
+              children: <Widget>[
+                _deliveryContent(),
+                showCircularProgress(_isProgress, primary),
+              ],
+            )
+          : noInternet(context),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
+
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
       ),
     );
   }
 
-  setSnackbar(String msg) {
+/*  static setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
-  }
+  }*/
 
   orderItem(int index) {
     return Padding(
@@ -602,7 +971,7 @@ class StateDelivery extends State<Delivery> {
       child: Row(
         children: [
           Expanded(
-              flex: 5,
+              flex: 4,
               child: Text(
                 cartList[index].productList[0].name,
               )),
@@ -610,6 +979,12 @@ class StateDelivery extends State<Delivery> {
               flex: 1,
               child: Text(
                 cartList[index].qty,
+                textAlign: TextAlign.end,
+              )),
+          Expanded(
+              flex: 1,
+              child: Text(
+                cartList[index].productList[0].tax + "%",
                 textAlign: TextAlign.end,
               )),
           Expanded(
@@ -630,48 +1005,55 @@ class StateDelivery extends State<Delivery> {
   }
 
   Future<void> validatePromo() async {
-    try {
-      setState(() {
-        _isProgress = true;
-      });
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        setState(() {
+          _isProgress = true;
+        });
 
-      var parameter = {
-        USER_ID: CUR_USERID,
-        PROMOCODE: promoC.text,
-        FINAL_TOTAL: totalPrice.toString()
-      };
-      Response response =
-          await post(validatePromoApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+        var parameter = {
+          USER_ID: CUR_USERID,
+          PROMOCODE: promoC.text,
+          FINAL_TOTAL: totalPrice.toString()
+        };
+        Response response =
+            await post(validatePromoApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
-      var getdata = json.decode(response.body);
-      print('response***promo*****${response.body.toString()}');
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"][0];
+        var getdata = json.decode(response.body);
+        print('response***promo*****${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"][0];
 
-        String disType = data["discount_type"];
-        String dis = data["discount"];
+          String disType = data["discount_type"];
+          String dis = data["discount"];
 
-        promocode = data["promo_code"];
-        if (disType.toLowerCase() == "percentage") {
-          promoAmt = (oriPrice * double.parse(dis)) / 100;
-        } else if (disType.toLowerCase() == "amount") {
-          promoAmt = double.parse(dis);
+          promocode = data["promo_code"];
+          if (disType.toLowerCase() == "percentage") {
+            promoAmt = (oriPrice * double.parse(dis)) / 100;
+          } else if (disType.toLowerCase() == "amount") {
+            promoAmt = double.parse(dis);
+          }
+          totalPrice = totalPrice - promoAmt;
+
+          _isPromoValid = true;
+          stateCheck.setSnackbar(PROMO_SUCCESS);
+        } else {
+          stateCheck.setSnackbar(msg);
         }
-        totalPrice = totalPrice - promoAmt;
-
-        _isPromoValid = true;
-        setSnackbar(PROMO_SUCCESS);
-      } else {
-        setSnackbar(msg);
+        setState(() {
+          _isProgress = false;
+        });
+      } on TimeoutException catch (_) {
+        stateCheck.setSnackbar(somethingMSg);
       }
+    } else {
       setState(() {
-        _isProgress = false;
+        _isNetworkAvail = false;
       });
-    } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
     }
   }
 
@@ -731,21 +1113,15 @@ class StateDelivery extends State<Delivery> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: RaisedButton(
-                        onPressed: () {
-                          if (promoC.text.trim().isEmpty)
-                            setSnackbar(ADD_PROMO);
-                          else
-                            validatePromo();
-                        },
-                        child: Text(
-                          'Apply',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        color: primary,
-                      ),
+                    SimBtn(
+                      title: APPLY,
+                      size: deviceWidth * 0.2,
+                      onBtnSelected: () async {
+                        if (promoC.text.trim().isEmpty)
+                          stateCheck.setSnackbar(ADD_PROMO);
+                        else
+                          validatePromo();
+                      },
                     ),
                   ],
                 ),
@@ -767,11 +1143,17 @@ class StateDelivery extends State<Delivery> {
                 ),
                 Row(
                   children: [
-                    Expanded(flex: 5, child: Text(PRODUCTNAME)),
+                    Expanded(flex: 4, child: Text(PRODUCTNAME)),
                     Expanded(
                         flex: 1,
                         child: Text(
                           QUANTITY_LBL,
+                          textAlign: TextAlign.end,
+                        )),
+                    Expanded(
+                        flex: 1,
+                        child: Text(
+                          TAXPER,
                           textAlign: TextAlign.end,
                         )),
                     Expanded(
@@ -851,7 +1233,7 @@ class StateDelivery extends State<Delivery> {
                       )
                     : Container(),
                 Divider(
-                  color: Colors.black,
+                  color: black,
                   thickness: 1,
                   indent: 20,
                   endIndent: 20,
@@ -897,62 +1279,129 @@ class Address extends StatefulWidget {
 
 int selectedAddress;
 
-class StateAddress extends State<Address> {
+class StateAddress extends State<Address> with TickerProviderStateMixin {
   bool _isLoading = true;
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
+  bool _isNetworkAvail = true;
 
   @override
   void initState() {
     super.initState();
     addressList.clear();
     _getAddress();
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
+
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  _getAddress();
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Column(
+    return _isNetworkAvail
+        ? Column(
             children: [
-              _isLoading
-                  ? getProgress()
-                  : addressList.length == 0
-                      ? Text(NOADDRESS)
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: BouncingScrollPhysics(),
-                          itemCount: addressList.length,
-                          itemBuilder: (context, index) {
-                            print(
-                                "default***b${addressList[index].isDefault}***${addressList[index].name}");
+              Expanded(
+                child: _isLoading
+                    ? getProgress()
+                    : addressList.length == 0
+                        ? Text(NOADDRESS)
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: BouncingScrollPhysics(),
+                            itemCount: addressList.length,
+                            itemBuilder: (context, index) {
+                              print(
+                                  "default***b${addressList[index].isDefault}***${addressList[index].name}");
 
-                            return addressItem(index);
-                          }),
+                              return addressItem(index);
+                            }),
+              ),
+              Container(
+                  alignment: Alignment.center,
+                  height: 35,
+                  width: deviceWidth * 0.4,
+                  decoration: new BoxDecoration(
+                    gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [secondary, primary],
+                        stops: [0, 1]),
+                    borderRadius:
+                        new BorderRadius.all(const Radius.circular(10.0)),
+                  ),
+                  child: TextButton.icon(
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AddAddress(
+                                    update: false,
+                                  )),
+                        );
+                        setState(() {});
+                      },
+                      icon: Icon(
+                        Icons.add,
+                        color: white,
+                      ),
+                      label: Text(ADDADDRESS,
+                          style: Theme.of(context).textTheme.button.copyWith(
+                              color: white, fontWeight: FontWeight.normal))))
             ],
-          ),
-        ),
-        RaisedButton.icon(
-            color: primary,
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => AddAddress(
-                          update: false,
-                        )),
-              );
-              setState(() {});
-            },
-            icon: Icon(
-              Icons.add,
-              color: Colors.white,
-            ),
-            label: Text(
-              ADDADDRESS,
-              style: TextStyle(color: Colors.white),
-            ))
-      ],
-    );
+          )
+        : noInternet(context);
   }
 
   addressItem(int index) {
@@ -978,14 +1427,19 @@ class StateAddress extends State<Address> {
             children: [
               Text(
                 addressList[index].name + "  ",
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(color: lightBlack),
               ),
               Container(
                 decoration: BoxDecoration(
-                    color: lightgrey, borderRadius: BorderRadius.circular(5)),
+                    color: fontColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(5)),
                 padding: EdgeInsets.all(3),
                 child: Text(
                   addressList[index].type,
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: fontColor),
                 ),
               )
             ],
@@ -995,7 +1449,7 @@ class StateAddress extends State<Address> {
               padding: const EdgeInsets.all(5.0),
               child: Icon(
                 Icons.edit,
-                color: Colors.black54,
+                color: black54,
                 size: 17,
               ),
             ),
@@ -1019,7 +1473,7 @@ class StateAddress extends State<Address> {
               padding: const EdgeInsets.all(5.0),
               child: Icon(
                 Icons.delete,
-                color: Colors.black54,
+                color: black54,
                 size: 17,
               ),
             ),
@@ -1042,58 +1496,73 @@ class StateAddress extends State<Address> {
   }
 
   Future<void> deleteAddress(int index) async {
-    try {
-      var parameter = {
-        ID: addressList[index].id,
-      };
-      Response response =
-          await post(deleteAddressApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          ID: addressList[index].id,
+        };
+        Response response =
+            await post(deleteAddressApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
-      var getdata = json.decode(response.body);
-      print('response***delete****$CUR_USERID**${response.body.toString()}');
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        addressList.removeWhere((item) => item.id == addressList[index].id);
-      } else {
-        //  if (msg != 'Cart Is Empty !') setSnackbar(msg);
+        var getdata = json.decode(response.body);
+        print('response***delete****$CUR_USERID**${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          selAddress = "";
+          addressList.removeWhere((item) => item.id == addressList[index].id);
+        } else {
+          //  if (msg != 'Cart Is Empty !') setSnackbar(msg);
+        }
+        setState(() {
+          _isLoading = false;
+        });
+        setState(() {});
+      } on TimeoutException catch (_) {
+        // setSnackbar(somethingMSg);
       }
+    } else {
       setState(() {
-        _isLoading = false;
+        _isNetworkAvail = false;
       });
-      setState(() {});
-    } on TimeoutException catch (_) {
-      // setSnackbar(somethingMSg);
     }
   }
 
   Future<void> _getAddress() async {
-    try {
-      var parameter = {
-        USER_ID: CUR_USERID,
-      };
-      Response response =
-          await post(getAddressApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          USER_ID: CUR_USERID,
+        };
+        Response response =
+            await post(getAddressApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
-      var getdata = json.decode(response.body);
-      print('response***setting****$CUR_USERID**${response.body.toString()}');
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
+        var getdata = json.decode(response.body);
+        print('response***setting****$CUR_USERID**${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
 
-        addressList =
-            (data as List).map((data) => new User.fromAddress(data)).toList();
-      } else {
-        //if (msg != 'Cart Is Empty !') setSnackbar(msg);
+          addressList =
+              (data as List).map((data) => new User.fromAddress(data)).toList();
+        } else {
+          //if (msg != 'Cart Is Empty !') setSnackbar(msg);
+        }
+        setState(() {
+          _isLoading = false;
+        });
+      } on TimeoutException catch (_) {
+        //  setSnackbar(somethingMSg);
       }
+    } else {
       setState(() {
-        _isLoading = false;
+        _isNetworkAvail = false;
       });
-    } on TimeoutException catch (_) {
-      //  setSnackbar(somethingMSg);
     }
   }
 
@@ -1102,9 +1571,9 @@ class StateAddress extends State<Address> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }*/
@@ -1122,11 +1591,14 @@ class Payment extends StatefulWidget {
   }
 }
 
-class StatePayment extends State<Payment> {
+class StatePayment extends State<Payment> with TickerProviderStateMixin {
   bool _isLoading = true;
   String allowDay, startingDate;
   List<Model> timeSlotList = [];
   bool cod, paypal, razorpay, paumoney, paystack, flutterwave;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   List<String> paymentMethodList = [
     COD_LBL,
     PAYPAL_LBL,
@@ -1135,164 +1607,249 @@ class StatePayment extends State<Payment> {
     PAYSTACK_LBL,
     FLUTTERWAVE_LBL
   ];
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
+  bool _isNetworkAvail = true;
 
   @override
   void initState() {
     super.initState();
     _getdateTime();
+
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
+  }
+
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
+
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  _getdateTime();
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     print("cur***$CUR_BALANCE");
-    return _isLoading
-        ? getProgress()
-        : SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Card(
-                  child: CUR_BALANCE != "0" &&
-                          CUR_BALANCE.isNotEmpty &&
-                          CUR_BALANCE != ""
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: CheckboxListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.all(0),
-                            value: _isUseWallet,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _isUseWallet = value;
-
-                                if (value) {
-                                  if (totalPrice <= double.parse(CUR_BALANCE)) {
-                                    remWalBal =
-                                        double.parse(CUR_BALANCE) - totalPrice;
-
-                                    usedBal = totalPrice;
-                                    payMethod = "Wallet";
-                                    _isPayLayShow = false;
-                                  } else {
-                                    remWalBal = 0;
-                                    usedBal = double.parse(CUR_BALANCE);
-                                    _isPayLayShow = true;
-                                  }
-
-                                  totalPrice = totalPrice - usedBal;
-                                } else {
-                                  totalPrice = totalPrice + usedBal;
-                                  remWalBal = double.parse(CUR_BALANCE);
-                                  payMethod = null;
-                                  usedBal = 0;
-                                  _isPayLayShow = true;
-                                }
-
-                                widget.update();
-                              });
-                            },
-                            title: Text(
-                              USE_WALLET,
-                              style: TextStyle(fontSize: 15, color: primary),
-                            ),
-                            subtitle: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Text(
-                                _isUseWallet
-                                    ? REMAIN_BAL +
-                                        " : " +
-                                        CUR_CURRENCY +
-                                        " " +
-                                        remWalBal.toString()
-                                    : TOTAL_BAL +
-                                        " : " +
-                                        CUR_CURRENCY +
-                                        " " +
-                                        CUR_BALANCE,
-                                style: TextStyle(
-                                    fontSize: 15, color: Colors.black),
-                              ),
-                            ),
-                          ),
-                        )
-                      : Container(),
-                ),
-                _isTimeSlot?    Card(
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: lightWhite,
+      body: _isNetworkAvail
+          ? _isLoading
+              ? getProgress()
+              : SingleChildScrollView(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          PREFERED_TIME,
-                          style: Theme.of(context).textTheme.headline6,
-                        ),
-                      ),
-                      Container(
-                        height: 70,
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: ListView.builder(
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: int.parse(allowDay),
-                            itemBuilder: (context, index) {
-                              return dateCell(index);
-                            }),
-                      ),
-                      Divider(),
-                   ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: timeSlotList.length,
-                              itemBuilder: (context, index) {
-                                return timeSlotItem(index);
-                              })
+                      Card(
+                        child: CUR_BALANCE != "0" &&
+                                CUR_BALANCE.isNotEmpty &&
+                                CUR_BALANCE != ""
+                            ? Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: CheckboxListTile(
+                                  dense: true,
+                                  contentPadding: EdgeInsets.all(0),
+                                  value: _isUseWallet,
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      _isUseWallet = value;
 
+                                      if (value) {
+                                        if (totalPrice <=
+                                            double.parse(CUR_BALANCE)) {
+                                          remWalBal =
+                                              double.parse(CUR_BALANCE) -
+                                                  totalPrice;
+
+                                          usedBal = totalPrice;
+                                          payMethod = "Wallet";
+                                          _isPayLayShow = false;
+                                        } else {
+                                          remWalBal = 0;
+                                          usedBal = double.parse(CUR_BALANCE);
+                                          _isPayLayShow = true;
+                                        }
+
+                                        totalPrice = totalPrice - usedBal;
+                                      } else {
+                                        totalPrice = totalPrice + usedBal;
+                                        remWalBal = double.parse(CUR_BALANCE);
+                                        payMethod = null;
+                                        usedBal = 0;
+                                        _isPayLayShow = true;
+                                      }
+
+                                      widget.update();
+                                    });
+                                  },
+                                  title: Text(
+                                    USE_WALLET,
+                                    style:
+                                        TextStyle(fontSize: 15, color: primary),
+                                  ),
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: Text(
+                                      _isUseWallet
+                                          ? REMAIN_BAL +
+                                              " : " +
+                                              CUR_CURRENCY +
+                                              " " +
+                                              remWalBal.toString()
+                                          : TOTAL_BAL +
+                                              " : " +
+                                              CUR_CURRENCY +
+                                              " " +
+                                              CUR_BALANCE,
+                                      style:
+                                          TextStyle(fontSize: 15, color: black),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Container(),
+                      ),
+                      _isTimeSlot
+                          ? Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      PREFERED_TIME,
+                                      style:
+                                          Theme.of(context).textTheme.subtitle1,
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 90,
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10),
+                                    child: ListView.builder(
+                                        shrinkWrap: true,
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: int.parse(allowDay),
+                                        itemBuilder: (context, index) {
+                                          return dateCell(index);
+                                        }),
+                                  ),
+                                  Divider(),
+                                  ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: timeSlotList.length,
+                                      itemBuilder: (context, index) {
+                                        return timeSlotItem(index);
+                                      })
+                                ],
+                              ),
+                            )
+                          : Container(),
+                      _isPayLayShow
+                          ? Card(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      PAYMENT_METHOD_LBL,
+                                      style:
+                                          Theme.of(context).textTheme.subtitle1,
+                                    ),
+                                  ),
+                                  ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemCount: 7,
+                                      itemBuilder: (context, index) {
+                                        if (index == 0 && cod)
+                                          return paymentItem(index);
+                                        else if (index == 1 && paypal)
+                                          return paymentItem(index);
+                                        else if (index == 2 && paumoney)
+                                          return paymentItem(index);
+                                        else if (index == 3 && razorpay)
+                                          return paymentItem(index);
+                                        else if (index == 4 && paystack)
+                                          return paymentItem(index);
+                                        else if (index == 5 && flutterwave)
+                                          return paymentItem(index);
+                                        else
+                                          return Container();
+                                      }),
+                                ],
+                              ),
+                            )
+                          : Container()
                     ],
                   ),
-                ):Container(),
-                _isPayLayShow
-                    ? Card(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                PAYMENT_METHOD_LBL,
-                                style: Theme.of(context).textTheme.headline6,
-                              ),
-                            ),
-                            ListView.builder(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                itemCount: 7,
-                                itemBuilder: (context, index) {
-                                  if (index == 0 && cod)
-                                    return paymentItem(index);
-                                  else if (index == 1 && paypal)
-                                    return paymentItem(index);
-                                  else if (index == 2 && paumoney)
-                                    return paymentItem(index);
-                                  else if (index == 3 && razorpay)
-                                    return paymentItem(index);
-                                  else if (index == 4 && paystack)
-                                    return paymentItem(index);
-                                  else if (index == 5 && flutterwave)
-                                    return paymentItem(index);
-                                  else
-                                    return Container();
-                                }),
-                          ],
-                        ),
-                      )
-                    : Container()
-              ],
-            ),
-          );
+                )
+          : noInternet(context),
+    );
+  }
+
+  setSnackbar(String msg) {
+    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      content: new Text(
+        msg,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: black),
+      ),
+      backgroundColor: white,
+      elevation: 1.0,
+    ));
   }
 
   dateCell(int index) {
@@ -1308,8 +1865,7 @@ class StatePayment extends State<Payment> {
           children: [
             Text(
               DateFormat('EEE').format(today.add(Duration(days: index))),
-              style: TextStyle(
-                  color: selectedDate == index ? Colors.white : Colors.black54),
+              style: TextStyle(color: selectedDate == index ? white : black54),
             ),
             Padding(
               padding: const EdgeInsets.all(5.0),
@@ -1317,14 +1873,12 @@ class StatePayment extends State<Payment> {
                 DateFormat('dd').format(today.add(Duration(days: index))),
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color:
-                        selectedDate == index ? Colors.white : Colors.black54),
+                    color: selectedDate == index ? white : black54),
               ),
             ),
             Text(
               DateFormat('MMM').format(today.add(Duration(days: index))),
-              style: TextStyle(
-                  color: selectedDate == index ? Colors.white : Colors.black54),
+              style: TextStyle(color: selectedDate == index ? white : black54),
             ),
           ],
         ),
@@ -1341,50 +1895,66 @@ class StatePayment extends State<Payment> {
   }
 
   Future<void> _getdateTime() async {
-    timeSlotList.clear();
-    try {
-      var parameter = {
-        TYPE: PAYMENT_METHOD,
-      };
-      Response response =
-          await post(getSettingApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      timeSlotList.clear();
+      try {
+        var parameter = {
+          TYPE: PAYMENT_METHOD,
+        };
+        Response response =
+            await post(getSettingApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
-      var getdata = json.decode(response.body);
-      print('response***setting**${response.body.toString()}');
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
-        var time_slot = data["time_slot_config"];
-        allowDay = time_slot["allowed_days"];
-        _isTimeSlot = time_slot["is_time_slots_enabled"] == "1" ? true : false;
-        startingDate = time_slot["starting_date"];
-        var timeSlots = data["time_slots"];
-        timeSlotList = (timeSlots as List)
-            .map((timeSlots) => new Model.fromTimeSlot(timeSlots))
-            .toList();
+        var getdata = json.decode(response.body);
+        print('response***setting**${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+          var time_slot = data["time_slot_config"];
+          allowDay = time_slot["allowed_days"];
+          _isTimeSlot =
+              time_slot["is_time_slots_enabled"] == "1" ? true : false;
+          startingDate = time_slot["starting_date"];
+          var timeSlots = data["time_slots"];
+          timeSlotList = (timeSlots as List)
+              .map((timeSlots) => new Model.fromTimeSlot(timeSlots))
+              .toList();
 
-        var payment = data["payment_method"];
-        cod = payment["cod_method"] == "1" ? true : false;
-        paypal = payment["paypal_payment_method"] == "1" ? true : false;
-        paumoney = payment["payumoney_payment_method"] == "1" ? true : false;
-        flutterwave =
-            payment["flutterwave_payment_method"] == "1" ? true : false;
-        razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
-        paystack = payment["paystack_payment_method"] == "1" ? true : false;
+          var payment = data["payment_method"];
+          cod = payment["cod_method"] == "1" ? true : false;
+          paypal = payment["paypal_payment_method"] == "1" ? true : false;
+          paumoney = payment["payumoney_payment_method"] == "1" ? true : false;
+          flutterwave =
+              payment["flutterwave_payment_method"] == "1" ? true : false;
+          razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
+          paystack = payment["paystack_payment_method"] == "1" ? true : false;
 
-        print("days***$allowDay");
-      } else {
-        // setSnackbar(msg);
+          if (razorpay) razorpayId = payment["razorpay_key_id"];
+          if (paystack) {
+            paystackId = payment["paystack_key_id"];
+
+            print("paystack=========$paystackId");
+            PaystackPlugin.initialize(publicKey: paystackId);
+          }
+
+          print("days***$allowDay");
+        } else {
+          // setSnackbar(msg);
+        }
+
+        setState(() {
+          _isLoading = false;
+          // widget.model.isFavLoading = false;
+        });
+      } on TimeoutException catch (_) {
+        //setSnackbar(somethingMSg);
       }
-
+    } else {
       setState(() {
-        _isLoading = false;
-        // widget.model.isFavLoading = false;
+        _isNetworkAvail = false;
       });
-    } on TimeoutException catch (_) {
-      //setSnackbar(somethingMSg);
     }
   }
 
@@ -1401,7 +1971,7 @@ class StatePayment extends State<Payment> {
       },
       title: Text(
         timeSlotList[index].name,
-        style: TextStyle(color: Colors.black, fontSize: 15),
+        style: TextStyle(color: lightBlack, fontSize: 15),
       ),
     );
   }
@@ -1419,7 +1989,7 @@ class StatePayment extends State<Payment> {
       },
       title: Text(
         paymentMethodList[index],
-        style: TextStyle(color: Colors.black, fontSize: 15),
+        style: TextStyle(color: lightBlack, fontSize: 15),
       ),
     );
   }

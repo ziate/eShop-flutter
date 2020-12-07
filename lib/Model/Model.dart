@@ -9,17 +9,16 @@ class Model {
 
   List<Model> subList;
 
-  Model(
-      {this.id,
-      this.type,
-      this.typeId,
-      this.image,
-      this.name,
-      this.subtitle,
-      this.slug,
-      this.tax,
-      this.banner,
-      this.subList});
+  Model({this.id,
+    this.type,
+    this.typeId,
+    this.image,
+    this.name,
+    this.subtitle,
+    this.slug,
+    this.tax,
+    this.banner,
+    this.subList});
 
   factory Model.fromJson(Map<String, dynamic> parsedJson) {
     return new Model(
@@ -36,8 +35,16 @@ class Model {
     );
   }
 
+  factory Model.setAllCat(String id, String name)
+  {
+    return new Model(
+        id: id,
+        name:name,
+    );
+  }
+
   factory Model.fromCat(Map<String, dynamic> parsedJson) {
-    print('getting cat****${parsedJson[NAME]}');
+    print('getting cat****${parsedJson}');
 
     return new Model(
       id: parsedJson[ID],
@@ -51,9 +58,10 @@ class Model {
     );
   }
 
+
   static List<Model> createSubList(List parsedJson) {
     if (parsedJson == null || parsedJson.isEmpty) return null;
 
-   return parsedJson.map((data) => new Model.fromCat(data)).toList();
+    return parsedJson.map((data) => new Model.fromCat(data)).toList();
   }
 }

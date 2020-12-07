@@ -1,24 +1,29 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:app_review/app_review.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/All_Category.dart';
 import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
-
+import 'package:http/http.dart' as http;
 import 'package:eshop/Privacy_Policy.dart';
 import 'package:eshop/Product_Detail.dart';
 import 'package:eshop/SectionList.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart';
-import 'package:like_button/like_button.dart';
-import 'package:share/share.dart';
+
 import 'package:eshop/ProductList.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 import 'package:shimmer/shimmer.dart';
 import 'Cart.dart';
 import 'Helper/AppBtn.dart';
@@ -35,6 +40,7 @@ import 'Search.dart';
 import 'SubCat.dart';
 
 import 'Track_Order.dart';
+import 'main.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -46,6 +52,7 @@ class Home extends StatefulWidget {
 List<Model> catList = [];
 List<Model> homeSliderList = [];
 List<Section_Model> sectionList = [];
+List<Model> offerImages = [];
 final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 bool _isCatLoading = true;
 bool _isNetworkAvail = true;
@@ -54,6 +61,12 @@ class StateHome extends State<Home> {
   List<Widget> fragments;
   int _curSelected = 0;
   HomePage home;
+  String profile;
+  int curDrwSel = 0;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
 
   @override
   void initState() {
@@ -67,6 +80,8 @@ class StateHome extends State<Home> {
       NotificationList(),
       TrackOrder()
     ];
+    firebaseCloudMessaging_Listeners();
+    firNotificationInitialize();
   }
 
   updateHome() {
@@ -75,24 +90,33 @@ class StateHome extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    deviceHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
+    deviceWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
     return Scaffold(
+        backgroundColor: lightWhite,
         key: scaffoldKey,
         appBar: _getAppbar(),
         drawer: _getDrawer(),
-        backgroundColor: Colors.white10,
-        extendBodyBehindAppBar: true,
         bottomNavigationBar: getBottomBar(),
         body: fragments[_curSelected]);
   }
 
   Future<void> getUserData() async {
     CUR_USERID = await getPrefrence(ID);
+    CUR_USERNAME = await getPrefrence(USERNAME);
+    profile = await getPrefrence(IMAGE);
     if (CUR_USERID != null)
       try {
         var parameter = {TYPE: USERDATA, USER_ID: CUR_USERID};
         Response response =
-            await post(getSettingApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(getSettingApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         print('response***setting**$headers***${response.body.toString()}');
@@ -115,250 +139,398 @@ class StateHome extends State<Home> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
 
   _getDrawer() {
+    print("current==========$CUR_USERNAME===$CUR_USERID");
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.all(0),
-        shrinkWrap: true,
-        physics: BouncingScrollPhysics(),
-        children: <Widget>[
-          _getHeader(),
-          _getDrawerItem(HOME_LBL, Icons.home),
-          _getDivider(),
-          _getDrawerItem(CART, Icons.add_shopping_cart),
-          _getDivider(),
-          _getDrawerItem(TRACK_ORDER, Icons.shopping_cart),
-          _getDivider(),
-          _getDrawerItem(PROFILE, Icons.person),
-          _getDivider(),
-          _getDrawerItem(FAVORITE, Icons.favorite),
-          _getDivider(),
-          _getDrawerItem(NOTIFICATION, Icons.notifications),
-          _getDivider(),
-          //_getDrawerItem(SETTING, Icons.settings),
-          //_getDivider(),
-          _getDrawerItem(RATE_APP, Icons.star),
-          _getDivider(),
-          _getDrawerItem(SHARE_APP, Icons.share),
-          _getDivider(),
-          _getDrawerItem(PRIVACY, Icons.lock),
-          _getDivider(),
-          _getDrawerItem(TERM, Icons.speaker_notes),
-          _getDivider(),
-          _getDrawerItem(CONTACT, Icons.info),
-          _getDivider(),
-          _getDrawerItem(LOGOUT, Icons.input),
-          _getDivider(),
-        ],
+      child: Container(
+        color: white,
+        child: ListView(
+          padding: EdgeInsets.all(0),
+          shrinkWrap: true,
+          physics: BouncingScrollPhysics(),
+          children: <Widget>[
+            _getHeader(),
+            _getDrawerItem(0, HOME_LBL, Icons.home_outlined),
+
+            _getDrawerItem(1, CART, Icons.shopping_cart_outlined),
+
+            _getDrawerItem(2, TRACK_ORDER, Icons.art_track_outlined),
+
+            _getDrawerItem(3, PROFILE, Icons.person_outline),
+
+            _getDrawerItem(4, FAVORITE, Icons.favorite_outline),
+
+            _getDrawerItem(5, NOTIFICATION, Icons.notifications_outlined),
+
+            //_getDrawerItem(SETTING, Icons.settings),
+            _getDivider(),
+            _getDrawerItem(6, RATE_APP, Icons.star_outline),
+
+            _getDrawerItem(7, SHARE_APP, Icons.share_outlined),
+
+            _getDrawerItem(8, PRIVACY, Icons.lock_outline),
+
+            _getDrawerItem(9, TERM, Icons.speaker_notes_outlined),
+
+            _getDrawerItem(10, CONTACT_LBL, Icons.info_outline),
+
+            CUR_USERID == "" || CUR_USERID == null
+                ? Container()
+                : _getDivider(),
+            CUR_USERID == "" || CUR_USERID == null
+                ? Container()
+                : _getDrawerItem(11, LOGOUT, Icons.input),
+          ],
+        ),
       ),
     );
   }
 
   _getDivider() {
-    return Divider(
-      color: Colors.grey,
-      height: 1,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Divider(
+        height: 1,
+
+      ),
     );
   }
 
-  _getDrawerItem(String title, IconData icn) {
-    return ListTile(
-      leading: Icon(
-        icn,
-        color: primary,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(color: primary),
-      ),
-      trailing: Icon(
-        Icons.keyboard_arrow_right,
-        color: primary,
-      ),
-      onTap: () {
-        Navigator.of(context).pop();
-        if (title == HOME_LBL) {
-          setState(() {
-            _curSelected = 0;
-          });
-        } else if (title == CART) {
-          CUR_USERID == null
-              ? Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Login(),
-                  ))
-              : Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Cart(this.updateHome, null),
-                  ));
-        } else if (title == TRACK_ORDER) {
-          CUR_USERID == null
-              ? Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Login(),
-                  ))
-              : setState(() {
-                  _curSelected = 3;
-                });
-        } else if (title == PROFILE) {
-          CUR_USERID == null
-              ? Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Login(),
-                  ))
-              : Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Profile(),
-                  ));
-        } else if (title == FAVORITE) {
-          setState(() {
-            _curSelected = 1;
-          });
-        } else if (title == NOTIFICATION) {
-          setState(() {
-            _curSelected = 2;
-          });
-        } else if (title == SHARE_APP) {
-          var str =
-              "$appName\n\nYou can find our app from below url\n\nAndroid:\n$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
-          Share.share(str);
-        } else if (title == RATE_APP) {
-          AppReview.requestReview.then((onValue) {});
-        } else if (title == PRIVACY) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Privacy_Policy(
-                  title: PRIVACY,
-                ),
-              ));
-        } else if (title == TERM) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Privacy_Policy(
-                  title: TERM,
-                ),
-              ));
-        } else if (title == CONTACT) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Privacy_Policy(
-                  title: TERM,
-                ),
-              ));
-        } else if (title == LOGOUT) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Logout(
-                  title: LOGOUT,
-                ),
-              ));
-        }
-      },
-    );
-  }
+  _getDrawerItem(int index, String title, IconData icn) {
+    return Container(
+      margin: EdgeInsets.only(right: 20),
+      decoration: BoxDecoration(
+          gradient: curDrwSel == index
+              ? LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                secondary.withOpacity(0.2),
+                primary.withOpacity(0.2)
+              ],
+              stops: [
+                0,
+                1
+              ])
+              : null,
+          // color: curDrwSel == index ? primary.withOpacity(0.2) : Colors.transparent,
 
-  _getAppbar() {
-    double width = MediaQuery.of(context).size.width;
-    double height = width / 2;
-
-    print("cart count***$CUR_CART_COUNT");
-    return AppBar(
-      title: Image.asset('assets/images/titleicon.png'),
-      centerTitle: true,
-      actions: <Widget>[
-        InkWell(
-          child: new Stack(children: <Widget>[
-            Center(
-              child: Image.asset(
-                'assets/images/noti_cart.png',
-                width: 40,
-              ),
-            ),
-            (CUR_CART_COUNT != null &&
-                    CUR_CART_COUNT.isNotEmpty &&
-                    CUR_CART_COUNT != "0")
-                ? new Positioned(
-                    top: 0.0,
-                    right: 5.0,
-                    bottom: 15,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle, color: Colors.red),
-                        child: new Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(4),
-                            child: new Text(
-                              CUR_CART_COUNT,
-                              style: TextStyle(fontSize: 8),
-                            ),
-                          ),
-                        )),
-                  )
-                : Container()
-          ]),
-          onTap: () async {
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(50),
+            bottomRight: Radius.circular(50),
+          )),
+      child: ListTile(
+        dense: true,
+        leading: Icon(
+          icn,
+          color: curDrwSel == index ? primary : lightBlack2,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+              color: curDrwSel == index ? primary : lightBlack2, fontSize: 15),
+        ),
+        onTap: () {
+          Navigator.of(context).pop();
+          if (title == HOME_LBL) {
+            setState(() {
+              curDrwSel = index;
+              _curSelected = 0;
+            });
+          } else if (title == CART) {
+            setState(() {
+              curDrwSel = index;
+            });
             CUR_USERID == null
                 ? Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Login(),
-                    ))
-                : goToCart();
-          },
-        ),
-        InkWell(
-          child: Image.asset(
-            'assets/images/profile.png',
-            width: 40,
-          ),
-          onTap: () {
-            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Login(),
+                ))
+                : Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Cart(this.updateHome, null),
+                ));
+          } else if (title == TRACK_ORDER) {
+            CUR_USERID == null
+                ? Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Login(),
+                ))
+                : setState(() {
+              _curSelected = 3;
+              curDrwSel = index;
+            });
+          } else if (title == PROFILE) {
+            setState(() {
+              curDrwSel = index;
+            });
+            CUR_USERID == null
+                ? Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Login(),
+                ))
+                : Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => Profile(),
                 ));
+          } else if (title == FAVORITE) {
+            setState(() {
+              _curSelected = 1;
+              curDrwSel = index;
+            });
+          } else if (title == NOTIFICATION) {
+            setState(() {
+              _curSelected = 2;
+              curDrwSel = index;
+            });
+          } else if (title == SHARE_APP) {
+            setState(() {
+              curDrwSel = index;
+            });
+            var str =
+                "$appName\n\nYou can find our app from below url\n\nAndroid:\n$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
+            Share.share(str);
+          } else if (title == RATE_APP) {
+            setState(() {
+              curDrwSel = index;
+            });
+            AppReview.requestReview.then((onValue) {
+              print("==========$onValue");
+            });
+          } else if (title == PRIVACY) {
+            setState(() {
+              curDrwSel = index;
+            });
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      Privacy_Policy(
+                        title: PRIVACY,
+                      ),
+                ));
+          } else if (title == TERM) {
+            setState(() {
+              curDrwSel = index;
+            });
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      Privacy_Policy(
+                        title: TERM,
+                      ),
+                ));
+          } else if (title == CONTACT_LBL) {
+            setState(() {
+              curDrwSel = index;
+            });
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      Privacy_Policy(
+                        title: CONTACT_LBL,
+                      ),
+                ));
+          } else if (title == LOGOUT) {
+            setState(() {
+              curDrwSel = index;
+            });
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      Logout(
+                        title: LOGOUT,
+                      ),
+                ));
+          }
+        },
+      ),
+    );
+  }
+
+  _getAppbar() {
+    double width = deviceWidth;
+    double height = width / 2;
+    String title = _curSelected == 1
+        ? FAVORITE
+        : _curSelected == 2
+        ? NOTIFICATION
+        : TRACK_ORDER;
+    print("cart count***$CUR_CART_COUNT");
+    return AppBar(
+      title: _curSelected == 0
+          ? Image.asset('assets/images/titleicon.png')
+          : Text(
+        title,
+        style: TextStyle(
+          color: fontColor,
+        ),
+      ),
+      iconTheme: new IconThemeData(color: primary),
+      centerTitle: true,
+      actions: <Widget>[
+        InkWell(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+            child: Container(
+              decoration: shadow(),
+              child: Card(
+                elevation: 0,
+
+                child: new Stack(children: <Widget>[
+                  Center(
+                    child: Image.asset(
+                      'assets/images/noti_cart.png',
+                      width: 30,
+                    ),
+                  ),
+                  (CUR_CART_COUNT != null &&
+                      CUR_CART_COUNT.isNotEmpty &&
+                      CUR_CART_COUNT != "0")
+                      ? new Positioned(
+                    top: 0.0,
+                    right: 5.0,
+                    bottom: 10,
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: primary.withOpacity(0.5)),
+                        child: new Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(3),
+                            child: new Text(
+                              CUR_CART_COUNT,
+                              style: TextStyle(
+                                  fontSize: 7,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        )),
+                  )
+                      : Container()
+                ]),
+              ),
+            ),
+          ),
+          onTap: () async {
+            CUR_USERID == null
+                ? Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Login(),
+                ))
+                : goToCart();
           },
+        ),
+        InkWell(
+          onTap: () {
+            if (CUR_USERID != null) {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Profile(),
+                  ));
+            } else {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Login(),
+                  ));
+            }
+          },
+          child: Padding(
+            padding: EdgeInsets.only(top: 10.0, bottom: 10, right: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(color: Color(0x1a0400ff),
+                      offset: Offset(0, 0),
+                      blurRadius: 30)
+                ],
+
+              ),
+              child: Card(
+                elevation: 0,
+                child: Image.asset(
+                  'assets/images/profile.png',
+                  width: 30,
+                ),
+              ),
+            ),
+          ),
         )
       ],
-      backgroundColor: Colors.transparent,
-      flexibleSpace: _curSelected == 0 && !_isNetworkAvail
-          ? Image(
-              image: AssetImage('assets/images/halftopimage.png'),
-              fit: BoxFit.cover,
-            )
-          : _curSelected != 0
-              ? Image(
-                  image: AssetImage('assets/images/halftopimage.png'),
-                  fit: BoxFit.cover,
-                )
-              : Container(),
+      backgroundColor: _curSelected == 0 ? Colors.transparent : white,
       elevation: 0,
     );
   }
 
   getBottomBar() {
-    return BottomAppBar(
-      color: Colors.white,
+    return CurvedNavigationBar(
+        backgroundColor: lightWhite,
+        height: 65,
+        items: <Widget>[
+          _curSelected == 0
+              ? Image.asset(
+            "assets/images/sel_home.png",
+            height: 35,
+          )
+              : Image.asset(
+            "assets/images/desel_home.png",
+          ),
+          _curSelected == 1
+              ? Image.asset(
+            "assets/images/sel_fav.png",
+            height: 35,
+          )
+              : Image.asset(
+            "assets/images/desel_fav.png",
+          ),
+          _curSelected == 2
+              ? Image.asset(
+            "assets/images/sel_notification.png",
+            height: 35,
+          )
+              : Image.asset(
+            "assets/images/desel_notification.png",
+          ),
+          _curSelected == 3
+              ? Image.asset(
+            "assets/images/sel_tracks.png",
+            height: 35,
+          )
+              : Image.asset(
+            "assets/images/desel_tracks.png",
+          )
+        ],
+        onTap: (int index) {
+          print("current=====$index");
+          setState(() {
+            _curSelected = index;
+          });
+        });
+
+/*    return BottomAppBar(
+      color: white,
       elevation: 15,
       child: Container(
           decoration: BoxDecoration(
-              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+              boxShadow: [BoxShadow(color: black26, blurRadius: 10)],
               borderRadius: new BorderRadius.only(
                 topLeft: const Radius.circular(25.0),
                 topRight: const Radius.circular(25.0),
@@ -374,12 +546,12 @@ class StateHome extends State<Home> {
                 currentIndex: _curSelected,
 
                 type: BottomNavigationBarType.fixed,
-                /*   onTap: (int index) {
+                */ /*   onTap: (int index) {
                   print("current=====$index");
                   setState(() {
                     _curSelected = index;
                   });
-                },*/
+                },*/ /*
                 items: [
                   BottomNavigationBarItem(
                     label: '',
@@ -523,7 +695,7 @@ class StateHome extends State<Home> {
                   ),
                 ],
 
-                /*       Image.asset(
+                */ /*       Image.asset(
                   "assets/images/home.png",
                 ),
                 InkWell(
@@ -564,10 +736,10 @@ class StateHome extends State<Home> {
                           builder: (context) => Profile(),
                         ));
                   },
-                ),*/
+                ),*/ /*
                 //]         ))),,
               ))),
-    );
+    );*/
   }
 
   Future<bool> onNavigationTap(bool isLiked, int index) async {
@@ -578,37 +750,74 @@ class StateHome extends State<Home> {
   }
 
   _getHeader() {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/images/dra_back.png"),
-          fit: BoxFit.fill,
-        ),
-      ),
-      padding: EdgeInsets.only(top: 24),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5.0),
       child: InkWell(
-        child: Align(
-          alignment: Alignment.center,
           child: Container(
-            margin: EdgeInsets.all(35),
-            child: Image.asset('assets/images/titleicon.png'),
-          ),
-        ),
-        onTap: () {
-          /*                  Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Profile(),
-            )).then((value) async {
-          debugPrint(value);
-          _profile = await getPrefrence(PROFILE);
-          print('on rsume***$_profile');
-          setState(()  {
 
-          });
-        });*/
-        },
-      ),
+            padding: EdgeInsets.only(left: 10.0, bottom: 20),
+            decoration: back(),
+            child: Row(
+              children: [
+                Container(
+                  margin: EdgeInsets.only(top: 55, left: 10),
+                  height: 64,
+                  width: 64,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(width: 1.0, color: white)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(100.0),
+                    child: profile != null
+                        ? CachedNetworkImage(
+                        imageUrl: profile,
+                        height: 64,
+                        width: 64,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) {
+                          return new Container(
+                            child: Icon(
+                              Icons.account_circle,
+                              color: white,
+                              size: 64,
+                            ),
+                          );
+                        })
+                        : imagePlaceHolder(64),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 55, left: 10),
+                  child: Text(
+                    "Hello, \n${CUR_USERNAME == "" || CUR_USERNAME == null
+                        ? "Guest"
+                        : CUR_USERNAME}",
+                    style: TextStyle(color: white, fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
+            ),
+          ),
+          onTap: () {
+            if (CUR_USERID != null) {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Profile(),
+                  )).then((value) async {
+                debugPrint(value);
+                profile = await getPrefrence(IMAGE);
+                CUR_USERNAME = await getPrefrence(USERNAME);
+                print('on rsume***$profile');
+                setState(() {});
+              });
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Login()),
+              );
+            }
+          }),
     );
   }
 
@@ -619,6 +828,150 @@ class StateHome extends State<Home> {
           builder: (context) => Cart(updateHome, null),
         )).then((val) => home.updateHomepage());
     //  if (nav == true || nav == null) home.updateHomepage();
+  }
+
+
+  void firNotificationInitialize() {
+    //for firebase push notification
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+// initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+    var initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOS = IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+  }
+
+  Future onDidReceiveLocalNotification(int id, String title, String body,
+      String payload) {
+    return showDialog(
+      context: context,
+      builder: (context) =>
+          CupertinoAlertDialog(
+            title: Text(title),
+            content: Text(body),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                child: Text('Ok'),
+                onPressed: () async {
+                  Navigator.of(context, rootNavigator: true).pop();
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MyApp(),
+                    ),
+                  );
+                },
+              )
+            ],
+          ),
+    );
+  }
+
+  Future onSelectNotification(String payload) async {
+    if (payload != null) {
+      debugPrint('notification payload: $payload');
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MyApp()),
+    );
+  }
+
+  void firebaseCloudMessaging_Listeners() {
+    if (Platform.isIOS) iOS_Permission();
+
+    /* _firebaseMessaging.getToken().then((token) async {
+      String uid = await getPrefrence(ID);
+      if (uid != null && uid != "") _registerToken(token, uid);
+    });*/
+
+    _firebaseMessaging.configure(
+      onMessage: (message) async {
+        print('onmessage $message');
+        await myBackgroundMessageHandler(message);
+      },
+      onResume: (message) async {
+        print('onresume $message');
+        await myBackgroundMessageHandler(message);
+      },
+      onLaunch: (message) async {
+        print('onlaunch $message');
+        await myBackgroundMessageHandler(message);
+      },
+    );
+  }
+
+  void iOS_Permission() {
+    _firebaseMessaging.requestNotificationPermissions(
+        IosNotificationSettings(sound: true, badge: true, alert: true));
+    _firebaseMessaging.onIosSettingsRegistered.listen((settings) {
+      //  print("Settings registered: $settings");
+    });
+  }
+
+  static Future<dynamic> myBackgroundMessageHandler(
+      Map<String, dynamic> message) async {
+    if (message.containsKey('data') || message.containsKey('notification')) {
+      var data = message['data'];
+
+      var image = data['image'].toString();
+      var title = data['title'].toString();
+      var msg = data['body'].toString();
+
+      print("data******$data");
+      if (image != null) {
+        var largeIconPath = await _downloadAndSaveImage(image, 'largeIcon');
+        var bigPicturePath = await _downloadAndSaveImage(image, 'bigPicture');
+        var bigPictureStyleInformation = BigPictureStyleInformation(
+            FilePathAndroidBitmap(bigPicturePath),
+            hideExpandedLargeIcon: true,
+            contentTitle: title,
+            htmlFormatContentTitle: true,
+            summaryText: msg,
+            htmlFormatSummaryText: true);
+        var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+            'big text channel id',
+            'big text channel name',
+            'big text channel description',
+            largeIcon: FilePathAndroidBitmap(largeIconPath),
+            styleInformation: bigPictureStyleInformation);
+        var platformChannelSpecifics =
+        NotificationDetails(androidPlatformChannelSpecifics, null);
+        await flutterLocalNotificationsPlugin.show(
+            0, title, msg, platformChannelSpecifics);
+      } else {
+        var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+            'your channel id', 'your channel name', 'your channel description',
+            importance: Importance.Max,
+            priority: Priority.High,
+            ticker: 'ticker');
+        var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+        var platformChannelSpecifics = NotificationDetails(
+            androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+        await flutterLocalNotificationsPlugin
+            .show(0, title, msg, platformChannelSpecifics, payload: 'item x');
+      }
+
+      // print('on message $data');
+    }
+  }
+
+  static Future<String> _downloadAndSaveImage(String url,
+      String fileName) async {
+    var directory = await getApplicationDocumentsDirectory();
+    var filePath = '${directory.path}/$fileName';
+    var response = await http.get(url);
+
+    // print("path***$filePath");
+    var file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+    return filePath;
   }
 }
 
@@ -644,6 +997,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   bool useMobileLayout;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
+  bool menuOpen = false;
 
   @override
   void initState() {
@@ -683,63 +1037,36 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    var shortestSide = MediaQuery.of(context).size.shortestSide;
-    useMobileLayout = shortestSide < 600;
     return _home();
   }
 
   Widget _home() {
-    double width = MediaQuery.of(context).size.width;
-    double height = width / 2;
-    double appBarHeight = height + 50;
-
     return Scaffold(
         key: _scaffoldKey,
+        backgroundColor: lightWhite,
         body: _isNetworkAvail
             ? _isCatLoading
-                ? homeShimmer()
-                : CustomScrollView(
-                    physics: BouncingScrollPhysics(),
-                    slivers: <Widget>[
-                      SliverAppBar(
-                          backgroundColor: Colors.transparent,
-                          pinned: true,
-                          expandedHeight: appBarHeight,
-                          floating: false,
-                          collapsedHeight: kToolbarHeight + 1,
-                          actionsIconTheme: IconThemeData(opacity: 0.0),
-                          flexibleSpace: Stack(
-                            children: <Widget>[
-                              Image.asset(
-                                'assets/images/topimage.png',
-                                width: width,
-                                fit: BoxFit.fitWidth,
-                              ),
-                              _getSearchBar(),
-                              _slider(),
-                            ],
-                          )),
-                      SliverList(
-                          delegate: SliverChildListDelegate([
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [_catHeading(), _catList(), _section()],
-                          ),
-                        )
-                      ]))
-                    ],
-                  )
+            ? homeShimmer()
+            : SingleChildScrollView(
+            padding: EdgeInsets.all(10),
+            physics: BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                _getSearchBar(),
+                _slider(),
+                _catHeading(),
+                _catList(),
+                _section()
+              ],
+            ))
             : noInternet(context));
   }
 
   Widget noInternet(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: EdgeInsets.only(top:kToolbarHeight),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          noIntImage(context),
+          noIntImage(),
           noIntText(context),
           noIntDec(context),
           AppBtn(
@@ -756,6 +1083,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   getCat();
                   getSection();
                   getSetting();
+                  getOfferImages();
                 } else {
                   await buttonController.reverse();
                   setState(() {});
@@ -769,7 +1097,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget homeShimmer() {
-    double width = MediaQuery.of(context).size.width;
+    double width = deviceWidth;
     double height = width / 2;
     return Container(
       width: double.infinity,
@@ -778,57 +1106,59 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         highlightColor: Colors.grey[100],
         child: SingleChildScrollView(
             child: Column(
-          children: [
-            Image.asset(
-              'assets/images/topimage.png',
-              width: width,
-              fit: BoxFit.fitWidth,
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              width: double.infinity,
-              height: height,
-              color: Colors.white,
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              width: double.infinity,
-              height: 18.0,
-              color: Colors.white,
-            ),
-            Padding(
-              padding:
+              children: [
+                Image.asset(
+                  'assets/images/topimage.png',
+                  width: width,
+                  fit: BoxFit.fitWidth,
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  width: double.infinity,
+                  height: height,
+                  color: white,
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  width: double.infinity,
+                  height: 18.0,
+                  color: white,
+                ),
+                Padding(
+                  padding:
                   const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-                        .map((_) => Container(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                        children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                            .map((_) =>
+                            Container(
                               margin: EdgeInsets.symmetric(horizontal: 10),
                               width: 80.0,
                               height: 80.0,
-                              color: Colors.white,
+                              color: white,
                             ))
-                        .toList()),
-              ),
-            ),
-            Column(
-                children: [0, 1, 2, 3, 4]
-                    .map((_) => Column(
+                            .toList()),
+                  ),
+                ),
+                Column(
+                    children: [0, 1, 2, 3, 4]
+                        .map((_) =>
+                        Column(
                           children: [
                             Container(
                               margin: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 5),
                               width: double.infinity,
                               height: 18.0,
-                              color: Colors.white,
+                              color: white,
                             ),
                             Container(
                               margin: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 5),
                               width: double.infinity,
                               height: 8.0,
-                              color: Colors.white,
+                              color: white,
                             ),
                             GridView.count(
                                 padding: EdgeInsets.symmetric(
@@ -841,164 +1171,108 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                                 crossAxisSpacing: 5,
                                 children: List.generate(
                                   4,
-                                  (index) {
+                                      (index) {
                                     return Container(
                                       width: double.infinity,
                                       height: double.infinity,
-                                      color: Colors.white,
+                                      color: white,
                                     );
                                   },
                                 )),
                           ],
                         ))
-                    .toList()),
-
-            /*   Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 80.0,
-                        height: 80.0,
-                        color: Colors.white,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              height: 18.0,
-                              color: Colors.white,
-                            ),
-                            Padding(
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 5.0),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              height: 8.0,
-                              color: Colors.white,
-                            ),
-                            Padding(
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 5.0),
-                            ),
-                            Container(
-                              width: 100.0,
-                              height: 8.0,
-                              color: Colors.white,
-                            ),
-                            Padding(
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 5.0),
-                            ),
-                            Container(
-                              width: 20.0,
-                              height: 8.0,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),*/
-          ],
-        )),
+                        .toList()),
+              ],
+            )),
       ),
     );
   }
 
   Widget _slider() {
-    double width = MediaQuery.of(context).size.width;
-    double height = width / 2;
+    double height = deviceWidth / 2.2;
 
     return homeSliderList.isNotEmpty
         ? Container(
-            height: height,
-            width: double.infinity,
-            margin: EdgeInsets.only(
-                bottom: 5, top: kToolbarHeight * 1.7 + 50, right: 20, left: 20),
-            child: PageView.builder(
-              itemCount: homeSliderList.length,
-              scrollDirection: Axis.horizontal,
-              controller: _controller,
-              reverse: false,
-              onPageChanged: (index) {
-                setState(() {
-                  _curSlider = index;
-                });
-              },
-              itemBuilder: (BuildContext context, int index) {
-                return GestureDetector(
-                  child: Stack(
-                    children: <Widget>[
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(4.0),
-                          child: CachedNetworkImage(
-                            imageUrl: homeSliderList[_curSlider].image,
-                            placeholder: (context, url) => Image.asset(
-                              "assets/images/sliderph.png",
-                              height: height,
-                            ),
-                            errorWidget: (context, url, error) => Image.asset(
-                              "assets/images/sliderph.png",
-                              height: height,
-                            ),
-                            fit: BoxFit.fill,
+      height: height,
+      width: double.infinity,
+      margin: EdgeInsets.only(top: 10),
+      child: PageView.builder(
+        itemCount: homeSliderList.length,
+        scrollDirection: Axis.horizontal,
+        controller: _controller,
+        reverse: false,
+        onPageChanged: (index) {
+          setState(() {
+            _curSlider = index;
+          });
+        },
+        itemBuilder: (BuildContext context, int index) {
+          return GestureDetector(
+            child: Stack(
+              children: <Widget>[
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(7.0),
+                    child: CachedNetworkImage(
+                      imageUrl: homeSliderList[_curSlider].image,
+                      placeholder: (context, url) =>
+                          Image.asset(
+                            "assets/images/sliderph.png",
                             height: height,
-                            width: double.maxFinite,
-                          )),
-                      Positioned(
-                        bottom: 0,
-                        height: 40,
-                        left: 0,
-                        width: MediaQuery.of(context).size.width,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: map<Widget>(
-                            homeSliderList,
-                            (index, url) {
-                              return Container(
-                                  width: 8.0,
-                                  height: 8.0,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 10.0, horizontal: 2.0),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _curSlider == index
-                                        ? primary
-                                        : primary.withOpacity((0.2)),
-                                  ));
-                            },
                           ),
-                        ),
-                      ),
-                    ],
+                      errorWidget: (context, url, error) =>
+                          Image.asset(
+                            "assets/images/sliderph.png",
+                            height: height,
+                          ),
+                      fit: BoxFit.fill,
+                      height: height,
+                      width: double.maxFinite,
+                    )),
+                Positioned(
+                  bottom: 0,
+                  height: 40,
+                  left: 0,
+                  width: deviceWidth,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: map<Widget>(
+                      homeSliderList,
+                          (index, url) {
+                        return Container(
+                            width: 8.0,
+                            height: 8.0,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 10.0, horizontal: 2.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _curSlider == index
+                                  ? fontColor
+                                  : lightBlack,
+                            ));
+                      },
+                    ),
                   ),
-                  onTap: () async {},
-                );
-              },
+                ),
+              ],
             ),
-          )
-        : Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 27),
-            child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(10.0)),
-              child: Image.asset(
-                'assets/images/sliderph.png',
-                height: height,
-                width: double.infinity,
-                fit: BoxFit.fill,
-              ),
-            ),
+            onTap: () async {},
           );
+        },
+      ),
+    )
+        : Padding(
+      padding: const EdgeInsets.only(top: 10.0, bottom: 27),
+      child: ClipRRect(
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+        child: Image.asset(
+          'assets/images/sliderph.png',
+          height: height,
+          width: double.infinity,
+          fit: BoxFit.fill,
+        ),
+      ),
+    );
   }
 
   List<T> map<T>(List list, Function handler) {
@@ -1023,53 +1297,50 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         if (_controller.hasClients)
           _controller
               .animateToPage(nextPage,
-                  duration: Duration(seconds: 1), curve: Curves.easeIn)
+              duration: Duration(seconds: 1), curve: Curves.easeIn)
               .then((_) => _animateSlider());
       }
     });
   }
 
   _getSearchBar() {
-    return InkWell(
-      child: Padding(
-        padding: const EdgeInsets.only(
-            top: kToolbarHeight * 1.7, right: 20, left: 20),
-        child: SizedBox(
-          height: 35,
-          child: TextField(
-            enabled: false,
-            textAlign: TextAlign.left,
-            decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(0, 5.0, 0, 5.0),
-                border: new OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(5.0),
-                  ),
-                  borderSide: BorderSide(
-                    width: 0,
-                    style: BorderStyle.none,
-                  ),
+    return GestureDetector(
+      child: SizedBox(
+        height: 35,
+
+        child: TextField(
+          enabled: false,
+          textAlign: TextAlign.left,
+          decoration: InputDecoration(
+              contentPadding: EdgeInsets.fromLTRB(0, 5.0, 0, 5.0),
+              border: new OutlineInputBorder(
+                borderRadius: const BorderRadius.all(
+                  const Radius.circular(50.0),
                 ),
-                isDense: true,
-                hintText: searchHint,
-                hintStyle: Theme.of(context)
-                    .textTheme
-                    .bodyText2
-                    .copyWith(color: Colors.white70),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Colors.white,
+                borderSide: BorderSide(
+                  width: 0,
+                  style: BorderStyle.none,
                 ),
-                fillColor: Colors.white30,
-                filled: true),
-          ),
+              ),
+              isDense: true,
+              hintText: searchHint,
+              hintStyle: Theme
+                  .of(context)
+                  .textTheme
+                  .bodyText2
+                  .copyWith(color: fontColor),
+              prefixIcon: Image.asset('assets/images/search.png'),
+              suffixIcon:  Image.asset('assets/images/filter.png'),
+              fillColor: white,
+              filled: true),
         ),
       ),
       onTap: () async {
         await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Search(widget.updateHome),
+              builder: (context) =>
+                  Search(updateHome: widget.updateHome, menuopen:menuOpen,),
             ));
         setState(() {});
       },
@@ -1084,21 +1355,29 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         children: <Widget>[
           Text(
             category,
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme
+                .of(context)
+                .textTheme
+                .subtitle1,
           ),
           InkWell(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 seeAll,
-                style: Theme.of(context).textTheme.caption,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .caption
+                    .copyWith(color: primary),
               ),
             ),
             onTap: () async {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => All_Category(
+                    builder: (context) =>
+                        All_Category(
                           updateHome: widget.updateHome,
                         )),
               );
@@ -1112,7 +1391,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   _catList() {
     return Container(
-      height: 100,
+      height: 80,
       child: ListView.builder(
         itemCount: catList.length < 10 ? catList.length : 10,
         scrollDirection: Axis.horizontal,
@@ -1121,13 +1400,13 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         itemBuilder: (context, index) {
           return InkWell(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(right: 10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    padding: const EdgeInsets.only(bottom: 5.0),
                     child: new ClipRRect(
                       borderRadius: BorderRadius.circular(25.0),
                       child: new CachedNetworkImage(
@@ -1142,7 +1421,16 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   Container(
                     child: Text(
                       catList[index].name,
+                      style: Theme
+                          .of(context)
+                          .textTheme
+                          .caption
+                          .copyWith(
+                          color: fontColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10),
                       overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                     ),
                     width: 50,
                   ),
@@ -1155,20 +1443,22 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                 await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProductList(
-                          name: catList[index].name,
-                          id: catList[index].id,
-                          updateHome: widget.updateHome),
+                      builder: (context) =>
+                          ProductList(
+                              name: catList[index].name,
+                              id: catList[index].id,
+                              updateHome: widget.updateHome),
                     ));
                 setState(() {});
               } else {
                 await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SubCat(
-                          title: catList[index].name,
-                          subList: catList[index].subList,
-                          updateHome: widget.updateHome),
+                      builder: (context) =>
+                          SubCat(
+                              title: catList[index].name,
+                              subList: catList[index].subList,
+                              updateHome: widget.updateHome),
                     ));
                 setState(() {});
               }
@@ -1183,276 +1473,253 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     return _isCatLoading
         ? getProgress()
         : ListView.builder(
-            padding: EdgeInsets.all(0),
-            itemCount: sectionList.length,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return _singleSection(index);
-            },
-          );
+      padding: EdgeInsets.all(0),
+      itemCount: sectionList.length,
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return _singleSection(index);
+      },
+    );
   }
 
   _singleSection(int index) {
     return sectionList[index].productList.length > 0
-        ? Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 30),
-                    decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [white, primary],
-                            stops: [0, 1]),
-                        borderRadius: BorderRadius.all(Radius.circular(5))),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      _getHeading(sectionList[index].title, index),
-                      _getSection(index),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          )
+        ? Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        _getHeading(sectionList[index].title, index),
+        _getSection(index),
+        offerImages.length > index ? _getOfferImage() : Container(),
+      ],
+    )
         : Container();
   }
 
   _getHeading(String title, int index) {
     return Padding(
       padding: const EdgeInsets.only(top: 10.0, bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(
-                title,
-                style: Theme.of(context).textTheme.headline6,
-              ),
-              InkWell(
-                child: Text(
-                  seeAll,
-                  style: Theme.of(context)
-                      .textTheme
-                      .caption
-                      .copyWith(color: primary),
-                ),
-                splashColor: primary.withOpacity(0.2),
-                onTap: () {
-                  Section_Model model = sectionList[index];
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SectionList(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(
+            title,
+            style: Theme
+                .of(context)
+                .textTheme
+                .subtitle1,
+          ),
+          InkWell(
+            child: Text(
+              seeAll,
+              style:
+              Theme
+                  .of(context)
+                  .textTheme
+                  .caption
+                  .copyWith(color: primary),
+            ),
+            splashColor: primary.withOpacity(0.2),
+            onTap: () {
+              Section_Model model = sectionList[index];
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        SectionList(
                           index: index,
                           section_model: model,
                           updateHome: updateHomePage,
                         ),
-                      ));
-                },
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: Text(
-              sectionList[index].short_desc,
-            ),
+                  ));
+            },
           ),
         ],
       ),
     );
   }
 
+  _getOfferImage() {
+    return ListView.builder(
+      padding: EdgeInsets.only(top: 5),
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: offerImages.length,
+      itemBuilder: (context, index) {
+        return CachedNetworkImage(
+          imageUrl: offerImages[index].image,
+          width: double.maxFinite,
+        );
+      },
+    );
+  }
+
   _getSection(int i) {
     print('style=====${sectionList[i].style}');
     return sectionList[i].style == DEFAULT
-        ? Container(
-            decoration: BoxDecoration(
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
-            ),
-            child: GridView.count(
-                padding: EdgeInsets.only(top: 5),
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                childAspectRatio: 1.0,
-                physics: NeverScrollableScrollPhysics(),
-                // mainAxisSpacing: 0,
-                // crossAxisSpacing: 0,
-                children: List.generate(
-                  sectionList[i].productList.length < 4
-                      ? sectionList[i].productList.length
-                      : 4,
-                  (index) {
-                    return productItem(i, index, false);
-                  },
-                )),
-          )
+        ? GridView.count(
+        padding: EdgeInsets.only(top: 5),
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        childAspectRatio: 0.8,
+        physics: NeverScrollableScrollPhysics(),
+        children: List.generate(
+          sectionList[i].productList.length < 4
+              ? sectionList[i].productList.length
+              : 4,
+              (index) {
+            return productItem(i, index, index % 2 == 0 ? true : false);
+          },
+        ))
         : sectionList[i].style == STYLE1
-            ? Row(
-                children: [
-                  Flexible(
-                      flex: 3,
-                      fit: FlexFit.loose,
-                      child: Container(
-                          height: MediaQuery.of(context).size.height * 0.4,
-                          child: productItem(i, 0, true))),
-                  Flexible(
-                    flex: 2,
-                    fit: FlexFit.loose,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                            height: MediaQuery.of(context).size.height * 0.2,
-                            child: productItemSmall(i, 1)),
-                        Container(
-                            height: MediaQuery.of(context).size.height * 0.2,
-                            child: productItemSmall(i, 2)),
-                      ],
-                    ),
-                  ),
-                ],
-              )
-            : sectionList[i].style == STYLE2
-                ? Row(
-                    children: [
-                      Flexible(
-                        flex: 2,
-                        fit: FlexFit.loose,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.2,
-                                child: productItemSmall(i, 0)),
-                            Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.2,
-                                child: productItemSmall(i, 1)),
-                          ],
-                        ),
-                      ),
-                      Flexible(
-                          flex: 3,
-                          fit: FlexFit.loose,
-                          child: Container(
-                              height: MediaQuery.of(context).size.height * 0.4,
-                              child: productItem(i, 2, true))),
-                    ],
-                  )
-                : sectionList[i].style == STYLE3
-                    ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                              flex: 1,
-                              fit: FlexFit.loose,
-                              child: Container(
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.3,
-                                  child: productItem(i, 0, true))),
-                          Container(
-                            height: MediaQuery.of(context).size.height * 0.2,
-                            child: Row(
-                              children: [
-                                Flexible(
-                                    flex: 1,
-                                    fit: FlexFit.loose,
-                                    child: productItemSmall(i, 1)),
-                                Flexible(
-                                    flex: 1,
-                                    fit: FlexFit.loose,
-                                    child: productItemSmall(i, 2)),
-                                Flexible(
-                                    flex: 1,
-                                    fit: FlexFit.loose,
-                                    child: productItemSmall(i, 3)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      )
-                    : sectionList[i].style == STYLE4
-                        ? Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                  flex: 1,
-                                  fit: FlexFit.loose,
-                                  child: Container(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.3,
-                                      child: productItem(i, 0, true))),
-                              Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.2,
-                                child: Row(
-                                  children: [
-                                    Flexible(
-                                        flex: 1,
-                                        fit: FlexFit.loose,
-                                        child: productItemSmall(i, 1)),
-                                    Flexible(
-                                        flex: 1,
-                                        fit: FlexFit.loose,
-                                        child: productItemSmall(i, 2)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          )
-                        : GridView.count(
-                            padding: EdgeInsets.only(top: 5),
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            childAspectRatio: 1.0,
-                            physics: NeverScrollableScrollPhysics(),
-                            mainAxisSpacing: 0,
-                            crossAxisSpacing: 0,
-                            children: List.generate(
-                              sectionList[i].productList.length < 4
-                                  ? sectionList[i].productList.length
-                                  : 4,
-                              (index) {
-                                return productItem(i, index, true);
-                              },
-                            ));
+        ? Row(
+      children: [
+        Flexible(
+            flex: 3,
+            fit: FlexFit.loose,
+            child: Container(
+                height: deviceHeight * 0.4,
+                child: productItem(i, 0, true))),
+        Flexible(
+          flex: 2,
+          fit: FlexFit.loose,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                  height: deviceHeight * 0.2,
+                  child: productItem(i, 1, false)),
+              Container(
+                  height: deviceHeight * 0.2,
+                  child: productItem(i, 2, false)),
+            ],
+          ),
+        ),
+      ],
+    )
+        : sectionList[i].style == STYLE2
+        ? Row(
+      children: [
+        Flexible(
+          flex: 2,
+          fit: FlexFit.loose,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                  height: deviceHeight * 0.2,
+                  child: productItem(i, 0, true)),
+              Container(
+                  height: deviceHeight * 0.2,
+                  child: productItem(i, 1, true)),
+            ],
+          ),
+        ),
+        Flexible(
+            flex: 3,
+            fit: FlexFit.loose,
+            child: Container(
+                height: deviceHeight * 0.4,
+                child: productItem(i, 2, false))),
+      ],
+    )
+        : sectionList[i].style == STYLE3
+        ? Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+            flex: 1,
+            fit: FlexFit.loose,
+            child: Container(
+                height: deviceHeight * 0.3,
+                child: productItem(i, 0, false))),
+        Container(
+          height: deviceHeight * 0.2,
+          child: Row(
+            children: [
+              Flexible(
+                  flex: 1,
+                  fit: FlexFit.loose,
+                  child: productItem(i, 1, true)),
+              Flexible(
+                  flex: 1,
+                  fit: FlexFit.loose,
+                  child: productItem(i, 2, true)),
+              Flexible(
+                  flex: 1,
+                  fit: FlexFit.loose,
+                  child: productItem(i, 3, false)),
+            ],
+          ),
+        ),
+      ],
+    )
+        : sectionList[i].style == STYLE4
+        ? Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+            flex: 1,
+            fit: FlexFit.loose,
+            child: Container(
+                height: deviceHeight * 0.3,
+                child: productItem(i, 0, false))),
+        Container(
+          height: deviceHeight * 0.2,
+          child: Row(
+            children: [
+              Flexible(
+                  flex: 1,
+                  fit: FlexFit.loose,
+                  child: productItem(i, 1, true)),
+              Flexible(
+                  flex: 1,
+                  fit: FlexFit.loose,
+                  child: productItem(i, 2, false)),
+            ],
+          ),
+        ),
+      ],
+    )
+        : GridView.count(
+        padding: EdgeInsets.only(top: 5),
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        childAspectRatio: 1.0,
+        physics: NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 0,
+        crossAxisSpacing: 0,
+        children: List.generate(
+          sectionList[i].productList.length < 4
+              ? sectionList[i].productList.length
+              : 4,
+              (index) {
+            return productItem(
+                i, index, index % 2 == 0 ? true : false);
+          },
+        ));
   }
 
-  Widget productItemSmall(int secPos, int index) {
+  /*Widget productItemSmall(int secPos, int index) {
     double price = double.parse(
         sectionList[secPos].productList[index].prVarientList[0].disPrice);
     if (price == 0)
       price = double.parse(
           sectionList[secPos].productList[index].prVarientList[0].price);
 
-    double width = MediaQuery.of(context).size.width * 0.5 - 20;
+    double width = deviceWidth * 0.5 - 20;
     print(
         "tag=============${sectionList[secPos].productList[index].id}${secPos}${index}========home");
 
     return Container(
       decoration: BoxDecoration(
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+        boxShadow: [BoxShadow(color: black12, blurRadius: 10)],
       ),
       child: Card(
         elevation: 0.0,
         child: InkWell(
           child: Container(
-            height: MediaQuery.of(context).size.height * 0.2,
+            height: deviceHeight * 0.2,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1515,7 +1782,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                     style: Theme.of(context)
                         .textTheme
                         .overline
-                        .copyWith(color: Colors.black, letterSpacing: 0.5),
+                        .copyWith(color: black, letterSpacing: 0.5),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1626,180 +1893,135 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
   }
-
-  Widget productItem(int secPos, int index, bool shadow) {
+*/
+  Widget productItem(int secPos, int index, bool pad) {
+    String offPer;
     double price = double.parse(
         sectionList[secPos].productList[index].prVarientList[0].disPrice);
-    if (price == 0)
+    if (price == 0) {
       price = double.parse(
           sectionList[secPos].productList[index].prVarientList[0].price);
+    } else {
+      double off = double.parse(
+          sectionList[secPos].productList[index].prVarientList[0].price) -
+          price;
+      print("==========$off");
+      offPer = ((off * 100) /
+          double.parse(sectionList[secPos]
+              .productList[index]
+              .prVarientList[0]
+              .price))
+          .toStringAsFixed(2);
+    }
 
-    double width = MediaQuery.of(context).size.width * 0.5 - 20;
+    double width = deviceWidth * 0.5;
     print(
-        "tag=============${sectionList[secPos].productList[index].id}${secPos}${index}========home");
+        "tag=============${sectionList[secPos].productList[index]
+            .id}${secPos}${index}========home");
 
-    return Container(
-      decoration: shadow
-          ? BoxDecoration(
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
-            )
-          : null,
-      child: Card(
-        elevation: 0.2,
-        child: InkWell(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5.0),
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(5),
-                              topRight: Radius.circular(5)),
-                          child: Hero(
-                            tag:
-                                "${sectionList[secPos].productList[index].id}$secPos$index",
-                            child: CachedNetworkImage(
-                              imageUrl:
-                                  sectionList[secPos].productList[index].image,
-                              height: double.maxFinite,
-                              width: double.maxFinite,
-                              //fit: BoxFit.fill,
-                              placeholder: (context, url) => placeHolder(width),
-                            ),
-                          )),
+    return Card(
+      elevation: 0.2,
+      margin: EdgeInsets.only(bottom: 5, right: pad ? 5 : 0),
+      child: InkWell(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(5),
+                      topRight: Radius.circular(5)),
+                  child: Hero(
+                    tag:
+                    "${sectionList[secPos].productList[index].id}$secPos$index",
+                    child: CachedNetworkImage(
+                      imageUrl: sectionList[secPos].productList[index].image,
+                      height: double.maxFinite,
+                      width: double.maxFinite,
+                      placeholder: (context, url) => placeHolder(width),
                     ),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(1.5),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: Colors.yellow,
-                              size: 10,
-                            ),
-                            Text(
-                              sectionList[secPos].productList[index].rating,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .overline
-                                  .copyWith(letterSpacing: 0.2),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+
+                  )),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 5.0, top: 5, bottom: 5),
+              child: Text(
+                sectionList[secPos].productList[index].name,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .caption
+                    .copyWith(color: lightBlack),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        sectionList[secPos].productList[index].name,
-                        style: Theme.of(context)
-                            .textTheme
-                            .overline
-                            .copyWith(color: Colors.black, letterSpacing: 0.5),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    sectionList[secPos].productList[index].isFavLoading
-                        ? Container(
-                            height: 15,
-                            width: 15,
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 8.0, vertical: 3),
-                            padding: const EdgeInsets.all(3),
-                            child: CircularProgressIndicator(
-                              strokeWidth: 0.7,
-                            ))
-                        : InkWell(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 3),
-                              child: Icon(
-                                sectionList[secPos].productList[index].isFav ==
-                                        "0"
-                                    ? Icons.favorite_border
-                                    : Icons.favorite,
-                                size: 15,
-                                color: primary,
-                              ),
-                            ),
-                            onTap: () {
-                              if (CUR_USERID != null) {
-                                sectionList[secPos].productList[index].isFav ==
-                                        "0"
-                                    ? _setFav(secPos, index)
-                                    : _removeFav(secPos, index);
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => Login()),
-                                );
-                              }
-                            })
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 5.0, bottom: 5),
-                child: Row(
-                  children: <Widget>[
-                    Text(
-                      int.parse(sectionList[secPos]
-                                  .productList[index]
-                                  .prVarientList[0]
-                                  .disPrice) !=
-                              0
-                          ? CUR_CURRENCY +
-                              "" +
-                              sectionList[secPos]
-                                  .productList[index]
-                                  .prVarientList[0]
-                                  .price
-                          : "",
-                      style: Theme.of(context).textTheme.overline.copyWith(
-                          decoration: TextDecoration.lineThrough,
-                          letterSpacing: 1),
-                    ),
-                    Text(" " + CUR_CURRENCY + " " + price.toString(),
-                        style: TextStyle(color: primary)),
-                  ],
-                ),
+            ),
+            Text(" " + CUR_CURRENCY + " " + price.toString(),
+                style:
+                TextStyle(color: fontColor, fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
+              child: int.parse(sectionList[secPos]
+                  .productList[index]
+                  .prVarientList[0]
+                  .disPrice) !=
+                  0
+                  ? Row(
+                children: <Widget>[
+                  Text(
+                    int.parse(sectionList[secPos]
+                        .productList[index]
+                        .prVarientList[0]
+                        .disPrice) !=
+                        0
+                        ? CUR_CURRENCY +
+                        "" +
+                        sectionList[secPos]
+                            .productList[index]
+                            .prVarientList[0]
+                            .price
+                        : "",
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .overline
+                        .copyWith(
+                        decoration: TextDecoration.lineThrough,
+                        letterSpacing: 0),
+                  ),
+                  Text(" | " + "-$offPer%",
+                      style: Theme
+                          .of(context)
+                          .textTheme
+                          .overline
+                          .copyWith(color: primary, letterSpacing: 0)),
+                ],
               )
-            ],
-          ),
-          onTap: () {
-            Product model = sectionList[secPos].productList[index];
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                  transitionDuration: Duration(seconds: 1),
-                  pageBuilder: (_, __, ___) => ProductDetail(
-                      model: model,
-                      updateParent: updateHomePage,
-                      secPos: secPos,
-                      index: index,
-                      updateHome: widget.updateHome,
-                      list: false
-                      //  title: sectionList[secPos].title,
-                      )),
-            );
-          },
+                  : Container(
+                height: 5,
+              ),
+            )
+          ],
         ),
+        onTap: () {
+          Product model = sectionList[secPos].productList[index];
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+                transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) =>
+                    ProductDetail(
+                        model: model,
+                        updateParent: updateHomePage,
+                        secPos: secPos,
+                        index: index,
+                        updateHome: widget.updateHome,
+                        list: false
+                      //  title: sectionList[secPos].title,
+                    )),
+          );
+        },
       ),
     );
   }
@@ -1815,8 +2037,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         PRODUCT_ID: sectionList[secPos].productList[index].id
       };
       Response response =
-          await post(setFavoriteApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(setFavoriteApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -1841,9 +2063,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
@@ -1859,8 +2081,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         PRODUCT_ID: sectionList[secPos].productList[index].id
       };
       Response response =
-          await post(removeFavApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(removeFavApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -1870,7 +2092,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         sectionList[secPos].productList[index].isFav = "0";
 
         favList.removeWhere((item) =>
-            item.productList[0].prVarientList[0].id ==
+        item.productList[0].prVarientList[0].id ==
             sectionList[secPos].productList[index].prVarientList[0].id);
       } else {
         setSnackbar(msg);
@@ -1891,6 +2113,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       getCat();
       getSection();
       getSetting();
+      getOfferImages();
     } else {
       setState(() {
         _isNetworkAvail = false;
@@ -1930,8 +2153,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         CAT_FILTER: "false",
       };
       Response response =
-          await post(getCatApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(getCatApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -1964,8 +2187,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
       if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
       Response response =
-          await post(getSectionApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(getSectionApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -1982,9 +2205,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       }
 
       Future.delayed(const Duration(seconds: 1), () {
-        setState(() {
-          _isCatLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isCatLoading = false;
+          });
       });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
@@ -1998,8 +2222,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     try {
       var parameter = {TYPE: CURRENCY};
       Response response =
-          await post(getSettingApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(getSettingApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
       print('response***setting**$headers***${response.body.toString()}');
@@ -2015,130 +2239,36 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       setSnackbar(somethingMSg);
     }
   }
-}
 
-class Header extends StatelessWidget {
-  final double maxHeight;
-  final double minHeight;
+  Future<void> getOfferImages() async {
+    try {
+      Response response = await post(getOfferImageApi, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
-  const Header({Key key, this.maxHeight, this.minHeight}) : super(key: key);
+      var getdata = json.decode(response.body);
 
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            _buildImage(),
-            //  _buildGradient(animation),
-            //  _buildTitle(animation),
-          ],
-        );
-      },
-    );
-  }
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        var data = getdata["data"];
+        offerImages.clear();
+        offerImages =
+            (data as List).map((data) => new Model.fromJson(data)).toList();
+      } else {
+        setSnackbar(msg);
+      }
 
-  Image _buildImage() {
-    return Image.network(
-      "https://www.rollingstone.com/wp-content/uploads/2020/02/TheWeeknd.jpg",
-      fit: BoxFit.cover,
-    );
-  }
-}
-
-class _MyAppSpace extends StatelessWidget {
-  const _MyAppSpace({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, c) {
-        final settings = context
-            .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-        final deltaExtent = settings.maxExtent - settings.minExtent;
-        final t =
-            (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent)
-                .clamp(0.0, 1.0) as double;
-        final fadeStart = math.max(0.0, 1.0 - kToolbarHeight / deltaExtent);
-        const fadeEnd = 1.0;
-        final opacity = 1.0 - Interval(fadeStart, fadeEnd).transform(t);
-
-        return Stack(
-          children: [
-            Image.asset(
-              'assets/images/topimage.png',
-              fit: BoxFit.fitWidth,
-            ),
-            Center(
-              child: Opacity(
-                  opacity: 1 - opacity,
-                  child: Text(
-                    'Collapsed Title',
-                  )),
-            ),
-            Opacity(
-              opacity: opacity,
-              child: Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  _getSearchBar(context),
-                  Text(
-                    'expanded Title',
-                  )
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  _getSearchBar(BuildContext context) {
-    return InkWell(
-      child: Padding(
-        padding: const EdgeInsets.only(
-            top: kToolbarHeight * 1.5, right: 20, left: 20),
-        child: SizedBox(
-          height: 35,
-          child: TextField(
-            enabled: false,
-            textAlign: TextAlign.left,
-            decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(0, 5.0, 0, 5.0),
-                border: new OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(5.0),
-                  ),
-                  borderSide: BorderSide(
-                    width: 0,
-                    style: BorderStyle.none,
-                  ),
-                ),
-                isDense: true,
-                hintText: searchHint,
-                hintStyle: Theme.of(context)
-                    .textTheme
-                    .bodyText2
-                    .copyWith(color: Colors.white70),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Colors.white,
-                ),
-                fillColor: Colors.white30,
-                filled: true),
-          ),
-        ),
-      ),
-      onTap: () async {
-        /*     await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Search(widget.updateHome),
-            ));
-        setState(() {});*/
-      },
-    );
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          _isCatLoading = false;
+        });
+      });
+    } on TimeoutException catch (_) {
+      setSnackbar(somethingMSg);
+      setState(() {
+        _isCatLoading = false;
+      });
+    }
   }
 }
+

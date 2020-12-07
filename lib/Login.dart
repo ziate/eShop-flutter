@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:country_code_picker/country_code_picker.dart';
-import 'package:eshop/Forget_Password.dart';
 import 'package:eshop/Helper/String.dart';
+import 'package:eshop/SendOtp.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:eshop/Home.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
+import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
@@ -34,7 +34,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       username,
       email,
       id,
-      countrycode,
+
       mobileno,
       city,
       area,
@@ -43,418 +43,10 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       latitude,
       longitude,
       image;
+  bool _isNetworkAvail = true;
   Animation buttonSqueezeanimation;
 
   AnimationController buttonController;
-
-  void validateAndSubmit() async {
-    if (validateAndSave()) {
-      _playAnimation();
-      checkNetwork();
-    }
-  }
-
-  Future<void> checkNetwork() async {
-    bool avail = await isNetworkAvailable();
-    if (avail) {
-      getLoginUser();
-    } else {
-      setSnackbar(internetMsg);
-      await buttonController.reverse();
-    }
-  }
-
-  bool validateAndSave() {
-    final form = _formkey.currentState;
-    form.save();
-    if (form.validate()) {
-      return true;
-    }
-    return false;
-  }
-
-  setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
-      content: new Text(
-        msg,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: primary),
-      ),
-      backgroundColor: Colors.white,
-      elevation: 1.0,
-    ));
-  }
-
-  Future<void> getLoginUser() async {
-    var data = {MOBILE: mobile, PASSWORD: password};
-
-    Response response =
-    await post(getUserLoginApi, body: data, headers: headers)
-        .timeout(Duration(seconds: timeOut));
-
-    print('response***login*${data.toString()}**${response.body.toString()}');
-    var getdata = json.decode(response.body);
-
-    bool error = getdata["error"];
-    String msg = getdata["message"];
-    await buttonController.reverse();
-    if (!error) {
-      var i = getdata["data"][0];
-
-      //   for (var i in data) {
-      id = i[ID];
-      username = i[USERNAME];
-      email = i[EMAIL];
-      mobile = i[MOBILE];
-      city = i[CITY];
-      area = i[AREA];
-      address = i[ADDRESS];
-      pincode = i[PINCODE];
-      latitude = i[LATITUDE];
-      longitude = i[LONGITUDE];
-
-      image = i[IMAGE];
-      //}
-      setSnackbar('Login successfully');
-      CUR_USERID = id;
-      saveUserDetail(id, username, email, mobile, city, area, address, pincode,
-          latitude, longitude, image);
-      Future.delayed(Duration(seconds: 1)).then((_) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Home()));
-      });
-    } else {
-      setSnackbar(msg);
-    }
-    /*setState(() {
-      _isLoading = false;
-    });*/
-  }
-
-  _subLogo() {
-    return Container(
-      padding: EdgeInsets.only(top: 80.0),
-      child: Center(
-        child: new Image.asset('assets/images/sublogo.png', fit: BoxFit.fill),
-      ),
-    );
-  }
-
-  welcomeEshopTxt() {
-    return Padding(
-        padding: EdgeInsets.only(top: 50.0, left: 30.0, right: 30.0),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: new Text(
-            WELCOME_ESHOP,
-            style: Theme.of(context)
-                .textTheme
-                .headline6
-                .copyWith(color: lightblack, fontWeight: FontWeight.bold),
-          ),
-        ));
-  }
-
-  eCommerceforBusinessTxt() {
-    return Padding(
-        padding: EdgeInsets.only(top: 10.0, left: 30.0, right: 30.0),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: new Text(
-            ECOMMERCE_APP_FOR_ALL_BUSINESS,
-            style: Theme.of(context)
-                .textTheme
-                .subtitle1
-                .copyWith(color: lightblack2),
-          ),
-        ));
-  }
-
-  setCountryCode() {
-    double height = MediaQuery.of(context).size.height * 0.9;
-    double width = MediaQuery.of(context).size.width;
-    return Padding(
-        padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          width: width,
-          height: 40,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7.0),
-              border: Border.all(color: darkgrey)),
-          child: CountryCodePicker(
-              showCountryOnly: false,
-              searchDecoration: InputDecoration(
-                hintText: COUNTRY_CODE_LBL,
-                fillColor: primary,
-              ),
-              showOnlyCountryWhenClosed: false,
-              initialSelection: 'IN',
-              alignLeft: true,
-              dialogSize: Size(width, height),
-              builder: _buildCountryPicker,
-              onChanged: (CountryCode countryCode) {
-                countrycode = countryCode.toString().replaceFirst("+", "");
-                print("New Country selected: " + countryCode.toString());
-                countryName = countryCode.name;
-              },
-              onInit: (code) {
-                print("on init ${code.name} ${code.dialCode} ${code.name}");
-                countrycode = code.toString().replaceFirst("+", "");
-                print("New Country selected: " + code.toString());
-              }),
-        ));
-  }
-
-  Widget _buildCountryPicker(CountryCode country) => Row(
-    mainAxisAlignment: MainAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
-    children: <Widget>[
-      new Flexible(
-        child: Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: new Image.asset(
-            country.flagUri,
-            package: 'country_code_picker',
-            height: 40,
-            width: 20,
-          ),
-        ),
-      ),
-      new Flexible(
-        child: Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: new Text(
-            country.dialCode,
-            style: TextStyle(fontSize: 12),
-          ),
-        ),
-      ),
-      new Flexible(
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: new Text(
-            country.name,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
-    ],
-  );
-
-  setMobileNo() {
-    return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
-      child: TextFormField(
-        keyboardType: TextInputType.number,
-        controller: mobileController,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        validator: validateMob,
-        onSaved: (String value) {
-          mobileno = value;
-          mobile = mobileno;
-          print('Mobile no:$mobile');
-        },
-        decoration: InputDecoration(
-            prefixIcon: Icon(
-              Icons.call_outlined,
-            ),
-            hintText: MOBILEHINT_LBL,
-            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            border:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
-      ),
-    );
-  }
-
-  setPass() {
-    return Padding(
-      padding: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        obscureText: true,
-        controller: passwordController,
-        validator: validatePass,
-        onSaved: (String value) {
-          password = value;
-        },
-        decoration: InputDecoration(
-            prefixIcon: Icon(Icons.lock_outline),
-            hintText: PASSHINT_LBL,
-            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            border:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(7.0))),
-      ),
-    );
-  }
-
-  forgetPass() {
-    return Padding(
-        padding:
-        EdgeInsets.only(bottom: 10.0, left: 30.0, right: 30.0, top: 20.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            InkWell(
-              onTap: () {
-                setPrefrence(ID, id);
-                setPrefrence(MOBILE, mobile);
-
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ForgotPassWord()));
-
-              },
-              child: Text(FORGOT_PASSWORD_LBL,
-                  style: Theme.of(context)
-                      .textTheme
-                      .subtitle1
-                      .copyWith(color: lightblack)),
-            ),
-          ],
-        ));
-  }
-
-  accSignup() {
-    return Padding(
-      padding:
-      EdgeInsets.only(bottom: 30.0, left: 30.0, right: 30.0, top: 20.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(DONT_HAVE_AN_ACC,
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle1
-                  .copyWith(color: lightblack2, fontWeight: FontWeight.normal)),
-          InkWell(
-              onTap: () {
-
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SignUp()));
-
-              },
-              child: Text(
-                SIGN_UP_LBL,
-                style: Theme.of(context).textTheme.subtitle1.copyWith(
-                    color: primary, decoration: TextDecoration.underline),
-              ))
-        ],
-      ),
-    );
-  }
-
-  _skipBtn() {
-    return Padding(
-        padding: EdgeInsets.only(top: 40.0, right: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            InkWell(
-              onTap: () {
-                Future.delayed(Duration(seconds: 1)).then((_) {
-                  Navigator.pushReplacement(
-                      context, MaterialPageRoute(builder: (context) => Home()));
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  SKIP,
-                  style: Theme.of(context).textTheme.subtitle1.copyWith(
-                      color: white, decoration: TextDecoration.underline),
-                ),
-              ),
-            ),
-          ],
-        ));
-  }
-
-  _expandedBottomView() {
-    return Expanded(
-        child: Container(
-            width: double.infinity,
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.only(top: 10.0, bottom: 20),
-                    child: Form(
-                      key: _formkey,
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        margin:
-                        EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            welcomeEshopTxt(),
-                            eCommerceforBusinessTxt(),
-                            setCountryCode(),
-                            setMobileNo(),
-                            setPass(),
-                            forgetPass(),
-                            loginBtn(),
-                            //  appBtn(LOGIN_LBL, buttonController, buttonSqueezeanimation, validateAndSubmit),
-                            accSignup(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            )));
-  }
-  loginBtn() {
-    return
-      new AnimatedBuilder(
-        builder: _buildBtnAnimation,
-        animation: buttonController,
-      );
-  }
-
-
-  Widget _buildBtnAnimation(BuildContext context, Widget child) {
-    return CupertinoButton(
-      child: Container(
-        width: buttonSqueezeanimation.value,
-        height: 45,
-        alignment: FractionalOffset.center,
-        decoration: new BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [primaryLight2, primaryLight3],
-              stops: [0, 1]),
-
-          borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
-        ),
-        child: buttonSqueezeanimation.value > 75.0
-            ? Text(LOGIN_LBL,
-            textAlign: TextAlign.center,
-            style: Theme
-                .of(context)
-                .textTheme
-                .headline6
-                .copyWith(color: white, fontWeight: FontWeight.normal))
-            : new CircularProgressIndicator(
-          valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
-        ),
-      ),
-
-      onPressed: () {
-        validateAndSubmit();
-      },
-    );
-  }
 
   @override
   void initState() {
@@ -486,23 +78,348 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     } on TickerCanceled {}
   }
 
+  void validateAndSubmit() async {
+    if (validateAndSave()) {
+      _playAnimation();
+      checkNetwork();
+    }
+  }
+
+  Future<void> checkNetwork() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      getLoginUser();
+    } else {
+      Future.delayed(Duration(seconds: 2)).then((_) async {
+        await buttonController.reverse();
+        setState(() {
+          _isNetworkAvail = false;
+        });
+      });
+    }
+  }
+
+  bool validateAndSave() {
+    final form = _formkey.currentState;
+    form.save();
+    if (form.validate()) {
+      return true;
+    }
+    return false;
+  }
+
+  setSnackbar(String msg) {
+    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      content: new Text(
+        msg,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: fontColor),
+      ),
+      backgroundColor: lightWhite,
+      elevation: 1.0,
+    ));
+  }
+
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(top: kToolbarHeight),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
+      ),
+    );
+  }
+
+  Future<void> getLoginUser() async {
+    var data = {MOBILE: mobile, PASSWORD: password};
+
+    Response response =
+        await post(getUserLoginApi, body: data, headers: headers)
+            .timeout(Duration(seconds: timeOut));
+
+    print('response***login*${data.toString()}**${response.body.toString()}');
+    var getdata = json.decode(response.body);
+
+    bool error = getdata["error"];
+    String msg = getdata["message"];
+    await buttonController.reverse();
+    if (!error) {
+      setSnackbar(msg);
+      var i = getdata["data"][0];
+
+      id = i[ID];
+      username = i[USERNAME];
+      email = i[EMAIL];
+      mobile = i[MOBILE];
+      //countrycode=i[COUNTRY_CODE];
+      city = i[CITY];
+      area = i[AREA];
+      address = i[ADDRESS];
+      pincode = i[PINCODE];
+      latitude = i[LATITUDE];
+      longitude = i[LONGITUDE];
+      image = i[IMAGE];
+
+      CUR_USERID = id;
+      CUR_USERNAME = username;
+      saveUserDetail(id, username, email, mobile, city, area, address, pincode,
+          latitude, longitude, image);
+
+      Navigator.pushReplacementNamed(context, "/home");
+    } else {
+      setSnackbar(msg);
+    }
+  }
+
+  _subLogo() {
+    return Container(
+      padding: EdgeInsets.only(top: 80.0),
+      child: Center(
+        child: new Image.asset('assets/images/homelogo.png', fit: BoxFit.fill),
+      ),
+    );
+  }
+
+  signInTxt() {
+    return Padding(
+        padding: EdgeInsets.only(
+          top: 30.0,
+        ),
+        child: Align(
+          alignment: Alignment.center,
+          child: new Text(
+            SIGNIN_LBL,
+            style: Theme.of(context)
+                .textTheme
+                .subtitle1
+                .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+          ),
+        ));
+  }
+
+  setMobileNo() {
+    return Container(
+      width: deviceWidth*0.7,
+      padding: EdgeInsets.only(
+        top: 30.0,
+
+      ),
+      child: TextFormField(
+        keyboardType: TextInputType.number,
+        controller: mobileController,
+        style: TextStyle(color: fontColor),
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        validator: validateMob,
+        onSaved: (String value) {
+          mobile = value;
+          print('Mobile no:$mobile');
+        },
+        decoration: InputDecoration(
+          prefixIcon: Icon(
+            Icons.call_outlined,
+            color: fontColor,
+            size: 17,
+          ),
+          hintText: MOBILEHINT_LBL,
+          hintStyle: Theme.of(this.context)
+              .textTheme
+              .subtitle2
+              .copyWith(color: fontColor,fontWeight: FontWeight.normal),
+          filled: true,
+          fillColor: lightWhite,
+          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: fontColor),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: lightWhite),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      ),
+    );
+  }
+
+  setPass() {
+    return Container(
+      width: deviceWidth*0.7,
+        padding: EdgeInsets.only( top: 20.0),
+        child: TextFormField(
+          keyboardType: TextInputType.text,
+          obscureText: true,
+          style: TextStyle(color: fontColor),
+          controller: passwordController,
+          validator: validatePass,
+          onSaved: (String value) {
+            password = value;
+          },
+          decoration: InputDecoration(
+            prefixIcon: Icon(
+              Icons.lock_outline,
+              color: fontColor,
+              size: 17,
+            ),
+            hintText: PASSHINT_LBL,
+            hintStyle: Theme.of(this.context)
+                .textTheme
+                .subtitle2
+                .copyWith(color: fontColor,fontWeight: FontWeight.normal),
+            filled: true,
+            fillColor: lightWhite,
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: fontColor),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: lightWhite),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+        ));
+  }
+
+  forgetPass() {
+    return Padding(
+        padding:
+            EdgeInsets.only(left: 25.0, right: 25.0, top: 10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            InkWell(
+              onTap: () {
+                setPrefrence(ID, id);
+                setPrefrence(MOBILE, mobile);
+
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SendOtp(title: FORGOT_PASS_TITLE,)));
+              },
+              child: Text(FORGOT_PASSWORD_LBL,
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle2
+                      .copyWith(color: fontColor,fontWeight: FontWeight.normal)),
+            ),
+          ],
+        ));
+  }
+
+  termAndPolicyTxt() {
+    return Padding(
+      padding:
+          EdgeInsets.only(bottom: 20.0, left: 25.0, right: 25.0,top:10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(DONT_HAVE_AN_ACC,
+              style: Theme.of(context)
+                  .textTheme
+                  .caption
+                  .copyWith(color: fontColor, fontWeight: FontWeight.normal)),
+          InkWell(
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => SendOtp(title:SEND_OTP_TITLE,),
+                ));
+              },
+              child: Text(
+                SIGN_UP_LBL,
+                style: Theme.of(context).textTheme.caption.copyWith(
+                    color: fontColor,
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.normal),
+              ))
+        ],
+      ),
+    );
+  }
+
+  loginBtn() {
+    return AppBtn(
+      title: SIGNIN_LBL,
+      btnAnim: buttonSqueezeanimation,
+      btnCntrl: buttonController,
+      onBtnSelected: () async {
+    validateAndSubmit();
+      },
+    );
+  }
+
+  _expandedBottomView() {
+    return Expanded(
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 100.0,
+          ),
+          child: SingleChildScrollView(
+
+      child: Form(
+          key: _formkey,
+          child: Card(
+            elevation: 0,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                signInTxt(),
+                setMobileNo(),
+                setPass(),
+                forgetPass(),
+                loginBtn(),
+                termAndPolicyTxt(),
+              ],
+            ),
+          ),
+      ),
+    ),
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
     return Scaffold(
         key: _scaffoldKey,
-        body: Container(
-            height: height,
-            width: width,
-            decoration: back(),
-            child: Center(
+        body: _isNetworkAvail
+            ? Container(
+                color: lightWhite,
+                padding: EdgeInsets.only(
+                  bottom: 20.0,
+                ),
                 child: Column(
                   children: <Widget>[
-                    _skipBtn(),
                     _subLogo(),
                     _expandedBottomView(),
                   ],
-                ))));
+                ))
+            : noInternet(context));
   }
 }

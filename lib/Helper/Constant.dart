@@ -1,15 +1,20 @@
+import 'package:eshop/Track_Order.dart';
+
 final String appName = 'eShop';
 
 final String packageName = 'com.wrteam.eshop';
 final String androidLink='https://play.google.com/store/apps/details?id=';
 
-final String iosPackage = '1111111111';
-final String iosLink = '';
+final String iosPackage = 'com.wrteam.eshop';
+final String iosLink = 'your ios link here';
 
 
 final String baseUrl = 'http://eshop.wrteam.in/app/v1/api/';
 
 final int timeOut = 50;
+const int perPage =10;
+
+//label title and message that shown in app
 final String internetMsg = 'Check Internet Connection';
 final String somethingMSg = 'Something went wrong. Please try again after some time';
 final String profileCom = 'Please complete your profile to place the order';
@@ -22,7 +27,7 @@ const String RATE_APP='Rate App';
 const String SHARE_APP='Share App';
 const String PRIVACY='Privacy policy';
 const String TERM='Terms and Conditions';
-const String CONTACT='Contact Us';
+const String CONTACT_LBL='Contact Us';
 const String LOGOUT='Logout';
 const String ALL_CAT='All Categories';
 const String ADD_CART= 'Add to Cart';
@@ -52,24 +57,23 @@ const String BUYNOW='Buy Now';
 const String TITLE1_LBL='Search Items';
 const String TITLE2_LBL='Order it';
 const String TITLE3_LBL='You Got it';
-const String DISCRIPTION1='Lorem ipsum dolor sit amet,venenatis sollicitudin, mi odio libero.Nulla phasellus mauris.';
-const String DISCRIPTION2='Lorem ipsum dolor sit amet,venenatis sollicitudin, mi odio libero.Nulla phasellus mauris.';
-const String DISCRIPTION3='Lorem ipsum dolor sit amet,venenatis sollicitudin, mi odio libero.Nulla phasellus mauris.';
+const String DISCRIPTION1='Search millions of items you want very easily';
+const String DISCRIPTION2="We're the eShop and here to make your life easier. Just relax and let's get started";
+const String DISCRIPTION3='Special for you. Free delivered fees for many cities.';
 const String GET_STARTED='Get Started';
 const String WELCOME_ESHOP='Welcome to eShop';
-const String ECOMMERCE_APP_FOR_ALL_BUSINESS='the eCommerce app for all business';
+const String ECOMMERCE_APP_FOR_ALL_BUSINESS='The eCommerce app for all business';
 const String FORGOT_PASSWORD_LBL='Forgot Password?';
 const String LOGIN_LBL='Login';
 const String DONT_HAVE_AN_ACC="Don't have an account? ";
 const String SIGN_UP_LBL='Sign Up';
-const String USER_REGISTRATION='User Registration';
+const String USER_REGISTRATION_DETAILS='User Details';
 const String SHOW_PASSWORD='Show Password';
 const String VERIFY_MOBILE_NUMBER='Verify Mobile Number';
 const String ALREADY_A_CUSTOMER='Already a customer? ';
 const String LOG_IN_LBL='Log In';
-const String MOBILE_NUMBER_VARIFICATION='Mobile number Verification';
-const String ENTER_YOUR_OTP_SENT_TO='Enter your OTP sent to';
-const String MOBILEHINT_LBL='Mobile number';
+const String MOBILE_NUMBER_VARIFICATION='Enter Verification Code';
+const String MOBILEHINT_LBL='Phone number';
 const String PASSHINT_LBL='Password';
 const String NAMEHINT_LBL='User name';
 const String EMAILHINT_LBL='Email';
@@ -81,16 +85,12 @@ const String DOB_LBL='Date of Birth';
 const String GALLARY_LBL="Gallary";
 const String COUNTRY_CODE_LBL="Select country code";
 
-
-
-
-const int perPage =10;
 const String noItem='No Item Found..!!';
 const String noFav='No Favorite Found..!!';
 const String noNoti='No Notification Found..!!';
 const String goToLogin='Please login to access favorite..!!';
 const String searchHint='Find Grocery items here..';
-const String selectVarient='Select Varient';
+const String selectVarient='Select Variant';
 const String addressWarning='Please Select Address..!!';
 const String dateWarning='Please Select Delivery Date..!!';
 const String timeWarning='Please Select Delivery Time..!!';
@@ -98,15 +98,18 @@ const String payWarning='Please Select Payment Method..!!';
 const String cityWarning='City is Required';
 const String areaWarning='Area is Required';
 const String locationWarning='Please Select Location From Map';
+const String emailWarning='Email is Required';
+const String phoneWarning='Contact is Required';
 
 
-
-const String SKIP='skip';
-const String VERIFY_AND_PROCEED='Verify And Proceed';
+const String SKIP='Skip';
+const String VERIFY_AND_PROCEED='Verify and proceed';
 const String DIDNT_GET_THE_CODE="Didn't get the code? ";
 const String RESEND_OTP='Resend OTP';
+const String SEND_OTP='Send OTP';
 const String FORGOT_PASSWORDTITILE='Forgot Password';
 const String GET_PASSWORD='Get Password';
+const String NEXT_LBL='Next';
 const String SET_PASSWORD='Set Password';
 const String UPDATE_PROFILE_LBL='Update Profile';
 const String LOGOUTTXT='Are you sure you want to logout?';
@@ -149,7 +152,7 @@ const String CONFIRM_ORDER='Confirm Order';
 const String CONFIRM='Confirm';
 const String CANCEL='Cancel';
 const String ORDER_PLACED='Order Placed';
-const String ORD_PLC='Order Placed..!!';
+const String ORD_PLC='Thank You';
 const String ORD_PLC_SUCC='Your order has been placed successfully!';
 const String ADD_PROMO='Please Add Promo Code';
 const String PROMO_LBL='Promo Code';
@@ -157,7 +160,7 @@ const String PROMO_SUCCESS='Promo code applied successfully';
 const String USE_WALLET='Use Wallet Balance';
 const String TOTAL_BAL='Total Balance';
 const String REMAIN_BAL='Remaining Balance';
-const String ORDER_ID='Order Id';
+const String ORDER_ID_LBL='Order ';
 const String ORDER_DATE='Order Date';
 const String ORDER_PROCESSED='Order\nProccessed';
 const String ORDER_SHIPPED='Order\nShipped';
@@ -185,3 +188,18 @@ const String NO_INTERNET_DISC="Please check your connection again, or connect to
 const String TRY_AGAIN_INT_LBL="Try Again";
 const String SHOP_NOW='Shop Now';
 const String OUT_OF_STOCK_LBL="Out Of Stock";
+const String SIGNIN_ACC_LBL="Sign in to your account";
+const String SIGNIN_LBL="Sign in";
+const String CREATE_ACC_LBL="Create an account";
+const String SKIP_SIGNIN_LBL="Skip sign in";
+const String CONTINUE_AGREE_LBL="By continuing, you agree to our";
+const String TERMS_SERVICE_LBL="Terms of Service";
+const String AND_LBL="and";
+const String PRIVACY_POLICY_LBL="Privacy Policy";
+const String SEND_VERIFY_CODE_LBL="We will send a Verification Code to This Number";
+const String SENT_VERIFY_CODE_TO_NO_LBL="We have sent a verification code to";
+const String SEND_OTP_TITLE="send otp";
+const String FORGOT_PASS_TITLE="forgot pass";
+const String MORE_DETAIL="More Details";
+const String CONTINUE_SHOPPING='Continue Shopping';
+const String DELIVERED_LBL='Delivered';

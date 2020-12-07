@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 
+import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/String.dart';
 import 'Model/User.dart';
@@ -31,7 +32,7 @@ class AddAddress extends StatefulWidget {
 
 String latitude, longitude;
 
-class StateAddress extends State<AddAddress> {
+class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   String name,
       mobile,
       city,
@@ -45,7 +46,7 @@ class StateAddress extends State<AddAddress> {
       type = "Home",
       isDefault;
   bool checkedDefault = false;
-  bool _isLoading = false;
+  //bool _isLoading = false;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   List<User> cityList = [];
@@ -59,10 +60,27 @@ class StateAddress extends State<AddAddress> {
       countryC,
       altMobC;
   int selectedType = 1;
+  bool _isNetworkAvail = true;
+  Animation buttonSqueezeanimation;
+  AnimationController buttonController;
 
   @override
   void initState() {
     super.initState();
+
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
     callApi();
 
     mobileC = new TextEditingController();
@@ -109,62 +127,59 @@ class StateAddress extends State<AddAddress> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: lightgrey,
+      backgroundColor: lightWhite,
       appBar: getAppBar(ADDRESS_LBL, context),
-      body: Stack(
-        children: <Widget>[
-          _showContent(),
-          showCircularProgress(_isLoading, primary),
-        ],
+      body: _isNetworkAvail ? _showContent() : noInternet(context),
+    );
+  }
+
+  Widget noInternet(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noIntImage(),
+          noIntText(context),
+          noIntDec(context),
+          AppBtn(
+            title: TRY_AGAIN_INT_LBL,
+            btnAnim: buttonSqueezeanimation,
+            btnCntrl: buttonController,
+            onBtnSelected: () async {
+              _playAnimation();
+
+              Future.delayed(Duration(seconds: 2)).then((_) async {
+                _isNetworkAvail = await isNetworkAvailable();
+                if (_isNetworkAvail) {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget));
+                } else {
+                  await buttonController.reverse();
+                  setState(() {});
+                }
+              });
+            },
+          )
+        ]),
       ),
     );
   }
 
   addBtn() {
-    double width = MediaQuery.of(context).size.width;
-
-    return Container(
-      padding:
-          EdgeInsets.only(bottom: 50.0, left: 20.0, right: 20.0, top: 20.0),
-      child: RaisedButton(
-        onPressed: () {
-          setState(() {
-            validateAndSubmit();
-          });
-        },
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-        padding: EdgeInsets.all(0.0),
-        child: Ink(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [primary.withOpacity(0.7), primary],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(30.0)),
-          child: Container(
-            constraints:
-                BoxConstraints(maxWidth: width * 0.90, minHeight: 50.0),
-            alignment: Alignment.center,
-            child: Text(
-              widget.update ? UPDATEADD : ADDADDRESS,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headline6.copyWith(
-                    color: white,
-                  ),
-            ),
-          ),
-        ),
-      ),
+    return AppBtn(
+      title: widget.update ? UPDATEADD : ADDADDRESS,
+      btnAnim: buttonSqueezeanimation,
+      btnCntrl: buttonController,
+      onBtnSelected: () async {
+        validateAndSubmit();
+      },
     );
   }
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
-      setState(() {
-        _isLoading = true;
-      });
+      _playAnimation();
       checkNetwork();
     }
   }
@@ -180,7 +195,7 @@ class StateAddress extends State<AddAddress> {
         setSnackbar(cityWarning);
       } else if (area == null || area.isEmpty) {
         setSnackbar(areaWarning);
-      } else if (latitude==null || longitude==null) {
+      } else if (latitude == null || longitude == null) {
         setSnackbar(locationWarning);
       } else
         return true;
@@ -193,9 +208,11 @@ class StateAddress extends State<AddAddress> {
     if (avail) {
       addNewAddress();
     } else {
-      setSnackbar(internetMsg);
-      setState(() {
-        _isLoading = false;
+      Future.delayed(Duration(seconds: 2)).then((_) async {
+        setState(() {
+          _isNetworkAvail = false;
+        });
+        await buttonController.reverse();
       });
     }
   }
@@ -213,14 +230,14 @@ class StateAddress extends State<AddAddress> {
         decoration: InputDecoration(
           hintText: NAME_LBL,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -242,14 +259,14 @@ class StateAddress extends State<AddAddress> {
         decoration: InputDecoration(
           hintText: "Mobile number",
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -272,14 +289,14 @@ class StateAddress extends State<AddAddress> {
         decoration: InputDecoration(
           hintText: ALT_MOB,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -292,7 +309,7 @@ class StateAddress extends State<AddAddress> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: DropdownButtonFormField(
         iconSize: 40,
-        iconEnabledColor: darkgrey,
+        iconEnabledColor: primary,
         isDense: true,
         hint: new Text(
           "Select City",
@@ -315,14 +332,14 @@ class StateAddress extends State<AddAddress> {
         }).toList(),
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -335,7 +352,7 @@ class StateAddress extends State<AddAddress> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: DropdownButtonFormField(
         iconSize: 40,
-        iconEnabledColor: darkgrey,
+        iconEnabledColor: primary,
         isDense: true,
         hint: new Text(
           "Select Area",
@@ -357,14 +374,14 @@ class StateAddress extends State<AddAddress> {
         }).toList(),
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -388,14 +405,14 @@ class StateAddress extends State<AddAddress> {
               decoration: InputDecoration(
                 hintText: "Address",
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: white,
                 contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: BorderSide(color: white),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: BorderSide(color: white),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
               ),
@@ -411,20 +428,26 @@ class StateAddress extends State<AddAddress> {
             child: IconButton(
               icon: new Icon(Icons.my_location),
               onPressed: () async {
+                Position position = await Geolocator.getCurrentPosition(
+                    desiredAccuracy: LocationAccuracy.high);
 
-
-
-                Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-
-print("position*****$position");
-                Navigator.push(
+                print("position*****$position");
+              await  Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => Map(
-                              latitude: latitude==null?position.latitude:double.parse(latitude),
-                              longitude:longitude==null?position.longitude: double.parse(longitude),
+                              latitude: latitude == null
+                                  ? position.latitude
+                                  : double.parse(latitude),
+                              longitude: longitude == null
+                                  ? position.longitude
+                                  : double.parse(longitude),
                               from: ADDADDRESS,
                             )));
+                setState(() {
+                });
+print("value====$latitude===$latitude");
+
               },
             ),
           )
@@ -447,14 +470,14 @@ print("position*****$position");
         decoration: InputDecoration(
           hintText: "Pincode",
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -470,9 +493,10 @@ print("position*****$position");
         getArea(addressList[widget.index].cityId, false);
       }
     } else {
-      setSnackbar(internetMsg);
-      setState(() {
-        _isLoading = false;
+      Future.delayed(Duration(seconds: 2)).then((_) async {
+        setState(() {
+          _isNetworkAvail = false;
+        });
       });
     }
   }
@@ -495,13 +519,10 @@ print("position*****$position");
         setSnackbar(msg);
       }
       setState(() {
-        _isLoading = false;
-      });
+           });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-      setState(() {
-        _isLoading = false;
-      });
+
     }
   }
 
@@ -532,13 +553,11 @@ print("position*****$position");
         setSnackbar(msg);
       }
       setState(() {
-        _isLoading = false;
+
       });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-      setState(() {
-        _isLoading = false;
-      });
+
     }
   }
 
@@ -549,7 +568,7 @@ print("position*****$position");
         textAlign: TextAlign.center,
         style: TextStyle(color: primary),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
@@ -567,14 +586,14 @@ print("position*****$position");
         decoration: InputDecoration(
           hintText: LANDMARK,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -598,14 +617,14 @@ print("position*****$position");
         decoration: InputDecoration(
           hintText: STATE_LBL,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -626,14 +645,14 @@ print("position*****$position");
         decoration: InputDecoration(
           hintText: COUNTRY_LBL,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: white),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -642,6 +661,9 @@ print("position*****$position");
   }
 
   Future<void> addNewAddress() async {
+
+
+    print("index***********${widget.index}");
     try {
       var data = {
         USER_ID: CUR_USERID,
@@ -673,8 +695,19 @@ print("position*****$position");
       print('response***UpdateUser**$headers***${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
+
+      await buttonController.reverse();
       if (!error) {
         var data = getdata["data"];
+
+
+        if (widget.update) {
+          User value = new User.fromAddress(data[0]);
+          addressList[widget.index] = value;
+        } else {
+          User value = new User.fromAddress(data[0]);
+          addressList.add(value);
+        }
 
         if (checkedDefault.toString() == "true") {
           for (User i in addressList) {
@@ -685,13 +718,7 @@ print("position*****$position");
           addressList[widget.index].isDefault = "1";
           selectedAddress = widget.index;
         }
-        if (widget.update) {
-          User value = new User.fromAddress(data[0]);
-          addressList[widget.index] = value;
-        } else {
-          User value = new User.fromAddress(data[0]);
-          addressList.add(value);
-        }
+
         if (checkedDefault.toString() == "true") {
           for (User i in addressList) i.isDefault = "0";
         }
@@ -700,7 +727,7 @@ print("position*****$position");
         setSnackbar(msg);
       }
       setState(() {
-        _isLoading = false;
+
       });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
@@ -709,6 +736,7 @@ print("position*****$position");
 
   @override
   void dispose() {
+    buttonController.dispose();
     mobileC?.dispose();
     nameC?.dispose();
     stateC?.dispose();
@@ -721,10 +749,16 @@ print("position*****$position");
     super.dispose();
   }
 
+  Future<Null> _playAnimation() async {
+    try {
+      await buttonController.forward();
+    } on TickerCanceled {}
+  }
+
   typeOfAddress() {
     return Container(
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: white,
           borderRadius: BorderRadius.all(Radius.circular(10.0))),
       margin: EdgeInsets.symmetric(vertical: 8),
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
@@ -821,7 +855,7 @@ print("position*****$position");
     return Container(
         margin: EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: white,
           borderRadius: BorderRadius.circular(10),
         ),
         child: CheckboxListTile(
@@ -865,7 +899,8 @@ print("position*****$position");
   }
 
   Future<void> getCurrentLoc() async {
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     latitude = position.latitude.toString();
     longitude = position.longitude.toString();
   }

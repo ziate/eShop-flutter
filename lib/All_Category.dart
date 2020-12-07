@@ -47,6 +47,7 @@ class StateCat extends State<All_Category> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+        backgroundColor: lightWhite,
         appBar: getAppBar(ALL_CAT, context),
         body: GridView.count(
             controller: controller,
@@ -123,9 +124,9 @@ class StateCat extends State<All_Category> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       elevation: 1.0,
     ));
   }
@@ -153,7 +154,7 @@ class StateCat extends State<All_Category> {
               style: Theme.of(context)
                   .textTheme
                   .caption
-                  .copyWith(color: Colors.black),
+                  .copyWith(color: fontColor),
             ),
           )
         ],

@@ -65,11 +65,11 @@ class Section_Model {
 }
 
 class Product {
-  String id, name, desc, image, catName, type, rating, noOfRating, attrIds;
+  String id, name, desc, image, catName, type, rating, noOfRating, attrIds,tax;
   List<String> otherImage;
   List<Product_Varient> prVarientList;
   List<Attribute> attributeList;
-  String isFav, isReturnable, isCancelable, isPurchased, availability,madein,indicator;
+  String isFav, isReturnable, isCancelable, isPurchased, availability,madein,indicator,stockType ;
   bool isFavLoading = false;
 
   // String cartCount;
@@ -95,7 +95,9 @@ class Product {
       this.rating,
       this.isFavLoading,
       this.indicator,
-      this.madein});
+      this.madein,
+        this.tax,
+      this.stockType});
 
   factory Product.fromJson(Map<String, dynamic> json) {
     List<Product_Varient> varientList = (json[PRODUCT_VARIENT] as List)
@@ -129,6 +131,8 @@ class Product {
         attrIds: json[ATTR_VALUE],
         madein: json[MADEIN],
         indicator: json[INDICATOR].toString(),
+        stockType: json[STOCKTYPE].toString(),
+      tax:json[TAX_PER],
         // cartCount: json[CART_COUNT]
         );
   }
