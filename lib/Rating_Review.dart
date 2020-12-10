@@ -1,0 +1,182 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:eshop/Helper/Color.dart';
+import 'package:eshop/Helper/Constant.dart';
+import 'package:eshop/Helper/Session.dart';
+import 'package:eshop/Helper/String.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:http/http.dart';
+import 'Product_Detail.dart';
+import 'Model/User.dart';
+
+class RatingReview extends StatefulWidget {
+  final String id;
+
+  const RatingReview({Key key, this.id}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return StateRate();
+  }
+}
+
+class StateRate extends State<RatingReview> {
+  bool _isNetworkAvail = true;
+  bool _isProgress = false, _isLoading = true;
+  bool isLoadingmore = true;
+  ScrollController controller = new ScrollController();
+  List<User> tempList = [];
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    controller.addListener(_scrollListener);
+    super.initState();
+  }
+  _scrollListener() {
+    if (controller.offset >= controller.position.maxScrollExtent &&
+        !controller.position.outOfRange) {
+      if (this.mounted) {
+        setState(() {
+          isLoadingmore = true;
+
+          print("load more****limit *****$offset****$total");
+          if (offset < total) getReview();
+        });
+      }
+    }
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: lightWhite,
+      appBar: getAppBar(CUSTOMER_REVIEW_LBL, context),
+      body: _review(),
+    );
+  }
+
+  Widget _review() {
+
+
+   return ListView.separated(
+        shrinkWrap: true,
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+       controller: controller,
+       itemCount: (offset < total)
+           ? reviewList.length + 1
+           : reviewList.length,
+        physics: BouncingScrollPhysics(),
+        separatorBuilder: (BuildContext context, int index) => Divider(),
+        itemBuilder: (context, index) {
+
+          print("lenth************${reviewList[index].username}");
+          return
+            (index == reviewList.length && isLoadingmore)
+                ? Center(child: CircularProgressIndicator())
+                :
+            Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    reviewList[index].username,
+                    style: TextStyle(fontWeight: FontWeight.w400),
+                  ),
+                  Spacer(),
+                  Text(
+                    reviewList[index].date,
+                    style: TextStyle(color: lightBlack, fontSize: 11),
+                  )
+                ],
+              ),
+              RatingBarIndicator(
+                rating: double.parse(reviewList[index].rating),
+                itemBuilder: (context, index) => Icon(
+                  Icons.star,
+                  color: Colors.amber,
+                ),
+                itemCount: 5,
+                itemSize: 12.0,
+                direction: Axis.horizontal,
+              ),
+              reviewList[index].comment != null
+                  ? Text(reviewList[index].comment ?? '')
+                  : Container(),
+            ],
+          );
+        });
+  }
+
+  Future<void> getReview() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          PRODUCT_ID: widget.id,
+          LIMIT: perPage.toString(),
+          OFFSET: offset.toString(),
+        };
+
+        Response response =
+            await post(getRatingApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+
+        print('response***review**${widget.id}**${response.body.toString()}');
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          total = int.parse(getdata["total"]);
+
+          if ((offset) < total) {
+            tempList.clear();
+            var data = getdata["data"];
+            tempList =
+                (data as List).map((data) => new User.forReview(data)).toList();
+
+            reviewList.addAll(tempList);
+
+            offset = offset + perPage;
+          }
+        } else {
+          if (msg != "No ratings found !") setSnackbar(msg);
+          isLoadingmore = false;
+        }
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        _isNetworkAvail = false;
+      });
+    }
+  }
+
+  setSnackbar(String msg) {
+    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      content: new Text(
+        msg,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: black),
+      ),
+      backgroundColor: white,
+      elevation: 1.0,
+    ));
+  }
+}

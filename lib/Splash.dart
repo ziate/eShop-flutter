@@ -32,8 +32,6 @@ class _SplashScreen extends State<Splash> {
   void initState() {
     super.initState();
     getJwtKey();
-
-    //startTime();
   }
 
   @override
@@ -75,7 +73,6 @@ class _SplashScreen extends State<Splash> {
 
   Future<void> navigationPage() async {
     bool isFirstTime = await getPrefrenceBool(ISFIRSTTIME);
-    print("first ***$isFirstTime");
     if (isFirstTime) {
       Navigator.pushReplacementNamed(context, "/home");
     } else {

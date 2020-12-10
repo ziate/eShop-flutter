@@ -21,7 +21,7 @@ const Color secondary=Color(0xffFDCD96);
 const Color fontColor=Color(0xff4543C1);
 const Color grad1Color=Color(0xffFFBD69);
 const Color grad2Color=Color(0xffFF6363);
-
+const Color lightWhite2=Color(0xffEEF2F3);
 
 
 const Color pink=Color(0xffd4001d);

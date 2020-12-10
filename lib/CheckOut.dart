@@ -167,7 +167,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             Container(
                 alignment: Alignment.center,
                 height: 35,
-                width: deviceWidth * 0.3,
+                width: deviceWidth * 0.35,
+                padding: EdgeInsets.only(right: 6.0),
                 decoration: new BoxDecoration(
                   gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -1371,7 +1372,8 @@ class StateAddress extends State<Address> with TickerProviderStateMixin {
               Container(
                   alignment: Alignment.center,
                   height: 35,
-                  width: deviceWidth * 0.4,
+                  width: deviceWidth * 0.55,
+                  padding: EdgeInsets.only(right: 6.0),
                   decoration: new BoxDecoration(
                     gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -1983,7 +1985,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       groupValue: selectedMethod,
       onChanged: (val) {
         setState(() {
-          selectedMethod = val;
+           selectedMethod= val;
           payMethod = paymentMethodList[selectedMethod];
         });
       },

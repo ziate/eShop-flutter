@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
@@ -49,6 +50,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   bool _isFirstLoad = true;
   String filter = "";
   String selId = "";
+  String totalProduct;
   var filterList;
   List<String> attnameList;
   List<String> attsubList;
@@ -70,7 +72,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     if (subList != null) {
       if (subList[0].subList == null || subList[0].subList.isEmpty) {
         curTabId = subList[0].id;
-        getProduct(curTabId,0);
+        getProduct(curTabId, 0);
       }
 
       this._addInitailTab();
@@ -214,7 +216,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         leading: Builder(builder: (BuildContext context) {
           return Container(
             margin: EdgeInsets.all(10),
-            decoration:shadow(),
+            decoration: shadow(),
             child: Card(
               elevation: 0,
               child: Padding(
@@ -232,14 +234,14 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           isScrollable: true,
           tabs: _tabs
               .map((tab) => Tab(
-            text: tab['text'],
-          ))
+                    text: tab['text'],
+                  ))
               .toList(),
         ),
         actions: <Widget>[
           Container(
             margin: EdgeInsets.symmetric(vertical: 10),
-            decoration:shadow(),
+            decoration: shadow(),
             child: Card(
               elevation: 0,
               child: Padding(
@@ -254,44 +256,53 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Search(updateHome:widget.updateHome,menuopen: false,),
+                            builder: (context) => Search(
+                              updateHome: widget.updateHome,
+                              menuopen: false,
+                            ),
                           ));
                     }),
               ),
             ),
           ),
-          Container(
-              margin: EdgeInsets.symmetric(vertical:10),
-              decoration:shadow(),
-              child: Card(
-                  elevation: 0,
-                  child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: InkWell(
-                          child: Icon(
-                            Icons.tune,
-                            color: primary,
-                            size: 22,
-                          ),
-                          onTap: () {
-                            if (filterList.length != 0) return filterDialog();
-                          })))),
-          Container(
-              margin: EdgeInsets.only(top: 10,bottom: 10,right: 10),
-              decoration: shadow(),
-              child: Card(
-                  elevation: 0,
-                  child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: InkWell(
-                          child: Icon(
-                            Icons.filter_list,
-                            color: primary,
-                            size: 22,
-                          ),
-                          onTap: () {
-                            if (productList.length != 0) return sortDialog();
-                          }))))
+          filterList != null && filterList.length > 0
+              ? Container(
+                  margin: EdgeInsets.symmetric(vertical: 10),
+                  decoration: shadow(),
+                  child: Card(
+                      elevation: 0,
+                      child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: InkWell(
+                              child: Icon(
+                                Icons.tune,
+                                color: primary,
+                                size: 22,
+                              ),
+                              onTap: () {
+                                if (filterList.length != 0)
+                                  return filterDialog();
+                              }))))
+              : Container(),
+          productList != null && productList.length > 0
+              ? Container(
+                  margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+                  decoration: shadow(),
+                  child: Card(
+                      elevation: 0,
+                      child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: InkWell(
+                              child: Icon(
+                                Icons.filter_list,
+                                color: primary,
+                                size: 22,
+                              ),
+                              onTap: () {
+                                if (productList.length != 0)
+                                  return sortDialog();
+                              }))))
+              : Container()
         ],
       ),
       body: TabBarView(
@@ -719,22 +730,70 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       builder: (builder) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              return Column(mainAxisSize: MainAxisSize.min, children: [
-                Padding(
-                    padding: const EdgeInsets.only(top: 40.0, bottom: 10.0),
-                    child: Text(
-                      FILTER,
-                      style: Theme.of(context).textTheme.headline6,
-                    )),
-                Expanded(
-                    child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+          return Column(mainAxisSize: MainAxisSize.min, children: [
+            Padding(
+                padding: const EdgeInsets.only(top: 30.0),
+                child: AppBar(
+                  title: Text(
+                    FILTER,
+                    style: TextStyle(
+                      color: fontColor,
+                    ),
+                  ),
+                  backgroundColor: white,
+                  elevation: 5,
+                  leading: Builder(builder: (BuildContext context) {
+                    return Container(
+                      margin: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(color: Colors.black12, blurRadius: 10)
+                        ],
+                      ),
+                      child: Card(
+                        elevation: 0,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 4.0),
+                          child: InkWell(
+                            child:
+                                Icon(Icons.keyboard_arrow_left, color: primary),
+                            onTap: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  actions: [
+                    Container(
+                      margin: EdgeInsets.only(right: 10.0),
+                      alignment: Alignment.center,
+                      child: InkWell(
+                          child: Text(FILTER_CLEAR_LBL,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(fontWeight: FontWeight.normal)),
+                          onTap: () {
+                            setState(() {
+                              selectedId.clear();
+                            });
+                          }),
+                    ),
+                  ],
+                )),
+            Expanded(
+                child: Container(
+                    color: lightWhite,
+                    padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
+                    child: Card(
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                           Expanded(
                               flex: 2,
                               child: Container(
-                                  color: lightBlack2,
+                                  color: lightWhite2,
                                   child: ListView.builder(
                                     shrinkWrap: true,
                                     scrollDirection: Axis.vertical,
@@ -743,11 +802,12 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                     itemBuilder: (context, index) {
                                       print(
                                           "Attttt_name::::${filterList[index]['name']}");
-                                      attsubList = filterList[index]['attribute_values']
+                                      attsubList = filterList[index]
+                                              ['attribute_values']
                                           .split(',');
 
                                       attListId = filterList[index]
-                                      ['attribute_values_id']
+                                              ['attribute_values_id']
                                           .split(',');
                                       print("Attsublist ****** $attsubList");
                                       print("AttsublistId ****** $attListId");
@@ -759,19 +819,35 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                       return InkWell(
                                           onTap: () {
                                             setState(() {
-                                              filter = filterList[index]['name'];
+                                              filter =
+                                                  filterList[index]['name'];
                                             });
                                           },
                                           child: Container(
-                                            padding: EdgeInsets.only(left: 20,top: 7.0,bottom: 7.0),
+                                            padding: EdgeInsets.only(
+                                                left: 20,
+                                                top: 7.0,
+                                                bottom: 7.0),
+                                            decoration: BoxDecoration(
+                                                color: filter ==
+                                                        filterList[index]
+                                                            ['name']
+                                                    ? white
+                                                    : lightWhite2,
+                                                borderRadius:
+                                                    BorderRadius.circular(5)),
                                             alignment: Alignment.centerLeft,
-                                            color: filter == filterList[index]['name']
-                                                ? white
-                                                : lightBlack2,
                                             child: new Text(
                                               filterList[index]['name'],
-                                              style:
-                                              Theme.of(context).textTheme.subtitle1,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                      color: filter ==
+                                                              filterList[index]
+                                                                  ['name']
+                                                          ? fontColor
+                                                          : lightBlack),
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 2,
                                             ),
@@ -789,39 +865,50 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                         "filter******$filter******${filterList[index]["name"]}");
 
                                     if (filter == filterList[index]["name"]) {
-                                      attsubList = filterList[index]['attribute_values']
+                                      attsubList = filterList[index]
+                                              ['attribute_values']
                                           .split(',');
 
                                       attListId = filterList[index]
-                                      ['attribute_values_id']
+                                              ['attribute_values_id']
                                           .split(',');
                                       print("Attsublist ****** $attsubList");
                                       print("AttsublistId ****** $attListId");
                                       return Container(
                                           child: ListView.builder(
                                               shrinkWrap: true,
-                                              physics: NeverScrollableScrollPhysics(),
+                                              physics:
+                                                  NeverScrollableScrollPhysics(),
                                               itemCount: attListId.length,
                                               itemBuilder: (context, i) {
                                                 print(
                                                     "selold111111*******************${selectedId.contains(attListId[i])}");
                                                 return CheckboxListTile(
-                                                  title: Text(attsubList[i]),
-                                                  value:
-                                                  selectedId.contains(attListId[i]),
+                                                  title: Text(attsubList[i],
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .subtitle1
+                                                          .copyWith(
+                                                              color:
+                                                                  lightBlack)),
+                                                  value: selectedId
+                                                      .contains(attListId[i]),
                                                   activeColor: primary,
                                                   controlAffinity:
-                                                  ListTileControlAffinity.leading,
+                                                      ListTileControlAffinity
+                                                          .leading,
                                                   onChanged: (bool val) {
                                                     setState(() {
                                                       if (val == true) {
-                                                        selectedId.add(attListId[i]);
+                                                        selectedId
+                                                            .add(attListId[i]);
                                                         print(
                                                             "addListIDadd******${attListId[i]}");
                                                         print(
                                                             "selectId******$selectedId");
                                                       } else {
-                                                        selectedId.remove(attListId[i]);
+                                                        selectedId.remove(
+                                                            attListId[i]);
                                                         print(
                                                             "addListIDremove******${attListId[i]}");
                                                       }
@@ -833,34 +920,42 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                       return Container();
                                     }
                                   })),
-                        ])),
+                        ])))),
+            Container(
+              color: white,
+              child: Row(children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(right: 18.0, bottom: 8),
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: SimBtn(
-                      size: deviceWidth * 0.2,
-                      title: APPLY,
-                      onBtnSelected: () {
-                        if (selectedId != null) {
-                          print("seletIDDDDD****${selectedId.toString()}");
-                          String sId = selectedId.toString();
-                          selId = sId.substring(1, sId.length - 1);
-                          print("selIdnew****$selId");
-                          clearList();
-                          Navigator.pop(context, 'Product Filter');
-                        }
-                      },
-                    ),
-                  ),
-                )
-              ]);
-            });
+                    padding: EdgeInsets.only(left: 15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(total.toString()),
+                        Text(PRODUCTS_FOUND_LBL),
+                      ],
+                    )),
+                Spacer(),
+                SimBtn(
+                  size: deviceWidth * 0.2,
+                  title: APPLY,
+                  onBtnSelected: () {
+                    if (selectedId != null) {
+                      print("seletIDDDDD****${selectedId.toString()}");
+                      selId = selectedId.join(',');
+                      print("selIdnew****$selId");
+                      clearList();
+                      Navigator.pop(context, 'Product Filter');
+                    }
+                  },
+                ),
+              ]),
+            )
+          ]);
+        });
       },
     );
   }
 
-  Future<void> getProduct(String id,int cur) async {
+  Future<void> getProduct(String id, int cur) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -916,7 +1011,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
 
         _isLoading = false;
 
-      /*  for (int i = 0; i < subList.length; i++) {
+        /*  for (int i = 0; i < subList.length; i++) {
           _views[i] = createTabContent(i, subList);
         }*/
         _views[cur] = createTabContent(cur, subList);
@@ -1028,7 +1123,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       offset = 0;
 
       _views[_tc.index] = createTabContent(_tc.index, subList);
-      getProduct(curTabId,_tc.index);
+      getProduct(curTabId, _tc.index);
     });
   }
 
@@ -1257,7 +1352,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           isLoadingmore = true;
 
           print("limit *****$offset****$total");
-          if (offset < total) getProduct(curTabId,_tc.index);
+          if (offset < total) getProduct(curTabId, _tc.index);
         });
       }
     }

@@ -135,7 +135,7 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin{
           type=PRIVACY_POLLICY;
         else if(widget.title==TERM)
           type=TERM_COND;
-        else if(widget.title==CONTACT_LBL)
+        else if(widget.title==ABOUT_LBL)
           type=CONTACT_US;
 
 

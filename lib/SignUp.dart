@@ -1,9 +1,6 @@
 import 'dart:async';
-
-import 'package:country_code_picker/country_code_picker.dart';
+import 'dart:io';
 import 'package:eshop/Helper/String.dart';
-
-import 'package:eshop/Verify_Otp.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +11,6 @@ import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
-import 'Home.dart';
 import 'Login.dart';
 
 class SignUp extends StatefulWidget {
@@ -44,6 +40,9 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       address,
       latitude,
       longitude;
+  FocusNode nameFocus,
+      emailFocus,
+      passFocus= FocusNode();
   bool _isNetworkAvail = true;
   Animation buttonSqueezeanimation;
 
@@ -86,11 +85,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
     final form = _formkey.currentState;
     form.save();
     if (form.validate()) {
-      print("validated**********");
-
       return true;
     }
-    print("not validated**********");
     return false;
   }
 
@@ -98,6 +94,12 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   void dispose() {
     buttonController.dispose();
     super.dispose();
+  }
+
+  _fieldFocusChange(
+      BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
+    currentFocus.unfocus();
+    FocusScope.of(context).requestFocus(nextFocus);
   }
 
   setSnackbar(String msg) {
@@ -148,7 +150,6 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   Future<void> getRegisterUser() async {
     try {
-      print("data****$mobile***$name****$email***$password");
       var data = {
         MOBILE: mobile,
         NAME: name,
@@ -161,12 +162,11 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***registeruser**$headers***${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
       await buttonController.reverse();
       if (!error) {
-        setSnackbar("User Registered Successfully");
+        setSnackbar(REGISTER_SUCCESS_MSG);
         var i = getdata["data"][0];
 
         id = i[ID];
@@ -221,10 +221,15 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       child: TextFormField(
         keyboardType: TextInputType.text,
         controller: nameController,
+        focusNode: nameFocus,
+        textInputAction: TextInputAction.next,
         style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
         validator: validateUserName,
         onSaved: (String value) {
           name = value;
+        },
+        onFieldSubmitted: (v) {
+          _fieldFocusChange(context, nameFocus, emailFocus);
         },
         decoration: InputDecoration(
           prefixIcon: Icon(
@@ -263,11 +268,16 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       ),
       child: TextFormField(
         keyboardType: TextInputType.text,
+        focusNode: emailFocus,
+        textInputAction: TextInputAction.next,
         controller: emailController,
         style:TextStyle(color: fontColor, fontWeight: FontWeight.normal),
         validator: validateEmail,
         onSaved: (String value) {
           email = value;
+        },
+        onFieldSubmitted: (v) {
+          _fieldFocusChange(context, emailFocus, passFocus);
         },
         decoration: InputDecoration(
           prefixIcon: Icon(
@@ -303,6 +313,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         child: TextFormField(
           keyboardType: TextInputType.text,
           obscureText: !this._showPassword,
+          focusNode: passFocus,
           style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
           controller: passwordController,
           validator: validatePass,
@@ -402,6 +413,24 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
     );
   }
 
+  backBtn() {
+    return Platform.isIOS
+        ? Container(
+            padding: EdgeInsets.only(top: 20.0, left: 10.0),
+            alignment: Alignment.topLeft,
+            child: Card(
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4.0),
+                child: InkWell(
+                  child: Icon(Icons.keyboard_arrow_left, color: primary),
+                  onTap: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ))
+        : Container();
+  }
+
   expandedBottomView() {
     double width = deviceWidth;
     return Expanded(
@@ -467,6 +496,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                 ),
                 child: Column(
                   children: <Widget>[
+                    backBtn(),
                     subLogo(),
                     expandedBottomView(),
                   ],

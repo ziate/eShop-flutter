@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:eshop/Helper/String.dart';
@@ -175,8 +176,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
                         )));
           });
         } else {
-          setSnackbar(
-              "Please first Sign Up! Your mobile number is not resgister");
+          setSnackbar(FIRSTSIGNUP_MSG);
         }
       }
     } on TimeoutException catch (_) {
@@ -384,6 +384,24 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
         : Container();
   }
 
+  backBtn() {
+    return Platform.isIOS
+        ? Container(
+            padding: EdgeInsets.only(top: 20.0, left: 10.0),
+            alignment: Alignment.topLeft,
+            child: Card(
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4.0),
+                child: InkWell(
+                  child: Icon(Icons.keyboard_arrow_left, color: primary),
+                  onTap: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ))
+        : Container();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -446,6 +464,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
                 ),
                 child: Column(
                   children: <Widget>[
+                    backBtn(),
                     subLogo(),
                     expandedBottomView(),
                   ],

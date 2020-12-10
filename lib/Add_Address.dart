@@ -7,9 +7,11 @@ import 'package:eshop/CheckOut.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Map.dart';
+import 'package:eshop/Profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 
@@ -30,22 +32,20 @@ class AddAddress extends StatefulWidget {
   }
 }
 
-String latitude, longitude;
+String latitude, longitude, state, country,pincode;
 
 class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   String name,
       mobile,
       city,
       area,
-      pincode,
       address,
       landmark,
       altMob,
-      state,
-      country,
       type = "Home",
       isDefault;
   bool checkedDefault = false;
+
   //bool _isLoading = false;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -63,6 +63,12 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   bool _isNetworkAvail = true;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
+  FocusNode nameFocus,
+      monoFocus,
+      almonoFocus,
+      addFocus,
+      landFocus,
+      locationFocus = FocusNode();
 
   @override
   void initState() {
@@ -217,15 +223,26 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     }
   }
 
+  _fieldFocusChange(
+      BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
+    currentFocus.unfocus();
+    FocusScope.of(context).requestFocus(nextFocus);
+  }
+
   setUserName() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.next,
+        focusNode: nameFocus,
         controller: nameC,
         validator: validateUserName,
         onSaved: (String value) {
           name = value;
+        },
+        onFieldSubmitted: (v) {
+          _fieldFocusChange(context, nameFocus, monoFocus);
         },
         decoration: InputDecoration(
           hintText: NAME_LBL,
@@ -251,13 +268,18 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       child: TextFormField(
         keyboardType: TextInputType.number,
         controller: mobileC,
-        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        textInputAction: TextInputAction.next,
+        focusNode: monoFocus,
         validator: validateMob,
         onSaved: (String value) {
           mobile = value;
         },
+        onFieldSubmitted: (v) {
+          _fieldFocusChange(context, monoFocus, almonoFocus);
+        },
         decoration: InputDecoration(
-          hintText: "Mobile number",
+          hintText: MOBILEHINT_LBL,
           filled: true,
           fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
@@ -280,11 +302,16 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       child: TextFormField(
         keyboardType: TextInputType.number,
         controller: altMobC,
-        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        textInputAction: TextInputAction.next,
+        focusNode: almonoFocus,
         validator: validateAltMob,
         onSaved: (String value) {
           print(altMobC.text);
           altMob = value;
+        },
+        onFieldSubmitted: (v) {
+          _fieldFocusChange(context, almonoFocus, addFocus);
         },
         decoration: InputDecoration(
           hintText: ALT_MOB,
@@ -312,14 +339,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         iconEnabledColor: primary,
         isDense: true,
         hint: new Text(
-          "Select City",
+          CITYSELECT_LBL,
         ),
         value: city,
         onChanged: (String newValue) {
           setState(() {
             city = newValue;
           });
-          // print(city);
           getArea(city, true);
         },
         items: cityList.map((User user) {
@@ -355,7 +381,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         iconEnabledColor: primary,
         isDense: true,
         hint: new Text(
-          "Select Area",
+          AREASELECT_LBL,
         ),
         value: area,
         onChanged: (String newValue) {
@@ -397,13 +423,18 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           Expanded(
             child: TextFormField(
               keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.next,
+              focusNode: addFocus,
               controller: addressC,
               validator: validateField,
               onSaved: (String value) {
                 address = value;
               },
+              onFieldSubmitted: (v) {
+                _fieldFocusChange(context, addFocus, locationFocus);
+              },
               decoration: InputDecoration(
-                hintText: "Address",
+                hintText: ADDRESS_LBL,
                 filled: true,
                 fillColor: white,
                 contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
@@ -427,12 +458,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                 color: white),
             child: IconButton(
               icon: new Icon(Icons.my_location),
+              focusNode: locationFocus,
               onPressed: () async {
                 Position position = await Geolocator.getCurrentPosition(
                     desiredAccuracy: LocationAccuracy.high);
+                
 
-                print("position*****$position");
-              await  Navigator.push(
+                await Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => Map(
@@ -444,10 +476,18 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                                   : double.parse(longitude),
                               from: ADDADDRESS,
                             )));
-                setState(() {
-                });
-print("value====$latitude===$latitude");
+                setState(() {});
+                List<Placemark> placemark = await placemarkFromCoordinates(
+                    double.parse(latitude), double.parse(longitude));
 
+                state = placemark[0].administrativeArea;
+                country = placemark[0].country;
+                pincode=placemark[0].postalCode;
+                setState(() {
+                  countryC.text = country;
+                  stateC.text = state;
+                  pincodeC.text=pincode;
+                });
               },
             ),
           )
@@ -462,13 +502,13 @@ print("value====$latitude===$latitude");
       child: TextFormField(
         keyboardType: TextInputType.number,
         controller: pincodeC,
-        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         validator: validatePincode,
         onSaved: (String value) {
           pincode = value;
         },
         decoration: InputDecoration(
-          hintText: "Pincode",
+          hintText: PINCODEHINT_LBL,
           filled: true,
           fillColor: white,
           contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
@@ -578,6 +618,8 @@ print("value====$latitude===$latitude");
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.next,
+        focusNode: landFocus,
         controller: landmarkC,
         validator: validateField,
         onSaved: (String value) {
@@ -607,7 +649,7 @@ print("value====$latitude===$latitude");
       child: TextFormField(
         keyboardType: TextInputType.text,
         controller: stateC,
-        validator: validateField,
+        //validator: validateField,
         onChanged: (v) => setState(() {
           state = v;
         }),
@@ -661,8 +703,6 @@ print("value====$latitude===$latitude");
   }
 
   Future<void> addNewAddress() async {
-
-
     print("index***********${widget.index}");
     try {
       var data = {
@@ -884,9 +924,9 @@ print("value====$latitude===$latitude");
                 setAltMobileNo(),
                 setAddress(),
                 setLandmark(),
-                setPincode(),
                 setCities(),
                 setArea(),
+                setPincode(),
                 setStateField(),
                 setCountry(),
                 typeOfAddress(),
@@ -903,5 +943,18 @@ print("value====$latitude===$latitude");
         desiredAccuracy: LocationAccuracy.high);
     latitude = position.latitude.toString();
     longitude = position.longitude.toString();
+
+    List<Placemark> placemark = await placemarkFromCoordinates(
+        double.parse(latitude), double.parse(longitude));
+
+    state = placemark[0].administrativeArea;
+    country = placemark[0].country;
+    pincode=placemark[0].postalCode;
+    setState(() {
+      countryC.text = country;
+      stateC.text = state;
+      pincodeC.text=pincode;
+    });
+
   }
 }

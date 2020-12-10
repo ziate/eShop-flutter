@@ -169,8 +169,9 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(4.0),
                           child: CachedNetworkImage(
                             imageUrl: favList[index].productList[0].image,
-                            height: 100.0,
-                            width: 100.0,
+                            height: 80.0,
+                            width: 80.0,
+                            fit: BoxFit.fill,
                             placeholder: (context, url) => placeHolder(90),
                           ))),
                   Expanded(
@@ -186,7 +187,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                   padding: const EdgeInsets.only(top: 5.0),
                                   child: Text(
                                     favList[index].productList[0].name,
-                                    style: TextStyle(color: lightBlack),
+                                    style: TextStyle(color: lightBlack,fontWeight: FontWeight.bold),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),

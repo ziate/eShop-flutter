@@ -44,9 +44,8 @@ class MyApp extends StatelessWidget {
                 color: fontColor,
                 fontWeight: FontWeight.w600,
               ),
-              subtitle1: TextStyle(color: fontColor,fontWeight: FontWeight.bold)
-
-          )),
+              subtitle1:
+                  TextStyle(color: fontColor, fontWeight: FontWeight.bold))),
       debugShowCheckedModeBanner: false,
       //home: Splash(),
       initialRoute: '/',

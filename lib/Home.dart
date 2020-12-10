@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
@@ -7,8 +8,11 @@ import 'package:app_review/app_review.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/All_Category.dart';
+import 'package:eshop/Faqs.dart';
 import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
+import 'package:eshop/MyProfile.dart';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'package:eshop/Privacy_Policy.dart';
 import 'package:eshop/Product_Detail.dart';
@@ -24,6 +28,7 @@ import 'package:http/http.dart';
 import 'package:eshop/ProductList.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
+import 'package:eshop/ProductList.dart';
 import 'package:shimmer/shimmer.dart';
 import 'Cart.dart';
 import 'Helper/AppBtn.dart';
@@ -78,7 +83,7 @@ class StateHome extends State<Home> {
       HomePage(updateHome),
       Favorite(updateHome),
       NotificationList(),
-      TrackOrder()
+      MyProfile(),
     ];
     firebaseCloudMessaging_Listeners();
     firNotificationInitialize();
@@ -101,8 +106,8 @@ class StateHome extends State<Home> {
     return Scaffold(
         backgroundColor: lightWhite,
         key: scaffoldKey,
-        appBar: _getAppbar(),
-        drawer: _getDrawer(),
+        appBar: _curSelected==3?null:_getAppbar(),
+       // drawer: _getDrawer(),
         bottomNavigationBar: getBottomBar(),
         body: fragments[_curSelected]);
   }
@@ -146,7 +151,7 @@ class StateHome extends State<Home> {
     ));
   }
 
-  _getDrawer() {
+  /*_getDrawer() {
     print("current==========$CUR_USERNAME===$CUR_USERID");
     return Drawer(
       child: Container(
@@ -361,20 +366,18 @@ class StateHome extends State<Home> {
         },
       ),
     );
-  }
+  }*/
 
   _getAppbar() {
     double width = deviceWidth;
     double height = width / 2;
     String title = _curSelected == 1
         ? FAVORITE
-        : _curSelected == 2
-        ? NOTIFICATION
-        : TRACK_ORDER;
+        :NOTIFICATION;
     print("cart count***$CUR_CART_COUNT");
     return AppBar(
       title: _curSelected == 0
-          ? Image.asset('assets/images/titleicon.png')
+          ?Image.asset('assets/images/titleicon.png')
           : Text(
         title,
         style: TextStyle(
@@ -382,11 +385,11 @@ class StateHome extends State<Home> {
         ),
       ),
       iconTheme: new IconThemeData(color: primary),
-      centerTitle: true,
+     // centerTitle:_curSelected == 0? false:true,
       actions: <Widget>[
         InkWell(
           child: Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+            padding: const EdgeInsets.only(top: 10.0, bottom: 10,right:10),
             child: Container(
               decoration: shadow(),
               child: Card(
@@ -437,7 +440,7 @@ class StateHome extends State<Home> {
                 : goToCart();
           },
         ),
-        InkWell(
+       /* InkWell(
           onTap: () {
             if (CUR_USERID != null) {
               Navigator.push(
@@ -473,7 +476,7 @@ class StateHome extends State<Home> {
               ),
             ),
           ),
-        )
+        )*/
       ],
       backgroundColor: _curSelected == 0 ? Colors.transparent : white,
       elevation: 0,
@@ -511,11 +514,11 @@ class StateHome extends State<Home> {
           ),
           _curSelected == 3
               ? Image.asset(
-            "assets/images/sel_tracks.png",
+            "assets/images/sel_user.png",
             height: 35,
           )
               : Image.asset(
-            "assets/images/desel_tracks.png",
+            "assets/images/desel_user.png",
           )
         ],
         onTap: (int index) {
@@ -1312,7 +1315,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           enabled: false,
           textAlign: TextAlign.left,
           decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(0, 5.0, 0, 5.0),
+              contentPadding: EdgeInsets.fromLTRB(15.0, 5.0, 0, 5.0),
               border: new OutlineInputBorder(
                 borderRadius: const BorderRadius.all(
                   const Radius.circular(50.0),
@@ -1328,9 +1331,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   .of(context)
                   .textTheme
                   .bodyText2
-                  .copyWith(color: fontColor),
-              prefixIcon: Image.asset('assets/images/search.png'),
-              suffixIcon:  Image.asset('assets/images/filter.png'),
+                  .copyWith(color: fontColor,),
+              //prefixIcon: Image.asset('assets/images/search.png'),
+              suffixIcon:  Image.asset('assets/images/search.png',color:primary ,),
               fillColor: white,
               filled: true),
         ),
@@ -1915,9 +1918,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     }
 
     double width = deviceWidth * 0.5;
-    print(
-        "tag=============${sectionList[secPos].productList[index]
-            .id}${secPos}${index}========home");
 
     return Card(
       elevation: 0.2,
@@ -1939,6 +1939,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                       imageUrl: sectionList[secPos].productList[index].image,
                       height: double.maxFinite,
                       width: double.maxFinite,
+                      fit: BoxFit.fill,
                       placeholder: (context, url) => placeHolder(width),
                     ),
 
@@ -2220,9 +2221,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> getSetting() async {
     try {
-      var parameter = {TYPE: CURRENCY};
+    //  var parameter = {TYPE: CURRENCY};
       Response response =
-      await post(getSettingApi, body: parameter, headers: headers)
+      await post(getSettingApi, headers: headers)
           .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
@@ -2230,8 +2231,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
-        var data = getdata["data"];
-        CUR_CURRENCY = data;
+        var data = getdata["data"]["system_settings"][0];
+        CUR_CURRENCY = data["currency"];
+        RETURN_DAYS=data['max_product_return_days'];
+
       } else {
         setSnackbar(msg);
       }

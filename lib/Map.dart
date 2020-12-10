@@ -58,8 +58,10 @@ class _MapState extends State<Map> {
       address = placemark[0].name;
       address = address + "," + placemark[0].subLocality;
       address = address + "," + placemark[0].locality;
+      address = address + "," + placemark[0].administrativeArea;
       address = address + "," + placemark[0].country;
       address = address + "," + placemark[0].postalCode;
+
       locationController.text = address;
       _markers.add(Marker(
         markerId: MarkerId("Marker"),
@@ -131,7 +133,7 @@ class _MapState extends State<Map> {
                     {
                       latitude=latlong.latitude.toString();
                       longitude=latlong.longitude.toString();
-                    }else if(widget.from==PROFILE){
+                    }else if(widget.from==EDIT_PROFILE_LBL){
                       lat=latlong.latitude.toString();
                       long=latlong.longitude.toString();
                     }
@@ -159,13 +161,14 @@ class _MapState extends State<Map> {
   }
 
   Future<void> getLocation() async {
-    List<Placemark> placemark = await placemarkFromCoordinates(widget.latitude, widget.longitude);
-
+    List<Placemark> placemark =
+        await placemarkFromCoordinates(latlong.latitude, latlong.longitude);
 
     var address;
     address = placemark[0].name;
     address = address + "," + placemark[0].subLocality;
     address = address + "," + placemark[0].locality;
+    address = address + "," + placemark[0].administrativeArea;
     address = address + "," + placemark[0].country;
     address = address + "," + placemark[0].postalCode;
     locationController.text = address;

@@ -184,6 +184,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                           imageUrl: widget.section_model.productList[index].image,
                           height: double.maxFinite,
                           width: double.maxFinite,
+                          fit: BoxFit.fill,
                           placeholder: (context, url) => placeHolder(width),
                         ),
                       ),

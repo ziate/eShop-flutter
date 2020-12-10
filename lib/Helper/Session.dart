@@ -52,12 +52,13 @@ back() {
   );
 }
 
-shadow(){
+shadow() {
   return BoxDecoration(
-    boxShadow: [BoxShadow(color: Color(0x1a0400ff),offset:Offset(0,0), blurRadius: 30)],
+    boxShadow: [
+      BoxShadow(color: Color(0x1a0400ff), offset: Offset(0, 0), blurRadius: 30)
+    ],
   );
 }
-
 
 placeHolder(double height) {
   return Image.asset(
@@ -67,8 +68,6 @@ placeHolder(double height) {
     fit: BoxFit.fill,
   );
 }
-
-
 
 errorWidget(double size) {
   return Icon(
@@ -87,7 +86,7 @@ getAppBar(String title, BuildContext context) {
         child: Card(
           elevation: 0,
           child: Padding(
-            padding: const EdgeInsets.only(right:4.0),
+            padding: const EdgeInsets.only(right: 4.0),
             child: InkWell(
               child: Icon(Icons.keyboard_arrow_left, color: primary),
               onTap: () => Navigator.of(context).pop(),
@@ -215,8 +214,10 @@ Future<void> clearUserSession() async {
   waitList.add(prefs.remove(ID));
   waitList.add(prefs.remove(NAME));
   waitList.add(prefs.remove(MOBILE));
+
   CUR_USERID = '';
-  CUR_USERNAME="";
+  CUR_USERNAME = "";
+  await prefs.clear();
 }
 
 Future<void> saveUserDetail(
@@ -224,7 +225,7 @@ Future<void> saveUserDetail(
     String name,
     String email,
     String mobile,
-   // String countrycode,
+    // String countrycode,
     String city,
     String area,
     String address,
@@ -414,7 +415,6 @@ Widget shimmer() {
 }
 
 String getToken() {
-
   final claimSet =
       new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
   String token = issueJwtHS256(claimSet, jwtKey);

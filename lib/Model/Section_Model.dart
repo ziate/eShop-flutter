@@ -13,17 +13,16 @@ class Section_Model {
       short_desc;
   List<Product> productList;
 
-  Section_Model(
-      {this.id,
-      this.title,
-      this.productList,
-      this.varientId,
-      this.qty,
-      this.productId,
-      this.perItemTotal,
-      this.perItemPrice,
-      this.style,
-      this.short_desc});
+  Section_Model({this.id,
+    this.title,
+    this.productList,
+    this.varientId,
+    this.qty,
+    this.productId,
+    this.perItemTotal,
+    this.perItemPrice,
+    this.style,
+    this.short_desc});
 
   factory Section_Model.fromJson(Map<String, dynamic> parsedJson) {
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
@@ -65,39 +64,47 @@ class Section_Model {
 }
 
 class Product {
-  String id, name, desc, image, catName, type, rating, noOfRating, attrIds,tax;
+  String id, name, desc, image, catName, type, rating, noOfRating, attrIds, tax;
   List<String> otherImage;
   List<Product_Varient> prVarientList;
   List<Attribute> attributeList;
-  String isFav, isReturnable, isCancelable, isPurchased, availability,madein,indicator,stockType ;
+  String isFav,
+      isReturnable,
+      isCancelable,
+      isPurchased,
+      availability,
+      madein,
+      indicator,
+      stockType,cancleTill,total;
+
   bool isFavLoading = false;
 
   // String cartCount;
 
-  Product(
-      {this.id,
-      this.name,
-      this.desc,
-      this.image,
-      this.catName,
-      this.type,
-      this.otherImage,
-      this.prVarientList,
-      this.attributeList,
-      this.isFav,
-      this.isCancelable,
-      this.isReturnable,
-      this.isPurchased,
-      this.availability,
-      this.noOfRating,
-      this.attrIds,
-      // this.cartCount,
-      this.rating,
-      this.isFavLoading,
-      this.indicator,
-      this.madein,
-        this.tax,
-      this.stockType});
+  Product({this.id,
+    this.name,
+    this.desc,
+    this.image,
+    this.catName,
+    this.type,
+    this.otherImage,
+    this.prVarientList,
+    this.attributeList,
+    this.isFav,
+    this.isCancelable,
+    this.isReturnable,
+    this.isPurchased,
+    this.availability,
+    this.noOfRating,
+    this.attrIds,
+    // this.cartCount,
+    this.rating,
+    this.isFavLoading,
+    this.indicator,
+    this.madein,
+    this.tax,
+    this.total,
+    this.stockType,this.cancleTill});
 
   factory Product.fromJson(Map<String, dynamic> json) {
     List<Product_Varient> varientList = (json[PRODUCT_VARIENT] as List)
@@ -111,30 +118,32 @@ class Product {
     List<String> other_image = List<String>.from(json[OTHER_IMAGE]);
 
     return new Product(
-        id: json[ID],
-        name: json[NAME],
-        desc: json[DESC],
-        image: json[IMAGE],
-        catName: json[CAT_NAME],
-        rating: json[RATING],
-        noOfRating: json[NO_OF_RATE],
-        type: json[TYPE],
-        isFav: json[FAV].toString(),
-        isCancelable: json[ISCANCLEABLE],
-        availability: json[AVAILABILITY].toString(),
-        isPurchased: json[ISPURCHASED].toString(),
-        isReturnable: json[ISRETURNABLE],
-        otherImage: other_image,
-        prVarientList: varientList,
-        attributeList: attList,
-        isFavLoading: false,
-        attrIds: json[ATTR_VALUE],
-        madein: json[MADEIN],
-        indicator: json[INDICATOR].toString(),
-        stockType: json[STOCKTYPE].toString(),
-      tax:json[TAX_PER],
-        // cartCount: json[CART_COUNT]
-        );
+      id: json[ID],
+      name: json[NAME],
+      desc: json[DESC],
+      image: json[IMAGE],
+      catName: json[CAT_NAME],
+      rating: json[RATING],
+      noOfRating: json[NO_OF_RATE],
+      type: json[TYPE],
+      isFav: json[FAV].toString(),
+      isCancelable: json[ISCANCLEABLE],
+      availability: json[AVAILABILITY].toString(),
+      isPurchased: json[ISPURCHASED].toString(),
+      isReturnable: json[ISRETURNABLE],
+      otherImage: other_image,
+      prVarientList: varientList,
+      attributeList: attList,
+      isFavLoading: false,
+      attrIds: json[ATTR_VALUE],
+      madein: json[MADEIN],
+      indicator: json[INDICATOR].toString(),
+      stockType: json[STOCKTYPE].toString(),
+      tax: json[TAX_PER],
+      total: json[TOTAL],
+      cancleTill: json[CANCLE_TILL]
+      // cartCount: json[CART_COUNT]
+    );
   }
 }
 
@@ -147,21 +156,23 @@ class Product_Varient {
       type,
       attr_name,
       varient_value,
-availability,
+      availability,
       cartCount;
+  List<String> images;
 
-  Product_Varient(
-      {this.id,
-      this.productId,
-      this.attr_name,
-      this.varient_value,
-      this.price,
-      this.disPrice,
-      this.attribute_value_ids,
-        this.availability,
-      this.cartCount});
+  Product_Varient({this.id,
+    this.productId,
+    this.attr_name,
+    this.varient_value,
+    this.price,
+    this.disPrice,
+    this.attribute_value_ids,
+    this.availability,
+    this.cartCount, this.images});
 
   factory Product_Varient.fromJson(Map<String, dynamic> json) {
+    List<String> images = List<String>.from(json[IMAGES]);
+
     return new Product_Varient(
         id: json[ID],
         attribute_value_ids: json[ATTRIBUTE_VALUE_ID],
@@ -171,7 +182,10 @@ availability,
         disPrice: json[DIS_PRICE],
         price: json[PRICE],
         availability: json[AVAILABILITY].toString(),
-        cartCount: json[CART_COUNT]);
+        cartCount: json[CART_COUNT],
+        images: images
+
+    );
   }
 }
 

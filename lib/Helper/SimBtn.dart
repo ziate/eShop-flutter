@@ -34,7 +34,7 @@ class SimBtn extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme
-                  .button
+                  .subtitle1
                   .copyWith(color: white, fontWeight: FontWeight.normal))),
       onPressed: () {
         onBtnSelected();

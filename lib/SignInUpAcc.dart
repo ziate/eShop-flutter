@@ -89,7 +89,7 @@ class _SignInUpAccState extends State<SignInUpAcc>
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme
-                    .headline6
+                    .subtitle1
                     .copyWith(color: white, fontWeight: FontWeight.normal))),
         onPressed: () {
           Navigator.push(
@@ -122,7 +122,7 @@ class _SignInUpAccState extends State<SignInUpAcc>
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme
-                    .headline6
+                    .subtitle1
                     .copyWith(color: white, fontWeight: FontWeight.normal))),
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
@@ -154,7 +154,7 @@ class _SignInUpAccState extends State<SignInUpAcc>
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme
-                    .headline6
+                    .subtitle1
                     .copyWith(color: white, fontWeight: FontWeight.normal))),
         onPressed: () {
           Navigator.pushReplacementNamed(context, "/home");

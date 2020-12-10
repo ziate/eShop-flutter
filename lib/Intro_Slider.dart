@@ -4,7 +4,7 @@ import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Product_Detail.dart';
 import 'package:eshop/SignInUpAcc.dart';
-
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 import 'Helper/AppBtn.dart';
@@ -27,11 +27,12 @@ class _GettingStartedScreenState extends State<Intro_Slider>
   @override
   void initState() {
     super.initState();
+
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
 
     buttonSqueezeanimation = new Tween(
-      begin: deviceWidth * 0.7,
+      begin: deviceWidth * 0.9,
       end: 50.0,
     ).animate(new CurvedAnimation(
       parent: buttonController,
@@ -47,6 +48,8 @@ class _GettingStartedScreenState extends State<Intro_Slider>
     super.dispose();
     _pageController.dispose();
     buttonController.dispose();
+
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
   }
 
   _onPageChanged(int index) {
@@ -113,7 +116,6 @@ class _GettingStartedScreenState extends State<Intro_Slider>
                       style: Theme.of(context).textTheme.subtitle1.copyWith(
                           color: fontColor, fontWeight: FontWeight.normal)),
                 ),
-
               ],
             ),
           );
@@ -125,31 +127,28 @@ class _GettingStartedScreenState extends State<Intro_Slider>
   _btn() {
     return Column(
       children: [
-        Container(
-          padding: EdgeInsets.only(bottom: 20, top: 30.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: map<Widget>(
-              slideList,
-                  (index, url) {
-                return Container(
-                    width: 10.0,
-                    height: 10.0,
-                    margin: EdgeInsets.symmetric(horizontal: 5.0),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _currentPage == index
-                          ? fontColor
-                          : fontColor.withOpacity((0.5)),
-                    ));
-              },
-            ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: map<Widget>(
+            slideList,
+            (index, url) {
+              return Container(
+                  width: 10.0,
+                  height: 10.0,
+                  margin: EdgeInsets.symmetric(horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentPage == index
+                        ? fontColor
+                        : fontColor.withOpacity((0.5)),
+                  ));
+            },
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 28.0),
-          child: Center(
+        Center(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom:18.0),
               child: AppBtn(
                   title: _currentPage == 0 || _currentPage == 1
                       ? NEXT_LBL
@@ -169,8 +168,8 @@ class _GettingStartedScreenState extends State<Intro_Slider>
                           curve: Curves.decelerate,
                           duration: Duration(milliseconds: 300));
                     }
-                  })),
-        ),
+                  }),
+            )),
       ],
     );
   }
@@ -178,7 +177,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
   skipBtn() {
     return _currentPage == 0 || _currentPage == 1
         ? Padding(
-            padding: EdgeInsets.only(top: 50.0, right: 10.0),
+            padding: EdgeInsets.only(top: 20.0, right: 10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
@@ -212,78 +211,12 @@ class _GettingStartedScreenState extends State<Intro_Slider>
 
   @override
   Widget build(BuildContext context) {
-
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
+    SystemChrome.setEnabledSystemUIOverlays([]);
+
     return Scaffold(
-        body:
-
-     /*   IntroViewsFlutter(
-          [
-            PageViewModel(
-                pageColor: const Color(0xFF03A9F4),
-                // iconImageAssetPath: 'assets/air-hostess.png',
-                // bubble: Image.asset('assets/air-hostess.png'),
-                body: Text(slideList[0].description,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.subtitle1.copyWith(
-                      color: fontColor, fontWeight: FontWeight.normal),),
-                title:  Text(slideList[0].title,
-                    style: Theme.of(context).textTheme.headline5.copyWith(
-                        color: fontColor, fontWeight: FontWeight.bold)),
-               // titleTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
-               // bodyTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
-                mainImage: Image.asset(
-                  slideList[0].imageUrl,
-                  alignment: Alignment.center,
-                ),),
-            PageViewModel(
-              pageColor: primary.withOpacity(0.1),
-              iconImageAssetPath: 'assets/waiter.png',
-              body:  Text(slideList[1].description,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.subtitle1.copyWith(
-                    color: fontColor, fontWeight: FontWeight.normal),),
-              title: Text(slideList[1].title,
-    style: Theme.of(context).textTheme.headline5.copyWith(
-    color: fontColor, fontWeight: FontWeight.bold)),
-              mainImage: Image.asset(
-                slideList[1].imageUrl,
-                alignment: Alignment.center,
-              ),
-              titleTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
-              bodyTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
-            ),
-            PageViewModel(
-              pageColor: lightWhite,
-              iconImageAssetPath: 'assets/taxi-driver.png',
-              body:  Text(slideList[2].description,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.subtitle1.copyWith(
-                    color: fontColor, fontWeight: FontWeight.normal),),
-              title:  Text(slideList[2].title,
-                  style: Theme.of(context).textTheme.headline5.copyWith(
-                      color: fontColor, fontWeight: FontWeight.bold)),
-              mainImage: Image.asset(
-                slideList[2].imageUrl,
-                alignment: Alignment.center,
-              ),
-              titleTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
-              bodyTextStyle: TextStyle(fontFamily: 'MyFont', color: Colors.white),
-            ),
-          ],
-          showNextButton: true,
-          showBackButton: true,
-          onTapDoneButton: () {
-
-          },
-          pageButtonTextStyles: TextStyle(
-            color: Colors.white,
-            fontSize: 18.0,
-          ),
-        ), //IntroViewsFlutter
-*/
-       Column(
+        body: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         skipBtn(),
@@ -292,8 +225,6 @@ class _GettingStartedScreenState extends State<Intro_Slider>
       ],
     ));
   }
-
-
 }
 
 class Slide {

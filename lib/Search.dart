@@ -38,6 +38,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   int pos = 0;
   bool _isProgress = false;
   List<Product> productList = [];
+  List<Product> tempList = [];
 
   Animation buttonSqueezeanimation;
   AnimationController buttonController;

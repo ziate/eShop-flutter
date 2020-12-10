@@ -25,6 +25,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   final mobileController = TextEditingController();
   final passwordController = TextEditingController();
   String countryName;
+  FocusNode passFocus,
+      monoFocus= FocusNode();
 
   bool _isClickable = true;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
@@ -70,6 +72,11 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   void dispose() {
     buttonController.dispose();
     super.dispose();
+  }
+  _fieldFocusChange(
+      BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
+    currentFocus.unfocus();
+    FocusScope.of(context).requestFocus(nextFocus);
   }
 
   Future<Null> _playAnimation() async {
@@ -160,8 +167,6 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     Response response =
         await post(getUserLoginApi, body: data, headers: headers)
             .timeout(Duration(seconds: timeOut));
-
-    print('response***login*${data.toString()}**${response.body.toString()}');
     var getdata = json.decode(response.body);
 
     bool error = getdata["error"];
@@ -170,12 +175,10 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     if (!error) {
       setSnackbar(msg);
       var i = getdata["data"][0];
-
       id = i[ID];
       username = i[USERNAME];
       email = i[EMAIL];
       mobile = i[MOBILE];
-      //countrycode=i[COUNTRY_CODE];
       city = i[CITY];
       area = i[AREA];
       address = i[ADDRESS];
@@ -186,6 +189,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
       CUR_USERID = id;
       CUR_USERNAME = username;
+
+
       saveUserDetail(id, username, email, mobile, city, area, address, pincode,
           latitude, longitude, image);
 
@@ -232,11 +237,15 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         keyboardType: TextInputType.number,
         controller: mobileController,
         style: TextStyle(color: fontColor),
+        focusNode: monoFocus,
+        textInputAction: TextInputAction.next,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         validator: validateMob,
         onSaved: (String value) {
           mobile = value;
-          print('Mobile no:$mobile');
+        },
+        onFieldSubmitted: (v) {
+          _fieldFocusChange(context, monoFocus, passFocus);
         },
         decoration: InputDecoration(
           prefixIcon: Icon(
@@ -273,6 +282,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         child: TextFormField(
           keyboardType: TextInputType.text,
           obscureText: true,
+          focusNode: passFocus,
           style: TextStyle(color: fontColor),
           controller: passwordController,
           validator: validatePass,

@@ -361,6 +361,7 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
                       color: fontColor, fontWeight: FontWeight.bold),
                 ),
                 Text(ORDER_DATE + " : " + orderList[index].orderDate),
+                orderList[index].otp!="0"?Text(ORDER_OTP + " : " + orderList[index].otp):Container(),
                 Text(orderList[index].itemList[0].name +
                     "${orderList[index].itemList.length > 1 ? " and more items" : ""} "),
               ],
