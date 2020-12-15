@@ -64,7 +64,7 @@ class StateRate extends State<RatingReview> {
 
    return ListView.separated(
         shrinkWrap: true,
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
        controller: controller,
        itemCount: (offset < total)
            ? reviewList.length + 1
@@ -78,39 +78,45 @@ class StateRate extends State<RatingReview> {
             (index == reviewList.length && isLoadingmore)
                 ? Center(child: CircularProgressIndicator())
                 :
-            Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            Card(
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    reviewList[index].username,
-                    style: TextStyle(fontWeight: FontWeight.w400),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        reviewList[index].username,
+                        style: TextStyle(fontWeight: FontWeight.w400),
+                      ),
+                      Spacer(),
+                      Text(
+                        reviewList[index].date,
+                        style: TextStyle(color: lightBlack, fontSize: 11),
+                      )
+                    ],
                   ),
-                  Spacer(),
-                  Text(
-                    reviewList[index].date,
-                    style: TextStyle(color: lightBlack, fontSize: 11),
-                  )
+                  RatingBarIndicator(
+                    rating: double.parse(reviewList[index].rating),
+                    itemBuilder: (context, index) => Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                    ),
+                    itemCount: 5,
+                    itemSize: 12.0,
+                    direction: Axis.horizontal,
+                  ),
+                  reviewList[index].comment != null
+                      ? Text(reviewList[index].comment ?? '')
+                      : Container(),
                 ],
+          ),
               ),
-              RatingBarIndicator(
-                rating: double.parse(reviewList[index].rating),
-                itemBuilder: (context, index) => Icon(
-                  Icons.star,
-                  color: Colors.amber,
-                ),
-                itemCount: 5,
-                itemSize: 12.0,
-                direction: Axis.horizontal,
-              ),
-              reviewList[index].comment != null
-                  ? Text(reviewList[index].comment ?? '')
-                  : Container(),
-            ],
-          );
+            );
         });
   }
 

@@ -200,16 +200,18 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
+             // crossAxisAlignment: CrossAxisAlignment.start,
+
               children: <Widget>[
                 Hero(
                   tag: "$index${productList[index].id}",
                   child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4.0),
+                      borderRadius: BorderRadius.circular(7.0),
                       child: CachedNetworkImage(
                         imageUrl: productList[index].image,
                         height: 80.0,
                         width: 80.0,
-                        fit: BoxFit.fill,
+
                         placeholder: (context, url) => placeHolder(80),
                       )),
                 ),
@@ -226,126 +228,48 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5.0),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.star,
-                                color: Colors.yellow,
-                                size: 12,
-                              ),
-                              Text(
-                                " " + productList[index].rating,
-                                style: Theme.of(context).textTheme.overline,
-                              ),
-                              Text(
-                                " (" + productList[index].noOfRating + ")",
-                                style: Theme.of(context).textTheme.overline,
-                              )
-                            ],
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: Colors.yellow,
+                              size: 12,
+                            ),
+                            Text(
+                              " " + productList[index].rating,
+                              style: Theme.of(context).textTheme.overline,
+                            ),
+                            Text(
+                              " (" + productList[index].noOfRating + ")",
+                              style: Theme.of(context).textTheme.overline,
+                            )
+                          ],
                         ),
                         Row(
                           children: <Widget>[
-                            productList[index].availability == "1" ||
-                                    productList[index].stockType == "null"
-                                ? Row(
-                                    children: <Widget>[
-                                      InkWell(
-                                        child: Container(
-                                          margin: EdgeInsets.only(
-                                              right: 8, top: 8, bottom: 8),
-                                          child: Icon(
-                                            Icons.remove,
-                                            size: 12,
-                                            color: Colors.grey,
-                                          ),
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: Colors.grey),
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(5))),
-                                        ),
-                                        onTap: () {
-                                          if (CUR_USERID != null) {
-                                            if (int.parse(productList[index]
-                                                    .prVarientList[0]
-                                                    .cartCount) >
-                                                0) removeFromCart(index);
-                                          } else {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Login()),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                      Text(
-                                        productList[index]
-                                            .prVarientList[0]
-                                            .cartCount,
-                                        style:
-                                            Theme.of(context).textTheme.caption,
-                                      ),
-                                      InkWell(
-                                          child: Container(
-                                            margin: EdgeInsets.all(8),
-                                            child: Icon(
-                                              Icons.add,
-                                              size: 12,
-                                              color: Colors.grey,
-                                            ),
-                                            decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    color: Colors.grey),
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(5))),
-                                          ),
-                                          onTap: () {
-                                            if (CUR_USERID == null) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        Login()),
-                                              );
-                                            } else
-                                              addToCart(index);
-                                          }),
-                                    ],
-                                  )
-                                : Container(),
-                            Spacer(),
-                            Row(
-                              children: <Widget>[
-                                Text(
-                                  int.parse(productList[index]
-                                              .prVarientList[0]
-                                              .disPrice) !=
-                                          0
-                                      ? CUR_CURRENCY +
-                                          "" +
-                                          productList[index]
-                                              .prVarientList[0]
-                                              .price
-                                      : "",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .overline
-                                      .copyWith(
-                                          decoration:
-                                              TextDecoration.lineThrough,
-                                          letterSpacing: 0.7),
-                                ),
-                                Text(
-                                    " " + CUR_CURRENCY + " " + price.toString(),
-                                    style:
-                                        Theme.of(context).textTheme.headline6),
-                              ],
-                            )
+                            Text(
+                              int.parse(productList[index]
+                                          .prVarientList[0]
+                                          .disPrice) !=
+                                      0
+                                  ? CUR_CURRENCY +
+                                      "" +
+                                      productList[index]
+                                          .prVarientList[0]
+                                          .price
+                                  : "",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(
+                                      decoration:
+                                          TextDecoration.lineThrough,
+                                      letterSpacing: 0),
+                            ),
+                            Text(
+                                " " + CUR_CURRENCY + " " + price.toString(),
+                                style:
+                                    Theme.of(context).textTheme.subtitle1),
                           ],
                         )
                       ],
@@ -435,6 +359,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           if (msg != "Products Not Found !") setSnackbar(msg);
           isLoadingmore = false;
         }
+        if(mounted)
         setState(() {
           _isLoading = false;
         });
@@ -556,7 +481,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     );
   }
 
-  void sortDialog() {
+ /* void sortDialog() {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -637,8 +562,114 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             ],
           );
         });
+  }*/
+  void sortDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return ButtonBarTheme(
+            data: ButtonBarThemeData(
+              alignment: MainAxisAlignment.center,),
+            child: new AlertDialog(
+                elevation: 2.0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                contentPadding: const EdgeInsets.all(0.0),
+                content: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Padding(
+                      padding: EdgeInsets.only(top: 19.0, bottom: 16.0),
+                      child: Text(
+                        SORT_BY,
+                        style: Theme.of(context).textTheme.headline6,
+                      )),
+                  Divider(color: lightBlack),
+                  TextButton(
+                      child: Text(F_NEWEST,
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1
+                              .copyWith(color: lightBlack)),
+                      onPressed: () {
+                        sortBy = 'p.date_added';
+                        orderBy = 'DESC';
+                        setState(() {
+                          _isLoading = true;
+                          total = 0;
+                          offset = 0;
+                          productList.clear();
+                        });
+                        getProduct();
+                        Navigator.pop(context, 'option 1');
+                      }),
+                  Divider(color: lightBlack),
+                  TextButton(
+                      child: Text(
+                        F_OLDEST,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            .copyWith(color: lightBlack),
+                      ),
+                      onPressed: () {
+                        sortBy = 'p.date_added';
+                        orderBy = 'ASC';
+                        setState(() {
+                          _isLoading = true;
+                          total = 0;
+                          offset = 0;
+                          productList.clear();
+                        });
+                        getProduct();
+                        Navigator.pop(context, 'option 2');
+                      }),
+                  Divider(color: lightBlack),
+                  TextButton(
+                      child: new Text(
+                        F_LOW,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            .copyWith(color: lightBlack),
+                      ),
+                      onPressed: () {
+                        sortBy = 'pv.price';
+                        orderBy = 'ASC';
+                        setState(() {
+                          _isLoading = true;
+                          total = 0;
+                          offset = 0;
+                          productList.clear();
+                        });
+                        getProduct();
+                        Navigator.pop(context, 'option 3');
+                      }),
+                  Divider(color: lightBlack),
+                  Padding(
+                      padding: EdgeInsets.only(bottom: 5.0),
+                      child: TextButton(
+                          child: new Text(
+                            F_HIGH,
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(color: lightBlack),
+                          ),
+                          onPressed: () {
+                            sortBy = 'pv.price';
+                            orderBy = 'DESC';
+                            setState(() {
+                              _isLoading = true;
+                              total = 0;
+                              offset = 0;
+                              productList.clear();
+                            });
+                            getProduct();
+                            Navigator.pop(context, 'option 4');
+                          })),
+                ])),
+          );
+        });
   }
-
   _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {

@@ -32,7 +32,7 @@ class AddAddress extends StatefulWidget {
   }
 }
 
-String latitude, longitude, state, country,pincode;
+String latitude, longitude, state, country, pincode;
 
 class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   String name,
@@ -45,7 +45,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       type = "Home",
       isDefault;
   bool checkedDefault = false;
-
+bool _isProgress=false;
   //bool _isLoading = false;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -177,7 +177,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       title: widget.update ? UPDATEADD : ADDADDRESS,
       btnAnim: buttonSqueezeanimation,
       btnCntrl: buttonController,
-      onBtnSelected: () async {
+      onBtnSelected: () {
         validateAndSubmit();
       },
     );
@@ -185,7 +185,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
-      _playAnimation();
+
       checkNetwork();
     }
   }
@@ -230,68 +230,47 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   }
 
   setUserName() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        textInputAction: TextInputAction.next,
-        focusNode: nameFocus,
-        controller: nameC,
-        validator: validateUserName,
-        onSaved: (String value) {
-          name = value;
-        },
-        onFieldSubmitted: (v) {
-          _fieldFocusChange(context, nameFocus, monoFocus);
-        },
-        decoration: InputDecoration(
+    return TextFormField(
+      keyboardType: TextInputType.text,
+      textInputAction: TextInputAction.next,
+      focusNode: nameFocus,
+      controller: nameC,
+      validator: validateUserName,
+      onSaved: (String value) {
+        name = value;
+      },
+      onFieldSubmitted: (v) {
+        _fieldFocusChange(context, nameFocus, monoFocus);
+      },
+      style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
+      decoration: InputDecoration(
+          isDense: true,
           hintText: NAME_LBL,
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
-      ),
+          hintStyle: Theme.of(context)
+              .textTheme
+              .subtitle2
+              .copyWith(color: lightBlack)),
     );
   }
 
   setMobileNo() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        keyboardType: TextInputType.number,
-        controller: mobileC,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        textInputAction: TextInputAction.next,
-        focusNode: monoFocus,
-        validator: validateMob,
-        onSaved: (String value) {
-          mobile = value;
-        },
-        onFieldSubmitted: (v) {
-          _fieldFocusChange(context, monoFocus, almonoFocus);
-        },
-        decoration: InputDecoration(
-          hintText: MOBILEHINT_LBL,
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
+    return TextFormField(
+      keyboardType: TextInputType.number,
+      controller: mobileC,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      textInputAction: TextInputAction.next,
+      focusNode: monoFocus,
+      style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
+      validator: validateMob,
+      onSaved: (String value) {
+        mobile = value;
+      },
+      onFieldSubmitted: (v) {
+        _fieldFocusChange(context, monoFocus, almonoFocus);
+      },
+      decoration: InputDecoration(
+        hintText: MOBILEHINT_LBL,
+        isDense: true,
       ),
     );
   }
@@ -306,6 +285,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         textInputAction: TextInputAction.next,
         focusNode: almonoFocus,
         validator: validateAltMob,
+        style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
         onSaved: (String value) {
           print(altMobC.text);
           altMob = value;
@@ -315,60 +295,37 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         },
         decoration: InputDecoration(
           hintText: ALT_MOB,
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
         ),
       ),
     );
   }
 
   setCities() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: DropdownButtonFormField(
-        iconSize: 40,
-        iconEnabledColor: primary,
+    return DropdownButtonFormField(
+      iconEnabledColor: fontColor,
+      isDense: true,
+      hint: new Text(
+        CITYSELECT_LBL,
+      ),
+      value: city,
+      style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
+      onChanged: (String newValue) {
+        setState(() {
+          city = newValue;
+        });
+        getArea(city, true);
+      },
+      items: cityList.map((User user) {
+        return DropdownMenuItem<String>(
+          value: user.id,
+          child: Text(
+            user.name,
+          ),
+        );
+      }).toList(),
+      decoration: InputDecoration(
         isDense: true,
-        hint: new Text(
-          CITYSELECT_LBL,
-        ),
-        value: city,
-        onChanged: (String newValue) {
-          setState(() {
-            city = newValue;
-          });
-          getArea(city, true);
-        },
-        items: cityList.map((User user) {
-          return DropdownMenuItem<String>(
-            value: user.id,
-            child: Text(
-              user.name,
-            ),
-          );
-        }).toList(),
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
+        contentPadding: new EdgeInsets.symmetric(vertical: 5),
       ),
     );
   }
@@ -377,9 +334,9 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: DropdownButtonFormField(
-        iconSize: 40,
-        iconEnabledColor: primary,
+        iconEnabledColor: fontColor,
         isDense: true,
+        style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
         hint: new Text(
           AREASELECT_LBL,
         ),
@@ -399,128 +356,96 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           );
         }).toList(),
         decoration: InputDecoration(
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+          isDense: true,
+          contentPadding: new EdgeInsets.symmetric(vertical: 5),
         ),
       ),
     );
   }
 
   setAddress() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextFormField(
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.next,
-              focusNode: addFocus,
-              controller: addressC,
-              validator: validateField,
-              onSaved: (String value) {
-                address = value;
-              },
-              onFieldSubmitted: (v) {
-                _fieldFocusChange(context, addFocus, locationFocus);
-              },
-              decoration: InputDecoration(
-                hintText: ADDRESS_LBL,
-                filled: true,
-                fillColor: white,
-                contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: white),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: white),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-              ),
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            keyboardType: TextInputType.text,
+            textInputAction: TextInputAction.next,
+            style: Theme.of(context)
+                .textTheme
+                .subtitle2
+                .copyWith(color: fontColor),
+            focusNode: addFocus,
+            controller: addressC,
+            validator: validateField,
+            onSaved: (String value) {
+              address = value;
+            },
+            onFieldSubmitted: (v) {
+              _fieldFocusChange(context, addFocus, locationFocus);
+            },
+            decoration: InputDecoration(
+              hintText: ADDRESS_LBL,
+              isDense: true,
             ),
           ),
-          Container(
-            margin: EdgeInsets.only(left: 7),
-            width: 60,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                border: Border.all(color: white),
-                color: white),
-            child: IconButton(
-              icon: new Icon(Icons.my_location),
-              focusNode: locationFocus,
-              onPressed: () async {
-                Position position = await Geolocator.getCurrentPosition(
-                    desiredAccuracy: LocationAccuracy.high);
-                
-
-                await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Map(
-                              latitude: latitude == null
-                                  ? position.latitude
-                                  : double.parse(latitude),
-                              longitude: longitude == null
-                                  ? position.longitude
-                                  : double.parse(longitude),
-                              from: ADDADDRESS,
-                            )));
-                setState(() {});
-                List<Placemark> placemark = await placemarkFromCoordinates(
-                    double.parse(latitude), double.parse(longitude));
-
-                state = placemark[0].administrativeArea;
-                country = placemark[0].country;
-                pincode=placemark[0].postalCode;
-                setState(() {
-                  countryC.text = country;
-                  stateC.text = state;
-                  pincodeC.text=pincode;
-                });
-              },
+        ),
+        Container(
+          margin: EdgeInsets.only(left: 5),
+          width: 40,
+          child: IconButton(
+            icon: new Icon(
+              Icons.my_location,
+              size: 20,
             ),
-          )
-        ],
-      ),
+            focusNode: locationFocus,
+            onPressed: () async {
+              Position position = await Geolocator.getCurrentPosition(
+                  desiredAccuracy: LocationAccuracy.high);
+
+              await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => Map(
+                            latitude: latitude == null
+                                ? position.latitude
+                                : double.parse(latitude),
+                            longitude: longitude == null
+                                ? position.longitude
+                                : double.parse(longitude),
+                            from: ADDADDRESS,
+                          )));
+              setState(() {});
+              List<Placemark> placemark = await placemarkFromCoordinates(
+                  double.parse(latitude), double.parse(longitude));
+
+              state = placemark[0].administrativeArea;
+              country = placemark[0].country;
+              pincode = placemark[0].postalCode;
+              setState(() {
+                countryC.text = country;
+                stateC.text = state;
+                pincodeC.text = pincode;
+              });
+            },
+          ),
+        )
+      ],
     );
   }
 
   setPincode() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        keyboardType: TextInputType.number,
-        controller: pincodeC,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        validator: validatePincode,
-        onSaved: (String value) {
-          pincode = value;
-        },
-        decoration: InputDecoration(
-          hintText: PINCODEHINT_LBL,
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
+    return TextFormField(
+      keyboardType: TextInputType.number,
+      controller: pincodeC,
+      style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      validator: validatePincode,
+      onSaved: (String value) {
+        pincode = value;
+      },
+      decoration: InputDecoration(
+        hintText: PINCODEHINT_LBL,
+        isDense: true,
       ),
     );
   }
@@ -558,11 +483,9 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      setState(() {
-           });
+      setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-
     }
   }
 
@@ -592,12 +515,10 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      setState(() {
-
-      });
+      if(mounted)
+      setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
-
     }
   }
 
@@ -614,103 +535,74 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   }
 
   setLandmark() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        textInputAction: TextInputAction.next,
-        focusNode: landFocus,
-        controller: landmarkC,
-        validator: validateField,
-        onSaved: (String value) {
-          landmark = value;
-        },
-        decoration: InputDecoration(
-          hintText: LANDMARK,
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
+    return TextFormField(
+      keyboardType: TextInputType.text,
+      textInputAction: TextInputAction.next,
+      focusNode: landFocus,
+      controller: landmarkC,
+      style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
+      validator: validateField,
+      onSaved: (String value) {
+        landmark = value;
+      },
+      decoration: InputDecoration(
+        hintText: LANDMARK,
       ),
     );
   }
 
   setStateField() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        controller: stateC,
-        //validator: validateField,
-        onChanged: (v) => setState(() {
-          state = v;
-        }),
-        onSaved: (String value) {
-          state = value;
-        },
-        decoration: InputDecoration(
-          hintText: STATE_LBL,
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
+    return TextFormField(
+      keyboardType: TextInputType.text,
+      controller: stateC,
+      style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
+
+      //validator: validateField,
+      onChanged: (v) => setState(() {
+        state = v;
+      }),
+      onSaved: (String value) {
+        state = value;
+      },
+      decoration: InputDecoration(
+        hintText: STATE_LBL,
+        isDense: true,
+        contentPadding: new EdgeInsets.symmetric(vertical: 10.0),
       ),
     );
   }
 
   setCountry() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
-        controller: countryC,
-        onSaved: (String value) {
-          country = value;
-        },
-        validator: validateField,
-        decoration: InputDecoration(
-          hintText: COUNTRY_LBL,
-          filled: true,
-          fillColor: white,
-          contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: white),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
+    return TextFormField(
+      keyboardType: TextInputType.text,
+      controller: countryC,
+      style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
+      onSaved: (String value) {
+        country = value;
+      },
+      validator: validateField,
+      decoration: InputDecoration(
+        hintText: COUNTRY_LBL,
+        isDense: true,
+        contentPadding: new EdgeInsets.symmetric(vertical: 10.0),
       ),
     );
   }
 
   Future<void> addNewAddress() async {
+
+    setState(() {
+      _isProgress=true;
+    });
+
     print("index***********${widget.index}");
     try {
       var data = {
         USER_ID: CUR_USERID,
         NAME: name,
         MOBILE: mobile,
-        ALT_MOBNO: altMob,
-        LANDMARK: landmark,
+       // ALT_MOBNO: altMob,
+       // LANDMARK: landmark,
         PINCODE: pincode,
         CITY_ID: city,
         AREA_ID: area,
@@ -740,13 +632,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       if (!error) {
         var data = getdata["data"];
 
-
         if (widget.update) {
           User value = new User.fromAddress(data[0]);
           addressList[widget.index] = value;
         } else {
           User value = new User.fromAddress(data[0]);
           addressList.add(value);
+
         }
 
         if (checkedDefault.toString() == "true") {
@@ -759,16 +651,16 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           selectedAddress = widget.index;
         }
 
-        if (checkedDefault.toString() == "true") {
-          for (User i in addressList) i.isDefault = "0";
-        }
+      
+
+        setState(() {
+          _isProgress=false;
+        });
         Navigator.of(context).pop();
       } else {
         setSnackbar(msg);
       }
-      setState(() {
-
-      });
+      setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
@@ -796,146 +688,187 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   }
 
   typeOfAddress() {
-    return Container(
-      decoration: BoxDecoration(
-          color: white,
-          borderRadius: BorderRadius.all(Radius.circular(10.0))),
-      margin: EdgeInsets.symmetric(vertical: 8),
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      child: Row(
-        children: [
-          Flexible(
-            fit: FlexFit.loose,
-            child: InkWell(
-              child: Row(
-                children: [
-                  Radio(
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    groupValue: selectedType,
-                    value: 1,
-                    onChanged: (val) {
-                      print("val***$val");
-                      setState(() {
-                        selectedType = val;
-                        type = HOME;
-                      });
-                    },
-                  ),
-                  Text(HOME_LBL)
-                ],
-              ),
-              onTap: () {
-                setState(() {
-                  selectedType = 1;
-                  type = HOME;
-                });
-              },
+    return Row(
+      children: [
+        Flexible(
+          fit: FlexFit.loose,
+          child: InkWell(
+            child: Row(
+              children: [
+                Radio(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  groupValue: selectedType,
+                  activeColor: fontColor,
+                  value: 1,
+                  onChanged: (val) {
+                    print("val***$val");
+                    setState(() {
+                      selectedType = val;
+                      type = HOME;
+                    });
+                  },
+                ),
+                Text(HOME_LBL)
+              ],
             ),
+            onTap: () {
+              setState(() {
+                selectedType = 1;
+                type = HOME;
+              });
+            },
           ),
-          Flexible(
-            fit: FlexFit.loose,
-            child: InkWell(
-              child: Row(
-                children: [
-                  Radio(
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    groupValue: selectedType,
-                    value: 2,
-                    onChanged: (val) {
-                      setState(() {
-                        selectedType = val;
-                        type = OFFICE;
-                      });
-                    },
-                  ),
-                  Text(OFFICE_LBL)
-                ],
-              ),
-              onTap: () {
-                setState(() {
-                  selectedType = 2;
-                  type = OFFICE;
-                });
-              },
+        ),
+        Flexible(
+          fit: FlexFit.loose,
+          child: InkWell(
+            child: Row(
+              children: [
+                Radio(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  groupValue: selectedType,
+                  activeColor: fontColor,
+                  value: 2,
+                  onChanged: (val) {
+                    setState(() {
+                      selectedType = val;
+                      type = OFFICE;
+                    });
+                  },
+                ),
+                Text(OFFICE_LBL)
+              ],
             ),
+            onTap: () {
+              setState(() {
+                selectedType = 2;
+                type = OFFICE;
+              });
+            },
           ),
-          Flexible(
-            fit: FlexFit.loose,
-            child: InkWell(
-              child: Row(
-                children: [
-                  Radio(
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    groupValue: selectedType,
-                    value: 3,
-                    onChanged: (val) {
-                      setState(() {
-                        selectedType = val;
-                        type = OTHER;
-                      });
-                    },
-                  ),
-                  Text(OTHER_LBL)
-                ],
-              ),
-              onTap: () {
-                setState(() {
-                  selectedType = 3;
-                  type = OTHER;
-                });
-              },
+        ),
+        Flexible(
+          fit: FlexFit.loose,
+          child: InkWell(
+            child: Row(
+              children: [
+                Radio(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  groupValue: selectedType,
+                  activeColor: fontColor,
+                  value: 3,
+                  onChanged: (val) {
+                    setState(() {
+                      selectedType = val;
+                      type = OTHER;
+                    });
+                  },
+                ),
+                Text(OTHER_LBL)
+              ],
             ),
-          )
-        ],
-      ),
+            onTap: () {
+              setState(() {
+                selectedType = 3;
+                type = OTHER;
+              });
+            },
+          ),
+        )
+      ],
     );
   }
 
   defaultAdd() {
     return Container(
-        margin: EdgeInsets.symmetric(vertical: 8),
+        margin: EdgeInsets.symmetric(horizontal: 15),
         decoration: BoxDecoration(
           color: white,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(5),
         ),
-        child: CheckboxListTile(
+        child: SwitchListTile(
           value: checkedDefault,
+          dense: true,
           onChanged: (newValue) {
             setState(() {
               print("value***$newValue");
               checkedDefault = newValue;
             });
           },
-          title: Text(DEFAULT_ADD),
-          controlAffinity: ListTileControlAffinity.leading,
+          title: Text(DEFAULT_ADD,style: Theme.of(context).textTheme.subtitle2.copyWith(color: lightBlack,fontWeight: FontWeight.bold),),
+
         ));
   }
 
   _showContent() {
-    return Form(
-        key: _formkey,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    return Stack(
+      children: [
+        Form(
+            key: _formkey,
             child: Column(
-              children: <Widget>[
-                setUserName(),
-                setMobileNo(),
-                setAltMobileNo(),
-                setAddress(),
-                setLandmark(),
-                setCities(),
-                setArea(),
-                setPincode(),
-                setStateField(),
-                setCountry(),
-                typeOfAddress(),
-                defaultAdd(),
-                addBtn(),
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          child: Card(
+                            elevation: 0,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: <Widget>[
+                                  setUserName(),
+                                  setMobileNo(),
+                                  //setAltMobileNo(),
+                                  setAddress(),
+                                  // setLandmark(),
+                                  setCities(),
+                                  setArea(),
+                                  setPincode(),
+                                  setStateField(),
+                                  setCountry(),
+                                  typeOfAddress(),
+
+                                  // addBtn(),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        defaultAdd(),
+
+                      ],
+                    ),
+                  ),
+                ),
+                InkWell(
+                  child: Container(
+                      alignment: Alignment.center,
+                      height: 55,
+                      decoration: new BoxDecoration(
+                        gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [grad1Color, grad2Color],
+                            stops: [0, 1]),
+                      ),
+                      child: Text(SAVE_LBL,
+                          style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                color: white,
+                              ))),
+                  onTap: () {
+                    validateAndSubmit();
+                  },
+                )
               ],
-            ),
-          ),
-        ));
+            )),
+        showCircularProgress(_isProgress, primary)
+      ],
+    );
   }
 
   Future<void> getCurrentLoc() async {
@@ -949,12 +882,11 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
     state = placemark[0].administrativeArea;
     country = placemark[0].country;
-    pincode=placemark[0].postalCode;
+    pincode = placemark[0].postalCode;
     setState(() {
       countryC.text = country;
       stateC.text = state;
-      pincodeC.text=pincode;
+      pincodeC.text = pincode;
     });
-
   }
 }

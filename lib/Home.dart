@@ -61,10 +61,12 @@ List<Model> offerImages = [];
 final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 bool _isCatLoading = true;
 bool _isNetworkAvail = true;
+int curSelected = 0;
+GlobalKey bottomNavigationKey = GlobalKey();
 
 class StateHome extends State<Home> {
   List<Widget> fragments;
-  int _curSelected = 0;
+
   HomePage home;
   String profile;
   int curDrwSel = 0;
@@ -77,13 +79,13 @@ class StateHome extends State<Home> {
   void initState() {
     super.initState();
 
-    getUserData();
+  //  getUserData();
     home = new HomePage(updateHome);
     fragments = [
       HomePage(updateHome),
       Favorite(updateHome),
       NotificationList(),
-      MyProfile(),
+      MyProfile(updateHome),
     ];
     firebaseCloudMessaging_Listeners();
     firNotificationInitialize();
@@ -106,10 +108,10 @@ class StateHome extends State<Home> {
     return Scaffold(
         backgroundColor: lightWhite,
         key: scaffoldKey,
-        appBar: _curSelected==3?null:_getAppbar(),
+        appBar: curSelected==3?null:_getAppbar(),
        // drawer: _getDrawer(),
         bottomNavigationBar: getBottomBar(),
-        body: fragments[_curSelected]);
+        body: fragments[curSelected]);
   }
 
   Future<void> getUserData() async {
@@ -371,12 +373,12 @@ class StateHome extends State<Home> {
   _getAppbar() {
     double width = deviceWidth;
     double height = width / 2;
-    String title = _curSelected == 1
+    String title = curSelected == 1
         ? FAVORITE
         :NOTIFICATION;
     print("cart count***$CUR_CART_COUNT");
     return AppBar(
-      title: _curSelected == 0
+      title: curSelected == 0
           ?Image.asset('assets/images/titleicon.png')
           : Text(
         title,
@@ -478,17 +480,18 @@ class StateHome extends State<Home> {
           ),
         )*/
       ],
-      backgroundColor: _curSelected == 0 ? Colors.transparent : white,
+      backgroundColor: curSelected == 0 ? Colors.transparent : white,
       elevation: 0,
     );
   }
 
   getBottomBar() {
     return CurvedNavigationBar(
+      key: bottomNavigationKey,
         backgroundColor: lightWhite,
         height: 65,
         items: <Widget>[
-          _curSelected == 0
+          curSelected == 0
               ? Image.asset(
             "assets/images/sel_home.png",
             height: 35,
@@ -496,7 +499,7 @@ class StateHome extends State<Home> {
               : Image.asset(
             "assets/images/desel_home.png",
           ),
-          _curSelected == 1
+          curSelected == 1
               ? Image.asset(
             "assets/images/sel_fav.png",
             height: 35,
@@ -504,7 +507,7 @@ class StateHome extends State<Home> {
               : Image.asset(
             "assets/images/desel_fav.png",
           ),
-          _curSelected == 2
+          curSelected == 2
               ? Image.asset(
             "assets/images/sel_notification.png",
             height: 35,
@@ -512,7 +515,7 @@ class StateHome extends State<Home> {
               : Image.asset(
             "assets/images/desel_notification.png",
           ),
-          _curSelected == 3
+          curSelected == 3
               ? Image.asset(
             "assets/images/sel_user.png",
             height: 35,
@@ -524,7 +527,7 @@ class StateHome extends State<Home> {
         onTap: (int index) {
           print("current=====$index");
           setState(() {
-            _curSelected = index;
+            curSelected = index;
           });
         });
 
@@ -747,7 +750,7 @@ class StateHome extends State<Home> {
 
   Future<bool> onNavigationTap(bool isLiked, int index) async {
     setState(() {
-      _curSelected = index;
+      curSelected = index;
     });
     return !isLiked;
   }
@@ -1939,7 +1942,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                       imageUrl: sectionList[secPos].productList[index].image,
                       height: double.maxFinite,
                       width: double.maxFinite,
-                      fit: BoxFit.fill,
+
+                      //errorWidget:(context, url,e) => placeHolder(width) ,
                       placeholder: (context, url) => placeHolder(width),
                     ),
 

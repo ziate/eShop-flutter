@@ -495,7 +495,7 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
   }*/
 
   productItem(int index, OrderItem orderItem) {
-    print("detail=========${orderItem.image}*********${orderItem.name}");
+    //print("detail=========${orderItem.image}*********${orderItem.name}");
 
     return Row(
       children: [

@@ -12,7 +12,7 @@ final String iosLink = 'your ios link here';
 final String baseUrl = 'http://eshop.wrteam.in/app/v1/api/';
 
 final int timeOut = 50;
-const int perPage =10;
+const int perPage =25;
 
 //label title and message that shown in app
 final String internetMsg = 'Check Internet Connection';
@@ -87,6 +87,8 @@ const String AREASELECT_LBL='Select Area';
 const String DOB_LBL='Date of Birth';
 const String GALLARY_LBL="Gallary";
 const String COUNTRY_CODE_LBL="Select country code";
+const String TOTAL_LBL='Total';
+
 
 const String noItem='No Item Found..!!';
 const String noFav='No Favorite Found..!!';
@@ -127,7 +129,7 @@ const String PROMOCODE_LBL='Have a Promo Code?';
 const String ORDER_SUMMARY='Order Summary';
 const String PRODUCTNAME='Product Name';
 const String PRICE_LBL='Price';
-const String SUBTOTAL='SubTotal';
+const String SUBTOTAL='Sub total';
 const String QUANTITY_LBL='Qty';
 const String ADDADDRESS='Add New Address';
 const String CONTINUE='Continue';
@@ -150,6 +152,10 @@ const String RAZORPAY_LBL='RazorPay';
 const String PAYSTACK_LBL='Paystack';
 const String FLUTTERWAVE_LBL='Flutterwave';
 const String PROCEED='Proceed';
+const String PLACE_ORDER='Place Order';
+const String MORE_PRODUCT='More Product';
+
+
 //const String TOTAL="Total";
 const String CONFIRM_ORDER='Confirm Order';
 const String CONFIRM='Confirm';
@@ -163,26 +169,26 @@ const String PROMO_SUCCESS='Promo code applied successfully';
 const String USE_WALLET='Use Wallet Balance';
 const String TOTAL_BAL='Total Balance';
 const String REMAIN_BAL='Remaining Balance';
-const String ORDER_ID_LBL='Order ';
+const String ORDER_ID_LBL='Order ID';
 const String ORDER_DATE='Order Date';
 const String ORDER_OTP="Order OTP";
-const String ORDER_PROCESSED='Order\nProccessed';
-const String ORDER_SHIPPED='Order\nShipped';
-const String ORDER_DELIVERED='Order\nDelivered';
-const String ORDER_NPLACED='Order\nPlaced';
-const String ORDER_CANCLED='Order\nCancelled';
-const String ORDER_RETURNED='Order\nReturned';
+const String ORDER_PROCESSED='Order Proccessed';
+const String ORDER_SHIPPED='Order Shipped';
+const String ORDER_DELIVERED='Order Delivered';
+const String ORDER_NPLACED='Order Placed';
+const String ORDER_CANCLED='Order Cancelled';
+const String ORDER_RETURNED='Order Returned';
 const String ORDER_DETAIL='Order Details';
 const String PRICE_DETAIL='Price Detail';
 const String WALLET_BAL='Wallet Balance';
-const String OTHER_DETAIL='Other Detail';
+const String SHIPPING_DETAIL='Shipping Details';
 const String MOB_LBL='Mobile';
 const String ORDER_STATUS='Order Status';
 const String PROMO_CODE_DIS_LBL='Promo Code Discount';
 const String CANCEL_ORDER='Cancel Order';
 const String RETURN_ORDER='Return Order';
 const String ORDER_CNCLE_SUCC='Order Cancled Successfully..!!';
-
+const String SELECT_PAYMENT='Select Payment Method';
 
 const String NO_CART='Your Cart Is Empty';
 const String CART_DESC="Looking like you haven't added anything to your cart yet";
@@ -221,6 +227,10 @@ const String ENTER_OTP_MSG="Please Enter OTP!";
 const String PROFILE_UPDATE_MSG="Profile Picture updated successfully";
 const String USER_UPDATE_MSG="User Update Successfully";
 const String SAVEFORLATER_BTN="Save for later";
+const String SET_DEFAULT='Set as Default';
+const String DEFAULT_LBL='Default';
+
+
 const String MOVE_TO_CART='Move to Cart';
 const String EDIT_PROFILE_LBL="Edit Profile";
 const String LOGIN_REGISTER_LBL="Login/Register";
@@ -231,6 +241,8 @@ const String CHANGE_PASS_LBL="Change Password";
 const String CHANGE_LANGUAUE_LBL="Change Language";
 const String CHANGE_THEME_LBL="Change Theme";
 const String CUR_PASS_LBL="Current Password";
+const String CHOOSE_THEME_LBL="Choose Theme";
+const String CHOOSE_LANGUAGE_LB="Choose Language";
 const String NEW_PASS_LBL="New Password";
 const String SAVE_LBL="Save";
 const String CUR_PASS_ERROR_MSG="Current Password not match";
@@ -251,3 +263,11 @@ const String PRODUCTS_FOUND_LBL="products found";
 const String LOCATION_LBL="Location";
 const String FIND_ORDER_ITEMS_LBL="Find order items here...";
 const String ADD_ITEM='Please add Item to Cart..!!';
+const String CHANGE='Change';
+const String SHIPP_ADDRESS='Shipping Address';
+const String EDIT='EDIT';
+const String WRITE_REVIEW_LBL="Write Review";
+const String REVIEW_HINT_LBL="Write your review here...";
+const String DWNLD_INVOICE='Download Invoice';
+const String VIEW='View';
+const String INVOICE_PATH='Invoice Downloaded in';

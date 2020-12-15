@@ -47,8 +47,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     ));
   }
 
-
-
   Future<Null> _playAnimation() async {
     try {
       await buttonController.forward();
@@ -61,7 +59,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     super.dispose();
   }
 
-
   Future<void> checkNetwork() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
@@ -72,7 +69,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
       });
     }
   }
-
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
@@ -87,9 +83,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
   }
 
   Future<void> setUpdateUser() async {
-    var data = {
-      USER_ID: CUR_USERID,OLDPASS:curPass,NEWPASS:newPass
-    };
+    var data = {USER_ID: CUR_USERID, OLDPASS: curPass, NEWPASS: newPass};
 
     Response response =
     await post(getUpdateUserApi, body: data, headers: headers)
@@ -144,27 +138,34 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
 
   changePass() {
     return Container(
-        height: 45.0,
         margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
         child: Card(
-            elevation: 3,
+            elevation: 0,
+            shadowColor: lightWhite,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: InkWell(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                      padding: EdgeInsets.only(left: 7.0),
-                      child: Text(CHANGE_PASS_LBL,
-                          style: TextStyle(
-                            color: lightBlack,
-                            fontSize: 15,
-                          ))),
+                      padding: EdgeInsets.all( 12.0),
+                      child: Text(
+                        CHANGE_PASS_LBL,
+                        style: Theme.of(this.context)
+                            .textTheme
+                            .subtitle2
+                            .copyWith(color: lightBlack,fontWeight: FontWeight.bold),
+                      )),
                   Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: primary,
-                    size: 20,
-                  ),
+                  Padding(
+                      padding: EdgeInsets.only(right: 15.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_right,
+                        color: primary,
+
+                      )),
                 ],
               ),
               onTap: () {
@@ -175,97 +176,102 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
 
   changeLangauge() {
     return Container(
-        height: 45.0,
-        margin: EdgeInsets.only(left: 10.0, right: 10.0),
+        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
-            elevation: 3,
+            elevation: 0,
+            shadowColor: lightWhite,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: InkWell(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.only(left: 7.0),
-                      child: Text(CHANGE_LANGUAUE_LBL,
-                          style: TextStyle(
-                            color: lightBlack,
-                            fontSize: 15,
-                          ))),
-                  Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: primary,
-                    size: 20,
-                  ),
-                ],
-              ),
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => NotificationList(),
-                    ));
-              },
-            )));
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text(
+                          CHANGE_LANGUAUE_LBL,
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(color: lightBlack,fontWeight: FontWeight.bold),
+                        )),
+                    Spacer(),
+                    Padding(
+                        padding: EdgeInsets.only(right: 15.0),
+                        child: Icon(
+                          Icons.keyboard_arrow_right,
+                          color: primary,
+
+                        )),
+                  ],
+                ),
+                onTap: () {})));
   }
 
   changeTheme() {
     return Container(
-        height: 45.0,
-        margin: EdgeInsets.only(left: 10.0, right: 10.0),
+        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
-            elevation: 3,
+            elevation: 0,
+            shadowColor: lightWhite,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: InkWell(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                      padding: EdgeInsets.only(left: 7.0),
-                      child: Text(CHANGE_THEME_LBL,
-                          style: TextStyle(
-                            color: lightBlack,
-                            fontSize: 15,
-                          ))),
+                      padding: EdgeInsets.all( 12.0),
+                      child: Text(
+                        CHANGE_THEME_LBL,
+                        style: Theme.of(this.context)
+                            .textTheme
+                            .subtitle2
+                            .copyWith(color: lightBlack,fontWeight: FontWeight.bold),
+                      )),
                   Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: primary,
-                    size: 20,
-                  ),
+                  Padding(
+                      padding: EdgeInsets.only(right: 15.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_right,
+                        color: primary,
+                      )),
                 ],
               ),
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => NotificationList(),
-                    ));
-              },
+              onTap: () {},
             )));
   }
 
   privacyPolicy() {
     return Container(
-        height: 45.0,
-        margin: EdgeInsets.only(left: 10.0, right: 10.0),
+        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
-            elevation: 3,
+            elevation: 0,
+            shadowColor: lightWhite,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: InkWell(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                      padding: EdgeInsets.only(left: 7.0),
+                      padding: EdgeInsets.all(12.0),
                       child: Text(PRIVACY,
-                          style: TextStyle(
-                            color: lightBlack,
-                            fontSize: 15,
-                          ))),
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(color: lightBlack,fontWeight: FontWeight.bold))),
                   Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: primary,
-                    size: 20,
-                  ),
+                  Padding(
+                      padding: EdgeInsets.only(right: 15.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_right,
+                        color: primary,
+
+                      )),
                 ],
               ),
               onTap: () {
@@ -282,27 +288,33 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
 
   termCondition() {
     return Container(
-        height: 45.0,
-        margin: EdgeInsets.only(left: 10.0, right: 10.0),
+
+        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
-            elevation: 3,
+            elevation: 0,
+            shadowColor: lightWhite,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: InkWell(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                      padding: EdgeInsets.only(left: 7.0),
+                      padding: EdgeInsets.all(12.0),
                       child: Text(TERM,
-                          style: TextStyle(
-                            color: lightBlack,
-                            fontSize: 15,
-                          ))),
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(color: lightBlack,fontWeight: FontWeight.bold))),
                   Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: primary,
-                    size: 20,
-                  ),
+                  Padding(
+                      padding: EdgeInsets.only(right: 15.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_right,
+                        color: primary,
+
+                      )),
                 ],
               ),
               onTap: () {
@@ -320,127 +332,190 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
   _showDialog() async {
     await showDialog(
         context: context,
-        child: new AlertDialog(
-          contentPadding: const EdgeInsets.all(16.0),
-          title: Center(
-              child: Text(
-                CHANGE_PASS_LBL,
-                style: Theme.of(this.context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(color: fontColor),
-              )),
-          elevation: 2.0,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(15.0))),
-          content: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Form(
-                  key: _formkey,
-                  child: new Column(
-                    children: <Widget>[
-                      TextFormField(
-                        keyboardType: TextInputType.text,
-                        validator: validatePass,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: InputDecoration(
-                          hintText: CUR_PASS_LBL,
-                          hintStyle: Theme.of(this.context)
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater) {
+                return AlertDialog(
+                  contentPadding: const EdgeInsets.all(0.0),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                  content:SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child:Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                                padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                                child: Text(
+                                  CHANGE_PASS_LBL,
+                                  style: Theme.of(this.context)
+                                      .textTheme
+                                      .subtitle1
+                                      .copyWith(color: fontColor),
+                                )),
+                            Divider(color: lightBlack),
+                            Form(
+                                key: _formkey,
+                                child: new Column(
+                                  children: <Widget>[
+                                    Padding(
+                                        padding:
+                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.text,
+                                          validator: validatePass,
+                                          autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                          decoration: InputDecoration(
+                                              hintText: CUR_PASS_LBL,
+                                              hintStyle: Theme.of(this.context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                  color: lightBlack,
+                                                  fontWeight:
+                                                  FontWeight.normal),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(_showPassword
+                                                    ? Icons.visibility
+                                                    : Icons.visibility_off),
+                                                iconSize: 20,
+                                                color: lightBlack,
+                                                onPressed: () {
+                                                  setStater(() {
+                                                    _showPassword = !_showPassword;
+                                                  });
+                                                },
+                                              )),
+                                          obscureText: !_showPassword,
+                                          controller: curPassC,
+                                          onChanged: (v) => setState(() {
+                                            curPass = v;
+                                          }),
+                                        )),
+                                    Padding(
+                                        padding:
+                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.text,
+                                          validator: validatePass,
+                                          autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                          decoration: new InputDecoration(
+                                              hintText: NEW_PASS_LBL,
+                                              hintStyle: Theme.of(this.context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                  color: lightBlack,
+                                                  fontWeight: FontWeight.normal),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(_showPassword
+                                                    ? Icons.visibility
+                                                    : Icons.visibility_off),
+                                                iconSize: 20,
+                                                color: lightBlack,
+                                                onPressed: () {
+                                                  setStater(() {
+                                                    _showPassword = !_showPassword;
+                                                  });
+                                                },
+                                              )),
+                                          obscureText: !_showPassword,
+                                          controller: newPassC,
+                                          onChanged: (v) => setState(() {
+                                            newPass = v;
+                                          }),
+                                        )),
+                                    Padding(
+                                        padding:
+                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.text,
+                                          validator: (value) {
+                                            if (value.length == 0)
+                                              return CON_PASS_REQUIRED_MSG;
+                                            if (value != newPass) {
+                                              return CON_PASS_NOT_MATCH_MSG;
+                                            } else {
+                                              return null;
+                                            }
+                                          },
+                                          autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                          decoration: new InputDecoration(
+                                              hintText: CONFIRMPASSHINT_LBL,
+                                              hintStyle: Theme.of(this.context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                  color: lightBlack,
+                                                  fontWeight: FontWeight.normal),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(_showPassword
+                                                    ? Icons.visibility
+                                                    : Icons.visibility_off),
+                                                iconSize: 20,
+                                                color: lightBlack,
+                                                onPressed: () {
+                                                  setStater(() {
+                                                    _showPassword = !_showPassword;
+                                                  });
+                                                },
+                                              )),
+                                          obscureText: !_showPassword,
+                                          controller: confPassC,
+                                          onChanged: (v) => setState(() {
+                                            confPass = v;
+                                          }),
+                                        )),
+                                  ],
+                                ))
+                          ])),
+                  actions: <Widget>[
+                    new FlatButton(
+                        child: Text(
+                          CANCEL,
+                          style: Theme.of(this.context)
                               .textTheme
-                              .subtitle1
+                              .subtitle2
                               .copyWith(
-                              color: lightBlack,
-                              fontWeight: FontWeight.normal),
+                              color: lightBlack, fontWeight: FontWeight.bold),
                         ),
-                        //obscureText: _showPassword,
-                        controller: curPassC,
-                        onChanged: (v) => setState(() {
-                          curPass = v;
+                        onPressed: () {
+                          Navigator.pop(context);
                         }),
-                      ),
-                      TextFormField(
-                        keyboardType: TextInputType.text,
-                        validator: validatePass,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: new InputDecoration(
-                          hintText: NEW_PASS_LBL,
-                          hintStyle: Theme.of(this.context)
+                    new FlatButton(
+                        child: Text(
+                          SAVE_LBL,
+                          style: Theme.of(this.context)
                               .textTheme
-                              .subtitle1
+                              .subtitle2
                               .copyWith(
-                              color: lightBlack,
-                              fontWeight: FontWeight.normal),
+                              color: fontColor, fontWeight: FontWeight.bold),
                         ),
-                        controller: newPassC,
-                        onChanged: (v) => setState(() {
-                          newPass = v;
-                        }),
-                      ),
-                      TextFormField(
-                        keyboardType: TextInputType.text,
-                        validator: (value) {
-                          if (value.length == 0) return CON_PASS_REQUIRED_MSG;
-                          if (value != newPass) {
-                            return CON_PASS_NOT_MATCH_MSG;
-                          } else {
-                            return null;
+                        onPressed: () {
+                          final form = _formkey.currentState;
+                          if (form.validate()) {
+                            form.save();
+                            setState(() {
+                              Navigator.pop(context);
+                            });
+                            checkNetwork();
                           }
-                        },
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: new InputDecoration(
-                          hintText: CONFIRMPASSHINT_LBL,
-                          hintStyle: Theme.of(this.context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(
-                              color: lightBlack,
-                              fontWeight: FontWeight.normal),
-                        ),
-                        controller: confPassC,
-                        onChanged: (v) => setState(() {
-                          confPass = v;
-                        }),
-                      ),
-                    ],
-                  ))),
-          actions: <Widget>[
-            new FlatButton(
-                child: Text(
-                  CANCEL,
-                  style: Theme.of(this.context)
-                      .textTheme
-                      .subtitle2
-                      .copyWith(color: lightBlack, fontWeight: FontWeight.bold),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                }),
-            new FlatButton(
-                child: Text(
-                  SAVE_LBL,
-                  style: Theme.of(this.context)
-                      .textTheme
-                      .subtitle2
-                      .copyWith(color: fontColor, fontWeight: FontWeight.bold),
-                ),
-                onPressed: () {
-                  final form = _formkey.currentState;
-                  if (form.validate()) {
-                    form.save();
-                    setState(() {
-                      Navigator.pop(context);
-                    });
-                    checkNetwork();
-                  }
-                })
-          ],
-        ));
+                        })
+                  ],
+                );
+              });
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      resizeToAvoidBottomInset: false,
       backgroundColor: lightWhite,
       appBar: getAppBar(SETTING, context),
       body: _isNetworkAvail

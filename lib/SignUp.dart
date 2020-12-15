@@ -179,7 +179,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         saveUserDetail(id, name, email, mobile, city, area, address, pincode,
             latitude, longitude, "");
 
-        Navigator.pushReplacementNamed(context, "/home");
+        Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
       } else {
         setSnackbar(msg);
       }

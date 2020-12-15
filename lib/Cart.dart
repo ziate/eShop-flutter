@@ -1050,14 +1050,18 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       SimBtn(
                           size: deviceWidth * 0.4,
                           title: PROCEED_CHECKOUT,
-                          onBtnSelected: () {
-                            if (oriPrice > 0)
-                              Navigator.push(
+                          onBtnSelected: () async{
+                            if (oriPrice > 0) {
+                              await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CheckOut(),
+                                  builder: (context) =>
+                                      CheckOut(widget.updateHome),
                                 ),
                               );
+                              setState(() {
+                              });
+                            }
                             else
                               setSnackbar(ADD_ITEM);
                           }),

@@ -64,7 +64,7 @@ class Section_Model {
 }
 
 class Product {
-  String id, name, desc, image, catName, type, rating, noOfRating, attrIds, tax;
+  String id, name, desc, image, catName, type, rating, noOfRating, attrIds, tax,categoryId;
   List<String> otherImage;
   List<Product_Varient> prVarientList;
   List<Attribute> attributeList;
@@ -104,6 +104,8 @@ class Product {
     this.madein,
     this.tax,
     this.total,
+    this.categoryId,
+   // this.taxrs,
     this.stockType,this.cancleTill});
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -116,6 +118,8 @@ class Product {
         .toList();
 
     List<String> other_image = List<String>.from(json[OTHER_IMAGE]);
+
+  //  print("rs***********${json.toString()}");
 
     return new Product(
       id: json[ID],
@@ -140,7 +144,9 @@ class Product {
       indicator: json[INDICATOR].toString(),
       stockType: json[STOCKTYPE].toString(),
       tax: json[TAX_PER],
+     // taxrs: json[TAX],
       total: json[TOTAL],
+      categoryId: json[CATID],
       cancleTill: json[CANCLE_TILL]
       // cartCount: json[CART_COUNT]
     );

@@ -16,14 +16,21 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/SimBtn.dart';
+import 'Payment.dart';
 import 'Test.dart';
 import 'Cart.dart';
 import 'Helper/Color.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Order_Success.dart';
+import 'Manage_Address.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class CheckOut extends StatefulWidget {
+  final Function updateHome;
+
+  CheckOut(this.updateHome);
+
   @override
   State<StatefulWidget> createState() {
     return StateCheckout();
@@ -31,26 +38,35 @@ class CheckOut extends StatefulWidget {
 }
 
 List<User> addressList = [];
-String latitude, longitude, selAddress, payMethod, selTime, selDate, promocode;
+String latitude,
+    longitude,
+    selAddress,
+    payMethod = '',
+    payIcon = '',
+    selTime,
+    selDate,
+    promocode;
 int selectedTime, selectedDate, selectedMethod;
-bool _isTimeSlot,
-    _isPromoValid = false,
-    _isUseWallet = false,
-    _isPayLayShow = true;
+
 double promoAmt = 0;
 double remWalBal, usedBal = 0;
 String razorpayId, paystackId;
-
+int selectedAddress;
 StateCheckout stateCheck;
+bool isTimeSlot, isPromoValid = false, isUseWallet = false, isPayLayShow = true;
 
 class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   int _curIndex = 0;
   Razorpay _razorpay;
   static GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  List<Widget> fragments;
+
+  //List<Widget> fragments;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true, _isProgress = false;
+  List<TextEditingController> _controller = [];
+  var items = ['1', '2', '3', '4', '5'];
+  TextEditingController promoC = new TextEditingController();
 
   @override
   void initState() {
@@ -58,17 +74,21 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     promoAmt = 0;
     remWalBal = 0;
     usedBal = 0;
-    _isPromoValid = false;
-    _isUseWallet = false;
-    _isPayLayShow = true;
+    isPromoValid = false;
+    isUseWallet = false;
+    isPayLayShow = true;
+    _getAddress();
     stateCheck = new StateCheckout();
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
 
-
-    fragments = [Delivery(updateCheckout), Address(), Payment(updateCheckout)];
+    /*  fragments = [
+      Delivery(updateCheckout),
+      ManageAddress(),
+      Payment(updateCheckout)
+    ];*/
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
 
@@ -82,6 +102,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         0.150,
       ),
     ));
+
+    for (int i = 0; i < cartList.length; i++)
+      _controller.add(new TextEditingController());
   }
 
   @override
@@ -89,6 +112,59 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     buttonController.dispose();
     super.dispose();
     _razorpay.clear();
+  }
+
+  Future<void> validatePromo() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        setState(() {
+          _isProgress = true;
+        });
+
+        var parameter = {
+          USER_ID: CUR_USERID,
+          PROMOCODE: promoC.text,
+          FINAL_TOTAL: totalPrice.toString()
+        };
+        Response response =
+            await post(validatePromoApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+        print('response***promo*****${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"][0];
+
+          String disType = data["discount_type"];
+          String dis = data["discount"];
+
+          promocode = data["promo_code"];
+          if (disType.toLowerCase() == "percentage") {
+            promoAmt = (oriPrice * double.parse(dis)) / 100;
+          } else if (disType.toLowerCase() == "amount") {
+            promoAmt = double.parse(dis);
+          }
+          totalPrice = totalPrice - promoAmt;
+
+          isPromoValid = true;
+          stateCheck.setSnackbar(PROMO_SUCCESS);
+        } else {
+          stateCheck.setSnackbar(msg);
+        }
+        setState(() {
+          _isProgress = false;
+        });
+      } on TimeoutException catch (_) {
+        stateCheck.setSnackbar(somethingMSg);
+      }
+    } else {
+      setState(() {
+        _isNetworkAvail = false;
+      });
+    }
   }
 
   Future<Null> _playAnimation() async {
@@ -137,20 +213,80 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       backgroundColor: lightWhite,
       appBar: getAppBar(CHECKOUT, context),
       body: _isNetworkAvail
-          ? Stack(
-              children: <Widget>[
-                Column(
-                  children: [
-                    stepper(),
-                    Divider(),
-                    Expanded(child: fragments[_curIndex]),
-                  ],
+          ? Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: <Widget>[
+                      SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // stepper(),
+                              //Divider(),
+                              address(),
+                              payment(),
+                              cartItems(),
+                              promo(),
+                              orderSummary(),
+                              // fragments[_curIndex]
+                            ],
+                          ),
+                        ),
+                      ),
+                      showCircularProgress(_isProgress, primary),
+                    ],
+                  ),
                 ),
-                showCircularProgress(_isProgress, primary),
+                Container(
+                  color: white,
+                  child: Row(children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.only(left: 15.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              CUR_CURRENCY + " $totalPrice",
+                              style: TextStyle(
+                                  color: fontColor,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(cartList.length.toString() + " Items"),
+                          ],
+                        )),
+                    Spacer(),
+                    SimBtn(
+                        size: deviceWidth * 0.4,
+                        title: PLACE_ORDER,
+                        onBtnSelected: () {
+                          if (selAddress == null || selAddress.isEmpty)
+                            setSnackbar(addressWarning);
+                          else if (payMethod == null || payMethod.isEmpty)
+                            setSnackbar(payWarning);
+                          else if (isTimeSlot &&
+                              (selDate == null || selDate.isEmpty))
+                            setSnackbar(dateWarning);
+                          else if (isTimeSlot &&
+                              (selTime == null || selTime.isEmpty))
+                            setSnackbar(timeWarning);
+                          else if (payMethod == PAYPAL_LBL)
+                            placeOrder('');
+                          else if (payMethod == RAZORPAY_LBL)
+                            razorpayPayment();
+                          else if (payMethod == PAYSTACK_LBL)
+                            paystackPayment(context);
+                          else
+                            placeOrder('');
+                        }),
+                  ]),
+                ),
               ],
             )
           : noInternet(context),
-      persistentFooterButtons: [
+      /* persistentFooterButtons: [
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -193,10 +329,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           else
                             _curIndex = _curIndex + 1;
                         } else if (_curIndex == 2) {
-                          if (_isTimeSlot &&
+                          if (isTimeSlot &&
                               (selDate == null || selDate.isEmpty))
                             setSnackbar(dateWarning);
-                          else if (_isTimeSlot &&
+                          else if (isTimeSlot &&
                               (selTime == null || selTime.isEmpty))
                             setSnackbar(timeWarning);
                           else if (payMethod == null || payMethod.isEmpty)
@@ -217,79 +353,476 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                             color: white, fontWeight: FontWeight.normal))))
           ],
         )
-      ],
-      /*  Stepper(
-        type: StepperType.horizontal,
-        steps: [
-          Step(
-            isActive: _curIndex == 0,
-            title: Text(DELIVERY,
-                style: TextStyle(color: _curIndex == 0 ? primary : null)),
-            content: _delivery(),
-          ),
-          Step(
-            isActive: _curIndex == 1,
-            title: Text(ADDRESS_LBL,
-                style: TextStyle(color: _curIndex == 1 ? primary : null)),
-            content: _address(),
-          ),
-          Step(
-            isActive: _curIndex == 2,
-            title: Text(
-              PAYMENT,
-              style: TextStyle(color: _curIndex == 2 ? primary : null),
-            ),
-            content: _payment(),
-          ),
-        ],
-        currentStep: _curIndex,
-        onStepTapped: (index) {
-          setState(() {
-            _curIndex = index;
-          });
-        },
-        onStepCancel: () {
-          print("You are clicking the cancel button.");
-        },
-        onStepContinue: () {
-          setState(() {
-            if (_curIndex < 2) {
-              _curIndex = _curIndex + 1;
-            } else {
-              _curIndex = 0;
-            }
-          });
-        },
-        controlsBuilder: (BuildContext context,
-            {VoidCallback onStepContinue, VoidCallback onStepCancel}) {
-          return Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: _curIndex == 2 // this is the last step
-                  ? RaisedButton.icon(
-                      icon: Icon(Icons.check),
-                      onPressed: onStepContinue,
-                      label: Text('CREATE'),
-                      color: primary,
-                    )
-                  : RaisedButton.icon(
-                      icon: Icon(
-                        Icons.navigate_next,
-                        color: white,
-                      ),
-                      onPressed: onStepContinue,
-                      label: Text(
-                        CONTINUE,
-                        style: TextStyle(color: white),
-                      ),
-                      color: primary,
-                    ),
-            ),
-          );
-        },
-      ),*/
+      ],*/
     );
+  }
+
+  Widget listItem(int index) {
+    //print("desc*****${productList[index].desc}");
+    int selectedPos = 0;
+    for (int i = 0;
+        i < cartList[index].productList[0].prVarientList.length;
+        i++) {
+      if (cartList[index].varientId ==
+          cartList[index].productList[0].prVarientList[i].id) selectedPos = i;
+
+      print(
+          "selected pos***$selectedPos***${cartList[index].productList[0].prVarientList[i].id}");
+    }
+
+    double price = double.parse(
+        cartList[index].productList[0].prVarientList[selectedPos].disPrice);
+    if (price == 0)
+      price = double.parse(
+          cartList[index].productList[0].prVarientList[selectedPos].price);
+
+    cartList[index].perItemPrice = price.toString();
+    cartList[index].perItemTotal =
+        (price * double.parse(cartList[index].qty)).toString();
+
+    print("price****$oriPrice***$price---$index");
+
+    _controller[index].text = cartList[index].qty;
+
+    double taxAmt = ((double.parse(cartList[index].perItemTotal) *
+            double.parse(cartList[index].productList[0].tax)) /
+        100);
+
+    return Card(
+      elevation: 0.1,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Row(
+              children: <Widget>[
+                Hero(
+                    tag: "$index${cartList[index].productList[0].id}",
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(7.0),
+                        child: CachedNetworkImage(
+                          imageUrl: cartList[index].productList[0].image,
+                          height: 60.0,
+                          width: 60.0,
+                          fit: BoxFit.fill,
+                          placeholder: (context, url) => placeHolder(60),
+                        ))),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 5.0),
+                                child: Text(
+                                  cartList[index].productList[0].name,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(color: lightBlack),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 8.0, right: 8, bottom: 8),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 13,
+                                  color: fontColor,
+                                ),
+                              ),
+                              onTap: () {
+                                removeFromCart(index, true);
+                              },
+                            )
+                          ],
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              int.parse(cartList[index]
+                                          .productList[0]
+                                          .prVarientList[selectedPos]
+                                          .disPrice) !=
+                                      0
+                                  ? CUR_CURRENCY +
+                                      "" +
+                                      cartList[index]
+                                          .productList[0]
+                                          .prVarientList[selectedPos]
+                                          .price
+                                  : "",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(
+                                      decoration: TextDecoration.lineThrough,
+                                      letterSpacing: 0.7),
+                            ),
+                            Text(
+                              " " + CUR_CURRENCY + " " + price.toString(),
+                              style: TextStyle(
+                                  color: fontColor,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        cartList[index].productList[0].availability == "1" ||
+                                cartList[index].productList[0].stockType ==
+                                    "null"
+                            ? Row(
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      InkWell(
+                                        child: Container(
+                                          padding: EdgeInsets.all(2),
+                                          margin: EdgeInsets.only(
+                                              right: 8, top: 8, bottom: 8),
+                                          child: Icon(
+                                            Icons.remove,
+                                            size: 12,
+                                            color: fontColor,
+                                          ),
+                                          decoration: BoxDecoration(
+                                              color: lightWhite,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(3))),
+                                        ),
+                                        onTap: () {
+                                          removeFromCart(index, false);
+                                        },
+                                      ),
+
+                                      Container(
+                                        width: 40,
+                                        height: 20,
+                                        child: Stack(
+                                          children: [
+                                            TextField(
+                                              textAlign: TextAlign.center,
+                                              readOnly: true,
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                              ),
+                                              controller: _controller[index],
+                                              decoration: InputDecoration(
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: fontColor,
+                                                      width: 0.5),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: fontColor,
+                                                      width: 0.5),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
+                                                ),
+                                              ),
+                                            ),
+                                            PopupMenuButton<String>(
+                                              tooltip: '',
+                                              icon: const Icon(
+                                                Icons.arrow_drop_down,
+                                                size: 1,
+                                              ),
+                                              onSelected: (String value) {
+                                                print(
+                                                    'value********$value====${_controller[index].text}');
+
+                                                addToCart(index, value);
+                                              },
+                                              itemBuilder:
+                                                  (BuildContext context) {
+                                                return items
+                                                    .map<PopupMenuItem<String>>(
+                                                        (String value) {
+                                                  return new PopupMenuItem(
+                                                      child: new Text(value),
+                                                      value: value);
+                                                }).toList();
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ), // ),
+
+                                      InkWell(
+                                        child: Container(
+                                          padding: EdgeInsets.all(2),
+                                          margin: EdgeInsets.all(8),
+                                          child: Icon(
+                                            Icons.add,
+                                            size: 12,
+                                            color: fontColor,
+                                          ),
+                                          decoration: BoxDecoration(
+                                              color: lightWhite,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(3))),
+                                        ),
+                                        onTap: () {
+                                          addToCart(
+                                              index,
+                                              (int.parse(cartList[index].qty) +
+                                                      1)
+                                                  .toString());
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              )
+                            : Container(),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+            Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  SUBTOTAL,
+                  style: Theme.of(context).textTheme.caption,
+                ),
+                Text(
+                  CUR_CURRENCY + " " + price.toString(),
+                  style: Theme.of(context).textTheme.caption,
+                ),
+                Text(
+                  CUR_CURRENCY + " " + cartList[index].perItemTotal,
+                  style: Theme.of(context).textTheme.caption,
+                )
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  TAXPER,
+                  style: Theme.of(context).textTheme.caption,
+                ),
+                Text(
+                  cartList[index].productList[0].tax + "%",
+                  style: Theme.of(context).textTheme.caption,
+                ),
+                Text(
+                  CUR_CURRENCY + " " + taxAmt.toStringAsFixed(2),
+                  //+ " "+cartList[index].productList[0].taxrs,
+                  style: Theme.of(context).textTheme.caption,
+                )
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  TOTAL_LBL,
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  CUR_CURRENCY +
+                      " " +
+                      (double.parse(cartList[index].perItemTotal) + taxAmt)
+                          .toStringAsFixed(2)
+                          .toString(),
+                  //+ " "+cartList[index].productList[0].taxrs,
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(fontWeight: FontWeight.bold),
+                )
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  removeFromCart(int index, bool remove) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        setState(() {
+          _isProgress = true;
+        });
+
+        var parameter = {
+          PRODUCT_VARIENT_ID: cartList[index].varientId,
+          USER_ID: CUR_USERID,
+          QTY: remove ? "0" : (int.parse(cartList[index].qty) - 1).toString()
+        };
+
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+
+        print('response***slider**${parameter.toString()}***$headers');
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+
+          String qty = data['total_quantity'];
+          CUR_CART_COUNT = data['cart_count'];
+          if (qty == "0") remove = true;
+
+          print('total*****remove*$qty');
+          if (remove) {
+            oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
+
+            cartList.removeWhere(
+                (item) => item.varientId == cartList[index].varientId);
+          } else {
+            oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
+            cartList[index].qty = qty.toString();
+          }
+          totalPrice = 0;
+          totalPrice = delCharge + oriPrice + taxAmt;
+        } else {
+          setSnackbar(msg);
+        }
+        setState(() {
+          _isProgress = false;
+        });
+        if (widget.updateHome != null) widget.updateHome();
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+        setState(() {
+          _isProgress = false;
+        });
+      }
+    } else {
+      setState(() {
+        _isNetworkAvail = false;
+      });
+    }
+  }
+
+  Future<void> addToCart(int index, String qty) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        setState(() {
+          _isProgress = true;
+        });
+
+        var parameter = {
+          PRODUCT_VARIENT_ID: cartList[index].varientId,
+          USER_ID: CUR_USERID,
+          QTY: qty,
+        };
+
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+
+        print('response***slider**${parameter.toString()}***$headers');
+
+        print('response***${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+
+          String qty = data['total_quantity'];
+          CUR_CART_COUNT = data['cart_count'];
+
+          print('total*****add*$qty');
+          cartList[index].qty = qty;
+
+          oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
+          _controller[index].text = qty;
+          totalPrice = 0;
+          totalPrice = delCharge + oriPrice + taxAmt;
+        } else {
+          setSnackbar(msg);
+        }
+        setState(() {
+          _isProgress = false;
+        });
+        widget.updateHome();
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+        setState(() {
+          _isProgress = false;
+        });
+      }
+    } else {
+      setState(() {
+        _isNetworkAvail = false;
+      });
+    }
+  }
+
+  Future<void> _getAddress() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          USER_ID: CUR_USERID,
+        };
+        Response response =
+            await post(getAddressApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+        print('response***setting****$CUR_USERID**${response.body.toString()}');
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+
+          addressList =
+              (data as List).map((data) => new User.fromAddress(data)).toList();
+
+          for (int i = 0; i < addressList.length; i++) {
+            if (addressList[i].isDefault == "1") {
+              selectedAddress = i;
+              selAddress = addressList[i].id;
+            }
+          }
+        } else {
+          //if (msg != 'Cart Is Empty !') setSnackbar(msg);
+        }
+        setState(() {
+          //_isLoading = false;
+        });
+      } on TimeoutException catch (_) {
+        //  setSnackbar(somethingMSg);
+      }
+    } else {
+      setState(() {
+        _isNetworkAvail = false;
+      });
+    }
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
@@ -319,6 +852,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     print("total==========$totalPrice***$amt");
 
     if (contact != '' && email != '') {
+      setState(() {
+        _isProgress = true;
+      });
+
       var options = {
         KEY: razorpayId,
         AMOUNT: amt.toString(),
@@ -359,20 +896,18 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         context,
         method: CheckoutMethod.card,
         charge: charge,
-
       );
-if(response.status)
-  {
-    placeOrder(response.reference);
-  }else{
-  //print("ERROR: " + response.code.toString() + " - " + response.message);
-  setSnackbar(response.message);
-  setState(() {
-    _isProgress = false;
-  });
-  }
+      if (response.status) {
+        placeOrder(response.reference);
+      } else {
+        //print("ERROR: " + response.code.toString() + " - " + response.message);
+        setSnackbar(response.message);
+        setState(() {
+          _isProgress = false;
+        });
+      }
 
-     // setState(() => _isProgress = false);
+      // setState(() => _isProgress = false);
       //_updateStatus(response.reference, '$response');
       print("response=========${response.reference}====$response");
     } catch (e) {
@@ -715,15 +1250,15 @@ if(response.status)
         LONGITUDE: longitude,*/
           PAYMENT_METHOD: payMethod,
           ADD_ID: selAddress,
-          ISWALLETBALUSED: _isUseWallet ? "1" : "0",
+          ISWALLETBALUSED: isUseWallet ? "1" : "0",
           WALLET_BAL_USED: usedBal.toString(),
         };
 
-        if (_isTimeSlot) {
+        if (isTimeSlot) {
           parameter[DELIVERY_TIME] = selTime;
           parameter[DELIVERY_DATE] = selDate;
         }
-        if (_isPromoValid) {
+        if (isPromoValid) {
           parameter[PROMOCODE] = promocode;
           parameter[PROMO_DIS] = promoAmt.toString();
         }
@@ -854,6 +1389,318 @@ if(response.status)
       setSnackbar(somethingMSg);
     }
   }
+
+  address() {
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.location_on),
+            addressList.length > 0
+                ? Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 5.0),
+                            child: Text(addressList[selectedAddress].name),
+                          ),
+                          Text(
+                            addressList[selectedAddress].address +
+                                ", " +
+                                addressList[selectedAddress].area +
+                                ", " +
+                                addressList[selectedAddress].city +
+                                ", " +
+                                addressList[selectedAddress].state +
+                                ", " +
+                                addressList[selectedAddress].country +
+                                "," +
+                                addressList[selectedAddress].pincode,
+                            style: Theme.of(context)
+                                .textTheme
+                                .caption
+                                .copyWith(color: lightBlack),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  addressList[selectedAddress].mobile,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .caption
+                                      .copyWith(color: lightBlack),
+                                ),
+                                Spacer(),
+                                InkWell(
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 2),
+                                    decoration: BoxDecoration(
+                                        color: lightWhite,
+                                        borderRadius: new BorderRadius.all(
+                                            const Radius.circular(4.0))),
+                                    child: Text(
+                                      CHANGE,
+                                      style: TextStyle(
+                                          color: fontColor, fontSize: 10),
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                ManageAddress(
+                                                  home: false,
+                                                )));
+                                  },
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                : Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: GestureDetector(
+                        child: Text(
+                          ADDADDRESS,
+                          style: TextStyle(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                        ),
+                        onTap: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddAddress(
+                                      update: false,
+                                  index: addressList.length,
+                                    )),
+                          );
+                          setState(() {
+
+                          });
+                        },
+                      ),
+                    ),
+                )
+          ],
+        ),
+      ),
+    );
+  }
+
+  payment() {
+    return Card(
+      elevation: 0,
+      child: InkWell(
+        onTap: () async {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => Payment(updateCheckout)));
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Icon(Icons.payment),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  //SELECT_PAYMENT,
+                  payMethod != null && payMethod != ''
+                      ? payMethod
+                      : SELECT_PAYMENT,
+                  style:
+                      TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  cartItems() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: cartList.length,
+      physics: NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return listItem(index);
+      },
+    );
+  }
+
+  orderSummary() {
+    return Card(
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                ORDER_SUMMARY + " (" + cartList.length.toString() + " items)",
+                style: Theme.of(context)
+                    .textTheme
+                    .subtitle2
+                    .copyWith(color: lightBlack, fontWeight: FontWeight.bold),
+              ),
+              Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    SUBTOTAL,
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                  Text(
+                    CUR_CURRENCY + " " + oriPrice.toString(),
+                    style: Theme.of(context).textTheme.caption,
+                  )
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    TAXPER,
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                  Text(
+                    CUR_CURRENCY + " " + taxAmt.toString(),
+                    style: Theme.of(context).textTheme.caption,
+                  )
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DELIVERY_CHARGE,
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                  Text(
+                    CUR_CURRENCY + " " + delCharge.toString(),
+                    style: Theme.of(context).textTheme.caption,
+                  )
+                ],
+              ),
+            ],
+          ),
+        ));
+  }
+
+  promo() {
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Text(
+                  PROMOCODE_LBL,
+                  style: Theme.of(context).textTheme.caption,
+                ),
+                Spacer(),
+                InkWell(
+                  child: Icon(
+                    Icons.refresh,
+                    size: 15,
+                  ),
+                  onTap: () {
+                    if (promoAmt != 0) {
+                      setState(() {
+                        totalPrice = totalPrice + promoAmt;
+                        promoC.text = '';
+                        isPromoValid = false;
+                        promoAmt = 0;
+                        promocode = '';
+                      });
+                    }
+                  },
+                )
+              ],
+            ),
+            Container(
+              //  color: red,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: promoC,
+                      style: Theme.of(context).textTheme.subtitle2,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.all(
+                          5,
+                        ),
+                        hintText: 'Promo Code..',
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: fontColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: fontColor),
+                        ),
+                      ),
+                    ),
+                  ),
+                  /*        SimBtn(
+                    title: APPLY,
+                    size: deviceWidth * 0.2,
+                    onBtnSelected: () async {
+                      if (promoC.text.trim().isEmpty)
+                        stateCheck.setSnackbar(ADD_PROMO);
+                      else
+                        validatePromo();
+                    },
+                  ),*/
+
+                  CupertinoButton(
+                    child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                        alignment: FractionalOffset.center,
+                        decoration: BoxDecoration(
+                            color: lightWhite,
+                            borderRadius: new BorderRadius.all(
+                                const Radius.circular(4.0))),
+                        child: Text(APPLY,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.button.copyWith(
+                                  color: fontColor,
+                                ))),
+                    onPressed: () {
+                      if (promoC.text.trim().isEmpty)
+                        stateCheck.setSnackbar(ADD_PROMO);
+                      else
+                        validatePromo();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class Delivery extends StatefulWidget {
@@ -868,8 +1715,6 @@ class Delivery extends StatefulWidget {
 }
 
 class StateDelivery extends State<Delivery> with TickerProviderStateMixin {
-  TextEditingController promoC = new TextEditingController();
-
   // static   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool _isProgress = false;
   Animation buttonSqueezeanimation;
@@ -883,7 +1728,7 @@ class StateDelivery extends State<Delivery> with TickerProviderStateMixin {
       body: _isNetworkAvail
           ? Stack(
               children: <Widget>[
-                _deliveryContent(),
+                //_deliveryContent(),
                 showCircularProgress(_isProgress, primary),
               ],
             )
@@ -1005,60 +1850,7 @@ class StateDelivery extends State<Delivery> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> validatePromo() async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      try {
-        setState(() {
-          _isProgress = true;
-        });
-
-        var parameter = {
-          USER_ID: CUR_USERID,
-          PROMOCODE: promoC.text,
-          FINAL_TOTAL: totalPrice.toString()
-        };
-        Response response =
-            await post(validatePromoApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
-
-        var getdata = json.decode(response.body);
-        print('response***promo*****${response.body.toString()}');
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"][0];
-
-          String disType = data["discount_type"];
-          String dis = data["discount"];
-
-          promocode = data["promo_code"];
-          if (disType.toLowerCase() == "percentage") {
-            promoAmt = (oriPrice * double.parse(dis)) / 100;
-          } else if (disType.toLowerCase() == "amount") {
-            promoAmt = double.parse(dis);
-          }
-          totalPrice = totalPrice - promoAmt;
-
-          _isPromoValid = true;
-          stateCheck.setSnackbar(PROMO_SUCCESS);
-        } else {
-          stateCheck.setSnackbar(msg);
-        }
-        setState(() {
-          _isProgress = false;
-        });
-      } on TimeoutException catch (_) {
-        stateCheck.setSnackbar(somethingMSg);
-      }
-    } else {
-      setState(() {
-        _isNetworkAvail = false;
-      });
-    }
-  }
-
-  _deliveryContent() {
+/*_deliveryContent() {
     return SingleChildScrollView(
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1084,7 +1876,7 @@ class StateDelivery extends State<Delivery> with TickerProviderStateMixin {
                           setState(() {
                             totalPrice = totalPrice + promoAmt;
                             promoC.text = '';
-                            _isPromoValid = false;
+                            isPromoValid = false;
                             promoAmt = 0;
                             promocode = '';
                             widget.update();
@@ -1218,7 +2010,7 @@ class StateDelivery extends State<Delivery> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
-                _isPromoValid
+                isPromoValid
                     ? Padding(
                         padding: const EdgeInsets.only(
                             left: 35, right: 35, top: 8, bottom: 8),
@@ -1268,731 +2060,5 @@ class StateDelivery extends State<Delivery> with TickerProviderStateMixin {
         ),
       ],
     ));
-  }
-}
-
-class Address extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return StateAddress();
-  }
-}
-
-int selectedAddress;
-
-class StateAddress extends State<Address> with TickerProviderStateMixin {
-  bool _isLoading = true;
-  Animation buttonSqueezeanimation;
-  AnimationController buttonController;
-  bool _isNetworkAvail = true;
-
-  @override
-  void initState() {
-    super.initState();
-    addressList.clear();
-    _getAddress();
-    buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 2000), vsync: this);
-
-    buttonSqueezeanimation = new Tween(
-      begin: deviceWidth * 0.7,
-      end: 50.0,
-    ).animate(new CurvedAnimation(
-      parent: buttonController,
-      curve: new Interval(
-        0.0,
-        0.150,
-      ),
-    ));
-  }
-
-  @override
-  void dispose() {
-    buttonController.dispose();
-    super.dispose();
-  }
-
-  Future<Null> _playAnimation() async {
-    try {
-      await buttonController.forward();
-    } on TickerCanceled {}
-  }
-
-  Widget noInternet(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          noIntImage(),
-          noIntText(context),
-          noIntDec(context),
-          AppBtn(
-            title: TRY_AGAIN_INT_LBL,
-            btnAnim: buttonSqueezeanimation,
-            btnCntrl: buttonController,
-            onBtnSelected: () async {
-              _playAnimation();
-
-              Future.delayed(Duration(seconds: 2)).then((_) async {
-                _isNetworkAvail = await isNetworkAvailable();
-                if (_isNetworkAvail) {
-                  _getAddress();
-                } else {
-                  await buttonController.reverse();
-                  setState(() {});
-                }
-              });
-            },
-          )
-        ]),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _isNetworkAvail
-        ? Column(
-            children: [
-              Expanded(
-                child: _isLoading
-                    ? getProgress()
-                    : addressList.length == 0
-                        ? Text(NOADDRESS)
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: BouncingScrollPhysics(),
-                            itemCount: addressList.length,
-                            itemBuilder: (context, index) {
-                              print(
-                                  "default***b${addressList[index].isDefault}***${addressList[index].name}");
-
-                              return addressItem(index);
-                            }),
-              ),
-              Container(
-                  alignment: Alignment.center,
-                  height: 35,
-                  width: deviceWidth * 0.55,
-                  padding: EdgeInsets.only(right: 6.0),
-                  decoration: new BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [secondary, primary],
-                        stops: [0, 1]),
-                    borderRadius:
-                        new BorderRadius.all(const Radius.circular(10.0)),
-                  ),
-                  child: TextButton.icon(
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => AddAddress(
-                                    update: false,
-                                  )),
-                        );
-                        setState(() {});
-                      },
-                      icon: Icon(
-                        Icons.add,
-                        color: white,
-                      ),
-                      label: Text(ADDADDRESS,
-                          style: Theme.of(context).textTheme.button.copyWith(
-                              color: white, fontWeight: FontWeight.normal))))
-            ],
-          )
-        : noInternet(context);
-  }
-
-  addressItem(int index) {
-    print(
-        "default***${addressList[index].isDefault}***${addressList[index].name}**$selectedAddress");
-    if (addressList[index].isDefault == "1") {
-      selectedAddress = index;
-      selAddress = addressList[index].id;
-    }
-    return RadioListTile(
-      value: (index),
-      groupValue: selectedAddress,
-      onChanged: (val) {
-        setState(() {
-          selectedAddress = val;
-          selAddress = addressList[index].id;
-        });
-      },
-      title: Row(
-        children: [
-          Expanded(
-              child: Row(
-            children: [
-              Text(
-                addressList[index].name + "  ",
-                style: TextStyle(color: lightBlack),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                    color: fontColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(5)),
-                padding: EdgeInsets.all(3),
-                child: Text(
-                  addressList[index].type,
-                  style: Theme.of(context)
-                      .textTheme
-                      .caption
-                      .copyWith(color: fontColor),
-                ),
-              )
-            ],
-          )),
-          InkWell(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Icon(
-                Icons.edit,
-                color: black54,
-                size: 17,
-              ),
-            ),
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => AddAddress(
-                          update: true,
-                          index: index,
-                        )),
-              );
-              setState(() {});
-            },
-          ),
-          InkWell(
-            onTap: () {
-              deleteAddress(index);
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Icon(
-                Icons.delete,
-                color: black54,
-                size: 17,
-              ),
-            ),
-          )
-        ],
-      ),
-      isThreeLine: true,
-      subtitle: Text(addressList[index].address +
-          ", " +
-          addressList[index].area +
-          ", " +
-          addressList[index].city +
-          ", " +
-          addressList[index].state +
-          ", " +
-          addressList[index].country +
-          "\n" +
-          addressList[index].mobile),
-    );
-  }
-
-  Future<void> deleteAddress(int index) async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      try {
-        var parameter = {
-          ID: addressList[index].id,
-        };
-        Response response =
-            await post(deleteAddressApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
-
-        var getdata = json.decode(response.body);
-        print('response***delete****$CUR_USERID**${response.body.toString()}');
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          selAddress = "";
-          addressList.removeWhere((item) => item.id == addressList[index].id);
-        } else {
-          //  if (msg != 'Cart Is Empty !') setSnackbar(msg);
-        }
-        setState(() {
-          _isLoading = false;
-        });
-        setState(() {});
-      } on TimeoutException catch (_) {
-        // setSnackbar(somethingMSg);
-      }
-    } else {
-      setState(() {
-        _isNetworkAvail = false;
-      });
-    }
-  }
-
-  Future<void> _getAddress() async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      try {
-        var parameter = {
-          USER_ID: CUR_USERID,
-        };
-        Response response =
-            await post(getAddressApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
-
-        var getdata = json.decode(response.body);
-        print('response***setting****$CUR_USERID**${response.body.toString()}');
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
-
-          addressList =
-              (data as List).map((data) => new User.fromAddress(data)).toList();
-        } else {
-          //if (msg != 'Cart Is Empty !') setSnackbar(msg);
-        }
-        setState(() {
-          _isLoading = false;
-        });
-      } on TimeoutException catch (_) {
-        //  setSnackbar(somethingMSg);
-      }
-    } else {
-      setState(() {
-        _isNetworkAvail = false;
-      });
-    }
-  }
-
-/*  setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
-      content: new Text(
-        msg,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: black),
-      ),
-      backgroundColor: white,
-      elevation: 1.0,
-    ));
   }*/
-
-}
-
-class Payment extends StatefulWidget {
-  Function update;
-
-  Payment(this.update);
-
-  @override
-  State<StatefulWidget> createState() {
-    return StatePayment();
-  }
-}
-
-class StatePayment extends State<Payment> with TickerProviderStateMixin {
-  bool _isLoading = true;
-  String allowDay, startingDate;
-  List<Model> timeSlotList = [];
-  bool cod, paypal, razorpay, paumoney, paystack, flutterwave;
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
-  List<String> paymentMethodList = [
-    COD_LBL,
-    PAYPAL_LBL,
-    PAYUMONEY_LBL,
-    RAZORPAY_LBL,
-    PAYSTACK_LBL,
-    FLUTTERWAVE_LBL
-  ];
-  Animation buttonSqueezeanimation;
-  AnimationController buttonController;
-  bool _isNetworkAvail = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _getdateTime();
-
-    buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 2000), vsync: this);
-
-    buttonSqueezeanimation = new Tween(
-      begin: deviceWidth * 0.7,
-      end: 50.0,
-    ).animate(new CurvedAnimation(
-      parent: buttonController,
-      curve: new Interval(
-        0.0,
-        0.150,
-      ),
-    ));
-  }
-
-  @override
-  void dispose() {
-    buttonController.dispose();
-    super.dispose();
-  }
-
-  Future<Null> _playAnimation() async {
-    try {
-      await buttonController.forward();
-    } on TickerCanceled {}
-  }
-
-  Widget noInternet(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          noIntImage(),
-          noIntText(context),
-          noIntDec(context),
-          AppBtn(
-            title: TRY_AGAIN_INT_LBL,
-            btnAnim: buttonSqueezeanimation,
-            btnCntrl: buttonController,
-            onBtnSelected: () async {
-              _playAnimation();
-
-              Future.delayed(Duration(seconds: 2)).then((_) async {
-                _isNetworkAvail = await isNetworkAvailable();
-                if (_isNetworkAvail) {
-                  _getdateTime();
-                } else {
-                  await buttonController.reverse();
-                  setState(() {});
-                }
-              });
-            },
-          )
-        ]),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    print("cur***$CUR_BALANCE");
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: lightWhite,
-      body: _isNetworkAvail
-          ? _isLoading
-              ? getProgress()
-              : SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Card(
-                        child: CUR_BALANCE != "0" &&
-                                CUR_BALANCE.isNotEmpty &&
-                                CUR_BALANCE != ""
-                            ? Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: CheckboxListTile(
-                                  dense: true,
-                                  contentPadding: EdgeInsets.all(0),
-                                  value: _isUseWallet,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _isUseWallet = value;
-
-                                      if (value) {
-                                        if (totalPrice <=
-                                            double.parse(CUR_BALANCE)) {
-                                          remWalBal =
-                                              double.parse(CUR_BALANCE) -
-                                                  totalPrice;
-
-                                          usedBal = totalPrice;
-                                          payMethod = "Wallet";
-                                          _isPayLayShow = false;
-                                        } else {
-                                          remWalBal = 0;
-                                          usedBal = double.parse(CUR_BALANCE);
-                                          _isPayLayShow = true;
-                                        }
-
-                                        totalPrice = totalPrice - usedBal;
-                                      } else {
-                                        totalPrice = totalPrice + usedBal;
-                                        remWalBal = double.parse(CUR_BALANCE);
-                                        payMethod = null;
-                                        usedBal = 0;
-                                        _isPayLayShow = true;
-                                      }
-
-                                      widget.update();
-                                    });
-                                  },
-                                  title: Text(
-                                    USE_WALLET,
-                                    style:
-                                        TextStyle(fontSize: 15, color: primary),
-                                  ),
-                                  subtitle: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0),
-                                    child: Text(
-                                      _isUseWallet
-                                          ? REMAIN_BAL +
-                                              " : " +
-                                              CUR_CURRENCY +
-                                              " " +
-                                              remWalBal.toString()
-                                          : TOTAL_BAL +
-                                              " : " +
-                                              CUR_CURRENCY +
-                                              " " +
-                                              CUR_BALANCE,
-                                      style:
-                                          TextStyle(fontSize: 15, color: black),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : Container(),
-                      ),
-                      _isTimeSlot
-                          ? Card(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      PREFERED_TIME,
-                                      style:
-                                          Theme.of(context).textTheme.subtitle1,
-                                    ),
-                                  ),
-                                  Container(
-                                    height: 90,
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    child: ListView.builder(
-                                        shrinkWrap: true,
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount: int.parse(allowDay),
-                                        itemBuilder: (context, index) {
-                                          return dateCell(index);
-                                        }),
-                                  ),
-                                  Divider(),
-                                  ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: NeverScrollableScrollPhysics(),
-                                      itemCount: timeSlotList.length,
-                                      itemBuilder: (context, index) {
-                                        return timeSlotItem(index);
-                                      })
-                                ],
-                              ),
-                            )
-                          : Container(),
-                      _isPayLayShow
-                          ? Card(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      PAYMENT_METHOD_LBL,
-                                      style:
-                                          Theme.of(context).textTheme.subtitle1,
-                                    ),
-                                  ),
-                                  ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: NeverScrollableScrollPhysics(),
-                                      itemCount: 7,
-                                      itemBuilder: (context, index) {
-                                        if (index == 0 && cod)
-                                          return paymentItem(index);
-                                        else if (index == 1 && paypal)
-                                          return paymentItem(index);
-                                        else if (index == 2 && paumoney)
-                                          return paymentItem(index);
-                                        else if (index == 3 && razorpay)
-                                          return paymentItem(index);
-                                        else if (index == 4 && paystack)
-                                          return paymentItem(index);
-                                        else if (index == 5 && flutterwave)
-                                          return paymentItem(index);
-                                        else
-                                          return Container();
-                                      }),
-                                ],
-                              ),
-                            )
-                          : Container()
-                    ],
-                  ),
-                )
-          : noInternet(context),
-    );
-  }
-
-  setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
-      content: new Text(
-        msg,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: black),
-      ),
-      backgroundColor: white,
-      elevation: 1.0,
-    ));
-  }
-
-  dateCell(int index) {
-    DateTime today = DateTime.parse(startingDate);
-    return InkWell(
-      child: Container(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: selectedDate == index ? primary : null),
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              DateFormat('EEE').format(today.add(Duration(days: index))),
-              style: TextStyle(color: selectedDate == index ? white : black54),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Text(
-                DateFormat('dd').format(today.add(Duration(days: index))),
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: selectedDate == index ? white : black54),
-              ),
-            ),
-            Text(
-              DateFormat('MMM').format(today.add(Duration(days: index))),
-              style: TextStyle(color: selectedDate == index ? white : black54),
-            ),
-          ],
-        ),
-      ),
-      onTap: () {
-        DateTime date = today.add(Duration(days: index));
-
-        setState(() {
-          selectedDate = index;
-          selDate = DateFormat('yyyy-MM-dd').format(date);
-        });
-      },
-    );
-  }
-
-  Future<void> _getdateTime() async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      timeSlotList.clear();
-      try {
-        var parameter = {
-          TYPE: PAYMENT_METHOD,
-        };
-        Response response =
-            await post(getSettingApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
-
-        var getdata = json.decode(response.body);
-        print('response***setting**${response.body.toString()}');
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
-          var time_slot = data["time_slot_config"];
-          allowDay = time_slot["allowed_days"];
-          _isTimeSlot =
-              time_slot["is_time_slots_enabled"] == "1" ? true : false;
-          startingDate = time_slot["starting_date"];
-          var timeSlots = data["time_slots"];
-          timeSlotList = (timeSlots as List)
-              .map((timeSlots) => new Model.fromTimeSlot(timeSlots))
-              .toList();
-
-          var payment = data["payment_method"];
-          cod = payment["cod_method"] == "1" ? true : false;
-          paypal = payment["paypal_payment_method"] == "1" ? true : false;
-          paumoney = payment["payumoney_payment_method"] == "1" ? true : false;
-          flutterwave =
-              payment["flutterwave_payment_method"] == "1" ? true : false;
-          razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
-          paystack = payment["paystack_payment_method"] == "1" ? true : false;
-
-          if (razorpay) razorpayId = payment["razorpay_key_id"];
-          if (paystack) {
-            paystackId = payment["paystack_key_id"];
-
-            print("paystack=========$paystackId");
-            PaystackPlugin.initialize(publicKey: paystackId);
-          }
-
-          print("days***$allowDay");
-        } else {
-          // setSnackbar(msg);
-        }
-
-        setState(() {
-          _isLoading = false;
-          // widget.model.isFavLoading = false;
-        });
-      } on TimeoutException catch (_) {
-        //setSnackbar(somethingMSg);
-      }
-    } else {
-      setState(() {
-        _isNetworkAvail = false;
-      });
-    }
-  }
-
-  Widget timeSlotItem(int index) {
-    return RadioListTile(
-      dense: true,
-      value: (index),
-      groupValue: selectedTime,
-      onChanged: (val) {
-        setState(() {
-          selectedTime = val;
-          selTime = timeSlotList[selectedTime].name;
-        });
-      },
-      title: Text(
-        timeSlotList[index].name,
-        style: TextStyle(color: lightBlack, fontSize: 15),
-      ),
-    );
-  }
-
-  Widget paymentItem(int index) {
-    return RadioListTile(
-      dense: true,
-      value: (index),
-      groupValue: selectedMethod,
-      onChanged: (val) {
-        setState(() {
-           selectedMethod= val;
-          payMethod = paymentMethodList[selectedMethod];
-        });
-      },
-      title: Text(
-        paymentMethodList[index],
-        style: TextStyle(color: lightBlack, fontSize: 15),
-      ),
-    );
-  }
 }

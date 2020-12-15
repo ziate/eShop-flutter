@@ -125,77 +125,95 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: lightWhite,
         key: _scaffoldKey,
         appBar: getAppBar(widget.title, context),
         body: _isNetworkAvail ? _showForm() : noInternet(context));
   }
 
   _showForm() {
-    return ListView.builder(
-      controller: controller,
-      itemCount: faqs_list.length,
-      physics: BouncingScrollPhysics(),
-      itemBuilder: (context, index) {
-        return (index == faqs_list.length && isLoadingmore)
-            ? Center(child: CircularProgressIndicator())
-            : listItem(index);
-      },
-    );
+    return Padding(
+        padding: EdgeInsets.all(10.0),
+        child: ListView.builder(
+          controller: controller,
+          itemCount: faqs_list.length,
+          physics: BouncingScrollPhysics(),
+          itemBuilder: (context, index) {
+            return (index == faqs_list.length && isLoadingmore)
+                ? Center(child: CircularProgressIndicator())
+                : listItem(index);
+          },
+        ));
   }
 
   listItem(int index) {
     return Card(
-        elevation: 2.0,
-        child: InkWell(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-                    Widget>[
-              Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    faqs_list[index].question,
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle1
-                        .copyWith(color: black),
-                  )),
-              selectedIndex == index
-                  ?Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: InkWell(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          faqs_list[index].question,
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1
+                              .copyWith(color: lightBlack),
+                        )),
+                    selectedIndex != index
+                        || flag? Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
                             child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: expand?Text(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0),
+                                child: Text(
                                   faqs_list[index].answer,
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle2
-                                      .copyWith(color: black.withOpacity(0.7)),
-                                  maxLines: 2,
-                                  overflow:expand?TextOverflow.ellipsis:expand=false,
-                                ):Text(
-                                  faqs_list[index].answer,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
-                                      .copyWith(color: black.withOpacity(0.7)),
+                                      .copyWith(
+                                      color: black.withOpacity(0.7)),
+                                  maxLines: 1,
+                                  overflow:TextOverflow.ellipsis,
                                 ))),
-                        Icon(expand
-                            ? Icons.keyboard_arrow_down
-                            : Icons.keyboard_arrow_up)
+                        Icon(Icons.keyboard_arrow_down)
                       ],
-                    ):Container()
-            ]),
-            onTap: () {
-              setState(() {
-                selectedIndex = index;
-                flag = !flag;
-                expand = !expand;
-              });
-            }));
+                    )
+                        : Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+
+                              child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Text(
+                                    faqs_list[index].answer,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2
+                                        .copyWith(
+                                        color:
+                                        black.withOpacity(0.7)),
+                                  ))),
+                          Icon(Icons.keyboard_arrow_up)
+                        ]),
+                  ]),
+              onTap: () {
+                setState(() {
+                  selectedIndex = index;
+                  flag = !flag;
+                });
+              }),
+        ));
   }
 
   Future<void> getFaqs() async {

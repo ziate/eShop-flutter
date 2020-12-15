@@ -194,7 +194,9 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       saveUserDetail(id, username, email, mobile, city, area, address, pincode,
           latitude, longitude, image);
 
-      Navigator.pushReplacementNamed(context, "/home");
+
+
+      Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
     } else {
       setSnackbar(msg);
     }
@@ -236,7 +238,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       child: TextFormField(
         keyboardType: TextInputType.number,
         controller: mobileController,
-        style: TextStyle(color: fontColor),
+        style: TextStyle(color: fontColor,fontWeight: FontWeight.normal),
         focusNode: monoFocus,
         textInputAction: TextInputAction.next,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],

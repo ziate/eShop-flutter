@@ -157,7 +157,7 @@ class _SignInUpAccState extends State<SignInUpAcc>
                     .subtitle1
                     .copyWith(color: white, fontWeight: FontWeight.normal))),
         onPressed: () {
-          Navigator.pushReplacementNamed(context, "/home");
+          Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
         },
       );
 

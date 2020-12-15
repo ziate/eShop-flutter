@@ -255,7 +255,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin{
                         Divider(),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(OTHER_DETAIL,
+                          child: Text('OTHER_DETAIL',
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle1
@@ -438,7 +438,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin{
         rDate = d[0] + "\n" + d[1] ;
       }
     }
-    print("length=========${orderItem.image}");
+   // print("length=========${orderItem.image}");
     return Column(
       children: [
         Row(

@@ -44,7 +44,6 @@ class Model {
   }
 
   factory Model.fromCat(Map<String, dynamic> parsedJson) {
-    print('getting cat****${parsedJson}');
 
     return new Model(
       id: parsedJson[ID],

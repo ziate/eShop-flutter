@@ -51,8 +51,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       curPassC,
       newPassC,
       confPassC;
-  bool isSelected = false;
+  bool isSelected = false, isArea = true;
   bool _isNetworkAvail = true;
+  bool _showPassword = true;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
 
@@ -103,10 +104,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     mobile = await getPrefrence(MOBILE);
     name = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
-    // city = await getPrefrence(CITY);
-    //area = await getPrefrence(AREA);
-    city = "40";
-    area = "158";
+    city = await getPrefrence(CITY);
+    area = await getPrefrence(AREA);
+    //city = "40";
+    //area = "158";
     pincode = await getPrefrence(PINCODE);
     address = await getPrefrence(ADDRESS);
     image = await getPrefrence(IMAGE);
@@ -158,7 +159,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     if (avail) {
       getCities();
       if (city != null && city != "") {
-        getArea(null);
+        getArea(setState);
       }
     } else {
       setState(() {
@@ -202,7 +203,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       });
       try {
         var request =
-        http.MultipartRequest("POST", Uri.parse(getUpdateUserApi));
+            http.MultipartRequest("POST", Uri.parse(getUpdateUserApi));
         request.headers.addAll(headers);
         request.fields[USER_ID] = CUR_USERID;
         var pic = await http.MultipartFile.fromPath(IMAGE, _image.path);
@@ -301,6 +302,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       print("City:$city,Area:$area,image:$image");
       saveUserDetail(CUR_USERID, name, email, mobile, city, area, address,
           pincode, lat, long, image);
+      setPrefrence(CITYNAME, cityName);
+      setPrefrence(AREANAME, areaName);
     } else {
       setSnackbar(msg);
     }
@@ -336,8 +339,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
             (data as List).map((data) => new User.fromJson(data)).toList();
         for (int i = 0; i < cityList.length; i++) {
           if (cityList[i].id == city) {
-            cityName = cityList[i].name;
-            print("cityname*******$cityName");
+            setState(() {
+              cityName = cityList[i].name;
+              print("cityname*******$cityName");
+            });
           }
         }
       } else {
@@ -379,17 +384,27 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
         areaList =
             (data as List).map((data) => new User.fromJson(data)).toList();
-        print("areaList***$areaList");
+        print("areaList****$areaList");
+        print("area****$area");
 
-        for (int i = 0; i < areaList.length; i++) {
-          if (areaList[i].id == area) {
-            areaName = areaList[i].name;
+        if (areaList.length == 0) {
+          areaName = "";
+        } else {
+          for (int i = 0; i < areaList.length; i++) {
+            print("area======${areaList[i].id}====$area");
+            if (areaList[i].id == area) {
+              areaName = areaList[i].name;
+            }
           }
         }
+
+        print("areName1111*****$areaName");
+        print("area1111****$area");
       } else {
         setSnackbar(msg);
       }
       setState(() {
+        isArea = true;
         _isLoading = false;
       });
     } on TimeoutException catch (_) {
@@ -414,8 +429,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
   setUser() {
     return Padding(
-        padding:
-        EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0, bottom: 10.0),
+        padding: EdgeInsets.all(15.0),
         child: Row(
           children: <Widget>[
             Image.asset('assets/images/username.png', fit: BoxFit.fill),
@@ -426,21 +440,19 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   children: [
                     Text(
                       NAME_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(
-                          color: lightBlack2,
-                          fontWeight: FontWeight.normal),
+                      style: Theme.of(this.context).textTheme.caption.copyWith(
+                          color: lightBlack2, fontWeight: FontWeight.normal),
                     ),
                     name != "" && name != null
                         ? Text(
-                      name,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(color: lightBlack),
-                    )
+                            name,
+                            style: Theme.of(this.context)
+                                .textTheme
+                                .subtitle2
+                                .copyWith(
+                                    color: lightBlack,
+                                    fontWeight: FontWeight.bold),
+                          )
                         : Container()
                   ],
                 )),
@@ -448,42 +460,57 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
             IconButton(
               icon: Icon(
                 Icons.edit,
-                size: 22,
+                size: 20,
+                color: lightBlack,
               ),
               onPressed: () {
                 showDialog(
                     context: context,
+                    barrierDismissible: false,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        contentPadding: const EdgeInsets.all(16.0),
-                        title: Center(
-                            child: Text(
-                              ADD_NAME_LBL,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: fontColor),
-                            )),
+                        contentPadding: const EdgeInsets.all(0),
                         elevation: 2.0,
                         shape: RoundedRectangleBorder(
                             borderRadius:
-                            BorderRadius.all(Radius.circular(15.0))),
-                        content: Form(
-                            key: _formKey,
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: lightBlack),
-                              validator: validateUserName,
-                              autovalidateMode:
-                              AutovalidateMode.onUserInteraction,
-                              controller: nameC,
-                              onChanged: (v) => setState(() {
-                                name = v;
-                              }),
-                            )),
+                                BorderRadius.all(Radius.circular(5.0))),
+                        content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                  padding:
+                                      EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                                  child: Text(
+                                    ADD_NAME_LBL,
+                                    style: Theme.of(this.context)
+                                        .textTheme
+                                        .subtitle1
+                                        .copyWith(color: fontColor),
+                                  )),
+                              Divider(color: lightBlack),
+                              Form(
+                                  key: _formKey,
+                                  child: Padding(
+                                      padding:
+                                          EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.text,
+                                        style: Theme.of(this.context)
+                                            .textTheme
+                                            .subtitle1
+                                            .copyWith(
+                                                color: lightBlack,
+                                                fontWeight: FontWeight.normal),
+                                        validator: validateUserName,
+                                        autovalidateMode:
+                                            AutovalidateMode.onUserInteraction,
+                                        controller: nameC,
+                                        onChanged: (v) => setState(() {
+                                          name = v;
+                                        }),
+                                      )))
+                            ]),
                         actions: <Widget>[
                           new FlatButton(
                               child: const Text(CANCEL,
@@ -492,8 +519,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold)),
                               onPressed: () {
-                                setState(() async {
-                                  name = await getPrefrence(USERNAME);
+                                setState(() {
                                   Navigator.pop(context);
                                 });
                               }),
@@ -525,8 +551,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
   setEmail() {
     return Padding(
-        padding:
-        EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0, bottom: 10.0),
+        padding: EdgeInsets.all(15.0),
         child: Row(
           children: <Widget>[
             Image.asset('assets/images/email.png', fit: BoxFit.fill),
@@ -537,21 +562,19 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   children: [
                     Text(
                       EMAILHINT_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(
-                          color: lightBlack2,
-                          fontWeight: FontWeight.normal),
+                      style: Theme.of(this.context).textTheme.caption.copyWith(
+                          color: lightBlack2, fontWeight: FontWeight.normal),
                     ),
                     email != null && email != ""
                         ? Text(
-                      email,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(color: lightBlack),
-                    )
+                            email,
+                            style: Theme.of(this.context)
+                                .textTheme
+                                .subtitle2
+                                .copyWith(
+                                    color: lightBlack,
+                                    fontWeight: FontWeight.bold),
+                          )
                         : Container()
                   ],
                 )),
@@ -559,42 +582,57 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
             IconButton(
               icon: Icon(
                 Icons.edit,
-                size: 22,
+                size: 20,
+                color: lightBlack,
               ),
               onPressed: () {
                 showDialog(
                     context: context,
+                    barrierDismissible: false,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        contentPadding: const EdgeInsets.all(16.0),
-                        title: Center(
-                            child: Text(
-                              ADD_EMAIL_LBL,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: fontColor),
-                            )),
+                        contentPadding: const EdgeInsets.all(0.0),
                         elevation: 2.0,
                         shape: RoundedRectangleBorder(
                             borderRadius:
-                            BorderRadius.all(Radius.circular(15.0))),
-                        content: Form(
-                            key: _formKey,
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: lightBlack),
-                              validator: validateEmail,
-                              autovalidateMode:
-                              AutovalidateMode.onUserInteraction,
-                              controller: emailC,
-                              onChanged: (v) => setState(() {
-                                email = v;
-                              }),
-                            )),
+                                BorderRadius.all(Radius.circular(5.0))),
+                        content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                  padding:
+                                      EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                                  child: Text(
+                                    ADD_EMAIL_LBL,
+                                    style: Theme.of(this.context)
+                                        .textTheme
+                                        .subtitle1
+                                        .copyWith(color: fontColor),
+                                  )),
+                              Divider(color: lightBlack),
+                              Form(
+                                  key: _formKey,
+                                  child: Padding(
+                                      padding:
+                                          EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                      child: TextFormField(
+                                        keyboardType: TextInputType.text,
+                                        style: Theme.of(this.context)
+                                            .textTheme
+                                            .subtitle1
+                                            .copyWith(
+                                                color: lightBlack,
+                                                fontWeight: FontWeight.normal),
+                                        validator: validateEmail,
+                                        autovalidateMode:
+                                            AutovalidateMode.onUserInteraction,
+                                        controller: emailC,
+                                        onChanged: (v) => setState(() {
+                                          email = v;
+                                        }),
+                                      )))
+                            ]),
                         actions: <Widget>[
                           new FlatButton(
                               child: const Text(CANCEL,
@@ -603,9 +641,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold)),
                               onPressed: () {
-                                setState(() async {
+                                setState(() {
                                   Navigator.pop(context);
-                                  email = await getPrefrence(EMAIL);
                                 });
                               }),
                           new FlatButton(
@@ -636,8 +673,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
   setMobileNo() {
     return Padding(
-        padding:
-        EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0, bottom: 10.0),
+        padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
         child: Row(
           children: <Widget>[
             Image.asset('assets/images/mobilenumber.png', fit: BoxFit.fill),
@@ -648,21 +684,19 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   children: [
                     Text(
                       MOBILEHINT_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(
-                          color: lightBlack2,
-                          fontWeight: FontWeight.normal),
+                      style: Theme.of(this.context).textTheme.caption.copyWith(
+                          color: lightBlack2, fontWeight: FontWeight.normal),
                     ),
                     mobile != null && mobile != ""
                         ? Text(
-                      mobile,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(color: lightBlack),
-                    )
+                            mobile,
+                            style: Theme.of(this.context)
+                                .textTheme
+                                .subtitle2
+                                .copyWith(
+                                    color: lightBlack,
+                                    fontWeight: FontWeight.bold),
+                          )
                         : Container()
                   ],
                 )),
@@ -672,483 +706,250 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
   setLocation() {
     return Padding(
-        padding:
-        EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0, bottom: 10.0),
+        padding: EdgeInsets.all(15.0),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Image.asset('assets/images/location.png', fit: BoxFit.fill),
             Padding(
                 padding: EdgeInsets.only(left: 15.0),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       LOCATION_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(
-                          color: lightBlack2,
-                          fontWeight: FontWeight.normal),
+                      style: Theme.of(this.context).textTheme.caption.copyWith(
+                          color: lightBlack2, fontWeight: FontWeight.normal),
                     ),
-                    Text(
-                      "$area,$city",
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(color: lightBlack),
-                    )
+                    areaName != "" || cityName != ""
+                        ? areaName != ""
+                            ? Text(
+                                "$areaName,$cityName",
+                                style: Theme.of(this.context)
+                                    .textTheme
+                                    .subtitle2
+                                    .copyWith(
+                                        color: lightBlack,
+                                        fontWeight: FontWeight.bold),
+                              )
+                            : Text(
+                                "$cityName",
+                                style: Theme.of(this.context)
+                                    .textTheme
+                                    .subtitle2
+                                    .copyWith(
+                                        color: lightBlack,
+                                        fontWeight: FontWeight.bold),
+                              )
+                        : Container()
                   ],
                 )),
             Spacer(),
             IconButton(
-              icon: Icon(
-                Icons.edit,
-                size: 22,
-              ),
-              onPressed: () async {
-                showDialog(
+                icon: Icon(
+                  Icons.edit,
+                  size: 20,
+                  color: lightBlack,
+                ),
+                onPressed: () {
+                  showDialog(
                     context: context,
+                    barrierDismissible: false,
                     builder: (BuildContext context) {
-                      return AlertDialog(
-                        contentPadding: const EdgeInsets.all(16.0),
-                        title: Center(
-                            child: Text(
-                              ADD_LOCATION_LBL,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: fontColor),
-                            )),
-                        elevation: 2.0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(15.0))),
-                        content: StatefulBuilder(builder: (context, setState) {
-                          return Column(
+                      return StatefulBuilder(builder:
+                          (BuildContext context, StateSetter setStater) {
+                        return AlertDialog(
+                          contentPadding: const EdgeInsets.all(0.0),
+                          elevation: 2.0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0))),
+                          content: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                CITY_LBL,
-                                style: Theme.of(this.context)
-                                    .textTheme
-                                    .subtitle1
-                                    .copyWith(color: lightBlack),
-                              ),
-                              DropdownButtonFormField(
-                                iconSize: 40,
-                                elevation: 2,
-                                iconEnabledColor: fontColor,
-                                hint: new Text(
-                                  CITYSELECT_LBL,
-                                  style: Theme.of(this.context)
-                                      .textTheme
-                                      .subtitle1
-                                      .copyWith(
-                                    color: fontColor,
-                                  ),
-                                ),
-                                value: city,
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    city = newValue;
-                                  });
-                                  print(city);
-                                  getArea(setState);
-
-                                },
-                                items: cityList.map((User user) {
-                                  return DropdownMenuItem<String>(
-                                    value: user.id,
-                                    child: Text(
-                                      user.name,
+                              Padding(
+                                  padding:
+                                      EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                                  child: Text(
+                                    ADD_LOCATION_LBL,
+                                    style: Theme.of(this.context)
+                                        .textTheme
+                                        .subtitle1
+                                        .copyWith(color: fontColor),
+                                  )),
+                              Divider(color: lightBlack),
+                              Padding(
+                                  padding:
+                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  child: Text(
+                                    CITY_LBL,
+                                    style: Theme.of(this.context)
+                                        .textTheme
+                                        .subtitle1
+                                        .copyWith(
+                                            color: lightBlack,
+                                            fontWeight: FontWeight.bold),
+                                  )),
+                              Padding(
+                                  padding:
+                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  child: DropdownButtonFormField(
+                                    isDense: true,
+                                    iconEnabledColor: fontColor,
+                                    hint: new Text(
+                                      CITYSELECT_LBL,
                                       style: Theme.of(this.context)
                                           .textTheme
-                                          .subtitle1
-                                          .copyWith(color: fontColor),
+                                          .subtitle2
+                                          .copyWith(
+                                              color: fontColor,
+                                              fontWeight: FontWeight.normal),
                                     ),
-                                  );
-                                }).toList(),
+                                    value: city,
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        city = newValue;
+                                        isArea = false;
+                                      });
+                                      print(city);
+                                      getArea(setStater);
+                                    },
+                                    items: cityList.map((User user) {
+                                      return DropdownMenuItem<String>(
+                                        value: user.id,
+                                        child: Text(
+                                          user.name,
+                                          style: Theme.of(this.context)
+                                              .textTheme
+                                              .subtitle2
+                                              .copyWith(
+                                                  color: fontColor,
+                                                  fontWeight: FontWeight.bold),
+                                        ),
+                                        onTap: () {
+                                          setStater(() {
+                                            cityName = user.name;
+                                            print("cityname:*****$cityName");
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  )),
+                              SizedBox(
+                                height: 10.0,
                               ),
-                              Divider(
-                                color: white,
-                              ),
-                              Text(
-                                AREA_LBL,
-                                style: Theme.of(this.context)
-                                    .textTheme
-                                    .subtitle1
-                                    .copyWith(color: lightBlack),
-                              ),
-                              DropdownButtonFormField(
-                                elevation: 2,
-                                iconSize: 40,
-                                iconEnabledColor: fontColor,
-                                hint: new Text(
-                                  AREASELECT_LBL,
-                                  style: Theme.of(this.context)
-                                      .textTheme
-                                      .subtitle1
-                                      .copyWith(
-                                    color: fontColor,
-                                  ),
-                                ),
-                                value: area,
-                                onChanged: (newValue)  {
-                                   setState(() {
-                                    area = newValue;
-                                  });
-                                  print(area);
-                                },
-                                items: areaList.map((User user) {
-                                  return DropdownMenuItem<String>(
-                                    value: user.id,
-                                    child: Text(
-                                      user.name,
+                              Padding(
+                                  padding:
+                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  child: Text(
+                                    AREA_LBL,
+                                    style: Theme.of(this.context)
+                                        .textTheme
+                                        .subtitle1
+                                        .copyWith(
+                                            color: lightBlack,
+                                            fontWeight: FontWeight.bold),
+                                  )),
+                              Padding(
+                                  padding:
+                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  child: DropdownButtonFormField(
+                                    isDense: true,
+                                    iconEnabledColor: fontColor,
+                                    hint: new Text(
+                                      AREASELECT_LBL,
                                       style: Theme.of(this.context)
                                           .textTheme
-                                          .subtitle1
-                                          .copyWith(color: fontColor),
+                                          .subtitle2
+                                          .copyWith(
+                                              color: fontColor,
+                                              fontWeight: FontWeight.bold),
                                     ),
-                                  );
-                                }).toList(),
-                              ),
+                                    value: area,
+                                    onChanged: isArea
+                                        ? (newValue) {
+                                            setState(() {
+                                              area = newValue;
+                                            });
+                                            print(area);
+                                          }
+                                        : null,
+                                    items: areaList.map((User user) {
+                                      return DropdownMenuItem<String>(
+                                        value: user.id,
+                                        child: Text(
+                                          user.name,
+                                          style: Theme.of(this.context)
+                                              .textTheme
+                                              .subtitle2
+                                              .copyWith(
+                                                  color: fontColor,
+                                                  fontWeight: FontWeight.bold),
+                                        ),
+                                        onTap: () {
+                                          setStater(() {
+                                            areaName = user.name;
+                                            print("areaName:****$areaName");
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  )),
                             ],
-                          );
-                        }),
-                        actions: <Widget>[
-                          new FlatButton(
-                              child: const Text(CANCEL,
-                                  style: TextStyle(
-                                      color: lightBlack,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold)),
-                              onPressed: () {
-                                setState(() async {
-                                  Navigator.pop(context);
-                                });
-                              }),
-                          new FlatButton(
-                              child: const Text(SAVE_LBL,
-                                  style: TextStyle(
-                                      color: fontColor,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold)),
-                              onPressed: () {
-                                Navigator.pop(context);
-                                checkNetwork();
-                              })
-                        ],
-                      );
-                    });
-              },
-            )
+                          ),
+                          actions: <Widget>[
+                            new FlatButton(
+                                child: const Text(CANCEL,
+                                    style: TextStyle(
+                                        color: lightBlack,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                                onPressed: () {
+                                  setState(() async {
+                                    Navigator.pop(context);
+                                  });
+                                }),
+                            new FlatButton(
+                                child: const Text(SAVE_LBL,
+                                    style: TextStyle(
+                                        color: fontColor,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                                onPressed: () {
+                                  setState(() {
+                                    Navigator.pop(context);
+                                    checkNetwork();
+                                  });
+                                })
+                          ],
+                        );
+                      });
+                    },
+                  );
+                })
           ],
         ));
   }
 
-  /* setCities() {
-    return Padding(
-        padding:
-            EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0, bottom: 10.0),
-        child: Column(
-          children: <Widget>[
-            Row(children: <Widget>[
-              Image.asset('assets/images/location.png', fit: BoxFit.fill),
-              Padding(
-                  padding: EdgeInsets.only(left: 15.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        CITY_LBL,
-                        style: Theme.of(this.context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(
-                                color: lightBlack2,
-                                fontWeight: FontWeight.normal),
-                      ),
-                      cityName != "" && cityName != null
-                          ? Text(
-                              cityName,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: lightBlack),
-                            )
-                          : Container()
-                    ],
-                  )),
-              Spacer(),
-              IconButton(
-                icon: Icon(
-                  Icons.edit,
-                  size: 22,
-                ),
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          contentPadding: const EdgeInsets.all(16.0),
-                          title: Center(
-                              child: Text(
-                            ADD_CITY_LBL,
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle1
-                                .copyWith(color: fontColor),
-                          )),
-                          elevation: 2.0,
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15.0))),
-                          content: DropdownButtonFormField(
-                            iconSize: 40,
-                            isDense: true,
-                            iconEnabledColor: fontColor,
-                            hint: new Text(
-                              CITYSELECT_LBL,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(
-                                    color: fontColor,
-                                  ),
-                            ),
-                            value: city,
-                            onChanged: (newValue) {
-                              setState(() {
-                                areaList.clear();
-                                area = null;
-                                city = newValue;
-                              });
-                              print(city);
-                              getArea();
-                            },
-                            items: cityList.map((User user) {
-                              return DropdownMenuItem<String>(
-                                value: user.id,
-                                child: Text(
-                                  user.name,
-                                  style: Theme.of(this.context)
-                                      .textTheme
-                                      .subtitle1
-                                      .copyWith(color: fontColor),
-                                ),
-                                onTap: () {
-                                  setState(() {
-                                    cityName = user.name;
-                                    setPrefrence(CITYNAME, cityName);
-                                  });
-                                },
-                              );
-                            }).toList(),
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: white,
-                              contentPadding:
-                                  new EdgeInsets.only(right: 30.0, left: 30.0),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: white),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: white),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                            ),
-                          ),
-                          actions: <Widget>[
-                            new FlatButton(
-                                child: const Text(CANCEL,
-                                    style: TextStyle(
-                                        color: lightBlack,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                onPressed: () {
-                                  setState(() async {
-                                    Navigator.pop(context);
-                                    city = await getPrefrence(CITY);
-                                  });
-                                }),
-                            new FlatButton(
-                                child: const Text(SAVE_LBL,
-                                    style: TextStyle(
-                                        color: fontColor,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  checkNetwork();
-                                })
-                          ],
-                        );
-                      });
-                },
-              ),
-            ]),
-            Row(children: <Widget>[
-              Padding(
-                  padding: EdgeInsets.only(left: 32.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AREA_LBL,
-                        style: Theme.of(this.context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(
-                                color: lightBlack2,
-                                fontWeight: FontWeight.normal),
-                      ),
-                      areaName != "" && areaName != null
-                          ? Text(
-                              areaName,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: lightBlack),
-                            )
-                          : Container(),
-                    ],
-                  )),
-              Spacer(),
-              IconButton(
-                icon: Icon(
-                  Icons.edit,
-                  size: 22,
-                ),
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        getArea();
-                        return AlertDialog(
-                          contentPadding: const EdgeInsets.all(16.0),
-                          title: Center(
-                              child: Text(
-                            ADD_AREA_LBL,
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle1
-                                .copyWith(color: fontColor),
-                          )),
-                          elevation: 2.0,
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15.0))),
-                          content: DropdownButtonFormField(
-                            iconSize: 40,
-                            iconEnabledColor: fontColor,
-                            isDense: true,
-                            hint: new Text(
-                              AREASELECT_LBL,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(
-                                    color: fontColor,
-                                  ),
-                            ),
-                            value: area,
-                            onChanged: (newValue) {
-                              setState(() {
-                                area = newValue;
-                              });
-                              print(area);
-                            },
-                            onSaved: (value) {
-                              setState(() {
-                                area = value;
-                              });
-                            },
-                            items: areaList.map((User user) {
-                              return DropdownMenuItem<String>(
-                                value: user.id,
-                                child: Text(
-                                  user.name,
-                                  style: Theme.of(this.context)
-                                      .textTheme
-                                      .subtitle1
-                                      .copyWith(color: fontColor),
-                                ),
-                                onTap: () {
-                                  setState(() {
-                                    areaName = user.name;
-                                    setPrefrence(AREANAME, areaName);
-                                  });
-                                },
-                              );
-                            }).toList(),
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: white,
-                              contentPadding:
-                                  new EdgeInsets.only(right: 30.0, left: 30.0),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: white),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: white),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                            ),
-                          ),
-                          actions: <Widget>[
-                            new FlatButton(
-                                child: const Text(CANCEL,
-                                    style: TextStyle(
-                                        color: lightBlack,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                onPressed: () {
-                                  setState(() async {
-                                    Navigator.pop(context);
-                                    area = await getPrefrence(AREA);
-                                  });
-                                }),
-                            new FlatButton(
-                                child: const Text(SAVE_LBL,
-                                    style: TextStyle(
-                                        color: fontColor,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  checkNetwork();
-                                })
-                          ],
-                        );
-                      });
-                },
-              ),
-            ]),
-          ],
-        ));
-  }*/
-
   changePass() {
     return Container(
-        height: 50,
+        height: 60,
         width: deviceWidth,
         child: Card(
-            elevation: 2.0,
+            elevation: 0,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(10.0))),
             child: InkWell(
               child: Padding(
-                padding: EdgeInsets.only(left: 20.0, top: 9.0, bottom: 9.0),
+                padding: EdgeInsets.only(left: 20.0, top: 15.0, bottom: 15.0),
                 child: Text(
                   CHANGE_PASS_LBL,
                   style: Theme.of(this.context)
                       .textTheme
-                      .subtitle1
-                      .copyWith(color: fontColor),
+                      .subtitle2
+                      .copyWith(color: fontColor, fontWeight: FontWeight.bold),
                 ),
               ),
               onTap: () {
@@ -1160,124 +961,188 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   _showDialog() async {
     await showDialog(
         context: context,
-        child: new AlertDialog(
-          contentPadding: const EdgeInsets.all(16.0),
-          title: Center(
-              child: Text(
-                CHANGE_PASS_LBL,
-                style: Theme.of(this.context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(color: fontColor),
-              )),
-          elevation: 2.0,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(15.0))),
-          content: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Form(
-                  key: _formKey,
-                  child: new Column(
-                    children: <Widget>[
-                      TextFormField(
-                        keyboardType: TextInputType.text,
-                        validator: validatePass,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: InputDecoration(
-                          hintText: CUR_PASS_LBL,
-                          hintStyle: Theme.of(this.context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(
-                              color: lightBlack,
-                              fontWeight: FontWeight.normal),
-                        ),
-                        //obscureText: _showPassword,
-                        controller: curPassC,
-                        onChanged: (v) => setState(() {
-                          curPass = v;
-                        }),
-                      ),
-                      TextFormField(
-                        keyboardType: TextInputType.text,
-                        validator: validatePass,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: new InputDecoration(
-                          hintText: NEW_PASS_LBL,
-                          hintStyle: Theme.of(this.context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(
-                              color: lightBlack,
-                              fontWeight: FontWeight.normal),
-                        ),
-                        controller: newPassC,
-                        onChanged: (v) => setState(() {
-                          newPass = v;
-                        }),
-                      ),
-                      TextFormField(
-                        keyboardType: TextInputType.text,
-                        validator: (value) {
-                          if (value.length == 0) return CON_PASS_REQUIRED_MSG;
-                          if (value != newPass) {
-                            return CON_PASS_NOT_MATCH_MSG;
-                          } else {
-                            return null;
-                          }
-                        },
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: new InputDecoration(
-                          hintText: CONFIRMPASSHINT_LBL,
-                          hintStyle: Theme.of(this.context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(
-                              color: lightBlack,
-                              fontWeight: FontWeight.normal),
-                        ),
-                        controller: confPassC,
-                        onChanged: (v) => setState(() {
-                          confPass = v;
-                        }),
-                      ),
-                    ],
-                  ))),
-          actions: <Widget>[
-            new FlatButton(
-                child: Text(
-                  CANCEL,
-                  style: Theme.of(this.context)
-                      .textTheme
-                      .subtitle2
-                      .copyWith(color: lightBlack, fontWeight: FontWeight.bold),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                }),
-            new FlatButton(
-                child: Text(
-                  SAVE_LBL,
-                  style: Theme.of(this.context)
-                      .textTheme
-                      .subtitle2
-                      .copyWith(color: fontColor, fontWeight: FontWeight.bold),
-                ),
-                onPressed: () {
-                  final form = _formKey.currentState;
-                  if (form.validate()) {
-                    form.save();
-                    setState(() {
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater) {
+            return AlertDialog(
+              contentPadding: const EdgeInsets.all(0.0),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
+              content: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                            child: Text(
+                              CHANGE_PASS_LBL,
+                              style: Theme.of(this.context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(color: fontColor),
+                            )),
+                        Divider(color: lightBlack),
+                        Form(
+                            key: _formKey,
+                            child: new Column(
+                              children: <Widget>[
+                                Padding(
+                                    padding:
+                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                    child: TextFormField(
+                                      keyboardType: TextInputType.text,
+                                      validator: validatePass,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      decoration: InputDecoration(
+                                          hintText: CUR_PASS_LBL,
+                                          hintStyle: Theme.of(this.context)
+                                              .textTheme
+                                              .subtitle1
+                                              .copyWith(
+                                                  color: lightBlack,
+                                                  fontWeight:
+                                                      FontWeight.normal),
+                                          suffixIcon: IconButton(
+                                            icon: Icon(_showPassword
+                                                ? Icons.visibility
+                                                : Icons.visibility_off),
+                                            iconSize: 20,
+                                            color: lightBlack,
+                                            onPressed: () {
+                                              setStater(() {
+                                                _showPassword = !_showPassword;
+                                              });
+                                            },
+                                          )),
+                                      obscureText: !_showPassword,
+                                      controller: curPassC,
+                                      onChanged: (v) => setState(() {
+                                        curPass = v;
+                                      }),
+                                    )),
+                                Padding(
+                                    padding:
+                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                    child: TextFormField(
+                                      keyboardType: TextInputType.text,
+                                      validator: validatePass,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      decoration: new InputDecoration(
+                                          hintText: NEW_PASS_LBL,
+                                          hintStyle: Theme.of(this.context)
+                                              .textTheme
+                                              .subtitle1
+                                              .copyWith(
+                                                  color: lightBlack,
+                                                  fontWeight:
+                                                      FontWeight.normal),
+                                          suffixIcon: IconButton(
+                                            icon: Icon(_showPassword
+                                                ? Icons.visibility
+                                                : Icons.visibility_off),
+                                            iconSize: 20,
+                                            color: lightBlack,
+                                            onPressed: () {
+                                              setStater(() {
+                                                _showPassword = !_showPassword;
+                                              });
+                                            },
+                                          )),
+                                      obscureText: !_showPassword,
+                                      controller: newPassC,
+                                      onChanged: (v) => setState(() {
+                                        newPass = v;
+                                      }),
+                                    )),
+                                Padding(
+                                    padding:
+                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                    child: TextFormField(
+                                      keyboardType: TextInputType.text,
+                                      validator: (value) {
+                                        if (value.length == 0)
+                                          return CON_PASS_REQUIRED_MSG;
+                                        if (value != newPass) {
+                                          return CON_PASS_NOT_MATCH_MSG;
+                                        } else {
+                                          return null;
+                                        }
+                                      },
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      decoration: new InputDecoration(
+                                          hintText: CONFIRMPASSHINT_LBL,
+                                          hintStyle: Theme.of(this.context)
+                                              .textTheme
+                                              .subtitle1
+                                              .copyWith(
+                                                  color: lightBlack,
+                                                  fontWeight:
+                                                      FontWeight.normal),
+                                          suffixIcon: IconButton(
+                                            icon: Icon(_showPassword
+                                                ? Icons.visibility
+                                                : Icons.visibility_off),
+                                            iconSize: 20,
+                                            color: lightBlack,
+                                            onPressed: () {
+                                              setStater(() {
+                                                _showPassword = !_showPassword;
+                                              });
+                                            },
+                                          )),
+                                      obscureText: !_showPassword,
+                                      controller: confPassC,
+                                      onChanged: (v) => setState(() {
+                                        confPass = v;
+                                      }),
+                                    )),
+                              ],
+                            ))
+                      ])),
+              actions: <Widget>[
+                new FlatButton(
+                    child: Text(
+                      CANCEL,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                              color: lightBlack, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
                       Navigator.pop(context);
-                    });
-                    checkNetwork();
-                  }
-                })
-          ],
-        ));
+                    }),
+                new FlatButton(
+                    child: Text(
+                      SAVE_LBL,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      final form = _formKey.currentState;
+                      if (form.validate()) {
+                        form.save();
+                        setState(() {
+                          Navigator.pop(context);
+                        });
+                        checkNetwork();
+                      }
+                    })
+              ],
+            );
+          });
+        });
   }
 
-  setAddress() {
+  /* setAddress() {
     return Padding(
         padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
         child: Row(
@@ -1333,63 +1198,19 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                       this.context,
                       MaterialPageRoute(
                           builder: (context) => Map(
-                            latitude: lat == null
-                                ? position.latitude
-                                : double.parse(lat),
-                            longitude: long == null
-                                ? position.longitude
-                                : double.parse(long),
-                            from: EDIT_PROFILE_LBL,
-                          )));
+                                latitude: lat == null
+                                    ? position.latitude
+                                    : double.parse(lat),
+                                longitude: long == null
+                                    ? position.longitude
+                                    : double.parse(long),
+                                from: EDIT_PROFILE_LBL,
+                              )));
                 },
               ),
             )
           ],
         ));
-  }
-
-  /*setPincode() {
-    double width = MediaQuery.of(this.context).size.width;
-    return Container(
-      width: width,
-      padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
-      child: Center(
-        child: TextFormField(
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          controller: pincodeC,
-          style: Theme.of(this.context)
-              .textTheme
-              .subtitle1
-              .copyWith(color: fontColor),
-          validator: validatePincodeOptional,
-          onChanged: (v) => setState(() {
-            pincode = v;
-          }),
-          onSaved: (String value) {
-            pincode = value;
-          },
-          decoration: InputDecoration(
-            hintText: PINCODEHINT_LBL,
-            hintStyle: Theme.of(this.context)
-                .textTheme
-                .subtitle1
-                .copyWith(color: lightBlack),
-            filled: true,
-            fillColor: white,
-            contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: white),
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: white),
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-          ),
-        ),
-      ),
-    );
   }*/
 
   profileImage() {
@@ -1399,39 +1220,39 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           children: <Widget>[
             image != null && image != ""
                 ? CircleAvatar(
-                radius: 50,
-                backgroundColor: primary,
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Image.network(
-                      image,
-                      fit: BoxFit.fill,
-                      width: 100,
-                      height: 100,
-                    )))
+                    radius: 50,
+                    backgroundColor: primary,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Image.network(
+                          image,
+                          fit: BoxFit.fill,
+                          width: 100,
+                          height: 100,
+                        )))
                 : CircleAvatar(
-              radius: 50,
-              backgroundColor: primary,
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(color: primary)),
-                  child: Icon(Icons.person, size: 100)),
-            ),
+                    radius: 50,
+                    backgroundColor: primary,
+                    child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(50),
+                            border: Border.all(color: primary)),
+                        child: Icon(Icons.person, size: 100)),
+                  ),
             Positioned(
-                bottom: 1,
-                right: 1,
+                bottom: 3,
+                right: 5,
                 child: Container(
-                  height: 30,
-                  width: 30,
-                  child: IconButton(
-                    icon: Icon(
+                  height: 20,
+                  width: 20,
+                  child: InkWell(
+                    child: Icon(
                       Icons.edit,
-                      color: primary,
-                      size: 15,
+                      color: white,
+                      size: 10,
                     ),
-                    onPressed: () {
+                    onTap: () {
                       setState(() {
                         _imgFromGallery();
                         //_showPicker(context);
@@ -1439,7 +1260,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                     },
                   ),
                   decoration: BoxDecoration(
-                      color: white,
+                      color: primary,
                       borderRadius: BorderRadius.all(
                         Radius.circular(20),
                       ),
@@ -1473,27 +1294,28 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: _isNetworkAvail
                 ? Column(children: <Widget>[
-              profileImage(),
-              Padding(
-                  padding: const EdgeInsets.only(top: 20, bottom: 5.0),
-                  child: Card(
-                      elevation: 2.0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius.all(Radius.circular(10.0))),
-                      child: Column(
-                        children: <Widget>[
-                          setUser(),
-                          _getDivider(),
-                          setEmail(),
-                          _getDivider(),
-                          setMobileNo(),
-                          _getDivider(),
-                          setLocation(),
-                        ],
-                      ))),
-              changePass()
-            ])
+                    profileImage(),
+                    Padding(
+                        padding: const EdgeInsets.only(top: 20, bottom: 5.0),
+                        child: Container(
+                            child: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(10.0))),
+                                child: Column(
+                                  children: <Widget>[
+                                    setUser(),
+                                    _getDivider(),
+                                    setEmail(),
+                                    _getDivider(),
+                                    setMobileNo(),
+                                    _getDivider(),
+                                    setLocation(),
+                                  ],
+                                )))),
+                    changePass()
+                  ])
                 : noInternet(context)));
   }
 

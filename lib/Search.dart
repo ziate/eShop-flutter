@@ -38,7 +38,6 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   int pos = 0;
   bool _isProgress = false;
   List<Product> productList = [];
-  List<Product> tempList = [];
 
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
@@ -52,12 +51,13 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
       notificationisgettingdata = false,
       notificationisnodata = false;
   List<Model> categList = [];
-  GlobalKey _key;
-  bool isMenuOpen=false;
 
-  Offset buttonPosition;
-  Size buttonSize;
-  OverlayEntry _overlayEntry;
+  //GlobalKey _key;
+  //bool isMenuOpen=false;
+
+  //Offset buttonPosition;
+  //Size buttonSize;
+  //OverlayEntry _overlayEntry;
 
   // BorderRadius _borderRadius;
   AnimationController _animationController;
@@ -67,16 +67,6 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     super.initState();
     productList.clear();
     categList.clear();
-   // isMenuOpen = widget.menuopen;
-/*    setState(() {
-
-   *//*   if(isMenuOpen){
-        WidgetsBinding.instance
-            .addPostFrameCallback((_) => openMenu());
-
-        print("menu========$isMenuOpen=====${widget.menuopen}");
-      }*//*
-    });*/
 
     this.categList = List.from(catList);
 
@@ -88,7 +78,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     notificationcontroller.addListener(_transactionscrollListener);
 
     _controller.addListener(() {
-      closeMenu();
+      //closeMenu();
       if (_controller.text.isEmpty) {
         setState(() {
           _isSearching = false;
@@ -114,7 +104,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
       duration: Duration(milliseconds: 250),
     );
     //_borderRadius = widget.borderRadius ?? BorderRadius.circular(4);
-    _key = LabeledGlobalKey("button_icon");
+    //_key = LabeledGlobalKey("button_icon");
 
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
@@ -147,11 +137,11 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     buttonController.dispose();
     notificationcontroller.dispose();
     _animationController.dispose();
-    closeMenu();
+    //closeMenu();
     super.dispose();
   }
 
-  findButton() {
+/*  findButton() {
     RenderBox renderBox = _key.currentContext.findRenderObject();
     buttonSize = renderBox.size;
     buttonPosition = renderBox.localToGlobal(Offset.zero);
@@ -169,7 +159,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     _overlayEntry = _overlayEntryBuilder();
     Overlay.of(context).insert(_overlayEntry);
     isMenuOpen = !isMenuOpen;
-  }
+  }*/
 
   Future<Null> _playAnimation() async {
     try {
@@ -177,7 +167,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     } on TickerCanceled {}
   }
 
-  OverlayEntry _overlayEntryBuilder() {
+/*  OverlayEntry _overlayEntryBuilder() {
     return OverlayEntry(
       builder: (context) {
         return Positioned(
@@ -237,7 +227,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         );
       },
     );
-  }
+  }*/
 
   Widget noInternet(BuildContext context) {
     return Center(
@@ -299,11 +289,9 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             controller: _controller,
             autofocus: true,
             decoration: InputDecoration(
-              contentPadding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
+             contentPadding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
               prefixIcon: Icon(Icons.search, color: primary, size: 17),
               hintText: 'Search',
-              prefixIconConstraints:
-                  BoxConstraints(minWidth: 20, maxHeight: 25),
               hintStyle: TextStyle(color: primary.withOpacity(0.5)),
               enabledBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: white),
@@ -313,8 +301,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
               ),
             ),
           ),
-          titleSpacing: 0.0,
-          actions: [
+titleSpacing: 0,
+          /*  actions: [
             Stack(
               alignment: Alignment.centerRight,
               children: [
@@ -347,7 +335,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                         ))),
               ],
             ),
-          ],
+          ],*/
         ),
         body: _isNetworkAvail
             ? Stack(
@@ -360,6 +348,128 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   }
 
   Widget listItem(int index) {
+    double price = double.parse(productList[index].prVarientList[0].disPrice);
+    if (price == 0)
+      price = double.parse(productList[index].prVarientList[0].price);
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: InkWell(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              productList[index].availability == "0"
+                  ? Text(OUT_OF_STOCK_LBL,
+                      style: Theme.of(context)
+                          .textTheme
+                          .subtitle1
+                          .copyWith(color: Colors.red))
+                  : Container(),
+              Row( mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Hero(
+                      tag: "$index${productList[index].id}",
+                      child: ClipRRect(
+                          borderRadius: BorderRadius.circular(7.0),
+                          child: CachedNetworkImage(
+                            imageUrl: productList[index].image,
+                            height: 80.0,
+                            width:80.0,
+                            placeholder: (context, url) => placeHolder(80),
+                          ))),
+                  Expanded(
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              productList[index].name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
+                                      color: lightBlack,
+                                      fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 12,
+                                ),
+                                Text(
+                                  " " + productList[index].rating,
+                                  style: Theme.of(context).textTheme.overline,
+                                ),
+                                Text(
+                                  " (" + productList[index].noOfRating + ")",
+                                  style: Theme.of(context).textTheme.overline,
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  int.parse(productList[index]
+                                              .prVarientList[0]
+                                              .disPrice) !=
+                                          0
+                                      ? CUR_CURRENCY +
+                                          "" +
+                                          productList[index]
+                                              .prVarientList[0]
+                                              .price
+                                      : "",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .overline
+                                      .copyWith(
+                                          decoration: TextDecoration.lineThrough,
+                                          letterSpacing: 0),
+                                ),
+                                Text(" " + CUR_CURRENCY + " " + price.toString(),
+                                    style: Theme.of(context).textTheme.subtitle1),
+                              ],
+                            )
+                          ],
+                        )),
+                  )
+                ],
+              ),
+            ],
+          ),
+          splashColor: primary.withOpacity(0.2),
+          onTap: () {
+            FocusScope.of(context).requestFocus(new FocusNode());
+            Product model = productList[index];
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                  transitionDuration: Duration(seconds: 1),
+                  pageBuilder: (_, __, ___) => ProductDetail(
+                        model: model,
+                        updateParent: updateSearch,
+                        updateHome: widget.updateHome,
+                        secPos: 0,
+                        index: index,
+                        list: true,
+                      )),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+/*  Widget listItem(int index) {
     double price = double.parse(productList[index].prVarientList[0].disPrice);
     if (price == 0)
       price = double.parse(productList[index].prVarientList[0].price);
@@ -555,7 +665,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         },
       ),
     );
-  }
+  }*/
 
 /*  _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&

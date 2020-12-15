@@ -10,7 +10,8 @@ import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Home.dart';
 import 'package:eshop/Model/User.dart';
 import 'package:eshop/Map.dart';
-
+import 'Faqs.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/NotificationLIst.dart';
 import 'package:eshop/Setting.dart';
 import 'package:eshop/Track_Order.dart';
@@ -20,7 +21,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:share/share.dart';
-
+import 'Manage_Address.dart';
 import 'Add_Address.dart';
 import 'Cart.dart';
 import 'Helper/AppBtn.dart';
@@ -29,16 +30,20 @@ import 'package:http/http.dart' as http;
 
 import 'Login.dart';
 import 'Logout.dart';
+import 'MyOrder.dart';
 import 'Privacy_Policy.dart';
 import 'Profile.dart';
 
 class MyProfile extends StatefulWidget {
+  Function update;
+
+  MyProfile(this.update);
+
   @override
   State<StatefulWidget> createState() => StateProfile();
 }
 
 class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
-  int curDrwSel = 0;
   String profile, email;
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
@@ -53,6 +58,9 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     CUR_USERNAME = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
     profile = await getPrefrence(IMAGE);
+    setState(() {
+
+    });
   }
 
   update() {
@@ -83,61 +91,64 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       ),
                       email != null
                           ? Text(
-                        email,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle2
-                            .copyWith(color: black),
-                      )
+                              email,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(color: black),
+                            )
                           : Container(),
                       CUR_USERNAME == "" || CUR_USERNAME == null
                           ? Padding(
-                          padding: const EdgeInsets.only(top: 7),
-                          child: InkWell(
-                            child: Text(LOGIN_REGISTER_LBL,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption
-                                    .copyWith(
-                                  color: primary,
-                                  decoration: TextDecoration.underline,
-                                )),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Login(),
-                                  ));
-                            },
-                          ))
-                          : Padding(
-                          padding: const EdgeInsets.only(
-                            top: 7,
-                          ),
-                          child: InkWell(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(EDIT_PROFILE_LBL,
+                              padding: const EdgeInsets.only(top: 7),
+                              child: InkWell(
+                                child: Text(LOGIN_REGISTER_LBL,
                                     style: Theme.of(context)
                                         .textTheme
                                         .caption
-                                        .copyWith(color: primary)),
-                                Icon(
-                                  Icons.arrow_right_outlined,
-                                  color: primary,
-                                  size: 20,
+                                        .copyWith(
+                                          color: primary,
+                                          decoration: TextDecoration.underline,
+                                        )),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Login(),
+                                      ));
+                                },
+                              ))
+                          : Padding(
+                              padding: const EdgeInsets.only(
+                                top: 7,
+                              ),
+                              child: InkWell(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(EDIT_PROFILE_LBL,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .caption
+                                            .copyWith(color: primary)),
+                                    Icon(
+                                      Icons.arrow_right_outlined,
+                                      color: primary,
+                                      size: 20,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Profile(),
-                                  ));
-                            },
-                          ))
+                                onTap: () async{
+                               await   Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Profile(),
+                                      ));
+                               setState(() {
+                                 getUserDetails();
+                               });
+                                },
+                              ))
                     ],
                   )),
               Spacer(),
@@ -152,19 +163,19 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(100.0),
                   child: profile != null
                       ? CachedNetworkImage(
-                      imageUrl: profile,
-                      height: 64,
-                      width: 64,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) {
-                        return new Container(
-                          child: Icon(
-                            Icons.account_circle,
-                            color: white,
-                            size: 64,
-                          ),
-                        );
-                      })
+                          imageUrl: profile,
+                          height: 64,
+                          width: 64,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) {
+                            return new Container(
+                              child: Icon(
+                                Icons.account_circle,
+                                color: white,
+                                size: 64,
+                              ),
+                            );
+                          })
                       : imagePlaceHolder(62),
                 ),
               ),
@@ -177,7 +188,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     print("current==========$CUR_USERNAME===$CUR_USERID");
     return Card(
       margin: EdgeInsets.only(left: 10.0, right: 10.0),
-      elevation: 3.0,
+      elevation: 0,
       color: white,
       child: ListView(
         padding: EdgeInsets.zero,
@@ -193,8 +204,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           _getDrawerItem(3, SETTING, 'assets/images/pro_setting.png'),
           _getDivider(),
           _getDrawerItem(4, MANAGE_ADD_LBL, 'assets/images/pro_address.png'),
-          _getDivider(),
-          _getDrawerItem(5, TRACK_ORDER, 'assets/images/pro_trackorder.png'),
+          //_getDivider(),
+          // _getDrawerItem(5, TRACK_ORDER, 'assets/images/pro_trackorder.png'),
         ],
       ),
     );
@@ -211,25 +222,26 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     print("current==========$CUR_USERNAME===$CUR_USERID");
     return Card(
       margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 15.0, bottom: 15.0),
-      elevation: 3.0,
+      elevation: 0,
       color: white,
       child: ListView(
         padding: EdgeInsets.zero,
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
         children: <Widget>[
-          _getDrawerItem(
-              6, CUSTOMER_SUPPORT_LBL, 'assets/images/pro_customersupport.png'),
-          _getDivider(),
+          //  _getDrawerItem(6, CUSTOMER_SUPPORT_LBL, 'assets/images/pro_customersupport.png'),
+          //  _getDivider(),
           _getDrawerItem(7, RATE_US, 'assets/images/pro_rateus.png'),
           _getDivider(),
           _getDrawerItem(8, SHARE_APP, 'assets/images/pro_share.png'),
           _getDivider(),
           _getDrawerItem(9, ABOUT_LBL, 'assets/images/pro_aboutus.png'),
+          _getDivider(),
+          _getDrawerItem(10, FAQS, 'assets/images/pro_faq.png'),
           CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
           CUR_USERID == "" || CUR_USERID == null
               ? Container()
-              : _getDrawerItem(10, LOGOUT, 'assets/images/pro_logout.png'),
+              : _getDrawerItem(11, LOGOUT, 'assets/images/pro_logout.png'),
         ],
       ),
     );
@@ -243,107 +255,78 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           decoration: BoxDecoration(
               borderRadius: new BorderRadius.all(const Radius.circular(5.0)),
               color: lightWhite),
-          child: Image.asset(img,)),
+          child: Image.asset(
+            img,
+          )),
       title: Text(
         title,
         style: TextStyle(color: lightBlack2, fontSize: 15),
       ),
       onTap: () {
-
         if (title == MY_ORDERS_LBL) {
-          setState(() {
-            curDrwSel = index;
-          });
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => TrackOrder(),
-
+                builder: (context) => MyOrder(),
               ));
         } else if (title == NOTIFICATION) {
-          setState(() {
-            curDrwSel = index;
-          });
-          CUR_USERID == null
-              ? Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Login(),
-              ))
-              : Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NotificationList(),
-              ));
+          curSelected = 2;
+          final CurvedNavigationBarState navBarState =
+              bottomNavigationKey.currentState;
+          navBarState.setPage(2);
         } else if (title == FAVORITE) {
-          CUR_USERID == null
-              ? Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Login(),
-              ))
-              : Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Favorite(update),
-              ));
+          curSelected = 1;
+          final CurvedNavigationBarState navBarState =
+              bottomNavigationKey.currentState;
+          navBarState.setPage(1);
         } else if (title == SETTING) {
           CUR_USERID == null
               ? Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Login(),
-              ))
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Login(),
+                  ))
               : Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Setting(),
-              ));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Setting(),
+                  ));
         } else if (title == MANAGE_ADD_LBL) {
           CUR_USERID == null
               ? Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Login(),
-              ))
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Login(),
+                  ))
               : Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddAddress(
-                  update: false,
-                ),
-              ));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ManageAddress(
+                      home: true,
+                    ),
+                  ));
         } else if (title == TRACK_ORDER) {
           CUR_USERID == null
               ? Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Login(),
-              ))
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Login(),
+                  ))
               : Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TrackOrder(),
-              ));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TrackOrder(),
+                  ));
         } else if (title == CUSTOMER_SUPPORT_LBL) {
         } else if (title == RATE_US) {
-          setState(() {
-            curDrwSel = index;
-          });
           AppReview.requestReview.then((onValue) {
             print("==========$onValue");
           });
         } else if (title == SHARE_APP) {
-          setState(() {
-            curDrwSel = index;
-          });
           var str =
               "$appName\n\nYou can find our app from below url\n\nAndroid:\n$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
           Share.share(str);
         } else if (title == ABOUT_LBL) {
-          setState(() {
-            curDrwSel = index;
-          });
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -351,10 +334,15 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                   title: ABOUT_LBL,
                 ),
               ));
+        } else if (title == FAQS) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Faqs(
+                  title: FAQS,
+                ),
+              ));
         } else if (title == LOGOUT) {
-          setState(() {
-            curDrwSel = index;
-          });
           Navigator.push(
               context,
               MaterialPageRoute(

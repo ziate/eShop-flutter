@@ -12,7 +12,6 @@ import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/String.dart';
 
-
 class Privacy_Policy extends StatefulWidget {
   final String title;
 
@@ -24,7 +23,7 @@ class Privacy_Policy extends StatefulWidget {
   }
 }
 
-class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin{
+class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
   bool _isLoading = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String privacy;
@@ -102,55 +101,51 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin{
 
     return _isLoading
         ? Scaffold(
-
-      key: _scaffoldKey,
-      appBar: getAppBar(widget.title, context),
-      body: getProgress(),
-    )
+            key: _scaffoldKey,
+            appBar: getAppBar(widget.title, context),
+            body: getProgress(),
+          )
         : privacy != null
-        ? WebviewScaffold(
-      appBar: getAppBar(widget.title, context),
+            ? WebviewScaffold(
+                appBar: getAppBar(widget.title, context),
 
-      withJavascript: true,
-      appCacheEnabled: true,
-
-      // hidden: true,
-      url: new Uri.dataFromString(privacy,
-          mimeType: 'text/html', encoding: utf8)
-          .toString(),
-    )
-        : Scaffold(
-      key: _scaffoldKey,
-      appBar: getAppBar(widget.title, context),
-      body: _isNetworkAvail?Container():noInternet(context),
-    );
+                withJavascript: true,
+                appCacheEnabled: true,
+                scrollBar: false,
+                // hidden: true,
+                url: new Uri.dataFromString(privacy,
+                        mimeType: 'text/html', encoding: utf8)
+                    .toString(),
+              )
+            : Scaffold(
+                key: _scaffoldKey,
+                appBar: getAppBar(widget.title, context),
+                body: _isNetworkAvail ? Container() : noInternet(context),
+              );
   }
 
   Future<void> getSetting() async {
-    _isNetworkAvail= await isNetworkAvailable();
+    _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
         String type;
-        if(widget.title==PRIVACY)
-          type=PRIVACY_POLLICY;
-        else if(widget.title==TERM)
-          type=TERM_COND;
-        else if(widget.title==ABOUT_LBL)
-          type=CONTACT_US;
-
-
+        if (widget.title == PRIVACY)
+          type = PRIVACY_POLLICY;
+        else if (widget.title == TERM)
+          type = TERM_COND;
+        else if (widget.title == ABOUT_LBL) type = CONTACT_US;
 
         var parameter = {TYPE: type};
         Response response =
-        await post(getSettingApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(getSettingApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         print('response***setting**$headers***${response.body.toString()}');
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
-          privacy = getdata["data"].toString();
+          privacy = getdata["data"][type].toString();
         } else {
           setSnackbar(msg);
         }
@@ -163,7 +158,7 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin{
     } else {
       setState(() {
         _isLoading = false;
-        _isNetworkAvail=false;
+        _isNetworkAvail = false;
       });
     }
   }
