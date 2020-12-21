@@ -12,9 +12,10 @@ class ProductPreview extends StatefulWidget {
   final int pos, secPos, index;
   final bool list;
   final String id;
+  final List<String>imgList;
 
   const ProductPreview(
-      {Key key, this.pos, this.secPos, this.index, this.list, this.id})
+      {Key key, this.pos, this.secPos, this.index, this.list, this.id, this.imgList})
       : super(key: key);
 
   @override
@@ -39,11 +40,12 @@ class StatePreview extends State<ProductPreview> {
         body: Hero(
           tag: widget.list
               ? "${widget.id}"
-              : "${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}",
+              : "${sectionList[widget.secPos].productList[widget.index]
+              .id}${widget.secPos}${widget.index}",
           child: Stack(
             children: <Widget>[
               PageView.builder(
-                  itemCount: sliderList.length,
+                  itemCount: widget.imgList.length,
                   controller: PageController(initialPage: curPos),
                   onPageChanged: (index) {
                     setState(() {
@@ -56,7 +58,7 @@ class StatePreview extends State<ProductPreview> {
                         initialScale: PhotoViewComputedScale.contained * 0.9,
                         minScale: PhotoViewComputedScale.contained * 0.9,
                         imageProvider:
-                        CachedNetworkImageProvider(sliderList[curPos]));
+                        CachedNetworkImageProvider(widget.imgList[curPos]));
                   }),
               Padding(
                 padding: const EdgeInsets.only(top: 34.0),
@@ -76,7 +78,7 @@ class StatePreview extends State<ProductPreview> {
                   left: 25.0,
                   right: 25.0,
                   child: SelectedPhoto(
-                    numberOfDots: sliderList.length,
+                    numberOfDots: widget.imgList.length,
                     photoIndex: curPos,
                   )),
             ],

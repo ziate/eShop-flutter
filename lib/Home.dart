@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 import 'dart:math' as math;
-import 'package:app_review/app_review.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/All_Category.dart';
@@ -54,7 +54,7 @@ class Home extends StatefulWidget {
   }
 }
 
-List<Model> catList = [];
+List<Product> catList = [];
 List<Model> homeSliderList = [];
 List<Section_Model> sectionList = [];
 List<Model> offerImages = [];
@@ -72,14 +72,13 @@ class StateHome extends State<Home> {
   int curDrwSel = 0;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
-
+      FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
     super.initState();
 
-  //  getUserData();
+    // getUserData();
     home = new HomePage(updateHome);
     fragments = [
       HomePage(updateHome),
@@ -97,48 +96,15 @@ class StateHome extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    deviceHeight = MediaQuery
-        .of(context)
-        .size
-        .height;
-    deviceWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
         backgroundColor: lightWhite,
         key: scaffoldKey,
-        appBar: curSelected==3?null:_getAppbar(),
-       // drawer: _getDrawer(),
+        appBar: curSelected == 3 ? null : _getAppbar(),
+        // drawer: _getDrawer(),
         bottomNavigationBar: getBottomBar(),
         body: fragments[curSelected]);
-  }
-
-  Future<void> getUserData() async {
-    CUR_USERID = await getPrefrence(ID);
-    CUR_USERNAME = await getPrefrence(USERNAME);
-    profile = await getPrefrence(IMAGE);
-    if (CUR_USERID != null)
-      try {
-        var parameter = {TYPE: USERDATA, USER_ID: CUR_USERID};
-        Response response =
-        await post(getSettingApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
-
-        var getdata = json.decode(response.body);
-        print('response***setting**$headers***${response.body.toString()}');
-        bool error = getdata["error"];
-        if (!error) {
-          var data = getdata["data"][0];
-          setState(() {
-            print("cart count******$data");
-            CUR_CART_COUNT = (data['cart_total_items']).toString();
-            CUR_BALANCE = data["balance"];
-          });
-        }
-      } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
-      }
   }
 
   setSnackbar(String msg) {
@@ -373,30 +339,27 @@ class StateHome extends State<Home> {
   _getAppbar() {
     double width = deviceWidth;
     double height = width / 2;
-    String title = curSelected == 1
-        ? FAVORITE
-        :NOTIFICATION;
+    String title = curSelected == 1 ? FAVORITE : NOTIFICATION;
     print("cart count***$CUR_CART_COUNT");
     return AppBar(
       title: curSelected == 0
-          ?Image.asset('assets/images/titleicon.png')
+          ? Image.asset('assets/images/titleicon.png')
           : Text(
-        title,
-        style: TextStyle(
-          color: fontColor,
-        ),
-      ),
+              title,
+              style: TextStyle(
+                color: fontColor,
+              ),
+            ),
       iconTheme: new IconThemeData(color: primary),
-     // centerTitle:_curSelected == 0? false:true,
+      // centerTitle:_curSelected == 0? false:true,
       actions: <Widget>[
         InkWell(
           child: Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 10,right:10),
+            padding: const EdgeInsets.only(top: 10.0, bottom: 10, right: 10),
             child: Container(
               decoration: shadow(),
               child: Card(
                 elevation: 0,
-
                 child: new Stack(children: <Widget>[
                   Center(
                     child: Image.asset(
@@ -405,28 +368,28 @@ class StateHome extends State<Home> {
                     ),
                   ),
                   (CUR_CART_COUNT != null &&
-                      CUR_CART_COUNT.isNotEmpty &&
-                      CUR_CART_COUNT != "0")
+                          CUR_CART_COUNT.isNotEmpty &&
+                          CUR_CART_COUNT != "0")
                       ? new Positioned(
-                    top: 0.0,
-                    right: 5.0,
-                    bottom: 10,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: primary.withOpacity(0.5)),
-                        child: new Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(3),
-                            child: new Text(
-                              CUR_CART_COUNT,
-                              style: TextStyle(
-                                  fontSize: 7,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        )),
-                  )
+                          top: 0.0,
+                          right: 5.0,
+                          bottom: 10,
+                          child: Container(
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: primary.withOpacity(0.5)),
+                              child: new Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(3),
+                                  child: new Text(
+                                    CUR_CART_COUNT,
+                                    style: TextStyle(
+                                        fontSize: 7,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              )),
+                        )
                       : Container()
                 ]),
               ),
@@ -435,14 +398,14 @@ class StateHome extends State<Home> {
           onTap: () async {
             CUR_USERID == null
                 ? Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Login(),
-                ))
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Login(),
+                    ))
                 : goToCart();
           },
         ),
-       /* InkWell(
+        /* InkWell(
           onTap: () {
             if (CUR_USERID != null) {
               Navigator.push(
@@ -487,42 +450,42 @@ class StateHome extends State<Home> {
 
   getBottomBar() {
     return CurvedNavigationBar(
-      key: bottomNavigationKey,
+        key: bottomNavigationKey,
         backgroundColor: lightWhite,
         height: 65,
         items: <Widget>[
           curSelected == 0
               ? Image.asset(
-            "assets/images/sel_home.png",
-            height: 35,
-          )
+                  "assets/images/sel_home.png",
+                  height: 35,
+                )
               : Image.asset(
-            "assets/images/desel_home.png",
-          ),
+                  "assets/images/desel_home.png",
+                ),
           curSelected == 1
               ? Image.asset(
-            "assets/images/sel_fav.png",
-            height: 35,
-          )
+                  "assets/images/sel_fav.png",
+                  height: 35,
+                )
               : Image.asset(
-            "assets/images/desel_fav.png",
-          ),
+                  "assets/images/desel_fav.png",
+                ),
           curSelected == 2
               ? Image.asset(
-            "assets/images/sel_notification.png",
-            height: 35,
-          )
+                  "assets/images/sel_notification.png",
+                  height: 35,
+                )
               : Image.asset(
-            "assets/images/desel_notification.png",
-          ),
+                  "assets/images/desel_notification.png",
+                ),
           curSelected == 3
               ? Image.asset(
-            "assets/images/sel_user.png",
-            height: 35,
-          )
+                  "assets/images/sel_user.png",
+                  height: 35,
+                )
               : Image.asset(
-            "assets/images/desel_user.png",
-          )
+                  "assets/images/desel_user.png",
+                )
         ],
         onTap: (int index) {
           print("current=====$index");
@@ -760,7 +723,6 @@ class StateHome extends State<Home> {
       padding: const EdgeInsets.only(bottom: 5.0),
       child: InkWell(
           child: Container(
-
             padding: EdgeInsets.only(left: 10.0, bottom: 20),
             decoration: back(),
             child: Row(
@@ -776,28 +738,27 @@ class StateHome extends State<Home> {
                     borderRadius: BorderRadius.circular(100.0),
                     child: profile != null
                         ? CachedNetworkImage(
-                        imageUrl: profile,
-                        height: 64,
-                        width: 64,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) {
-                          return new Container(
-                            child: Icon(
-                              Icons.account_circle,
-                              color: white,
-                              size: 64,
-                            ),
-                          );
-                        })
+                            imageUrl: profile,
+                            height: 64,
+                            width: 64,
+                            fit: BoxFit.cover,
+                        errorWidget:(context, url,e) => placeHolder(64) ,
+                            placeholder: (context, url) {
+                              return new Container(
+                                child: Icon(
+                                  Icons.account_circle,
+                                  color: white,
+                                  size: 64,
+                                ),
+                              );
+                            })
                         : imagePlaceHolder(64),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 55, left: 10),
                   child: Text(
-                    "Hello, \n${CUR_USERNAME == "" || CUR_USERNAME == null
-                        ? "Guest"
-                        : CUR_USERNAME}",
+                    "Hello, \n${CUR_USERNAME == "" || CUR_USERNAME == null ? "Guest" : CUR_USERNAME}",
                     style: TextStyle(color: white, fontWeight: FontWeight.bold),
                   ),
                 )
@@ -836,14 +797,13 @@ class StateHome extends State<Home> {
     //  if (nav == true || nav == null) home.updateHomepage();
   }
 
-
   void firNotificationInitialize() {
     //for firebase push notification
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+        FlutterLocalNotificationsPlugin();
 // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     var initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     var initializationSettingsIOS = IOSInitializationSettings(
         onDidReceiveLocalNotification: onDidReceiveLocalNotification);
     var initializationSettings = InitializationSettings(
@@ -852,30 +812,29 @@ class StateHome extends State<Home> {
         onSelectNotification: onSelectNotification);
   }
 
-  Future onDidReceiveLocalNotification(int id, String title, String body,
-      String payload) {
+  Future onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) {
     return showDialog(
       context: context,
-      builder: (context) =>
-          CupertinoAlertDialog(
-            title: Text(title),
-            content: Text(body),
-            actions: [
-              CupertinoDialogAction(
-                isDefaultAction: true,
-                child: Text('Ok'),
-                onPressed: () async {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MyApp(),
-                    ),
-                  );
-                },
-              )
-            ],
-          ),
+      builder: (context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: Text('Ok'),
+            onPressed: () async {
+              Navigator.of(context, rootNavigator: true).pop();
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MyApp(),
+                ),
+              );
+            },
+          )
+        ],
+      ),
     );
   }
 
@@ -948,7 +907,7 @@ class StateHome extends State<Home> {
             largeIcon: FilePathAndroidBitmap(largeIconPath),
             styleInformation: bigPictureStyleInformation);
         var platformChannelSpecifics =
-        NotificationDetails(androidPlatformChannelSpecifics, null);
+            NotificationDetails(androidPlatformChannelSpecifics, null);
         await flutterLocalNotificationsPlugin.show(
             0, title, msg, platformChannelSpecifics);
       } else {
@@ -968,8 +927,8 @@ class StateHome extends State<Home> {
     }
   }
 
-  static Future<String> _downloadAndSaveImage(String url,
-      String fileName) async {
+  static Future<String> _downloadAndSaveImage(
+      String url, String fileName) async {
     var directory = await getApplicationDocumentsDirectory();
     var filePath = '${directory.path}/$fileName';
     var response = await http.get(url);
@@ -1052,19 +1011,19 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         backgroundColor: lightWhite,
         body: _isNetworkAvail
             ? _isCatLoading
-            ? homeShimmer()
-            : SingleChildScrollView(
-            padding: EdgeInsets.all(10),
-            physics: BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                _getSearchBar(),
-                _slider(),
-                _catHeading(),
-                _catList(),
-                _section()
-              ],
-            ))
+                ? homeShimmer()
+                : SingleChildScrollView(
+                    padding: EdgeInsets.all(10),
+                    physics: BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        _getSearchBar(),
+                        _slider(),
+                        _catHeading(),
+                        _catList(),
+                        _section()
+                      ],
+                    ))
             : noInternet(context));
   }
 
@@ -1112,45 +1071,38 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         highlightColor: Colors.grey[100],
         child: SingleChildScrollView(
             child: Column(
-              children: [
-                Image.asset(
-                  'assets/images/topimage.png',
-                  width: width,
-                  fit: BoxFit.fitWidth,
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  width: double.infinity,
-                  height: height,
-                  color: white,
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                  width: double.infinity,
-                  height: 18.0,
-                  color: white,
-                ),
-                Padding(
-                  padding:
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              width: double.infinity,
+              height: height,
+              color: white,
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              width: double.infinity,
+              height: 18.0,
+              color: white,
+            ),
+            Padding(
+              padding:
                   const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                        children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-                            .map((_) =>
-                            Container(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                        .map((_) => Container(
                               margin: EdgeInsets.symmetric(horizontal: 10),
                               width: 80.0,
                               height: 80.0,
                               color: white,
                             ))
-                            .toList()),
-                  ),
-                ),
-                Column(
-                    children: [0, 1, 2, 3, 4]
-                        .map((_) =>
-                        Column(
+                        .toList()),
+              ),
+            ),
+            Column(
+                children: [0, 1, 2, 3, 4]
+                    .map((_) => Column(
                           children: [
                             Container(
                               margin: EdgeInsets.symmetric(
@@ -1177,7 +1129,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                                 crossAxisSpacing: 5,
                                 children: List.generate(
                                   4,
-                                      (index) {
+                                  (index) {
                                     return Container(
                                       width: double.infinity,
                                       height: double.infinity,
@@ -1187,9 +1139,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                                 )),
                           ],
                         ))
-                        .toList()),
-              ],
-            )),
+                    .toList()),
+          ],
+        )),
       ),
     );
   }
@@ -1199,86 +1151,84 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
     return homeSliderList.isNotEmpty
         ? Container(
-      height: height,
-      width: double.infinity,
-      margin: EdgeInsets.only(top: 10),
-      child: PageView.builder(
-        itemCount: homeSliderList.length,
-        scrollDirection: Axis.horizontal,
-        controller: _controller,
-        reverse: false,
-        onPageChanged: (index) {
-          setState(() {
-            _curSlider = index;
-          });
-        },
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            child: Stack(
-              children: <Widget>[
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(7.0),
-                    child: CachedNetworkImage(
-                      imageUrl: homeSliderList[_curSlider].image,
-                      placeholder: (context, url) =>
-                          Image.asset(
-                            "assets/images/sliderph.png",
+            height: height,
+            width: double.infinity,
+            margin: EdgeInsets.only(top: 10),
+            child: PageView.builder(
+              itemCount: homeSliderList.length,
+              scrollDirection: Axis.horizontal,
+              controller: _controller,
+              reverse: false,
+              onPageChanged: (index) {
+                setState(() {
+                  _curSlider = index;
+                });
+              },
+              itemBuilder: (BuildContext context, int index) {
+                return GestureDetector(
+                  child: Stack(
+                    children: <Widget>[
+                      ClipRRect(
+                          borderRadius: BorderRadius.circular(7.0),
+                          child: CachedNetworkImage(
+                            imageUrl: homeSliderList[_curSlider].image,
+                            placeholder: (context, url) => Image.asset(
+                              "assets/images/sliderph.png",
+                              height: height,
+                            ),
+                            errorWidget: (context, url, error) => Image.asset(
+                              "assets/images/sliderph.png",
+                              height: height,
+                            ),
+                            fit: BoxFit.fill,
                             height: height,
+                            width: double.maxFinite,
+                          )),
+                      Positioned(
+                        bottom: 0,
+                        height: 40,
+                        left: 0,
+                        width: deviceWidth,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: map<Widget>(
+                            homeSliderList,
+                            (index, url) {
+                              return Container(
+                                  width: 8.0,
+                                  height: 8.0,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 10.0, horizontal: 2.0),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _curSlider == index
+                                        ? fontColor
+                                        : lightBlack,
+                                  ));
+                            },
                           ),
-                      errorWidget: (context, url, error) =>
-                          Image.asset(
-                            "assets/images/sliderph.png",
-                            height: height,
-                          ),
-                      fit: BoxFit.fill,
-                      height: height,
-                      width: double.maxFinite,
-                    )),
-                Positioned(
-                  bottom: 0,
-                  height: 40,
-                  left: 0,
-                  width: deviceWidth,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: map<Widget>(
-                      homeSliderList,
-                          (index, url) {
-                        return Container(
-                            width: 8.0,
-                            height: 8.0,
-                            margin: EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 2.0),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _curSlider == index
-                                  ? fontColor
-                                  : lightBlack,
-                            ));
-                      },
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  onTap: () async {},
+                );
+              },
             ),
-            onTap: () async {},
-          );
-        },
-      ),
-    )
+          )
         : Padding(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 27),
-      child: ClipRRect(
-        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-        child: Image.asset(
-          'assets/images/sliderph.png',
-          height: height,
-          width: double.infinity,
-          fit: BoxFit.fill,
-        ),
-      ),
-    );
+            padding: const EdgeInsets.only(top: 10.0, bottom: 27),
+            child: ClipRRect(
+              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+              child: Image.asset(
+                'assets/images/sliderph.png',
+                height: height,
+                width: double.infinity,
+                fit: BoxFit.fill,
+              ),
+            ),
+          );
   }
 
   List<T> map<T>(List list, Function handler) {
@@ -1303,7 +1253,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         if (_controller.hasClients)
           _controller
               .animateToPage(nextPage,
-              duration: Duration(seconds: 1), curve: Curves.easeIn)
+                  duration: Duration(seconds: 1), curve: Curves.easeIn)
               .then((_) => _animateSlider());
       }
     });
@@ -1313,7 +1263,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     return GestureDetector(
       child: SizedBox(
         height: 35,
-
         child: TextField(
           enabled: false,
           textAlign: TextAlign.left,
@@ -1330,13 +1279,14 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               ),
               isDense: true,
               hintText: searchHint,
-              hintStyle: Theme
-                  .of(context)
-                  .textTheme
-                  .bodyText2
-                  .copyWith(color: fontColor,),
+              hintStyle: Theme.of(context).textTheme.bodyText2.copyWith(
+                    color: fontColor,
+                  ),
               //prefixIcon: Image.asset('assets/images/search.png'),
-              suffixIcon:  Image.asset('assets/images/search.png',color:primary ,),
+              suffixIcon: Image.asset(
+                'assets/images/search.png',
+                color: primary,
+              ),
               fillColor: white,
               filled: true),
         ),
@@ -1345,8 +1295,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  Search(updateHome: widget.updateHome, menuopen:menuOpen,),
+              builder: (context) => Search(
+                updateHome: widget.updateHome,
+                menuopen: menuOpen,
+              ),
             ));
         setState(() {});
       },
@@ -1361,18 +1313,14 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         children: <Widget>[
           Text(
             category,
-            style: Theme
-                .of(context)
-                .textTheme
-                .subtitle1,
+            style: Theme.of(context).textTheme.subtitle1,
           ),
           InkWell(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 seeAll,
-                style: Theme
-                    .of(context)
+                style: Theme.of(context)
                     .textTheme
                     .caption
                     .copyWith(color: primary),
@@ -1382,8 +1330,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) =>
-                        All_Category(
+                    builder: (context) => All_Category(
                           updateHome: widget.updateHome,
                         )),
               );
@@ -1420,6 +1367,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                         height: 50.0,
                         width: 50.0,
                         fit: BoxFit.cover,
+                        errorWidget:(context, url,e) => placeHolder(50) ,
                         placeholder: (context, url) => placeHolder(50),
                       ),
                     ),
@@ -1427,11 +1375,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   Container(
                     child: Text(
                       catList[index].name,
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .caption
-                          .copyWith(
+                      style: Theme.of(context).textTheme.caption.copyWith(
                           color: fontColor,
                           fontWeight: FontWeight.w600,
                           fontSize: 10),
@@ -1449,22 +1393,20 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                 await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          ProductList(
-                              name: catList[index].name,
-                              id: catList[index].id,
-                              updateHome: widget.updateHome),
+                      builder: (context) => ProductList(
+                          name: catList[index].name,
+                          id: catList[index].id,
+                          updateHome: widget.updateHome),
                     ));
                 setState(() {});
               } else {
                 await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          SubCat(
-                              title: catList[index].name,
-                              subList: catList[index].subList,
-                              updateHome: widget.updateHome),
+                      builder: (context) => SubCat(
+                          title: catList[index].name,
+                          subList: catList[index].subList,
+                          updateHome: widget.updateHome),
                     ));
                 setState(() {});
               }
@@ -1479,26 +1421,26 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     return _isCatLoading
         ? getProgress()
         : ListView.builder(
-      padding: EdgeInsets.all(0),
-      itemCount: sectionList.length,
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) {
-        return _singleSection(index);
-      },
-    );
+            padding: EdgeInsets.all(0),
+            itemCount: sectionList.length,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              return _singleSection(index);
+            },
+          );
   }
 
   _singleSection(int index) {
     return sectionList[index].productList.length > 0
         ? Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        _getHeading(sectionList[index].title, index),
-        _getSection(index),
-        offerImages.length > index ? _getOfferImage() : Container(),
-      ],
-    )
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _getHeading(sectionList[index].title, index),
+              _getSection(index),
+              offerImages.length > index ? _getOfferImage() : Container(),
+            ],
+          )
         : Container();
   }
 
@@ -1510,20 +1452,13 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         children: <Widget>[
           Text(
             title,
-            style: Theme
-                .of(context)
-                .textTheme
-                .subtitle1,
+            style: Theme.of(context).textTheme.subtitle1,
           ),
           InkWell(
             child: Text(
               seeAll,
               style:
-              Theme
-                  .of(context)
-                  .textTheme
-                  .caption
-                  .copyWith(color: primary),
+                  Theme.of(context).textTheme.caption.copyWith(color: primary),
             ),
             splashColor: primary.withOpacity(0.2),
             onTap: () {
@@ -1531,12 +1466,11 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        SectionList(
-                          index: index,
-                          section_model: model,
-                          updateHome: updateHomePage,
-                        ),
+                    builder: (context) => SectionList(
+                      index: index,
+                      section_model: model,
+                      updateHome: updateHomePage,
+                    ),
                   ));
             },
           ),
@@ -1555,6 +1489,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         return CachedNetworkImage(
           imageUrl: offerImages[index].image,
           width: double.maxFinite,
+          errorWidget:(context, url,e) => placeHolder(50) ,
+          placeholder:(context, url) => placeHolder(50) ,
         );
       },
     );
@@ -1564,146 +1500,146 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     print('style=====${sectionList[i].style}');
     return sectionList[i].style == DEFAULT
         ? GridView.count(
-        padding: EdgeInsets.only(top: 5),
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        childAspectRatio: 0.8,
-        physics: NeverScrollableScrollPhysics(),
-        children: List.generate(
-          sectionList[i].productList.length < 4
-              ? sectionList[i].productList.length
-              : 4,
+            padding: EdgeInsets.only(top: 5),
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            childAspectRatio: 0.8,
+            physics: NeverScrollableScrollPhysics(),
+            children: List.generate(
+              sectionList[i].productList.length < 4
+                  ? sectionList[i].productList.length
+                  : 4,
               (index) {
-            return productItem(i, index, index % 2 == 0 ? true : false);
-          },
-        ))
+                return productItem(i, index, index % 2 == 0 ? true : false);
+              },
+            ))
         : sectionList[i].style == STYLE1
-        ? Row(
-      children: [
-        Flexible(
-            flex: 3,
-            fit: FlexFit.loose,
-            child: Container(
-                height: deviceHeight * 0.4,
-                child: productItem(i, 0, true))),
-        Flexible(
-          flex: 2,
-          fit: FlexFit.loose,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                  height: deviceHeight * 0.2,
-                  child: productItem(i, 1, false)),
-              Container(
-                  height: deviceHeight * 0.2,
-                  child: productItem(i, 2, false)),
-            ],
-          ),
-        ),
-      ],
-    )
-        : sectionList[i].style == STYLE2
-        ? Row(
-      children: [
-        Flexible(
-          flex: 2,
-          fit: FlexFit.loose,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                  height: deviceHeight * 0.2,
-                  child: productItem(i, 0, true)),
-              Container(
-                  height: deviceHeight * 0.2,
-                  child: productItem(i, 1, true)),
-            ],
-          ),
-        ),
-        Flexible(
-            flex: 3,
-            fit: FlexFit.loose,
-            child: Container(
-                height: deviceHeight * 0.4,
-                child: productItem(i, 2, false))),
-      ],
-    )
-        : sectionList[i].style == STYLE3
-        ? Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Flexible(
-            flex: 1,
-            fit: FlexFit.loose,
-            child: Container(
-                height: deviceHeight * 0.3,
-                child: productItem(i, 0, false))),
-        Container(
-          height: deviceHeight * 0.2,
-          child: Row(
-            children: [
-              Flexible(
-                  flex: 1,
-                  fit: FlexFit.loose,
-                  child: productItem(i, 1, true)),
-              Flexible(
-                  flex: 1,
-                  fit: FlexFit.loose,
-                  child: productItem(i, 2, true)),
-              Flexible(
-                  flex: 1,
-                  fit: FlexFit.loose,
-                  child: productItem(i, 3, false)),
-            ],
-          ),
-        ),
-      ],
-    )
-        : sectionList[i].style == STYLE4
-        ? Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Flexible(
-            flex: 1,
-            fit: FlexFit.loose,
-            child: Container(
-                height: deviceHeight * 0.3,
-                child: productItem(i, 0, false))),
-        Container(
-          height: deviceHeight * 0.2,
-          child: Row(
-            children: [
-              Flexible(
-                  flex: 1,
-                  fit: FlexFit.loose,
-                  child: productItem(i, 1, true)),
-              Flexible(
-                  flex: 1,
-                  fit: FlexFit.loose,
-                  child: productItem(i, 2, false)),
-            ],
-          ),
-        ),
-      ],
-    )
-        : GridView.count(
-        padding: EdgeInsets.only(top: 5),
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        childAspectRatio: 1.0,
-        physics: NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 0,
-        crossAxisSpacing: 0,
-        children: List.generate(
-          sectionList[i].productList.length < 4
-              ? sectionList[i].productList.length
-              : 4,
-              (index) {
-            return productItem(
-                i, index, index % 2 == 0 ? true : false);
-          },
-        ));
+            ? Row(
+                children: [
+                  Flexible(
+                      flex: 3,
+                      fit: FlexFit.loose,
+                      child: Container(
+                          height: deviceHeight * 0.4,
+                          child: productItem(i, 0, true))),
+                  Flexible(
+                    flex: 2,
+                    fit: FlexFit.loose,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                            height: deviceHeight * 0.2,
+                            child: productItem(i, 1, false)),
+                        Container(
+                            height: deviceHeight * 0.2,
+                            child: productItem(i, 2, false)),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : sectionList[i].style == STYLE2
+                ? Row(
+                    children: [
+                      Flexible(
+                        flex: 2,
+                        fit: FlexFit.loose,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                                height: deviceHeight * 0.2,
+                                child: productItem(i, 0, true)),
+                            Container(
+                                height: deviceHeight * 0.2,
+                                child: productItem(i, 1, true)),
+                          ],
+                        ),
+                      ),
+                      Flexible(
+                          flex: 3,
+                          fit: FlexFit.loose,
+                          child: Container(
+                              height: deviceHeight * 0.4,
+                              child: productItem(i, 2, false))),
+                    ],
+                  )
+                : sectionList[i].style == STYLE3
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                              flex: 1,
+                              fit: FlexFit.loose,
+                              child: Container(
+                                  height: deviceHeight * 0.3,
+                                  child: productItem(i, 0, false))),
+                          Container(
+                            height: deviceHeight * 0.2,
+                            child: Row(
+                              children: [
+                                Flexible(
+                                    flex: 1,
+                                    fit: FlexFit.loose,
+                                    child: productItem(i, 1, true)),
+                                Flexible(
+                                    flex: 1,
+                                    fit: FlexFit.loose,
+                                    child: productItem(i, 2, true)),
+                                Flexible(
+                                    flex: 1,
+                                    fit: FlexFit.loose,
+                                    child: productItem(i, 3, false)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : sectionList[i].style == STYLE4
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                  flex: 1,
+                                  fit: FlexFit.loose,
+                                  child: Container(
+                                      height: deviceHeight * 0.3,
+                                      child: productItem(i, 0, false))),
+                              Container(
+                                height: deviceHeight * 0.2,
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                        flex: 1,
+                                        fit: FlexFit.loose,
+                                        child: productItem(i, 1, true)),
+                                    Flexible(
+                                        flex: 1,
+                                        fit: FlexFit.loose,
+                                        child: productItem(i, 2, false)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
+                        : GridView.count(
+                            padding: EdgeInsets.only(top: 5),
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            childAspectRatio: 1.0,
+                            physics: NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 0,
+                            crossAxisSpacing: 0,
+                            children: List.generate(
+                              sectionList[i].productList.length < 4
+                                  ? sectionList[i].productList.length
+                                  : 4,
+                              (index) {
+                                return productItem(
+                                    i, index, index % 2 == 0 ? true : false);
+                              },
+                            ));
   }
 
   /*Widget productItemSmall(int secPos, int index) {
@@ -1909,14 +1845,14 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           sectionList[secPos].productList[index].prVarientList[0].price);
     } else {
       double off = double.parse(
-          sectionList[secPos].productList[index].prVarientList[0].price) -
+              sectionList[secPos].productList[index].prVarientList[0].price) -
           price;
       print("==========$off");
       offPer = ((off * 100) /
-          double.parse(sectionList[secPos]
-              .productList[index]
-              .prVarientList[0]
-              .price))
+              double.parse(sectionList[secPos]
+                  .productList[index]
+                  .prVarientList[0]
+                  .price))
           .toStringAsFixed(2);
     }
 
@@ -1937,24 +1873,21 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                       topRight: Radius.circular(5)),
                   child: Hero(
                     tag:
-                    "${sectionList[secPos].productList[index].id}$secPos$index",
+                        "${sectionList[secPos].productList[index].id}$secPos$index",
                     child: CachedNetworkImage(
                       imageUrl: sectionList[secPos].productList[index].image,
                       height: double.maxFinite,
                       width: double.maxFinite,
-
-                      //errorWidget:(context, url,e) => placeHolder(width) ,
+                      errorWidget: (context, url, e) => placeHolder(width),
                       placeholder: (context, url) => placeHolder(width),
                     ),
-
                   )),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 5.0, top: 5, bottom: 5),
               child: Text(
                 sectionList[secPos].productList[index].name,
-                style: Theme
-                    .of(context)
+                style: Theme.of(context)
                     .textTheme
                     .caption
                     .copyWith(color: lightBlack),
@@ -1964,48 +1897,43 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             ),
             Text(" " + CUR_CURRENCY + " " + price.toString(),
                 style:
-                TextStyle(color: fontColor, fontWeight: FontWeight.bold)),
+                    TextStyle(color: fontColor, fontWeight: FontWeight.bold)),
             Padding(
               padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
               child: int.parse(sectionList[secPos]
-                  .productList[index]
-                  .prVarientList[0]
-                  .disPrice) !=
-                  0
+                          .productList[index]
+                          .prVarientList[0]
+                          .disPrice) !=
+                      0
                   ? Row(
-                children: <Widget>[
-                  Text(
-                    int.parse(sectionList[secPos]
-                        .productList[index]
-                        .prVarientList[0]
-                        .disPrice) !=
-                        0
-                        ? CUR_CURRENCY +
-                        "" +
-                        sectionList[secPos]
-                            .productList[index]
-                            .prVarientList[0]
-                            .price
-                        : "",
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .overline
-                        .copyWith(
-                        decoration: TextDecoration.lineThrough,
-                        letterSpacing: 0),
-                  ),
-                  Text(" | " + "-$offPer%",
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .overline
-                          .copyWith(color: primary, letterSpacing: 0)),
-                ],
-              )
+                      children: <Widget>[
+                        Text(
+                          int.parse(sectionList[secPos]
+                                      .productList[index]
+                                      .prVarientList[0]
+                                      .disPrice) !=
+                                  0
+                              ? CUR_CURRENCY +
+                                  "" +
+                                  sectionList[secPos]
+                                      .productList[index]
+                                      .prVarientList[0]
+                                      .price
+                              : "",
+                          style: Theme.of(context).textTheme.overline.copyWith(
+                              decoration: TextDecoration.lineThrough,
+                              letterSpacing: 0),
+                        ),
+                        Text(" | " + "-$offPer%",
+                            style: Theme.of(context)
+                                .textTheme
+                                .overline
+                                .copyWith(color: primary, letterSpacing: 0)),
+                      ],
+                    )
                   : Container(
-                height: 5,
-              ),
+                      height: 5,
+                    ),
             )
           ],
         ),
@@ -2015,15 +1943,14 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             context,
             PageRouteBuilder(
                 transitionDuration: Duration(seconds: 1),
-                pageBuilder: (_, __, ___) =>
-                    ProductDetail(
-                        model: model,
-                        updateParent: updateHomePage,
-                        secPos: secPos,
-                        index: index,
-                        updateHome: widget.updateHome,
-                        list: false
-                      //  title: sectionList[secPos].title,
+                pageBuilder: (_, __, ___) => ProductDetail(
+                    model: model,
+                    updateParent: updateHomePage,
+                    secPos: secPos,
+                    index: index,
+                    updateHome: widget.updateHome,
+                    list: false
+                    //  title: sectionList[secPos].title,
                     )),
           );
         },
@@ -2042,8 +1969,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         PRODUCT_ID: sectionList[secPos].productList[index].id
       };
       Response response =
-      await post(setFavoriteApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(setFavoriteApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -2086,8 +2013,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         PRODUCT_ID: sectionList[secPos].productList[index].id
       };
       Response response =
-      await post(removeFavApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(removeFavApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -2097,7 +2024,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         sectionList[secPos].productList[index].isFav = "0";
 
         favList.removeWhere((item) =>
-        item.productList[0].prVarientList[0].id ==
+            item.productList[0].prVarientList[0].id ==
             sectionList[secPos].productList[index].prVarientList[0].id);
       } else {
         setSnackbar(msg);
@@ -2143,7 +2070,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         var data = getdata["data"];
 
         homeSliderList =
-            (data as List).map((data) => new Model.fromJson(data)).toList();
+            (data as List).map((data) => new Model.fromSlider(data)).toList();
       } else {
         setSnackbar(msg);
       }
@@ -2158,8 +2085,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         CAT_FILTER: "false",
       };
       Response response =
-      await post(getCatApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(getCatApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -2169,7 +2096,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         var data = getdata["data"];
 
         catList =
-            (data as List).map((data) => new Model.fromCat(data)).toList();
+            (data as List).map((data) => new Product.fromCat(data)).toList();
       } else {
         setSnackbar(msg);
       }
@@ -2192,8 +2119,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
       if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
       Response response =
-      await post(getSectionApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(getSectionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -2225,20 +2152,31 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> getSetting() async {
     try {
-    //  var parameter = {TYPE: CURRENCY};
-      Response response =
-      await post(getSettingApi, headers: headers)
+      CUR_USERID = await getPrefrence(ID);
+
+      var parameter;
+      if (CUR_USERID != null) parameter = {USER_ID: CUR_USERID};
+
+      Response response = await post(getSettingApi,
+              body: CUR_USERID != null ? parameter : null, headers: headers)
           .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***setting**$headers***${response.body.toString()}');
+      print('response***setting**cartcount***${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
         var data = getdata["data"]["system_settings"][0];
         CUR_CURRENCY = data["currency"];
-        RETURN_DAYS=data['max_product_return_days'];
+        RETURN_DAYS = data['max_product_return_days'];
+        MAX_ITEMS = data["max_items_cart"];
+        print("max items*****$MAX_ITEMS");
+        CUR_CART_COUNT = getdata["data"]["user_data"][0]["cart_total_items"];
 
+        CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
+
+        print("Cart Count*****$CUR_CART_COUNT");
+        widget.updateHome();
       } else {
         setSnackbar(msg);
       }
@@ -2260,7 +2198,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         var data = getdata["data"];
         offerImages.clear();
         offerImages =
-            (data as List).map((data) => new Model.fromJson(data)).toList();
+            (data as List).map((data) => new Model.fromSlider(data)).toList();
       } else {
         setSnackbar(msg);
       }
@@ -2278,4 +2216,3 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 }
-

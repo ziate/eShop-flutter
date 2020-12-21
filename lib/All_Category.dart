@@ -14,7 +14,7 @@ import 'Home.dart';
 import 'ProductList.dart';
 import 'SubCat.dart';
 import 'Model/Model.dart';
-
+import 'Model/Section_Model.dart';
 class All_Category extends StatefulWidget {
 
   final Function updateHome;
@@ -35,7 +35,7 @@ class StateCat extends State<All_Category> {
   bool isLoadingmore = true,_isCatLoading=false;
   ScrollController controller = new ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  List<Model> tempList = [];
+  List<Product> tempList = [];
 
   @override
   void initState() {
@@ -87,7 +87,7 @@ class StateCat extends State<All_Category> {
         var data = getdata["data"];
 
         catList =
-            (data as List).map((data) => new Model.fromCat(data)).toList();
+            (data as List).map((data) => new Product.fromCat(data)).toList();
 
         if (!error) {
           total = int.parse(getdata["total"]);
@@ -96,7 +96,7 @@ class StateCat extends State<All_Category> {
             tempList.clear();
             var data = getdata["data"];
             tempList =
-                (data as List).map((data) => new Model.fromCat(data)).toList();
+                (data as List).map((data) => new Product.fromCat(data)).toList();
             catList.addAll(tempList);
 
             offset = offset + perPage;
@@ -142,6 +142,7 @@ class StateCat extends State<All_Category> {
                 height: 50,
                 width: 50,
                 fit: BoxFit.fill,
+                errorWidget:(context, url,e) => placeHolder(50) ,
                 placeholder: (context, url) => placeHolder(50),
               )),
           Padding(

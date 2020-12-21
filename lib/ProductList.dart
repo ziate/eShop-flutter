@@ -211,7 +211,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         imageUrl: productList[index].image,
                         height: 80.0,
                         width: 80.0,
-
+                        errorWidget:(context, url,e) => placeHolder(80) ,
                         placeholder: (context, url) => placeHolder(80),
                       )),
                 ),

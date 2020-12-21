@@ -165,6 +165,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                       height: 50,
                       width: 50,
                       fit: BoxFit.cover,
+                      errorWidget:(context, url,e) => placeHolder(50) ,
                       placeholder: (context, url) => placeHolder(50))
                       : Container(
                     height: 0,

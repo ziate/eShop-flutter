@@ -12,7 +12,7 @@ final String iosLink = 'your ios link here';
 final String baseUrl = 'http://eshop.wrteam.in/app/v1/api/';
 
 final int timeOut = 50;
-const int perPage =25;
+const int perPage =10;
 
 //label title and message that shown in app
 final String internetMsg = 'Check Internet Connection';
@@ -270,4 +270,20 @@ const String WRITE_REVIEW_LBL="Write Review";
 const String REVIEW_HINT_LBL="Write your review here...";
 const String DWNLD_INVOICE='Download Invoice';
 const String VIEW='View';
-const String INVOICE_PATH='Invoice Downloaded in';
+const String INVOICE_PATH='Check Your Download Folder - ';
+const String OK_LBL='Ok';
+const String SYSTEM_DEFAULT="System default";
+const String LIGHT_THEME="Light";
+const String DARK_THEME="Dark";
+const String ENGLISH_LAN="English";
+const String CHINESE_LAN="Chinese";
+const String SPANISH_LAN="Spanish";
+const String HINDI_LAN="Hindi";
+const String ARABIC_LAN="Arabic";
+const String RUSSIAN_LAN="Russian";
+const String JAPANISE_LAN="Japanise";
+const String GERMAN_LAN="German";
+const String IOSLBL='iOS:';
+const String APPFIND='You can find our app from below url\n\nAndroid:\n';
+const String SUBMIT_LBL='SUBMIT';
+const String REVIEW_W='Please Fill Details';

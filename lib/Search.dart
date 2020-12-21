@@ -50,7 +50,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   bool notificationisloadmore = true,
       notificationisgettingdata = false,
       notificationisnodata = false;
-  List<Model> categList = [];
+ // List<Model> categList = [];
 
   //GlobalKey _key;
   //bool isMenuOpen=false;
@@ -66,12 +66,12 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     productList.clear();
-    categList.clear();
+  //  categList.clear();
 
-    this.categList = List.from(catList);
+  //  this.categList = List.from(catList);
 
-    Model m = Model.setAllCat("0", "All Category");
-    categList.insert(0, m);
+   // Model m = Model.setAllCat("0", "All Category");
+   // categList.insert(0, m);
     notificationoffset = 0;
     _isSearching = false;
     notificationcontroller = ScrollController(keepScrollOffset: true);
@@ -377,6 +377,7 @@ titleSpacing: 0,
                             imageUrl: productList[index].image,
                             height: 80.0,
                             width:80.0,
+                            errorWidget:(context, url,e) => placeHolder(80) ,
                             placeholder: (context, url) => placeHolder(80),
                           ))),
                   Expanded(
@@ -825,9 +826,9 @@ titleSpacing: 0,
             LIMIT: perPage.toString(),
             OFFSET: notificationoffset.toString(),
           };
-          if (pos != null && pos != 0) {
+        /*  if (pos != null && pos != 0) {
             parameter[CATID] = categList[pos].id;
-          }
+          }*/
 
           print("title=======$parameter");
           if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;

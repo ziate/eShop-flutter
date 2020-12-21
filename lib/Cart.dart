@@ -40,7 +40,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   bool _isNetworkAvail = true;
   bool _value = false;
   List<TextEditingController> _controller = [];
-  var items = ['1', '2', '3', '4', '5'];
+  var items;
 
   List<Section_Model> saveLaterList = [];
 
@@ -187,6 +187,13 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     print("price****$oriPrice***$price---$index");
 
     _controller[index].text = cartList[index].qty;
+
+
+    items = new List<String>.generate(
+        int.parse(cartList[index].productList[0].totalAllow), (i) => (i+1).toString());
+
+
+
     return Card(
       elevation: 0.1,
       child: Padding(
@@ -204,7 +211,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       imageUrl: cartList[index].productList[0].image,
                       height: 60.0,
                       width: 60.0,
-                      fit: BoxFit.fill,
+                      errorWidget:(context, url,e) => placeHolder(60) ,
                       placeholder: (context, url) => placeHolder(60),
                     ))),
             Expanded(
@@ -513,6 +520,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       height: 60.0,
                       width: 60.0,
                       fit: BoxFit.fill,
+                      errorWidget:(context, url,e) => placeHolder(60) ,
                       placeholder: (context, url) => placeHolder(60),
                     ))),
             Expanded(

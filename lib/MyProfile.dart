@@ -167,6 +167,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                           height: 64,
                           width: 64,
                           fit: BoxFit.cover,
+                      errorWidget:(context, url,e) => placeHolder(64) ,
                           placeholder: (context, url) {
                             return new Container(
                               child: Icon(
@@ -247,6 +248,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     );
   }
 
+
   _getDrawerItem(int index, String title, String img) {
     return ListTile(
       dense: true,
@@ -324,7 +326,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           });
         } else if (title == SHARE_APP) {
           var str =
-              "$appName\n\nYou can find our app from below url\n\nAndroid:\n$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
+              "$appName\n\n$APPFIND$androidLink$packageName\n\n $IOSLBL\n$iosLink$iosPackage";
           Share.share(str);
         } else if (title == ABOUT_LBL) {
           Navigator.push(

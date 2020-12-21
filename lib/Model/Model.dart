@@ -5,22 +5,21 @@ import '../Helper/String.dart';
 class Model {
   String id, type, typeId, image;
 
-  String name, subtitle, slug, tax, banner;
+  String name,   banner;
 
-  List<Model> subList;
 
-  Model({this.id,
-    this.type,
-    this.typeId,
-    this.image,
-    this.name,
-    this.subtitle,
-    this.slug,
-    this.tax,
-    this.banner,
-    this.subList});
 
-  factory Model.fromJson(Map<String, dynamic> parsedJson) {
+  Model(
+      {this.id,
+      this.type,
+      this.typeId,
+      this.image,
+      this.name,
+
+      this.banner,
+     });
+
+  factory Model.fromSlider(Map<String, dynamic> parsedJson) {
     return new Model(
         id: parsedJson[ID],
         image: parsedJson[IMAGE],
@@ -29,38 +28,15 @@ class Model {
   }
 
   factory Model.fromTimeSlot(Map<String, dynamic> parsedJson) {
-    return new Model(
-        id: parsedJson[ID],
-        name: parsedJson[TITLE]
-    );
+    return new Model(id: parsedJson[ID], name: parsedJson[TITLE]);
   }
 
-  factory Model.setAllCat(String id, String name)
-  {
+  factory Model.setAllCat(String id, String name) {
     return new Model(
-        id: id,
-        name:name,
-    );
-  }
-
-  factory Model.fromCat(Map<String, dynamic> parsedJson) {
-
-    return new Model(
-      id: parsedJson[ID],
-      name: parsedJson[NAME],
-      subtitle: parsedJson[SUBTITLE],
-      image: parsedJson[IMAGE],
-      slug: parsedJson[SLUG],
-      banner: parsedJson[BANNER],
-      tax: parsedJson[TAX],
-      subList: createSubList(parsedJson["children"]),
+      id: id,
+      name: name,
     );
   }
 
 
-  static List<Model> createSubList(List parsedJson) {
-    if (parsedJson == null || parsedJson.isEmpty) return null;
-
-    return parsedJson.map((data) => new Model.fromCat(data)).toList();
-  }
 }

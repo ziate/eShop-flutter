@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart';
 import 'Product_Detail.dart';
 import 'Model/User.dart';
+import 'Product_Preview.dart';
 
 class RatingReview extends StatefulWidget {
   final String id;
@@ -113,13 +115,56 @@ class StateRate extends State<RatingReview> {
                   reviewList[index].comment != null
                       ? Text(reviewList[index].comment ?? '')
                       : Container(),
+                  reviewImage(index)
                 ],
           ),
               ),
             );
         });
   }
-
+  reviewImage(int i) {
+    return Container(
+      height: 50,
+      child: ListView.builder(
+        itemCount: reviewList[i].imgList.length,
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        physics: BouncingScrollPhysics(),
+        itemBuilder: (context, index) {
+          return InkWell(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10,bottom: 5.0,top: 5),
+              child: new ClipRRect(
+                borderRadius: BorderRadius.circular(5.0),
+                child: new CachedNetworkImage(
+                  imageUrl: reviewList[i].imgList[index],
+                  height: 50.0,
+                  width: 50.0,
+                  fit: BoxFit.cover,
+                  errorWidget:(context, url,e) => placeHolder(50) ,
+                  placeholder: (context, url) => placeHolder(50),
+                ),
+              ),
+            ),
+            onTap: (){
+              Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: Duration(seconds: 1),
+                    pageBuilder: (_, __, ___) => ProductPreview(
+                        pos: index,
+                        secPos: 0,
+                        index: 0,
+                        id:  reviewList[i].id,
+                        imgList: reviewList[i].imgList,
+                        list: true),
+                  ));
+            },
+          );
+        },
+      ),
+    );
+  }
   Future<void> getReview() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {

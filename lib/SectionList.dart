@@ -184,7 +184,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                           imageUrl: widget.section_model.productList[index].image,
                           height: double.maxFinite,
                           width: double.maxFinite,
-
+                          errorWidget:(context, url,e) => placeHolder(width) ,
                           placeholder: (context, url) => placeHolder(width),
                         ),
                       ),
@@ -362,7 +362,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
 
         setState(() {
           _isLoading = false;
-          isLoadingmore = false;
+
         });
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);

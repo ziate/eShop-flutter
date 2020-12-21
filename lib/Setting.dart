@@ -28,6 +28,18 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
   Animation buttonSqueezeanimation;
 
   AnimationController buttonController;
+  int selectedIndex;
+  List<String> themeList = [SYSTEM_DEFAULT, LIGHT_THEME, DARK_THEME];
+  List<String> languageList = [
+    ENGLISH_LAN,
+    CHINESE_LAN,
+    SPANISH_LAN,
+    HINDI_LAN,
+    ARABIC_LAN,
+    RUSSIAN_LAN,
+    JAPANISE_LAN,
+    GERMAN_LAN
+  ];
 
   @override
   void initState() {
@@ -206,7 +218,9 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                         )),
                   ],
                 ),
-                onTap: () {})));
+                onTap: () {
+                  languageDialog();
+                })));
   }
 
   changeTheme() {
@@ -240,7 +254,9 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                       )),
                 ],
               ),
-              onTap: () {},
+              onTap: () {
+                themeDialog();
+              },
             )));
   }
 
@@ -327,6 +343,263 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                     ));
               },
             )));
+  }
+
+  themeDialog() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater) {
+            return AlertDialog(
+              contentPadding: const EdgeInsets.all(0.0),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
+              content: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                          child: Text(
+                            CHOOSE_THEME_LBL,
+                            style: Theme.of(this.context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(color: fontColor),
+                          )),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
+                     child: Text(COMINGSOON,style: Theme.of(context).textTheme.caption,)),
+
+                      Divider(color: lightBlack),
+                      ListView.separated(
+                          separatorBuilder: (BuildContext context, int index) =>
+                              Padding(
+                                  padding:
+                                      EdgeInsets.only(left: 20.0, right: 20.0),
+                                  child: Divider(color: lightBlack)),
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: themeList.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                                padding:
+                                    EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0),
+                                child: Row(
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        setStater(() {
+                                          selectedIndex = index;
+                                        });
+                                      },
+                                      child: Container(
+                                        height: 25.0,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: selectedIndex == index
+                                                ? grad2Color
+                                                : white,
+                                            border:
+                                                Border.all(color: grad2Color)),
+                                        child: Padding(
+                                            padding: const EdgeInsets.all(2.0),
+                                            child: selectedIndex == index
+                                                ? Icon(
+                                                    Icons.check,
+                                                    size: 17.0,
+                                                    color: white,
+                                                  )
+                                                : Icon(
+                                                    Icons
+                                                        .check_box_outline_blank,
+                                                    size: 15.0,
+                                                    color: white,
+                                                  )),
+                                      ),
+                                    ),
+                                    Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 15.0,
+                                        ),
+                                        child: Text(
+                                          themeList[index],
+                                          style: Theme.of(this.context)
+                                              .textTheme
+                                              .subtitle1
+                                              .copyWith(color: lightBlack),
+                                        ))
+                                  ],
+                                ));
+                          }),
+                      Padding(
+                          padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                          child: Divider(color: lightBlack)),
+                    ],
+                  )),
+              actions: <Widget>[
+                new FlatButton(
+                    child: Text(
+                      CANCEL,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                              color: lightBlack, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+                new FlatButton(
+                    child: Text(
+                      OK_LBL,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {})
+              ],
+            );
+          });
+        });
+  }
+
+  languageDialog() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater) {
+            return AlertDialog(
+              contentPadding: const EdgeInsets.all(0.0),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
+              content: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                          child: Text(
+                            CHOOSE_LANGUAGE_LB,
+                            style: Theme.of(this.context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(color: fontColor),
+                          )),
+
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
+                          child: Text(COMINGSOON,style: Theme.of(context).textTheme.caption,)),
+
+                      Divider(color: lightBlack),
+                      ListView.separated(
+                          separatorBuilder: (BuildContext context, int index) =>
+                              Padding(
+                                  padding:
+                                      EdgeInsets.only(left: 20.0, right: 20.0),
+                                  child: Divider(color: lightBlack)),
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: languageList.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                                padding:
+                                    EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0),
+                                child: Row(
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        setStater(() {
+                                          selectedIndex = index;
+                                        });
+                                      },
+                                      child: Container(
+                                        height: 25.0,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color:
+                                               selectedIndex==index? grad2Color : white,
+                                            border:
+                                                Border.all(color: grad2Color)),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(2.0),
+                                          child: selectedIndex==index
+                                              ? Icon(
+                                                  Icons.check,
+                                                  size: 17.0,
+                                                  color: white,
+                                                )
+                                              : Icon(
+                                                  Icons.check_box_outline_blank,
+                                                  size: 15.0,
+                                                  color: white,
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 15.0,
+                                        ),
+                                        child: Text(
+                                          languageList[index],
+                                          style: Theme.of(this.context)
+                                              .textTheme
+                                              .subtitle1
+                                              .copyWith(color: lightBlack),
+                                        ))
+                                  ],
+                                ));
+                          }),
+                      Padding(
+                          padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                          child: Divider(color: lightBlack)),
+                    ],
+                  )),
+              actions: <Widget>[
+                new FlatButton(
+                    child: Text(
+                      CANCEL,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                              color: lightBlack, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+                new FlatButton(
+                    child: Text(
+                      OK_LBL,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      final form = _formkey.currentState;
+                      if (form.validate()) {
+                        form.save();
+                        setState(() {
+                          Navigator.pop(context);
+                        });
+                        checkNetwork();
+                      }
+                    })
+              ],
+            );
+          });
+        });
   }
 
   _showDialog() async {

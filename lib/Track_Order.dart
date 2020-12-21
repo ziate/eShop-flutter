@@ -503,6 +503,7 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
           imageUrl: orderItem.image,
           height: 100.0,
           width: 100.0,
+          errorWidget:(context, url,e) => placeHolder(100) ,
           placeholder: (context, url) => placeHolder(100),
         ),
         Expanded(

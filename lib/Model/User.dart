@@ -19,9 +19,10 @@ class User {
       user_id,
       name;
 
-
+  List<String> imgList;
   String id, date, comment, rating;
-  String type, alt_mob, landmark, areaId, cityId, isDefault,state,country;
+
+  String type, alt_mob, landmark, areaId, cityId, isDefault, state, country;
 
   User(
       {this.id,
@@ -48,11 +49,16 @@ class User {
       this.landmark,
       this.areaId,
       this.cityId,
-      this.isDefault,this.state,this.country});
-
+      this.imgList,
+      this.isDefault,
+      this.state,
+      this.country});
 
   factory User.forReview(Map<String, dynamic> parsedJson) {
     String date = parsedJson['data_added'];
+    var allSttus = parsedJson['images'];
+    List<String> item=[];
+    for (String i in allSttus) item.add(i);
 
     date = DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
     print('date***$date');
@@ -61,6 +67,7 @@ class User {
       date: date,
       rating: parsedJson[RATING],
       comment: parsedJson[COMMENT],
+      imgList: item,
       username: parsedJson[USER_NAME],
     );
   }
@@ -105,8 +112,6 @@ class User {
         user_id: parsedJson[USER_ID],
         name: parsedJson[NAME],
         type: parsedJson[TYPE],
-        isDefault: parsedJson[ISDEFAULT]
-    );
+        isDefault: parsedJson[ISDEFAULT]);
   }
-
 }

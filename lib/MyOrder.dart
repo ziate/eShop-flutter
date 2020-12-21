@@ -26,7 +26,7 @@ class MyOrder extends StatefulWidget {
   }
 }
 
-bool _isLoading = true;
+
 List<Order_Model> orderList = [];
 List<Order_Model> searchList = [];
 List<Order_Model> deliveredList = [];
@@ -40,9 +40,11 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   final TextEditingController _controller = TextEditingController();
-
+  bool _isLoading = true;
   @override
   void initState() {
+    orderList.clear();
+    searchList.clear();
     getOrder();
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
@@ -57,7 +59,11 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
         0.150,
       ),
     ));
-
+    _controller.addListener(() {
+      print("value: ${_controller.text}");
+      searchOperation(_controller.text);
+      setState(() {});
+    });
 
     super.initState();
   }
@@ -67,7 +73,23 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     buttonController.dispose();
     super.dispose();
   }
-
+  Future<void> searchOperation(String searchText) async {
+    searchList.clear();
+    for (int i = 0; i < orderList.length; i++) {
+      for (int j = 0; j < orderList[i].itemList.length; j++) {
+        Order_Model map = orderList[i];
+        print("*****${map.itemList[j].name}");
+        print("*****${map.itemList[j].price}");
+        print("*****${map.id}");
+        if (map.id.toLowerCase().contains(searchText) ||
+            map.itemList[j].name.toLowerCase().contains(searchText)) {
+          searchList.add(map);
+        }
+      }
+    }
+    print("searchList*****$searchList");
+    setState(() {});
+  }
   Future<Null> _playAnimation() async {
     try {
       await buttonController.forward();
@@ -142,9 +164,16 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                             Container(
                                 height: 45,
                                 padding: EdgeInsets.only(left: 5.0, right: 5.0),
-                                decoration: shadow(),
+                              
                                 child: TextField(
                                   controller: _controller,
+                                  onChanged: (value) {
+                                    if (_controller.text.trim().isNotEmpty) {
+                                      searchOperation(_controller.text);
+                                    } else {
+                                      setState(() {});
+                                    }
+                                  },
                                  // onChanged: onSearchTextChanged,
                                   decoration: InputDecoration(
                                     filled: true,
@@ -160,9 +189,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                                         color: fontColor.withOpacity(0.3),
                                         fontWeight: FontWeight.normal),
                                     border: new OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(
-                                        const Radius.circular(10.0),
-                                      ),
+
                                       borderSide: BorderSide(
                                         width: 0,
                                         style: BorderStyle.none,
@@ -204,6 +231,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
           print('response***fav****${response.body.toString()}');
           bool error = getdata["error"];
           String msg = getdata["message"];
+          searchList.clear();
           orderList.clear();
           print('section get***favorite get');
           if (!error) {
@@ -239,11 +267,10 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
         });
       }
     } else {
-      setState(() {
-        _isNetworkAvail = false;
-      });
+
       if (mounted)
         setState(() {
+          _isNetworkAvail = false;
           _isLoading = false;
         });
     }
@@ -252,14 +279,17 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
   getSearch(String searchText) {
     print("hello");
     searchList.clear();
-    print("searchList*****$searchList");
-    for (int i = 0, l = searchList.length; i < l; i++) {
-      //for (int j = 0, l = searchList[i].itemList.length; j < l; j++) {
-      Order_Model map = searchList[i];
-      if (map.id.toLowerCase().startsWith(searchText))
-        searchList.add(map);
-      else if (map.name.toLowerCase().startsWith(searchText))
-        searchList.add(map);
+    for (int i = 0; i < orderList.length; i++) {
+      for (int j = 0; j < orderList[i].itemList.length; j++) {
+        Order_Model map = orderList[i];
+        print("*****${map.itemList[j].name}");
+        print("*****${map.itemList[j].price}");
+        print("*****${map.id}");
+        if (map.id.toLowerCase().contains(searchText) ||
+            map.itemList[j].name.toLowerCase().contains(searchText)) {
+          searchList.add(map);
+        }
+      }
     }
     //}
     print("searchList*****$searchList");
@@ -293,14 +323,19 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
   productItem(int index, OrderItem orderItem) {
     print("detail=========${orderItem.image}*********${orderItem.name}");
 
-    String sDate = orderItem.listDate.join(',');
-    String proStatus = orderItem.listStatus.join(',');
+   // String sDate = orderItem.listDate.join(',');
+   // String proStatus = orderItem.listStatus.join(',');
+
+    String sDate = orderItem.listDate.last;
+    String proStatus = orderItem.listStatus.last;
+    if (proStatus == 'received') {
+      proStatus = 'order placed';
+    }
+
 
     return Card(
       elevation: 0,
       margin: EdgeInsets.all(5.0),
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10.0))),
       child: InkWell(
         child: Padding(
             padding: EdgeInsets.all(8.0),
@@ -314,6 +349,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                         imageUrl: orderItem.image,
                         height: 90.0,
                         width: 90.0,
+                        errorWidget:(context, url,e) => placeHolder(90) ,
                         placeholder: (context, url) => placeHolder(90),
                       ),
                     )),

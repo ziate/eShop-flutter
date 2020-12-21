@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:downloads_path_provider/downloads_path_provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Model/Order_Model.dart';
+import 'package:ext_storage/ext_storage.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -53,8 +55,10 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
   List<User> reviewList = [];
   bool isLoadingmore = true;
   double initialRate = 0;
-  String proId;
+  String proId, image;
   TextEditingController _commentC = new TextEditingController();
+  List<File> files = [];
+  double curRating = 0.0;
 
   @override
   void initState() {
@@ -136,7 +140,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
       ),
       iconTheme: new IconThemeData(color: primary),
       backgroundColor: white,
-      elevation: 0,
+      // elevation: 5,
       leading: Builder(builder: (BuildContext context) {
         return Container(
           margin: EdgeInsets.all(10),
@@ -312,6 +316,18 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
+                    (!widget.model.itemList[0].listStatus.contains(DELIVERD) &&
+                            (!widget.model.itemList[0].listStatus
+                                .contains(RETURNED)) &&
+                            _isCancleable &&
+                            widget.model.itemList[0].isAlrCancelled == "0")
+                        ? cancelable()
+                        : (widget.model.itemList[0].listStatus
+                                    .contains(DELIVERD) &&
+                                _isReturnable &&
+                                widget.model.itemList[0].isAlrReturned == "0")
+                            ? returnable()
+                            : Container(),
                   ],
                 ),
                 showCircularProgress(_isProgress, primary),
@@ -533,10 +549,9 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
   }
 
   _writeReview() {
-    return widget.model.deliveryBoyId != null
+    return widget.model.itemList[0].listStatus.contains(DELIVERD)
         ? Card(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            elevation: 0,
             child: Padding(
                 padding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
                 child: Column(
@@ -555,6 +570,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                           padding: EdgeInsets.only(left: 20.0, right: 20.0),
                           child: TextField(
                             controller: _commentC,
+                            style: Theme.of(context).textTheme.subtitle2,
                             keyboardType: TextInputType.multiline,
                             maxLines: null,
                             onChanged: (String val) {
@@ -575,7 +591,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                                   .subtitle2
                                   .copyWith(
                                       color: lightBlack2.withOpacity(0.7)),
-                              suffixIcon: IconButton(
+                              /*    suffixIcon: IconButton(
                                   icon: Icon(
                                     Icons.send,
                                     color: _isCommentEnable
@@ -583,44 +599,133 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                                         : Colors.transparent,
                                   ),
                                   onPressed: () => _isCommentEnable == true
-                                      ? setRating(0, _commentC.text)
-                                      : null),
+                                      ? setRating(0, _commentC.text, null)
+                                      : null),*/
                             ),
                           )),
+                      Container(
+                        padding:
+                            EdgeInsets.only(left: 20.0, right: 20.0, top: 5),
+                        height: files != null && files.length > 0 ? 80 : 50,
+                        child: Row(
+                          children: [
+                            Expanded(
+                                child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: files.length,
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, i) {
+                                return InkWell(
+                                  child: Stack(
+                                    alignment: Alignment.topRight,
+                                    children: [
+                                      Image.file(
+                                        files[i],
+                                        width: 80,
+                                        height: 80,
+                                      ),
+                                      Container(
+                                          color: Colors.black26,
+                                          child: Icon(
+                                            Icons.clear,
+                                            size: 15,
+                                          ))
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      files.removeAt(i);
+                                    });
+                                  },
+                                );
+                              },
+                            )),
+                            IconButton(
+                                icon: Icon(
+                                  Icons.add_photo_alternate,
+                                  color: primary,
+                                  size: 25.0,
+                                ),
+                                onPressed: () {
+                                  _imgFromGallery();
+                                })
+                          ],
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: GestureDetector(
+                          child: Container(
+                            margin: EdgeInsets.only(left: 8, right: 20),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 2),
+                            decoration: BoxDecoration(
+                                color: lightWhite,
+                                borderRadius: new BorderRadius.all(
+                                    const Radius.circular(4.0))),
+                            child: Text(
+                              SUBMIT_LBL,
+                              style: TextStyle(color: fontColor, fontSize: 10),
+                            ),
+                          ),
+                          onTap: () {
+                            if (curRating != 0 ||
+                                _commentC.text != '' ||
+                                (files != null && files.length > 0))
+                              setRating(curRating, _commentC.text, files);
+                            else
+                              setSnackbar(REVIEW_W);
+                          },
+                        ),
+                      ),
                     ])))
         : Container();
   }
 
-  Future<void> setRating(double rating, String comment) async {
+  /*Future<void> setRating(double rating, String comment, File _image) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
         setState(() {
           _isLoading = true;
         });
-        var parameter = {
-          USER_ID: CUR_USERID,
-          PRODUCT_ID: proId,
-        };
 
-        if (comment != "") parameter[COMMENT] = comment;
+        var request = http.MultipartRequest("POST", Uri.parse(setRatingApi));
+        request.headers.addAll(headers);
+        print("CURUSERID*****$CUR_USERID");
+        request.fields[USER_ID] = CUR_USERID;
+        request.fields[PRODUCT_ID] = widget.model.itemList[0].productId;
+        if (_image != null) {
+          var pic = await http.MultipartFile.fromPath(IMAGES, _image.path);
+          request.files.add(pic);
+        }
 
-        if (rating != 0) parameter[RATING] = rating.toString();
-        Response response =
-            await post(setRatingApi, headers: headers, body: parameter)
-                .timeout(Duration(seconds: timeOut));
+        if (comment != "") request.fields[COMMENT] = comment;
+        if (rating != 0) request.fields[RATING] = rating.toString();
+        var response = await request.send();
+        var responseData = await response.stream.toBytes();
+        var responseString = String.fromCharCodes(responseData);
 
-        print('response***product**$parameter***${response.body.toString()}');
+        print("profile====$responseString*****${_image.path}");
 
-        var getdata = json.decode(response.body);
+        //  print('response***product**$parameter***${response.body.toString()}');
+
+        var getdata = json.decode(responseString);
         bool error = getdata["error"];
+        String msg = getdata['message'];
         if (!error) {
+          setSnackbar(msg);
           _showComment = true;
           reviewList.clear();
           offset = 0;
 
           var data = getdata["data"]["product_rating"];
-          rating = getdata["data"]["no_of_rating"];
+          rating = double.parse(getdata["data"]["no_of_rating"]);
+
+          setState(() {
+            image = getdata["data"]["images"];
+            print("image****$image");
+          });
 
           print("rating*****$rating");
 
@@ -631,6 +736,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
 
           offset = offset + perPage;
         } else {
+          setSnackbar(msg);
           initialRate = 0;
         }
         _isCommentEnable = false;
@@ -646,7 +752,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
         _isNetworkAvail = false;
       });
   }
-
+*/
   _rating() {
     return Padding(
       padding: EdgeInsets.only(top: 7.0, bottom: 7.0),
@@ -663,8 +769,9 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
           color: primary,
         ),
         onRatingUpdate: (rating) {
+          curRating = rating;
           //print(rating);
-          setRating(rating, "");
+          //setRating(rating, "", null);
         },
       ),
     );
@@ -675,46 +782,21 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
 
     if (orderItem.listStatus.contains(PLACED)) {
       pDate = orderItem.listDate[orderItem.listStatus.indexOf(PLACED)];
-
-      if (pDate != null) {
-        List d = pDate.split(" ");
-        pDate = d[0] + " " + d[1];
-      }
     }
     if (orderItem.listStatus.contains(PROCESSED)) {
       prDate = orderItem.listDate[orderItem.listStatus.indexOf(PROCESSED)];
-      if (prDate != null) {
-        List d = prDate.split(" ");
-        prDate = d[0] + " " + d[1];
-      }
     }
     if (orderItem.listStatus.contains(SHIPED)) {
       sDate = orderItem.listDate[orderItem.listStatus.indexOf(SHIPED)];
-      if (sDate != null) {
-        List d = sDate.split(" ");
-        sDate = d[0] + " " + d[1];
-      }
     }
     if (orderItem.listStatus.contains(DELIVERD)) {
       dDate = orderItem.listDate[orderItem.listStatus.indexOf(DELIVERD)];
-      if (dDate != null) {
-        List d = dDate.split(" ");
-        dDate = d[0] + " " + d[1];
-      }
     }
     if (orderItem.listStatus.contains(CANCLED)) {
       cDate = orderItem.listDate[orderItem.listStatus.indexOf(CANCLED)];
-      if (cDate != null) {
-        List d = cDate.split(" ");
-        cDate = d[0] + " " + d[1];
-      }
     }
     if (orderItem.listStatus.contains(RETURNED)) {
       rDate = orderItem.listDate[orderItem.listStatus.indexOf(RETURNED)];
-      if (rDate != null) {
-        List d = rDate.split(" ");
-        rDate = d[0] + " " + d[1];
-      }
     }
 
     print("length=========${orderItem.image}");
@@ -732,6 +814,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                           imageUrl: orderItem.image,
                           height: 90.0,
                           width: 90.0,
+                          errorWidget: (context, url, e) => placeHolder(90),
                           placeholder: (context, url) => placeHolder(90),
                         )),
                     Expanded(
@@ -809,100 +892,128 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                 Divider(
                   color: lightBlack,
                 ),
-                orderProcess(pDate, prDate, cDate, dDate, sDate, rDate)
+                //orderProcess(pDate, prDate, cDate, dDate, sDate, rDate)
+
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      getPlaced(pDate),
+                      getProcessed(prDate, cDate),
+                      getShipped(sDate, cDate),
+                      getDelivered(dDate, cDate),
+                      getCanceled(cDate),
+                      getReturned(rDate, model),
+                    ],
+                  ),
+                ),
               ],
             )));
   }
 
   orderProcess(String pDate, prDate, cDate, dDate, sDate, rDate) {
+    /*return Column(
+      children: [
+        Icon(
+          Icons.circle,
+          color: primary,
+          size: 10.0,
+        ),
+        Container(
+            height: 40,
+            child: VerticalDivider(
+              thickness: 2,
+              color: prDate == null ? Colors.grey : primary,
+            )),
+        Icon(
+          Icons.circle,
+          color: primary,
+          size: 10.0,
+        ),
+      ],
+    );*/
+
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Column(
-        children: [
-          Container(
-              height: 60.0,
-              child: Column(children: [
-                Icon(
-                  Icons.circle,
-                  color: primary,
-                  size: 10.0,
-                ),
-                cDate == null
-                    ? Container(
-                        height: 40,
-                        child: VerticalDivider(
-                          thickness: 2,
-                          color: prDate == null ? Colors.grey : primary,
-                        ))
-                    : prDate == null
-                        ? Container()
-                        : Container(
-                            height: 40,
-                            child: VerticalDivider(
-                              thickness: 2,
-                              color: primary,
-                            )),
-                cDate == null
-                    ? Icon(Icons.circle,
+      Container(
+        height: 200,
+        child: Column(
+          children: [
+            Column(children: [
+              Icon(
+                Icons.circle,
+                color: primary,
+                size: 10.0,
+              ),
+              cDate == null
+                  ? Flexible(
+                      flex: 1,
+                      child: VerticalDivider(
+                        thickness: 2,
                         color: prDate == null ? Colors.grey : primary,
-                        size: 10.0)
-                    : prDate == null
-                        ? Container()
-                        : Icon(
-                            Icons.circle,
+                      ))
+                  : prDate == null
+                      ? Container()
+                      : Flexible(
+                          flex: 1,
+                          child: VerticalDivider(
+                            thickness: 2,
                             color: primary,
-                            size: 10.0,
-                          ),
-              ])),
-          Container(
-              height: 50.0,
-              child: Column(children: [
-                cDate == null
-                    ? Container(
-                        height: 40,
-                        child: VerticalDivider(
-                          thickness: 2,
-                          color: sDate == null ? Colors.grey : primary,
-                        ))
-                    : sDate == null
-                        ? Container()
-                        : Container(
-                            height: 40,
-                            child: VerticalDivider(
-                              thickness: 2,
-                            )),
-                cDate == null
-                    ? Icon(Icons.circle,
+                          )),
+              cDate == null
+                  ? Icon(Icons.circle,
+                      color: prDate == null ? Colors.grey : primary, size: 10.0)
+                  : prDate == null
+                      ? Container()
+                      : Icon(
+                          Icons.circle,
+                          color: primary,
+                          size: 10.0,
+                        ),
+            ]),
+            Column(children: [
+              cDate == null
+                  ? Flexible(
+                      flex: 1,
+                      child: VerticalDivider(
+                        thickness: 2,
                         color: sDate == null ? Colors.grey : primary,
-                        size: 10.0)
-                    : sDate == null
-                        ? Container()
-                        : Icon(Icons.circle, color: primary, size: 10.0),
-              ])),
-          Container(
-              height: 50.0,
-              child: Column(children: [
-                cDate == null
-                    ? Container(
-                        height: 40,
-                        child: VerticalDivider(
-                          thickness: 2,
-                          color: dDate == null ? Colors.grey : primary,
-                        ))
-                    : Container(),
-                cDate == null
-                    ? Icon(
-                        Icons.circle,
+                      ))
+                  : sDate == null
+                      ? Container()
+                      : Flexible(
+                          flex: 1,
+                          child: VerticalDivider(
+                            thickness: 2,
+                          )),
+              cDate == null
+                  ? Icon(Icons.circle,
+                      color: sDate == null ? Colors.grey : primary, size: 10.0)
+                  : sDate == null
+                      ? Container()
+                      : Icon(Icons.circle, color: primary, size: 10.0),
+            ]),
+            Column(children: [
+              cDate == null
+                  ? Flexible(
+                      flex: 1,
+                      child: VerticalDivider(
+                        thickness: 2,
                         color: dDate == null ? Colors.grey : primary,
-                        size: 10.0,
-                      )
-                    : Container(),
-              ])),
-          cDate != null
-              ? Container(
-                  height: 50.0,
-                  child: Column(children: [
-                    Container(
-                        height: 40,
+                      ))
+                  : Container(),
+              cDate == null
+                  ? Icon(
+                      Icons.circle,
+                      color: dDate == null ? Colors.grey : primary,
+                      size: 10.0,
+                    )
+                  : Container(),
+            ]),
+            cDate != null
+                ? Column(children: [
+                    Flexible(
+                        flex: 1,
                         child: VerticalDivider(
                           thickness: 2,
                           color: Colors.red,
@@ -911,14 +1022,12 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                       Icons.cancel_rounded,
                       color: Colors.red,
                     )
-                  ]))
-              : Container(),
-          widget.model.listStatus.contains(RETURNED)
-              ? Container(
-                  height: 50.0,
-                  child: Column(children: [
-                    Container(
-                        height: 40,
+                  ])
+                : Container(),
+            widget.model.listStatus.contains(RETURNED)
+                ? Column(children: [
+                    Flexible(
+                        flex: 1,
                         child: VerticalDivider(
                           thickness: 2,
                           color: Colors.red,
@@ -927,11 +1036,12 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                       Icons.cancel_rounded,
                       color: Colors.red,
                     )
-                  ]))
-              : Container(),
-        ],
+                  ])
+                : Container(),
+          ],
+        ),
       ),
-      Column(
+      /* Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
@@ -1101,239 +1211,235 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   ]))
               : Container(),
         ],
-      )
+      )*/
     ]);
   }
 
   getPlaced(String pDate) {
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(
-        Icons.circle,
-        color: primary,
-        size: 10.0,
-      ),
-      Column(children: [
-        Text(
-          ORDER_NPLACED,
-          style: TextStyle(fontSize: 8),
-          textAlign: TextAlign.center,
+    return Row(
+      children: [
+        Icon(
+          Icons.circle,
+          color: primary,
+          // size: 15,
         ),
-        Text(
-          pDate,
-          style: TextStyle(fontSize: 8),
-          textAlign: TextAlign.center,
-        )
-      ])
-    ]);
+        Container(
+          margin: const EdgeInsets.only(left: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                ORDER_NPLACED,
+                style: TextStyle(fontSize: 8),
+              ),
+              Text(
+                pDate,
+                style: TextStyle(fontSize: 8),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   getProcessed(String prDate, String cDate) {
     return cDate == null
         ? Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Column(children: [
-                Container(
-                    height: 40,
-                    child: VerticalDivider(
-                      thickness: 2,
-                      color: prDate == null ? Colors.grey : primary,
-                    )),
-                Icon(
-                  Icons.circle,
-                  color: prDate == null ? Colors.grey : primary,
-                  size: 10.0,
-                )
-              ]),
               Column(
                 children: [
-                  Text(
-                    ORDER_PROCESSED,
-                    style: TextStyle(fontSize: 8),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    prDate ?? "\n",
-                    style: TextStyle(fontSize: 8),
-                    textAlign: TextAlign.center,
+                  Container(
+                      height: 40,
+                      child: VerticalDivider(
+                        thickness: 2,
+                        color: prDate == null ? Colors.grey : primary,
+                      )),
+                  Icon(
+                    Icons.circle,
+                    color: prDate == null ? Colors.grey : primary,
+                    // size: 15,
                   ),
                 ],
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ORDER_PROCESSED,
+                      style: TextStyle(fontSize: 8),
+                    ),
+                    Text(
+                      prDate ?? " ",
+                      style: TextStyle(fontSize: 8),
+                    ),
+                  ],
+                ),
               ),
             ],
           )
         : prDate == null
             ? Container()
-            : Flexible(
-                flex: 1,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                        flex: 1,
-                        child: Divider(
-                          thickness: 2,
-                          color: primary,
-                        )),
-                    Column(
-                      children: [
-                        Text(
-                          ORDER_PROCESSED,
-                          style: TextStyle(fontSize: 8),
-                          textAlign: TextAlign.center,
-                        ),
-                        Icon(
-                          Icons.check_circle,
-                          color: primary,
-                        ),
-                        Text(
-                          prDate ?? "\n\n",
-                          style: TextStyle(fontSize: 8),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+            : Column(
+                children: [
+                  Container(
+                    height: 40,
+                    child: VerticalDivider(
+                      thickness: 2,
+                      color: primary,
                     ),
-                  ],
-                ),
+                  ),
+                  Text(
+                    ORDER_PROCESSED,
+                    style: TextStyle(fontSize: 8),
+                  ),
+                  Icon(
+                    Icons.circle,
+                    color: primary,
+                    // size: 15,
+                  ),
+                ],
               );
   }
 
   getShipped(String sDate, String cDate) {
     return cDate == null
-        ? Flexible(
-            flex: 1,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Flexible(
-                    flex: 1,
-                    child: Divider(
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Column(
+                children: [
+                  Container(
+                    height: 40,
+                    child: VerticalDivider(
                       thickness: 2,
                       color: sDate == null ? Colors.grey : primary,
-                    )),
-                Column(
+                    ),
+                  ),
+                  Icon(
+                    Icons.circle,
+                    color: sDate == null ? Colors.grey : primary,
+                    // size: 15,
+                  ),
+                ],
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       ORDER_SHIPPED,
                       style: TextStyle(fontSize: 8),
                       textAlign: TextAlign.center,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Icon(
-                        sDate == null ? Icons.stop_circle : Icons.check_circle,
-                        color: sDate == null ? Colors.grey : primary,
-                      ),
-                    ),
                     Text(
-                      sDate ?? "\n",
+                      sDate ?? " ",
                       style: TextStyle(fontSize: 8),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           )
         : sDate == null
             ? Container()
-            : Flexible(
-                flex: 1,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                        flex: 1,
-                        child: Divider(
-                          thickness: 2,
-                        )),
-                    Column(
-                      children: [
-                        Text(
-                          ORDER_SHIPPED,
-                          style: TextStyle(fontSize: 8),
-                          textAlign: TextAlign.center,
-                        ),
-                        Icon(
-                          Icons.check_circle,
-                          color: primary,
-                        ),
-                        Text(
-                          sDate ?? "\n",
-                          style: TextStyle(fontSize: 8),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+            : Column(
+                children: [
+                  Container(
+                    height: 40,
+                    child: VerticalDivider(
+                      thickness: 2,
                     ),
-                  ],
-                ),
+                  ),
+                  Text(
+                    ORDER_SHIPPED,
+                    style: TextStyle(fontSize: 8),
+                    textAlign: TextAlign.center,
+                  ),
+                  Icon(
+                    Icons.circle,
+                    color: primary,
+                  ),
+                ],
               );
   }
 
   getDelivered(String dDate, String cDate) {
     return cDate == null
-        ? Flexible(
-            flex: 1,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                    child: Divider(
-                  thickness: 2,
-                  color: dDate == null ? Colors.grey : primary,
-                )),
-                Column(
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Column(
+                children: [
+                  Container(
+                    height: 40,
+                    child: VerticalDivider(
+                      thickness: 2,
+                      color: dDate == null ? Colors.grey : primary,
+                    ),
+                  ),
+                  Icon(
+                    Icons.circle,
+                    color: dDate == null ? Colors.grey : primary,
+                    // size: 15,
+                  ),
+                ],
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       ORDER_DELIVERED,
                       style: TextStyle(fontSize: 8),
                       textAlign: TextAlign.center,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Icon(
-                        dDate == null ? Icons.stop_circle : Icons.check_circle,
-                        color: dDate == null ? Colors.grey : primary,
-                      ),
-                    ),
                     Text(
-                      dDate ?? "\n",
+                      dDate ?? " ",
                       style: TextStyle(fontSize: 8),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           )
         : Container();
   }
 
   getCanceled(String cDate) {
     return cDate != null
-        ? Flexible(
-            flex: 1,
-            child: Row(
-              children: [
-                Flexible(
-                    flex: 1,
-                    child: Divider(
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Column(
+                children: [
+                  Container(
+                    height: 40,
+                    child: VerticalDivider(
                       thickness: 2,
-                      color: Colors.red,
-                    )),
-                Column(
+                      color: primary,
+                    ),
+                  ),
+                  Icon(
+                    Icons.cancel_rounded,
+                    color: primary,
+                  ),
+                ],
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       ORDER_CANCLED,
                       style: TextStyle(fontSize: 8),
-                      textAlign: TextAlign.center,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Icon(
-                        Icons.cancel_rounded,
-                        color: Colors.red,
-                      ),
                     ),
                     Text(
                       cDate ?? "",
@@ -1342,8 +1448,8 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           )
         : Container();
   }
@@ -1353,40 +1459,42 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
     Order_Model model,
   ) {
     return model.listStatus.contains(RETURNED)
-        ? Flexible(
-            flex: 1,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                    flex: 1,
-                    child: Divider(
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Column(
+                children: [
+                  Container(
+                    height: 40,
+                    child: VerticalDivider(
                       thickness: 2,
-                      color: Colors.red,
-                    )),
-                Column(
-                  children: [
-                    Text(
-                      ORDER_RETURNED,
-                      style: TextStyle(fontSize: 8),
-                      textAlign: TextAlign.center,
+                      color: primary,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Icon(
-                        Icons.cancel_rounded,
-                        color: Colors.red,
+                  ),
+                  Icon(
+                    Icons.cancel_rounded,
+                    color: primary,
+                    // size: 15,
+                  ),
+                ],
+              ),
+              Container(
+                  margin: const EdgeInsets.only(left: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ORDER_RETURNED,
+                        style: TextStyle(fontSize: 8),
                       ),
-                    ),
-                    Text(
-                      rDate ?? "",
-                      style: TextStyle(fontSize: 8),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                      Text(
+                        rDate ?? " ",
+                        style: TextStyle(fontSize: 8),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  )),
+            ],
           )
         : Container();
   }
@@ -1428,6 +1536,81 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
     }
   }
 
+  _imgFromGallery() async {
+    files = await FilePicker.getMultiFile(type: FileType.image);
+    if (files != null) {
+      setState(() {});
+      /*setState(() {
+        _isLoading = true;
+      });*/
+      //setRating(0, "", files);
+
+      /* files.forEach((f) {
+        print('path**${f.path}');
+      });*/
+    }
+  }
+
+  Future<void> setRating(
+      double rating, String comment, List<File> files) async {
+    print("Image******$files**********$rating*****$comment");
+
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        setState(() {
+          _isProgress = true;
+        });
+        var request = http.MultipartRequest("POST", Uri.parse(setRatingApi));
+        request.headers.addAll(headers);
+        print("CURUSERID*****$CUR_USERID");
+        request.fields[USER_ID] = CUR_USERID;
+        request.fields[PRODUCT_ID] = widget.model.itemList[0].productId;
+
+        if (files != null) {
+          for (int i = 0; i < files.length; i++) {
+            var pic = await http.MultipartFile.fromPath(IMGS, files[i].path);
+            request.files.add(pic);
+          }
+        }
+
+        /* _image.forEach((f) async {
+            print("image path******${f.path}");
+          var pic = await http.MultipartFile.fromPath(images, f.path);
+          request.files.add(pic);
+          });
+        }*/
+        if (comment != "") request.fields[COMMENT] = comment;
+        if (rating != 0) request.fields[RATING] = rating.toString();
+        var response = await request.send();
+        var responseData = await response.stream.toBytes();
+        var responseString = String.fromCharCodes(responseData);
+        print("image====$responseString");
+        //  print('response***product**$parameter***${response.body.toString()}');
+        var getdata = json.decode(responseString);
+        bool error = getdata["error"];
+        String msg = getdata['message'];
+        if (!error) {
+          setSnackbar(msg);
+        } else {
+          setSnackbar(msg);
+          initialRate = 0;
+        }
+        _isCommentEnable = false;
+        _commentC.text = "";
+        files.clear();
+        setState(() {
+          _isProgress = false;
+        });
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+      }
+    } else
+      setState(() {
+        _isNetworkAvail = false;
+      });
+  }
+
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
       content: new Text(
@@ -1441,45 +1624,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
   }
 
   DwnInvoice() {
-    var htmlContent = """
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <style>
-        table, th, td {
-          border: 1px solid black;
-          border-collapse: collapse;
-        }
-        th, td, p {
-          padding: 5px;
-          text-align: left;
-        }
-        </style>
-      </head>
-      <body>
-        <h2>PDF Generated with flutter_html_to_pdf plugin</h2>
-        
-        <table style="width:100%">
-          <caption>Sample HTML Table</caption>
-          <tr>
-            <th>Month</th>
-            <th>Savings</th>
-          </tr>
-          <tr>
-            <td>January</td>
-            <td>100</td>
-          </tr>
-          <tr>
-            <td>February</td>
-            <td>50</td>
-          </tr>
-        </table>
-        
-        <p>Image loaded from web</p>
-        <img src="https://i.imgur.com/wxaJsXF.png" alt="web-img">
-      </body>
-    </html>
-    """;
     return Card(
       elevation: 0,
       child: InkWell(
@@ -1506,27 +1650,50 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
 
             print("status==========$status");
             if (status == PermissionStatus.granted) {
-              var appDocDir;
+              setState(() {
+                _isProgress = true;
+              });
+              var targetPath;
 
               if (Platform.isIOS)
-                appDocDir = await getApplicationDocumentsDirectory();
+                targetPath = await getApplicationDocumentsDirectory();
               else
-                appDocDir = await DownloadsPathProvider.downloadsDirectory;
+                targetPath = await ExtStorage.getExternalStoragePublicDirectory(
+                    ExtStorage.DIRECTORY_DOWNLOADS);
+              //await DownloadsPathProvider.downloadsDirectory;
 
-              var targetPath = appDocDir.path;
-              var targetFileName = "Invoice-${widget.model.id}";
+              //var targetPath = appDocDir.path;
+              var targetFileName = "Invoice_${widget.model.id}";
               //String targetPath= await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_DOWNLOADS);
 
               print("path****$targetPath");
               var generatedPdfFile =
                   await FlutterHtmlToPdf.convertFromHtmlContent(
-                      htmlContent, targetPath, targetFileName);
+                      widget.model.invoice, targetPath, targetFileName);
               String generatedPdfFilePath = generatedPdfFile.path;
-              setSnackbar("$INVOICE_PATH $generatedPdfFilePath");
+              // setSnackbar("$INVOICE_PATH $targetFileName");
 
+              _scaffoldKey.currentState.showSnackBar(new SnackBar(
+                content: new Text(
+                  "$INVOICE_PATH $targetFileName",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: black),
+                ),
+                /*         action: SnackBarAction(label: VIEW, onPressed: () async {
 
+                  final result = await OpenFile.open(generatedPdfFilePath);
 
-
+                 */ /* setState(() {
+                    _openResult = "type=${result.type}  message=${result.message}";
+                  });
+*/ /*
+                }),*/
+                backgroundColor: white,
+                elevation: 1.0,
+              ));
+              setState(() {
+                _isProgress = false;
+              });
             }
           }),
     );

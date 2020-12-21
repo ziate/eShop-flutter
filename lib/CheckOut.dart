@@ -405,6 +405,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           height: 60.0,
                           width: 60.0,
                           fit: BoxFit.fill,
+                          errorWidget:(context, url,e) => placeHolder(60) ,
                           placeholder: (context, url) => placeHolder(60),
                         ))),
                 Expanded(
