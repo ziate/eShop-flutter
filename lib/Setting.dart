@@ -4,13 +4,18 @@ import 'dart:convert';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Privacy_Policy.dart';
+
+import 'package:eshop/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
 import 'Helper/String.dart';
-import 'NotificationLIst.dart';
+
 
 class Setting extends StatefulWidget {
   @override
@@ -25,6 +30,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   bool _isNetworkAvail = true;
   bool _isRight = false;
+
   Animation buttonSqueezeanimation;
 
   AnimationController buttonController;
@@ -40,6 +46,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     JAPANISE_LAN,
     GERMAN_LAN
   ];
+
 
   @override
   void initState() {
@@ -57,6 +64,16 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         0.150,
       ),
     ));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getSavedTheme();
+    });
+  }
+
+  _getSavedTheme() async {
+    selectedIndex =
+        themeList.indexOf(await getPrefrence(APP_THEME) ?? SYSTEM_DEFAULT);
+    setState(() {});
   }
 
   Future<Null> _playAnimation() async {
@@ -154,21 +171,22 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         child: Card(
             elevation: 0,
             shadowColor: lightWhite,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+
+
             child: InkWell(
+              borderRadius:  BorderRadius.circular(4),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                      padding: EdgeInsets.all( 12.0),
+                      padding: EdgeInsets.all(12.0),
                       child: Text(
                         CHANGE_PASS_LBL,
                         style: Theme.of(this.context)
                             .textTheme
                             .subtitle2
-                            .copyWith(color: lightBlack,fontWeight: FontWeight.bold),
+                            .copyWith(
+                            color: lightBlack, fontWeight: FontWeight.bold),
                       )),
                   Spacer(),
                   Padding(
@@ -176,7 +194,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                       child: Icon(
                         Icons.keyboard_arrow_right,
                         color: primary,
-
                       )),
                 ],
               ),
@@ -192,10 +209,9 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         child: Card(
             elevation: 0,
             shadowColor: lightWhite,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+
             child: InkWell(
+                borderRadius:  BorderRadius.circular(4),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -206,7 +222,9 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                           style: Theme.of(this.context)
                               .textTheme
                               .subtitle2
-                              .copyWith(color: lightBlack,fontWeight: FontWeight.bold),
+                              .copyWith(
+                              color: lightBlack,
+                              fontWeight: FontWeight.bold),
                         )),
                     Spacer(),
                     Padding(
@@ -214,7 +232,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                         child: Icon(
                           Icons.keyboard_arrow_right,
                           color: primary,
-
                         )),
                   ],
                 ),
@@ -229,36 +246,41 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         child: Card(
             elevation: 0,
             shadowColor: lightWhite,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+
             child: InkWell(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.all( 12.0),
-                      child: Text(
-                        CHANGE_THEME_LBL,
-                        style: Theme.of(this.context)
-                            .textTheme
-                            .subtitle2
-                            .copyWith(color: lightBlack,fontWeight: FontWeight.bold),
-                      )),
-                  Spacer(),
-                  Padding(
-                      padding: EdgeInsets.only(right: 15.0),
-                      child: Icon(
-                        Icons.keyboard_arrow_right,
-                        color: primary,
-                      )),
-                ],
-              ),
-              onTap: () {
-                themeDialog();
-              },
-            )));
+                borderRadius:  BorderRadius.circular(4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text(
+                          CHANGE_THEME_LBL,
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
+                              color: lightBlack,
+                              fontWeight: FontWeight.bold),
+                        )),
+                    Spacer(),
+                    Padding(
+                        padding: EdgeInsets.only(right: 15.0),
+                        child: Icon(
+                          Icons.keyboard_arrow_right,
+                          color: primary,
+                        )),
+                  ],
+                ),
+                onTap: () {
+                  themeDialog();
+                })));
   }
+
+
+
+
+
 
   privacyPolicy() {
     return Container(
@@ -266,10 +288,9 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         child: Card(
             elevation: 0,
             shadowColor: lightWhite,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+
             child: InkWell(
+              borderRadius:  BorderRadius.circular(4),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -279,14 +300,15 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                           style: Theme.of(this.context)
                               .textTheme
                               .subtitle2
-                              .copyWith(color: lightBlack,fontWeight: FontWeight.bold))),
+                              .copyWith(
+                              color: lightBlack,
+                              fontWeight: FontWeight.bold))),
                   Spacer(),
                   Padding(
                       padding: EdgeInsets.only(right: 15.0),
                       child: Icon(
                         Icons.keyboard_arrow_right,
                         color: primary,
-
                       )),
                 ],
               ),
@@ -304,15 +326,14 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
 
   termCondition() {
     return Container(
-
         margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
+
             elevation: 0,
             shadowColor: lightWhite,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+
             child: InkWell(
+              borderRadius:  BorderRadius.circular(4),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -322,14 +343,15 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                           style: Theme.of(this.context)
                               .textTheme
                               .subtitle2
-                              .copyWith(color: lightBlack,fontWeight: FontWeight.bold))),
+                              .copyWith(
+                              color: lightBlack,
+                              fontWeight: FontWeight.bold))),
                   Spacer(),
                   Padding(
                       padding: EdgeInsets.only(right: 15.0),
                       child: Icon(
                         Icons.keyboard_arrow_right,
                         color: primary,
-
                       )),
                 ],
               ),
@@ -351,121 +373,124 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater) {
-            return AlertDialog(
-              contentPadding: const EdgeInsets.all(0.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              content: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                          child: Text(
-                            CHOOSE_THEME_LBL,
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle1
-                                .copyWith(color: fontColor),
-                          )),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
-                     child: Text(COMINGSOON,style: Theme.of(context).textTheme.caption,)),
-
-                      Divider(color: lightBlack),
-                      ListView.separated(
-                          separatorBuilder: (BuildContext context, int index) =>
-                              Padding(
-                                  padding:
+                return AlertDialog(
+                  contentPadding: const EdgeInsets.all(0.0),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                  content: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                              child: Text(
+                                CHOOSE_THEME_LBL,
+                                style: Theme.of(this.context)
+                                    .textTheme
+                                    .subtitle1
+                                    .copyWith(color: fontColor),
+                              )),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
+                              child: Text(
+                                COMINGSOON,
+                                style: Theme.of(context).textTheme.caption,
+                              )),
+                          Divider(color: lightBlack),
+                          ListView.separated(
+                              separatorBuilder: (BuildContext context, int index) =>
+                                  Padding(
+                                      padding:
                                       EdgeInsets.only(left: 20.0, right: 20.0),
-                                  child: Divider(color: lightBlack)),
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: themeList.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                                padding:
+                                      child: Divider(color: lightBlack)),
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: themeList.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                    padding:
                                     EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0),
-                                child: Row(
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        setStater(() {
-                                          selectedIndex = index;
-                                        });
-                                      },
-                                      child: Container(
-                                        height: 25.0,
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: selectedIndex == index
-                                                ? grad2Color
-                                                : white,
-                                            border:
+                                    child: Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+
+                                          },
+                                          child: Container(
+                                            height: 25.0,
+                                            decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: selectedIndex == index
+                                                    ? grad2Color
+                                                    : white,
+                                                border:
                                                 Border.all(color: grad2Color)),
-                                        child: Padding(
-                                            padding: const EdgeInsets.all(2.0),
-                                            child: selectedIndex == index
-                                                ? Icon(
-                                                    Icons.check,
-                                                    size: 17.0,
-                                                    color: white,
-                                                  )
-                                                : Icon(
-                                                    Icons
-                                                        .check_box_outline_blank,
-                                                    size: 15.0,
-                                                    color: white,
-                                                  )),
-                                      ),
-                                    ),
-                                    Padding(
-                                        padding: EdgeInsets.only(
-                                          left: 15.0,
+                                            child: Padding(
+                                                padding: const EdgeInsets.all(2.0),
+                                                child: selectedIndex == index
+                                                    ? Icon(
+                                                  Icons.check,
+                                                  size: 17.0,
+                                                  color: white,
+                                                )
+                                                    : Icon(
+                                                  Icons
+                                                      .check_box_outline_blank,
+                                                  size: 15.0,
+                                                  color: white,
+                                                )),
+                                          ),
                                         ),
-                                        child: Text(
-                                          themeList[index],
-                                          style: Theme.of(this.context)
-                                              .textTheme
-                                              .subtitle1
-                                              .copyWith(color: lightBlack),
-                                        ))
-                                  ],
-                                ));
-                          }),
-                      Padding(
-                          padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                          child: Divider(color: lightBlack)),
-                    ],
-                  )),
-              actions: <Widget>[
-                new FlatButton(
-                    child: Text(
-                      CANCEL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
+                                        Padding(
+                                            padding: EdgeInsets.only(
+                                              left: 15.0,
+                                            ),
+                                            child: Text(
+                                              themeList[index],
+                                              style: Theme.of(this.context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(color: lightBlack),
+                                            ))
+                                      ],
+                                    ));
+                              }),
+                          Padding(
+                              padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                              child: Divider(color: lightBlack)),
+                        ],
+                      )),
+                  actions: <Widget>[
+                    new FlatButton(
+                        child: Text(
+                          CANCEL,
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
                               color: lightBlack, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
-                new FlatButton(
-                    child: Text(
-                      OK_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        }),
+                    new FlatButton(
+                        child: Text(
+                          OK_LBL,
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
                               color: fontColor, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {})
-              ],
-            );
-          });
+                        ),
+                        onPressed: () {
+
+                          Navigator.pop(context);
+                        })
+                  ],
+                );
+              });
         });
   }
 
@@ -475,130 +500,132 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater) {
-            return AlertDialog(
-              contentPadding: const EdgeInsets.all(0.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              content: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                          child: Text(
-                            CHOOSE_LANGUAGE_LB,
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle1
-                                .copyWith(color: fontColor),
-                          )),
-
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
-                          child: Text(COMINGSOON,style: Theme.of(context).textTheme.caption,)),
-
-                      Divider(color: lightBlack),
-                      ListView.separated(
-                          separatorBuilder: (BuildContext context, int index) =>
-                              Padding(
-                                  padding:
+                return AlertDialog(
+                  contentPadding: const EdgeInsets.all(0.0),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                  content: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                              child: Text(
+                                CHOOSE_LANGUAGE_LB,
+                                style: Theme.of(this.context)
+                                    .textTheme
+                                    .subtitle1
+                                    .copyWith(color: fontColor),
+                              )),
+                          Padding(
+                              padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
+                              child: Text(
+                                COMINGSOON,
+                                style: Theme.of(context).textTheme.caption,
+                              )),
+                          Divider(color: lightBlack),
+                          ListView.separated(
+                              separatorBuilder: (BuildContext context, int index) =>
+                                  Padding(
+                                      padding:
                                       EdgeInsets.only(left: 20.0, right: 20.0),
-                                  child: Divider(color: lightBlack)),
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: languageList.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                                padding:
+                                      child: Divider(color: lightBlack)),
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: languageList.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                    padding:
                                     EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0),
-                                child: Row(
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        setStater(() {
-                                          selectedIndex = index;
-                                        });
-                                      },
-                                      child: Container(
-                                        height: 25.0,
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color:
-                                               selectedIndex==index? grad2Color : white,
-                                            border:
+                                    child: Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            setStater(() {
+                                              selectedIndex = index;
+                                            });
+                                          },
+                                          child: Container(
+                                            height: 25.0,
+                                            decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: selectedIndex == index
+                                                    ? grad2Color
+                                                    : white,
+                                                border:
                                                 Border.all(color: grad2Color)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(2.0),
-                                          child: selectedIndex==index
-                                              ? Icon(
-                                                  Icons.check,
-                                                  size: 17.0,
-                                                  color: white,
-                                                )
-                                              : Icon(
-                                                  Icons.check_box_outline_blank,
-                                                  size: 15.0,
-                                                  color: white,
-                                                ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(2.0),
+                                              child: selectedIndex == index
+                                                  ? Icon(
+                                                Icons.check,
+                                                size: 17.0,
+                                                color: white,
+                                              )
+                                                  : Icon(
+                                                Icons.check_box_outline_blank,
+                                                size: 15.0,
+                                                color: white,
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                    Padding(
-                                        padding: EdgeInsets.only(
-                                          left: 15.0,
-                                        ),
-                                        child: Text(
-                                          languageList[index],
-                                          style: Theme.of(this.context)
-                                              .textTheme
-                                              .subtitle1
-                                              .copyWith(color: lightBlack),
-                                        ))
-                                  ],
-                                ));
-                          }),
-                      Padding(
-                          padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                          child: Divider(color: lightBlack)),
-                    ],
-                  )),
-              actions: <Widget>[
-                new FlatButton(
-                    child: Text(
-                      CANCEL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
+                                        Padding(
+                                            padding: EdgeInsets.only(
+                                              left: 15.0,
+                                            ),
+                                            child: Text(
+                                              languageList[index],
+                                              style: Theme.of(this.context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(color: lightBlack),
+                                            ))
+                                      ],
+                                    ));
+                              }),
+                          Padding(
+                              padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                              child: Divider(color: lightBlack)),
+                        ],
+                      )),
+                  actions: <Widget>[
+                    new FlatButton(
+                        child: Text(
+                          CANCEL,
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
                               color: lightBlack, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
-                new FlatButton(
-                    child: Text(
-                      OK_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: fontColor, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      final form = _formkey.currentState;
-                      if (form.validate()) {
-                        form.save();
-                        setState(() {
+                        ),
+                        onPressed: () {
                           Navigator.pop(context);
-                        });
-                        checkNetwork();
-                      }
-                    })
-              ],
-            );
-          });
+                        }),
+                    new FlatButton(
+                        child: Text(
+                          OK_LBL,
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          final form = _formkey.currentState;
+                          if (form.validate()) {
+                            form.save();
+                            setState(() {
+                              Navigator.pop(context);
+                            });
+                            checkNetwork();
+                          }
+                        })
+                  ],
+                );
+              });
         });
   }
 
@@ -612,9 +639,9 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                   contentPadding: const EdgeInsets.all(0.0),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                  content:SingleChildScrollView(
+                  content: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
-                      child:Column(
+                      child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -682,7 +709,8 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                                   .subtitle1
                                                   .copyWith(
                                                   color: lightBlack,
-                                                  fontWeight: FontWeight.normal),
+                                                  fontWeight:
+                                                  FontWeight.normal),
                                               suffixIcon: IconButton(
                                                 icon: Icon(_showPassword
                                                     ? Icons.visibility
@@ -724,7 +752,8 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                                   .subtitle1
                                                   .copyWith(
                                                   color: lightBlack,
-                                                  fontWeight: FontWeight.normal),
+                                                  fontWeight:
+                                                  FontWeight.normal),
                                               suffixIcon: IconButton(
                                                 icon: Icon(_showPassword
                                                     ? Icons.visibility

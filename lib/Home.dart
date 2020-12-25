@@ -5,7 +5,6 @@ import 'dart:core';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/All_Category.dart';
 import 'package:eshop/Faqs.dart';
@@ -58,7 +57,7 @@ List<Product> catList = [];
 List<Model> homeSliderList = [];
 List<Section_Model> sectionList = [];
 List<Model> offerImages = [];
-final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+List<Widget> pages = [];
 bool _isCatLoading = true;
 bool _isNetworkAvail = true;
 int curSelected = 0;
@@ -66,13 +65,15 @@ GlobalKey bottomNavigationKey = GlobalKey();
 
 class StateHome extends State<Home> {
   List<Widget> fragments;
-
+  DateTime currentBackPressTime;
   HomePage home;
   String profile;
   int curDrwSel = 0;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+
 
   @override
   void initState() {
@@ -94,17 +95,52 @@ class StateHome extends State<Home> {
     setState(() {});
   }
 
+  void _registerToken(String token) async {
+    var parameter = {USER_ID: CUR_USERID, FCM_ID: token};
+
+    Response response =
+    await post("$updateFcmApi", body: parameter, headers: headers)
+        .timeout(Duration(seconds: timeOut));
+
+
+    var getdata = json.decode(response.body);
+
+    print("set token**${response.body.toString()}");
+
+  }
   @override
   Widget build(BuildContext context) {
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
-    return Scaffold(
-        backgroundColor: lightWhite,
-        key: scaffoldKey,
-        appBar: curSelected == 3 ? null : _getAppbar(),
-        // drawer: _getDrawer(),
-        bottomNavigationBar: getBottomBar(),
-        body: fragments[curSelected]);
+    return WillPopScope(
+        onWillPop: onWillPop,
+        child: Scaffold(
+            backgroundColor: lightWhite,
+            key: scaffoldKey,
+            appBar: curSelected == 3 ? null : _getAppbar(),
+            // drawer: _getDrawer(),
+            bottomNavigationBar: getBottomBar(),
+            body: fragments[curSelected]));
+  }
+
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    print("back===============$curSelected");
+    if (curSelected != 0) {
+      curSelected = 0;
+      final CurvedNavigationBarState navBarState =
+          bottomNavigationKey.currentState;
+      navBarState.setPage(0);
+
+      return Future.value(false);
+    } else if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      setSnackbar(EXIT_WR);
+
+      return Future.value(false);
+    }
+    return Future.value(true);
   }
 
   setSnackbar(String msg) {
@@ -353,13 +389,23 @@ class StateHome extends State<Home> {
       iconTheme: new IconThemeData(color: primary),
       // centerTitle:_curSelected == 0? false:true,
       actions: <Widget>[
-        InkWell(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 10, right: 10),
-            child: Container(
-              decoration: shadow(),
-              child: Card(
-                elevation: 0,
+        Padding(
+          padding: const EdgeInsets.only(top: 10.0, bottom: 10, right: 10),
+          child: Container(
+            decoration: shadow(),
+            child: Card(
+              elevation: 0,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () {
+                  CUR_USERID == null
+                      ? Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Login(),
+                          ))
+                      : goToCart();
+                },
                 child: new Stack(children: <Widget>[
                   Center(
                     child: Image.asset(
@@ -395,15 +441,6 @@ class StateHome extends State<Home> {
               ),
             ),
           ),
-          onTap: () async {
-            CUR_USERID == null
-                ? Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Login(),
-                    ))
-                : goToCart();
-          },
         ),
         /* InkWell(
           onTap: () {
@@ -711,83 +748,6 @@ class StateHome extends State<Home> {
     );*/
   }
 
-  Future<bool> onNavigationTap(bool isLiked, int index) async {
-    setState(() {
-      curSelected = index;
-    });
-    return !isLiked;
-  }
-
-  _getHeader() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 5.0),
-      child: InkWell(
-          child: Container(
-            padding: EdgeInsets.only(left: 10.0, bottom: 20),
-            decoration: back(),
-            child: Row(
-              children: [
-                Container(
-                  margin: EdgeInsets.only(top: 55, left: 10),
-                  height: 64,
-                  width: 64,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(width: 1.0, color: white)),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(100.0),
-                    child: profile != null
-                        ? CachedNetworkImage(
-                            imageUrl: profile,
-                            height: 64,
-                            width: 64,
-                            fit: BoxFit.cover,
-                        errorWidget:(context, url,e) => placeHolder(64) ,
-                            placeholder: (context, url) {
-                              return new Container(
-                                child: Icon(
-                                  Icons.account_circle,
-                                  color: white,
-                                  size: 64,
-                                ),
-                              );
-                            })
-                        : imagePlaceHolder(64),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 55, left: 10),
-                  child: Text(
-                    "Hello, \n${CUR_USERNAME == "" || CUR_USERNAME == null ? "Guest" : CUR_USERNAME}",
-                    style: TextStyle(color: white, fontWeight: FontWeight.bold),
-                  ),
-                )
-              ],
-            ),
-          ),
-          onTap: () {
-            if (CUR_USERID != null) {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Profile(),
-                  )).then((value) async {
-                debugPrint(value);
-                profile = await getPrefrence(IMAGE);
-                CUR_USERNAME = await getPrefrence(USERNAME);
-                print('on rsume***$profile');
-                setState(() {});
-              });
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Login()),
-              );
-            }
-          }),
-    );
-  }
-
   goToCart() {
     Navigator.push(
         context,
@@ -851,10 +811,10 @@ class StateHome extends State<Home> {
   void firebaseCloudMessaging_Listeners() {
     if (Platform.isIOS) iOS_Permission();
 
-    /* _firebaseMessaging.getToken().then((token) async {
-      String uid = await getPrefrence(ID);
-      if (uid != null && uid != "") _registerToken(token, uid);
-    });*/
+     _firebaseMessaging.getToken().then((token) async {
+       CUR_USERID = await getPrefrence(ID);
+      if (CUR_USERID != null && CUR_USERID != "") _registerToken(token);
+    });
 
     _firebaseMessaging.configure(
       onMessage: (message) async {
@@ -963,6 +923,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool menuOpen = false;
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
+
+
 
   @override
   void initState() {
@@ -982,6 +946,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       ),
     ));
     WidgetsBinding.instance.addPostFrameCallback((_) => _animateSlider());
+    // WidgetsBinding.instance.addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
   }
 
   @override
@@ -1012,18 +977,20 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         body: _isNetworkAvail
             ? _isCatLoading
                 ? homeShimmer()
-                : SingleChildScrollView(
-                    padding: EdgeInsets.all(10),
-                    physics: BouncingScrollPhysics(),
-                    child: Column(
-                      children: [
-                        _getSearchBar(),
-                        _slider(),
-                        _catHeading(),
-                        _catList(),
-                        _section()
-                      ],
-                    ))
+                : RefreshIndicator(
+                    key: _refreshIndicatorKey,
+                    onRefresh: _refresh,
+                    child: SingleChildScrollView(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                          children: [
+                            _getSearchBar(),
+                            _slider(),
+                            _catHeading(),
+                            _catList(),
+                            _section()
+                          ],
+                        )))
             : noInternet(context));
   }
 
@@ -1150,72 +1117,52 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     double height = deviceWidth / 2.2;
 
     return homeSliderList.isNotEmpty
-        ? Container(
-            height: height,
-            width: double.infinity,
-            margin: EdgeInsets.only(top: 10),
-            child: PageView.builder(
-              itemCount: homeSliderList.length,
-              scrollDirection: Axis.horizontal,
-              controller: _controller,
-              reverse: false,
-              onPageChanged: (index) {
-                setState(() {
-                  _curSlider = index;
-                });
-              },
-              itemBuilder: (BuildContext context, int index) {
-                return GestureDetector(
-                  child: Stack(
-                    children: <Widget>[
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(7.0),
-                          child: CachedNetworkImage(
-                            imageUrl: homeSliderList[_curSlider].image,
-                            placeholder: (context, url) => Image.asset(
-                              "assets/images/sliderph.png",
-                              height: height,
-                            ),
-                            errorWidget: (context, url, error) => Image.asset(
-                              "assets/images/sliderph.png",
-                              height: height,
-                            ),
-                            fit: BoxFit.fill,
-                            height: height,
-                            width: double.maxFinite,
-                          )),
-                      Positioned(
-                        bottom: 0,
-                        height: 40,
-                        left: 0,
-                        width: deviceWidth,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: map<Widget>(
-                            homeSliderList,
-                            (index, url) {
-                              return Container(
-                                  width: 8.0,
-                                  height: 8.0,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 10.0, horizontal: 2.0),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _curSlider == index
-                                        ? fontColor
-                                        : lightBlack,
-                                  ));
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
+        ? Stack(
+            children: [
+              Container(
+                height: height,
+                width: double.infinity,
+                margin: EdgeInsets.only(top: 10),
+                child: PageView.builder(
+                  itemCount: homeSliderList.length,
+                  scrollDirection: Axis.horizontal,
+                  controller: _controller,
+                  physics: AlwaysScrollableScrollPhysics(),
+                  onPageChanged: (index) {
+                    setState(() {
+                      _curSlider = index;
+                    });
+                  },
+                  itemBuilder: (BuildContext context, int index) {
+                    return pages[index];
+                  },
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                height: 40,
+                left: 0,
+                width: deviceWidth,
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: map<Widget>(
+                    homeSliderList,
+                    (index, url) {
+                      return Container(
+                          width: 8.0,
+                          height: 8.0,
+                          margin: EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 2.0),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _curSlider == index ? fontColor : lightBlack,
+                          ));
+                    },
                   ),
-                  onTap: () async {},
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           )
         : Padding(
             padding: const EdgeInsets.only(top: 10.0, bottom: 27),
@@ -1253,7 +1200,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         if (_controller.hasClients)
           _controller
               .animateToPage(nextPage,
-                  duration: Duration(seconds: 1), curve: Curves.easeIn)
+                  duration: Duration(milliseconds: 200), curve: Curves.linear)
               .then((_) => _animateSlider());
       }
     });
@@ -1349,11 +1296,35 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         itemCount: catList.length < 10 ? catList.length : 10,
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
-        physics: BouncingScrollPhysics(),
+        physics: AlwaysScrollableScrollPhysics(),
         itemBuilder: (context, index) {
-          return InkWell(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 10),
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: GestureDetector(
+              onTap: () async {
+                if (catList[index].subList == null ||
+                    catList[index].subList.length == 0) {
+                  await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductList(
+                            name: catList[index].name,
+                            id: catList[index].id,
+                            updateHome: widget.updateHome),
+                      ));
+                  setState(() {});
+                } else {
+                  await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SubCat(
+                            title: catList[index].name,
+                            subList: catList[index].subList,
+                            updateHome: widget.updateHome),
+                      ));
+                  setState(() {});
+                }
+              },
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -1362,13 +1333,16 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                     padding: const EdgeInsets.only(bottom: 5.0),
                     child: new ClipRRect(
                       borderRadius: BorderRadius.circular(25.0),
-                      child: new CachedNetworkImage(
-                        imageUrl: catList[index].image,
+                      child: new FadeInImage(
+                        fadeInDuration: Duration(milliseconds: 150),
+                        image: NetworkImage(
+                          catList[index].image,
+                        ),
                         height: 50.0,
                         width: 50.0,
                         fit: BoxFit.cover,
-                        errorWidget:(context, url,e) => placeHolder(50) ,
-                        placeholder: (context, url) => placeHolder(50),
+                        //  errorWidget: (context, url, e) => placeHolder(50),
+                        placeholder: placeHolder(50),
                       ),
                     ),
                   ),
@@ -1387,30 +1361,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            onTap: () async {
-              if (catList[index].subList == null ||
-                  catList[index].subList.length == 0) {
-                await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProductList(
-                          name: catList[index].name,
-                          id: catList[index].id,
-                          updateHome: widget.updateHome),
-                    ));
-                setState(() {});
-              } else {
-                await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SubCat(
-                          title: catList[index].name,
-                          subList: catList[index].subList,
-                          updateHome: widget.updateHome),
-                    ));
-                setState(() {});
-              }
-            },
           );
         },
       ),
@@ -1431,6 +1381,13 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           );
   }
 
+  Future<Null> _refresh() {
+    setState(() {
+      _isCatLoading = true;
+    });
+    return callApi();
+  }
+
   _singleSection(int index) {
     return sectionList[index].productList.length > 0
         ? Column(
@@ -1438,7 +1395,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             children: <Widget>[
               _getHeading(sectionList[index].title, index),
               _getSection(index),
-              offerImages.length > index ? _getOfferImage() : Container(),
+              offerImages.length > index ? _getOfferImage(index) : Container(),
             ],
           )
         : Container();
@@ -1460,7 +1417,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               style:
                   Theme.of(context).textTheme.caption.copyWith(color: primary),
             ),
-            splashColor: primary.withOpacity(0.2),
             onTap: () {
               Section_Model model = sectionList[index];
               Navigator.push(
@@ -1479,22 +1435,20 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  _getOfferImage() {
-    return ListView.builder(
-      padding: EdgeInsets.only(top: 5),
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: offerImages.length,
-      itemBuilder: (context, index) {
-        return CachedNetworkImage(
-          imageUrl: offerImages[index].image,
+  _getOfferImage(index) {
+
+        return FadeInImage(
+            fadeInDuration: Duration(milliseconds: 150),
+          image: NetworkImage(offerImages[index].image),
           width: double.maxFinite,
-          errorWidget:(context, url,e) => placeHolder(50) ,
-          placeholder:(context, url) => placeHolder(50) ,
-        );
-      },
-    );
-  }
+          // errorWidget: (context, url, e) => placeHolder(50),
+          placeholder:   AssetImage(
+          "assets/images/sliderph.png",
+
+        ));
+      }
+
+
 
   _getSection(int i) {
     print('style=====${sectionList[i].style}');
@@ -1862,6 +1816,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       elevation: 0.2,
       margin: EdgeInsets.only(bottom: 5, right: pad ? 5 : 0),
       child: InkWell(
+        borderRadius: BorderRadius.circular(4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1874,12 +1829,14 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   child: Hero(
                     tag:
                         "${sectionList[secPos].productList[index].id}$secPos$index",
-                    child: CachedNetworkImage(
-                      imageUrl: sectionList[secPos].productList[index].image,
+                    child: FadeInImage(
+                      fadeInDuration: Duration(milliseconds: 150),
+                      image: NetworkImage(
+                          sectionList[secPos].productList[index].image),
                       height: double.maxFinite,
                       width: double.maxFinite,
-                      errorWidget: (context, url, e) => placeHolder(width),
-                      placeholder: (context, url) => placeHolder(width),
+                      // errorWidget: (context, url, e) => placeHolder(width),
+                      placeholder: placeHolder(width),
                     ),
                   )),
             ),
@@ -1942,7 +1899,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           Navigator.push(
             context,
             PageRouteBuilder(
-                transitionDuration: Duration(seconds: 1),
+                // transitionDuration: Duration(milliseconds: 150),
                 pageBuilder: (_, __, ___) => ProductDetail(
                     model: model,
                     updateParent: updateHomePage,
@@ -2071,6 +2028,12 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
         homeSliderList =
             (data as List).map((data) => new Model.fromSlider(data)).toList();
+
+        pages = homeSliderList.map((slider) {
+          return _buildImagePageItem(slider);
+        }).toList();
+
+
       } else {
         setSnackbar(msg);
       }
@@ -2171,7 +2134,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         RETURN_DAYS = data['max_product_return_days'];
         MAX_ITEMS = data["max_items_cart"];
         print("max items*****$MAX_ITEMS");
-        CUR_CART_COUNT = getdata["data"]["user_data"][0]["cart_total_items"];
+        CUR_CART_COUNT =
+            getdata["data"]["user_data"][0]["cart_total_items"].toString();
 
         CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
 
@@ -2204,9 +2168,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       }
 
       Future.delayed(const Duration(seconds: 1), () {
-        setState(() {
-          _isCatLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isCatLoading = false;
+          });
       });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
@@ -2214,5 +2179,78 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         _isCatLoading = false;
       });
     }
+    return 'success';
   }
+
+  Widget _buildImagePageItem(Model slider) {
+
+    double height = deviceWidth / 2.2;
+
+    return GestureDetector(
+      child: ClipRRect(
+          borderRadius: BorderRadius.circular(7.0),
+          child: FadeInImage(
+            fadeInDuration: Duration(milliseconds: 150),
+            image: NetworkImage(
+              slider.image,
+            ),
+            placeholder: AssetImage(
+              "assets/images/sliderph.png",
+            ),
+            fit: BoxFit.fill,
+            height: height,
+            width: double.maxFinite,
+          )),
+      onTap: () async {
+        print(
+            "type***********${homeSliderList[_curSlider].type}");
+        if (homeSliderList[_curSlider].type == "products") {
+          Product item = homeSliderList[_curSlider].list;
+
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+                //transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
+                    model: item,
+                    updateParent: updateHomePage,
+                    secPos: 0,
+                    index: 0,
+                    updateHome: widget.updateHome,
+                    list: true
+                  //  title: sectionList[secPos].title,
+                )),
+          );
+        } else if (homeSliderList[_curSlider].type ==
+            "categories") {
+          Product item = homeSliderList[_curSlider].list;
+          if (item.subList == null ||
+              item.subList.length == 0) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductList(
+                      name: item.name,
+                      id: item.id,
+                      updateHome: widget.updateHome),
+                ));
+          } else {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SubCat(
+                      title: item.name,
+                      subList: item.subList,
+                      updateHome: widget.updateHome),
+                ));
+          }
+        }
+      },
+    );
+
+  }
+
+
+
+
 }

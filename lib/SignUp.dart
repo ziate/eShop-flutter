@@ -40,9 +40,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       address,
       latitude,
       longitude;
-  FocusNode nameFocus,
-      emailFocus,
-      passFocus= FocusNode();
+  FocusNode nameFocus, emailFocus, passFocus = FocusNode();
   bool _isNetworkAvail = true;
   Animation buttonSqueezeanimation;
 
@@ -191,10 +189,10 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   }
 
   subLogo() {
-    return Container(
-      padding: EdgeInsets.only(top: 80.0),
+    return Expanded(
+      flex: 3,
       child: Center(
-        child: new Image.asset('assets/images/homelogo.png', fit: BoxFit.fill),
+        child: new Image.asset('assets/images/homelogo.png'),
       ),
     );
   }
@@ -220,6 +218,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       ),
       child: TextFormField(
         keyboardType: TextInputType.text,
+          textCapitalization: TextCapitalization.sentences,
         controller: nameController,
         focusNode: nameFocus,
         textInputAction: TextInputAction.next,
@@ -271,7 +270,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         focusNode: emailFocus,
         textInputAction: TextInputAction.next,
         controller: emailController,
-        style:TextStyle(color: fontColor, fontWeight: FontWeight.normal),
+        style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
         validator: validateEmail,
         onSaved: (String value) {
           email = value;
@@ -367,7 +366,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               },
             ),
             Text(SHOW_PASSWORD,
-                style:TextStyle(color: fontColor, fontWeight: FontWeight.normal))
+                style:
+                    TextStyle(color: fontColor, fontWeight: FontWeight.normal))
           ],
         ));
   }
@@ -432,20 +432,20 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   }
 
   expandedBottomView() {
-    double width = deviceWidth;
-    return Expanded(
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: 100.0,
-          ),
-          child: SingleChildScrollView(
 
-      child: Form(
+    return Expanded(
+      flex: 7,
+        child: Container(
+      alignment: Alignment.bottomCenter,
+      child: SingleChildScrollView(
+       // physics: BouncingScrollPhysics(),
+
+        child: Form(
           key: _formkey,
           child: Card(
-            elevation: 0.0,
+            elevation: 0.5,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -460,9 +460,9 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               ],
             ),
           ),
+        ),
       ),
-    ),
-        ));
+    ));
   }
 
   @override

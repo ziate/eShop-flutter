@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:flutter/cupertino.dart';
@@ -55,7 +54,7 @@ class StateCat extends State<All_Category> {
             crossAxisCount: 4,
             shrinkWrap: true,
             childAspectRatio: .8,
-            physics: BouncingScrollPhysics(),
+           // physics: BouncingScrollPhysics(),
             // mainAxisSpacing: 6,
             // crossAxisSpacing: 3,
             children: List.generate(
@@ -80,7 +79,6 @@ class StateCat extends State<All_Category> {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***cat****${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -91,7 +89,7 @@ class StateCat extends State<All_Category> {
 
         if (!error) {
           total = int.parse(getdata["total"]);
-          print('limit *****$offset****$total');
+
           if ((offset) < total) {
             tempList.clear();
             var data = getdata["data"];
@@ -132,19 +130,21 @@ class StateCat extends State<All_Category> {
   }
 
   Widget catItem(int index, BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       child: Column(
         children: <Widget>[
           ClipRRect(
               borderRadius: BorderRadius.circular(25.0),
-              child: CachedNetworkImage(
-                imageUrl: catList[index].image,
+              child: FadeInImage(image:
+              NetworkImage(catList[index].image),
+                fadeInDuration: Duration(milliseconds: 150),
                 height: 50,
                 width: 50,
                 fit: BoxFit.fill,
-                errorWidget:(context, url,e) => placeHolder(50) ,
-                placeholder: (context, url) => placeHolder(50),
-              )),
+              // errorWidget:(context, url,e) => placeHolder(50) ,
+                placeholder:placeHolder(50),
+              )
+          ),
           Padding(
             padding: const EdgeInsets.only(top: 10.0),
             child: Text(
@@ -194,7 +194,6 @@ class StateCat extends State<All_Category> {
         setState(() {
           isLoadingmore = true;
 
-          print("limit *****$offset****$total");
           if (offset < total) getCat();
         });
       }

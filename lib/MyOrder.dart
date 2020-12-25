@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eshop/Model/Order_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,10 +25,9 @@ class MyOrder extends StatefulWidget {
   }
 }
 
-
 List<Order_Model> orderList = [];
 List<Order_Model> searchList = [];
-List<Order_Model> deliveredList = [];
+
 List<Order_Model> orderProgressList = [];
 int pos = 0;
 
@@ -41,6 +39,9 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
   bool _isNetworkAvail = true;
   final TextEditingController _controller = TextEditingController();
   bool _isLoading = true;
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
+
   @override
   void initState() {
     orderList.clear();
@@ -60,7 +61,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
       ),
     ));
     _controller.addListener(() {
-      print("value: ${_controller.text}");
       searchOperation(_controller.text);
       setState(() {});
     });
@@ -73,23 +73,23 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     buttonController.dispose();
     super.dispose();
   }
+
   Future<void> searchOperation(String searchText) async {
     searchList.clear();
     for (int i = 0; i < orderList.length; i++) {
       for (int j = 0; j < orderList[i].itemList.length; j++) {
         Order_Model map = orderList[i];
-        print("*****${map.itemList[j].name}");
-        print("*****${map.itemList[j].price}");
-        print("*****${map.id}");
+
         if (map.id.toLowerCase().contains(searchText) ||
             map.itemList[j].name.toLowerCase().contains(searchText)) {
           searchList.add(map);
         }
       }
     }
-    print("searchList*****$searchList");
+
     setState(() {});
   }
+
   Future<Null> _playAnimation() async {
     try {
       await buttonController.forward();
@@ -126,22 +126,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     );
   }
 
-/*  onSearchTextChanged(String text) async {
-    searchList.clear();
-    if (text.isEmpty) {
-      setState(() {});
-      return;
-    }
-    for (int i = 0, l = searchList.length; i < l; i++) {
-      searchList[i].itemList.forEach((userDetail) {
-        if (userDetail.id.contains(text) || userDetail.name.contains(text))
-          searchList.add(userDetail);
-      });
-    }
-
-    setState(() {});
-  }*/
-
 
   @override
   Widget build(BuildContext context) {
@@ -152,88 +136,105 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
       body: _isNetworkAvail
           ? _isLoading
               ? shimmer()
-              : searchList.length == 0 && deliveredList.length == 0
-                  ? Center(child: Text(noItem))
-                  : SingleChildScrollView(
-                      physics: BouncingScrollPhysics(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                                height: 45,
-                                padding: EdgeInsets.only(left: 5.0, right: 5.0),
-                              
-                                child: TextField(
-                                  controller: _controller,
-                                  onChanged: (value) {
-                                    if (_controller.text.trim().isNotEmpty) {
-                                      searchOperation(_controller.text);
-                                    } else {
-                                      setState(() {});
-                                    }
-                                  },
-                                 // onChanged: onSearchTextChanged,
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: white,
-                                    contentPadding:
-                                        EdgeInsets.fromLTRB(15.0, 9.0, 0, 9.0),
-                                    prefixIcon: Image.asset(
-                                      'assets/images/search.png',
-                                      color: primary,
-                                    ),
-                                    hintText: FIND_ORDER_ITEMS_LBL,
-                                    hintStyle: TextStyle(
-                                        color: fontColor.withOpacity(0.3),
-                                        fontWeight: FontWeight.normal),
-                                    border: new OutlineInputBorder(
-
-                                      borderSide: BorderSide(
-                                        width: 0,
-                                        style: BorderStyle.none,
-                                      ),
+              : RefreshIndicator(
+                  key: _refreshIndicatorKey,
+                  onRefresh: _refresh,
+                  child: SingleChildScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                              height: 45,
+                              padding: EdgeInsets.only(left: 5.0, right: 5.0),
+                              child: TextField(
+                                controller: _controller,
+                                onChanged: (value) {
+                                  if (_controller.text.trim().isNotEmpty) {
+                                    searchOperation(_controller.text);
+                                  } else {
+                                    setState(() {});
+                                  }
+                                },
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: white,
+                                  contentPadding:
+                                      EdgeInsets.fromLTRB(15.0, 9.0, 0, 9.0),
+                                  prefixIcon: Image.asset(
+                                    'assets/images/search.png',
+                                    color: primary,
+                                  ),
+                                  hintText: FIND_ORDER_ITEMS_LBL,
+                                  hintStyle: TextStyle(
+                                      color: fontColor.withOpacity(0.3),
+                                      fontWeight: FontWeight.normal),
+                                  border: new OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      width: 0,
+                                      style: BorderStyle.none,
                                     ),
                                   ),
-                                )),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              padding: EdgeInsets.only(top: 5.0),
-                              itemCount: searchList.length,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                //  print("load more****$offset***$total***${favList.length}***$isLoadingmore**$index");
-                                return orderItem(index);
-                              },
-                            ),
-                          ],
-                        ),
+                                ),
+                              )),
+                          searchList.length == 0
+                              ? Center(child: Text(noItem))
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.only(top: 5.0),
+                                  itemCount: searchList.length,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    //  print("load more****$offset***$total***${favList.length}***$isLoadingmore**$index");
+                                    //return orderItem(index);
+                                    if (searchList[index]!= null &&
+                                        searchList[index].itemList.length > 0) {
+                                      OrderItem orderItem =
+                                          searchList[index].itemList[0];
+                                      return productItem(index, orderItem);
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                ),
+                        ],
                       ),
-                    )
+                    ),
+                  ))
           : noInternet(context),
     );
   }
 
-  Future<void> getOrder() async {
+  Future<Null> _refresh() {
+    setState(() {
+      _isLoading = true;
+    });
+    orderList.clear();
+    searchList.clear();
+    return getOrder();
+  }
+
+  Future<Null> getOrder() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
         if (CUR_USERID != null) {
-         // String status = "$PLACED, $SHIPED, $PROCESSED, $CANCLED, $RETURNED";
+          // String status = "$PLACED, $SHIPED, $PROCESSED, $CANCLED, $RETURNED";
           var parameter = {USER_ID: CUR_USERID};
+
+          print("param********$parameter");
           Response response =
               await post(getOrderApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
 
           var getdata = json.decode(response.body);
-          print('response***fav****par***${parameter.toString()}');
-          print('response***fav****${response.body.toString()}');
           bool error = getdata["error"];
           String msg = getdata["message"];
           searchList.clear();
           orderList.clear();
-          print('section get***favorite get');
+
           if (!error) {
             var data = getdata["data"];
             orderList = (data as List)
@@ -241,8 +242,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                 .toList();
           }
 
-            searchList.addAll(orderList);
-
+          searchList.addAll(orderList);
 
           setState(() {
             _isLoading = false;
@@ -267,32 +267,29 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
         });
       }
     } else {
-
       if (mounted)
         setState(() {
           _isNetworkAvail = false;
           _isLoading = false;
         });
     }
+
+    return null;
   }
 
   getSearch(String searchText) {
-    print("hello");
     searchList.clear();
     for (int i = 0; i < orderList.length; i++) {
       for (int j = 0; j < orderList[i].itemList.length; j++) {
         Order_Model map = orderList[i];
-        print("*****${map.itemList[j].name}");
-        print("*****${map.itemList[j].price}");
-        print("*****${map.id}");
+
         if (map.id.toLowerCase().contains(searchText) ||
             map.itemList[j].name.toLowerCase().contains(searchText)) {
           searchList.add(map);
         }
       }
     }
-    //}
-    print("searchList*****$searchList");
+
     setState(() {});
   }
 
@@ -308,7 +305,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     ));
   }
 
-  orderItem(int index) {
+  /* orderItem(int index) {
     return ListView.builder(
       shrinkWrap: true,
       itemCount: searchList[index].itemList.length,
@@ -318,25 +315,20 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
         return productItem(index, orderItem);
       },
     );
-  }
+  }*/
 
   productItem(int index, OrderItem orderItem) {
-    print("detail=========${orderItem.image}*********${orderItem.name}");
-
-   // String sDate = orderItem.listDate.join(',');
-   // String proStatus = orderItem.listStatus.join(',');
-
     String sDate = orderItem.listDate.last;
     String proStatus = orderItem.listStatus.last;
     if (proStatus == 'received') {
       proStatus = 'order placed';
     }
 
-
     return Card(
       elevation: 0,
       margin: EdgeInsets.all(5.0),
       child: InkWell(
+        borderRadius: BorderRadius.circular(4),
         child: Padding(
             padding: EdgeInsets.all(8.0),
             child: Column(children: <Widget>[
@@ -345,12 +337,13 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                     tag: "$index${orderItem.id}",
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10.0),
-                      child: CachedNetworkImage(
-                        imageUrl: orderItem.image,
+                      child: FadeInImage(
+                        fadeInDuration: Duration(milliseconds: 150),
+                        image: NetworkImage(orderItem.image),
                         height: 90.0,
                         width: 90.0,
-                        errorWidget:(context, url,e) => placeHolder(90) ,
-                        placeholder: (context, url) => placeHolder(90),
+                        // errorWidget:(context, url,e) => placeHolder(90) ,
+                        placeholder: placeHolder(90),
                       ),
                     )),
                 Expanded(
@@ -371,7 +364,8 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                               Padding(
                                   padding: const EdgeInsets.only(top: 10.0),
                                   child: Text(
-                                    orderItem.name,
+                                    orderItem.name +
+                                        "${orderList[index].itemList.length > 1 ? " and more items" : ""} ",
                                     style: Theme.of(context)
                                         .textTheme
                                         .subtitle2

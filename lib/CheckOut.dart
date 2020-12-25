@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:eshop/Add_Address.dart';
@@ -24,7 +25,7 @@ import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Order_Success.dart';
 import 'Manage_Address.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
 
 class CheckOut extends StatefulWidget {
   final Function updateHome;
@@ -65,7 +66,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true, _isProgress = false;
   List<TextEditingController> _controller = [];
-  var items = ['1', '2', '3', '4', '5'];
+  var items ;
   TextEditingController promoC = new TextEditingController();
 
   @override
@@ -132,7 +133,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('response***promo*****${response.body.toString()}');
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
@@ -358,7 +358,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   Widget listItem(int index) {
-    //print("desc*****${productList[index].desc}");
     int selectedPos = 0;
     for (int i = 0;
         i < cartList[index].productList[0].prVarientList.length;
@@ -366,9 +365,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       if (cartList[index].varientId ==
           cartList[index].productList[0].prVarientList[i].id) selectedPos = i;
 
-      print(
-          "selected pos***$selectedPos***${cartList[index].productList[0].prVarientList[i].id}");
-    }
+         }
 
     double price = double.parse(
         cartList[index].productList[0].prVarientList[selectedPos].disPrice);
@@ -380,7 +377,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     cartList[index].perItemTotal =
         (price * double.parse(cartList[index].qty)).toString();
 
-    print("price****$oriPrice***$price---$index");
+    items = new List<String>.generate(
+        int.parse(cartList[index].productList[0].totalAllow), (i) => (i+1).toString());
 
     _controller[index].text = cartList[index].qty;
 
@@ -400,13 +398,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                     tag: "$index${cartList[index].productList[0].id}",
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(7.0),
-                        child: CachedNetworkImage(
-                          imageUrl: cartList[index].productList[0].image,
+                        child: FadeInImage(
+                          image: NetworkImage(cartList[index].productList[0].image),
                           height: 60.0,
                           width: 60.0,
-                          fit: BoxFit.fill,
-                          errorWidget:(context, url,e) => placeHolder(60) ,
-                          placeholder: (context, url) => placeHolder(60),
+                         // errorWidget: (context, url, e) => placeHolder(60),
+                          placeholder: placeHolder(60),
                         ))),
                 Expanded(
                   child: Padding(
@@ -483,7 +480,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                 children: <Widget>[
                                   Row(
                                     children: <Widget>[
-                                      InkWell(
+                                      GestureDetector(
                                         child: Container(
                                           padding: EdgeInsets.all(2),
                                           margin: EdgeInsets.only(
@@ -543,8 +540,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                                 size: 1,
                                               ),
                                               onSelected: (String value) {
-                                                print(
-                                                    'value********$value====${_controller[index].text}');
 
                                                 addToCart(index, value);
                                               },
@@ -563,7 +558,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                         ),
                                       ), // ),
 
-                                      InkWell(
+                                      GestureDetector(
                                         child: Container(
                                           padding: EdgeInsets.all(2),
                                           margin: EdgeInsets.all(8),
@@ -682,7 +677,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
         var getdata = json.decode(response.body);
 
-        print('response***slider**${parameter.toString()}***$headers');
 
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -693,7 +687,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           CUR_CART_COUNT = data['cart_count'];
           if (qty == "0") remove = true;
 
-          print('total*****remove*$qty');
+
           if (remove) {
             oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
 
@@ -703,6 +697,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
             cartList[index].qty = qty.toString();
           }
+          taxAmt = double.parse(data[TAX_AMT]);
           totalPrice = 0;
           totalPrice = delCharge + oriPrice + taxAmt;
         } else {
@@ -745,10 +740,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
         var getdata = json.decode(response.body);
 
-        print('response***slider**${parameter.toString()}***$headers');
-
-        print('response***${response.body.toString()}');
-        bool error = getdata["error"];
+          bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           var data = getdata["data"];
@@ -756,12 +748,13 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           String qty = data['total_quantity'];
           CUR_CART_COUNT = data['cart_count'];
 
-          print('total*****add*$qty');
-          cartList[index].qty = qty;
 
+          cartList[index].qty = qty;
+          taxAmt = double.parse(data[TAX_AMT]);
           oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
           _controller[index].text = qty;
           totalPrice = 0;
+
           totalPrice = delCharge + oriPrice + taxAmt;
         } else {
           setSnackbar(msg);
@@ -795,7 +788,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('response***setting****$CUR_USERID**${response.body.toString()}');
+
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
@@ -827,13 +820,11 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    print("SUCCESS: " + response.paymentId + "===" + response.toString());
 
     placeOrder(response.paymentId);
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    print("ERROR: " + response.code.toString() + " - " + response.message);
     setSnackbar(response.message);
     setState(() {
       _isProgress = false;
@@ -848,9 +839,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     String contact = await getPrefrence(MOBILE);
     String email = await getPrefrence(EMAIL);
 
-    print("phone***********$contact****$email");
+
     double amt = totalPrice * 100;
-    print("total==========$totalPrice***$amt");
+
 
     if (contact != '' && email != '') {
       setState(() {
@@ -910,7 +901,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
       // setState(() => _isProgress = false);
       //_updateStatus(response.reference, '$response');
-      print("response=========${response.reference}====$response");
+
     } catch (e) {
       setState(() => _isProgress = false);
       // _showMessage("Check console for error");
@@ -980,248 +971,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     ));
   }
 
-  /* _delivery() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                PROMOCODE,
-              ),
-            ),
-            Spacer(),
-            Icon(Icons.refresh)
-          ],
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                  hintText: 'Promo Code..',
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: primary),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: primary),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: RaisedButton(
-                onPressed: () {},
-                child: Text(
-                  'Apply',
-                  style: TextStyle(color: white),
-                ),
-                color: primary,
-              ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10.0, top: 20),
-          child: Text(
-            ORDER_SUMMARY,
-            style: Theme
-                .of(context)
-                .textTheme
-                .headline6,
-          ),
-        ),
-        Row(
-          children: [
-            Expanded(flex: 5, child: Text(PRODUCTNAME)),
-            Expanded(flex: 1, child: Text(QUANTITY)),
-            Expanded(flex: 2, child: Text(PRICE_LBL)),
-            Expanded(flex: 2, child: Text(SUBTOTAL)),
-          ],
-        ),
-        Divider(),
-        ListView.builder(
-            shrinkWrap: true,
-            itemCount: cartList.length,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return orderItem(index);
-            }),
-        Padding(
-          padding:
-          const EdgeInsets.only(top: 28, bottom: 8.0, left: 35, right: 35),
-          child: Row(
-            children: <Widget>[
-              Text(
-                ORIGINAL_PRICE,
-              ),
-              Spacer(),
-              Text(CUR_CURRENCY + "$oriPrice")
-            ],
-          ),
-        ),
-        Padding(
-          padding:
-          const EdgeInsets.only(left: 35, right: 35, top: 8, bottom: 8),
-          child: Row(
-            children: <Widget>[
-              Text(
-                DELIVERY_CHARGE,
-              ),
-              Spacer(),
-              Text(CUR_CURRENCY + " $delCharge")
-            ],
-          ),
-        ),
-        Padding(
-          padding:
-          const EdgeInsets.only(left: 35, right: 35, top: 8, bottom: 8),
-          child: Row(
-            children: <Widget>[
-              Text(
-                TAXPER + "($taxPer %)",
-              ),
-              Spacer(),
-              Text(CUR_CURRENCY + " $taxAmt")
-            ],
-          ),
-        ),
-        Divider(
-          color: black,
-          thickness: 1,
-          indent: 20,
-          endIndent: 20,
-        ),
-        Padding(
-          padding:
-          const EdgeInsets.only(top: 8.0, bottom: 8, left: 35, right: 35),
-          child: Row(
-            children: <Widget>[
-              Text(
-                Total_PRICE,
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(fontWeight: FontWeight.bold),
-              ),
-              Spacer(),
-              Text(
-                CUR_CURRENCY + " $totalPrice",
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(fontWeight: FontWeight.bold),
-              )
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-*/
 
-  stepper() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Row(
-        children: [
-          InkWell(
-            child: Row(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _curIndex == 0 ? primary : Colors.grey,
-                  ),
-                  width: 20,
-                  height: 20,
-                  child: Center(
-                    child: Text(
-                      "1",
-                      style: TextStyle(color: white),
-                    ),
-                  ),
-                ),
-                Text("  " + DELIVERY + "  ",
-                    style: TextStyle(color: _curIndex == 0 ? primary : null)),
-              ],
-            ),
-            onTap: () {
-              setState(() {
-                _curIndex = 0;
-              });
-            },
-          ),
-          Expanded(child: Divider()),
-          InkWell(
-            child: Row(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _curIndex == 1 ? primary : Colors.grey,
-                  ),
-                  width: 20,
-                  height: 20,
-                  child: Center(
-                    child: Text(
-                      "2",
-                      style: TextStyle(color: white),
-                    ),
-                  ),
-                ),
-                Text("  " + ADDRESS_LBL + "  ",
-                    style: TextStyle(color: _curIndex == 1 ? primary : null)),
-              ],
-            ),
-            onTap: () {
-              if (selAddress != null) {
-                setState(() {
-                  _curIndex = 1;
-                });
-              }
-            },
-          ),
-          Expanded(child: Divider()),
-          InkWell(
-            child: Row(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _curIndex == 2 ? primary : Colors.grey,
-                  ),
-                  width: 20,
-                  height: 20,
-                  child: Center(
-                    child: Text(
-                      "3",
-                      style: TextStyle(color: white),
-                    ),
-                  ),
-                ),
-                Text("  " + PAYMENT + "  ",
-                    style: TextStyle(color: _curIndex == 2 ? primary : null)),
-              ],
-            ),
-            onTap: () {
-              if (payMethod != null) {
-                setState(() {
-                  _curIndex = 2;
-                });
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
+
+
 
   Future<void> placeOrder(String tranId) async {
     _isNetworkAvail = await isNetworkAvailable();
@@ -1234,8 +986,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
       }
 
-      print("after***$varientId***$quantity");
 
+      if (payMethod == COD_LBL) payMethod = "COD";
       try {
         var parameter = {
           USER_ID: CUR_USERID,
@@ -1268,14 +1020,13 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           parameter[ACTIVE_STATUS] = WAITING;
         }
 
-        print("param****${parameter.toString()}");
+
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('response***setting****$CUR_USERID**${response.body.toString()}');
-        bool error = getdata["error"];
+           bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           String orderId = getdata["order_id"].toString();
@@ -1320,11 +1071,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       Response response =
           await post(paypalTransactionApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
-      print('response***${parameter.toString()}');
 
       var getdata = json.decode(response.body);
 
-      print('response***slider**${response.body.toString()}***$headers');
 
       bool error = getdata["error"];
       String msg = getdata["message"];
@@ -1369,8 +1118,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***${parameter.toString()}');
-      print('response***slider**${response.body.toString()}***$headers');
 
       bool error = getdata["error"];
       String msg1 = getdata["message"];
@@ -1472,7 +1219,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                     ),
                   )
                 : Expanded(
-                  child: Padding(
+                    child: Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: GestureDetector(
                         child: Text(
@@ -1486,16 +1233,14 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                             MaterialPageRoute(
                                 builder: (context) => AddAddress(
                                       update: false,
-                                  index: addressList.length,
+                                      index: addressList.length,
                                     )),
                           );
-                          setState(() {
-
-                          });
+                          setState(() {});
                         },
                       ),
                     ),
-                )
+                  )
           ],
         ),
       ),
@@ -1506,6 +1251,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     return Card(
       elevation: 0,
       child: InkWell(
+        borderRadius:  BorderRadius.circular(4),
         onTap: () async {
           Navigator.push(
               context,

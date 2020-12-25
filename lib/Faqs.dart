@@ -125,7 +125,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lightWhite,
+        backgroundColor: lightWhite,
         key: _scaffoldKey,
         appBar: getAppBar(widget.title, context),
         body: _isNetworkAvail ? _showForm() : noInternet(context));
@@ -149,10 +149,17 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   listItem(int index) {
     return Card(
         elevation: 0,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: InkWell(
-              child: Column(
+        child: InkWell(
+          borderRadius:  BorderRadius.circular(4),
+          onTap: () {
+              setState(() {
+                selectedIndex = index;
+                flag = !flag;
+              });
+            },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Padding(
@@ -207,12 +214,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
                           Icon(Icons.keyboard_arrow_up)
                         ]),
                   ]),
-              onTap: () {
-                setState(() {
-                  selectedIndex = index;
-                  flag = !flag;
-                });
-              }),
+          ),
         ));
   }
 

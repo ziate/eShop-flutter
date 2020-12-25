@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
+
 
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Home.dart';
@@ -50,7 +50,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   bool notificationisloadmore = true,
       notificationisgettingdata = false,
       notificationisnodata = false;
- // List<Model> categList = [];
+  // List<Model> categList = [];
 
   //GlobalKey _key;
   //bool isMenuOpen=false;
@@ -66,12 +66,12 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     productList.clear();
-  //  categList.clear();
+    //  categList.clear();
 
-  //  this.categList = List.from(catList);
+    //  this.categList = List.from(catList);
 
-   // Model m = Model.setAllCat("0", "All Category");
-   // categList.insert(0, m);
+    // Model m = Model.setAllCat("0", "All Category");
+    // categList.insert(0, m);
     notificationoffset = 0;
     _isSearching = false;
     notificationcontroller = ScrollController(keepScrollOffset: true);
@@ -123,7 +123,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
 
   _transactionscrollListener() {
     if (notificationcontroller.offset >=
-            notificationcontroller.position.maxScrollExtent &&
+        notificationcontroller.position.maxScrollExtent &&
         !notificationcontroller.position.outOfRange) {
       setState(() {
         print("load4");
@@ -274,11 +274,12 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
               decoration: shadow(),
               child: Card(
                 elevation: 0,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 4.0),
-                  child: InkWell(
+                child: InkWell(
+                  borderRadius:  BorderRadius.circular(4),
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 4.0),
                     child: Icon(Icons.keyboard_arrow_left, color: primary),
-                    onTap: () => Navigator.of(context).pop(),
                   ),
                 ),
               ),
@@ -289,7 +290,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             controller: _controller,
             autofocus: true,
             decoration: InputDecoration(
-             contentPadding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
+              contentPadding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
               prefixIcon: Icon(Icons.search, color: primary, size: 17),
               hintText: 'Search',
               hintStyle: TextStyle(color: primary.withOpacity(0.5)),
@@ -301,7 +302,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
               ),
             ),
           ),
-titleSpacing: 0,
+          titleSpacing: 0,
           /*  actions: [
             Stack(
               alignment: Alignment.centerRight,
@@ -339,11 +340,11 @@ titleSpacing: 0,
         ),
         body: _isNetworkAvail
             ? Stack(
-                children: <Widget>[
-                  _showContent(),
-                  showCircularProgress(_isProgress, primary),
-                ],
-              )
+          children: <Widget>[
+            _showContent(),
+            showCircularProgress(_isProgress, primary),
+          ],
+        )
             : noInternet(context));
   }
 
@@ -361,10 +362,10 @@ titleSpacing: 0,
             children: [
               productList[index].availability == "0"
                   ? Text(OUT_OF_STOCK_LBL,
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(color: Colors.red))
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle1
+                      .copyWith(color: Colors.red))
                   : Container(),
               Row( mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,12 +374,12 @@ titleSpacing: 0,
                       tag: "$index${productList[index].id}",
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(7.0),
-                          child: CachedNetworkImage(
-                            imageUrl: productList[index].image,
+                          child: FadeInImage(
+                            image: NetworkImage(productList[index].image),
                             height: 80.0,
                             width:80.0,
-                            errorWidget:(context, url,e) => placeHolder(80) ,
-                            placeholder: (context, url) => placeHolder(80),
+                            //errorWidget:(context, url,e) => placeHolder(80) ,
+                            placeholder:  placeHolder(80),
                           ))),
                   Expanded(
                     child: Padding(
@@ -394,8 +395,8 @@ titleSpacing: 0,
                                   .textTheme
                                   .subtitle2
                                   .copyWith(
-                                      color: lightBlack,
-                                      fontWeight: FontWeight.bold),
+                                  color: lightBlack,
+                                  fontWeight: FontWeight.bold),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -420,21 +421,21 @@ titleSpacing: 0,
                               children: <Widget>[
                                 Text(
                                   int.parse(productList[index]
-                                              .prVarientList[0]
-                                              .disPrice) !=
-                                          0
+                                      .prVarientList[0]
+                                      .disPrice) !=
+                                      0
                                       ? CUR_CURRENCY +
-                                          "" +
-                                          productList[index]
-                                              .prVarientList[0]
-                                              .price
+                                      "" +
+                                      productList[index]
+                                          .prVarientList[0]
+                                          .price
                                       : "",
                                   style: Theme.of(context)
                                       .textTheme
                                       .overline
                                       .copyWith(
-                                          decoration: TextDecoration.lineThrough,
-                                          letterSpacing: 0),
+                                      decoration: TextDecoration.lineThrough,
+                                      letterSpacing: 0),
                                 ),
                                 Text(" " + CUR_CURRENCY + " " + price.toString(),
                                     style: Theme.of(context).textTheme.subtitle1),
@@ -454,15 +455,15 @@ titleSpacing: 0,
             Navigator.push(
               context,
               PageRouteBuilder(
-                  transitionDuration: Duration(seconds: 1),
+                 // transitionDuration: Duration(seconds: 1),
                   pageBuilder: (_, __, ___) => ProductDetail(
-                        model: model,
-                        updateParent: updateSearch,
-                        updateHome: widget.updateHome,
-                        secPos: 0,
-                        index: index,
-                        list: true,
-                      )),
+                    model: model,
+                    updateParent: updateSearch,
+                    updateHome: widget.updateHome,
+                    secPos: 0,
+                    index: index,
+                    list: true,
+                  )),
             );
           },
         ),
@@ -700,8 +701,8 @@ titleSpacing: 0,
               .toString(),
         };
         Response response =
-            await post(manageCartApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(manageCartApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         print('response***${parameter.toString()}');
@@ -752,8 +753,8 @@ titleSpacing: 0,
         };
 
         Response response =
-            await post(manageCartApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(manageCartApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -826,7 +827,7 @@ titleSpacing: 0,
             LIMIT: perPage.toString(),
             OFFSET: notificationoffset.toString(),
           };
-        /*  if (pos != null && pos != 0) {
+          /*  if (pos != null && pos != 0) {
             parameter[CATID] = categList[pos].id;
           }*/
 
@@ -834,8 +835,8 @@ titleSpacing: 0,
           if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
           Response response =
-              await post(getProductApi, headers: headers, body: parameter)
-                  .timeout(Duration(seconds: timeOut));
+          await post(getProductApi, headers: headers, body: parameter)
+              .timeout(Duration(seconds: timeOut));
 
           var getdata = json.decode(response.body);
 
@@ -849,35 +850,35 @@ titleSpacing: 0,
             if (mounted) {
               new Future.delayed(
                   Duration.zero,
-                  () => setState(() {
-                        List mainlist = getdata['data'];
+                      () => setState(() {
+                    List mainlist = getdata['data'];
 
-                        if (mainlist.length != 0) {
-                          List<Product> items = new List<Product>();
-                          List<Product> allitems = new List<Product>();
+                    if (mainlist.length != 0) {
+                      List<Product> items = new List<Product>();
+                      List<Product> allitems = new List<Product>();
 
-                          items.addAll(mainlist
-                              .map((data) => new Product.fromJson(data))
-                              .toList());
+                      items.addAll(mainlist
+                          .map((data) => new Product.fromJson(data))
+                          .toList());
 
-                          allitems.addAll(items);
+                      allitems.addAll(items);
 
-                          for (Product item in items) {
-                            productList
-                                .where((i) => i.id == item.id)
-                                .map((obj) {
-                              //print("==item--${item.id}==${obj.id}");
-                              allitems.remove(item);
-                              return obj;
-                            }).toList();
-                          }
-                          productList.addAll(allitems);
-                          notificationisloadmore = true;
-                          notificationoffset = notificationoffset + perPage;
-                        } else {
-                          notificationisloadmore = false;
-                        }
-                      }));
+                      for (Product item in items) {
+                        productList
+                            .where((i) => i.id == item.id)
+                            .map((obj) {
+                          //print("==item--${item.id}==${obj.id}");
+                          allitems.remove(item);
+                          return obj;
+                        }).toList();
+                      }
+                      productList.addAll(allitems);
+                      notificationisloadmore = true;
+                      notificationoffset = notificationoffset + perPage;
+                    } else {
+                      notificationisloadmore = false;
+                    }
+                  }));
             }
           } else {
             notificationisloadmore = false;
@@ -975,40 +976,40 @@ titleSpacing: 0,
     return notificationisnodata
         ? getNoItem()
         : NotificationListener<ScrollNotification>(
-            onNotification: (scrollNotification) {},
-            child: Column(
-              children: <Widget>[
-                Expanded(
-                  child: ListView.builder(
-                      padding: EdgeInsetsDirectional.only(
-                          bottom: 5, start: 10, end: 10, top: 12),
-                      controller: notificationcontroller,
-                      physics: BouncingScrollPhysics(),
-                      itemCount: productList.length,
-                      itemBuilder: (context, index) {
-                        Product item;
-                        try {
-                          item =
-                              productList.isEmpty ? null : productList[index];
-                          if (notificationisloadmore &&
-                              index == (productList.length - 1) &&
-                              notificationcontroller.position.pixels <= 0) {
-                            print("load5");
-                            getProduct();
-                          }
-                        } on Exception catch (_) {}
+      onNotification: (scrollNotification) {},
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            child: ListView.builder(
+                padding: EdgeInsetsDirectional.only(
+                    bottom: 5, start: 10, end: 10, top: 12),
+                controller: notificationcontroller,
+                physics: BouncingScrollPhysics(),
+                itemCount: productList.length,
+                itemBuilder: (context, index) {
+                  Product item;
+                  try {
+                    item =
+                    productList.isEmpty ? null : productList[index];
+                    if (notificationisloadmore &&
+                        index == (productList.length - 1) &&
+                        notificationcontroller.position.pixels <= 0) {
+                      print("load5");
+                      getProduct();
+                    }
+                  } on Exception catch (_) {}
 
-                        return item == null ? Container() : listItem(index);
-                      }),
-                ),
-                notificationisgettingdata
-                    ? Padding(
-                        padding: EdgeInsets.only(top: 5, bottom: 5),
-                        child: CircularProgressIndicator(),
-                      )
-                    : Container(),
-              ],
-            ),
-          );
+                  return item == null ? Container() : listItem(index);
+                }),
+          ),
+          notificationisgettingdata
+              ? Padding(
+            padding: EdgeInsets.only(top: 5, bottom: 5),
+            child: CircularProgressIndicator(),
+          )
+              : Container(),
+        ],
+      ),
+    );
   }
 }

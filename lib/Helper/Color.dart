@@ -46,5 +46,9 @@ const Color black12=Colors.black12;
 const Color black26=Colors.black26;
 
 
+//Color lightWhite = ISDARK != "" && ISDARK == "true" ?darkColor : lightWhite1;
+const Color lightWhite1 = Color(0xffEEF2F9);
+const Color darkColor = Color(0xff202844);
+const Color darkColor2 = Color(0xff273152);
 
 

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
+
+
 import 'Helper/SimBtn.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:eshop/CheckOut.dart';
 import 'package:eshop/Helper/Constant.dart';
 
@@ -41,7 +43,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   bool _value = false;
   List<TextEditingController> _controller = [];
   var items;
-
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+  new GlobalKey<RefreshIndicatorState>();
   List<Section_Model> saveLaterList = [];
 
   @override
@@ -69,6 +72,23 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         0.150,
       ),
     ));
+  }
+
+
+  Future<Null> _refresh() {
+    setState(() {
+      _isLoading = true;
+    });
+    totalPrice = 0;
+    oriPrice = 0;
+    taxAmt = 0;
+    taxPer = 0;
+    delCharge = 0;
+    cartList.clear();
+    _getCart("0");
+    return _getSaveLater("1");
+
+
   }
 
   @override
@@ -207,12 +227,12 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                 tag: "$index${cartList[index].productList[0].id}",
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(7.0),
-                    child: CachedNetworkImage(
-                      imageUrl: cartList[index].productList[0].image,
+                    child: FadeInImage(
+                      image:NetworkImage(cartList[index].productList[0].image),
                       height: 60.0,
                       width: 60.0,
-                      errorWidget:(context, url,e) => placeHolder(60) ,
-                      placeholder: (context, url) => placeHolder(60),
+                     // errorWidget:(context, url,e) => placeHolder(60) ,
+                      placeholder:placeHolder(60),
                     ))),
             Expanded(
               child: Padding(
@@ -306,7 +326,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                             children: <Widget>[
                               Row(
                                 children: <Widget>[
-                                  InkWell(
+                                  GestureDetector(
                                     child: Container(
                                       padding: EdgeInsets.all(2),
                                       margin: EdgeInsets.only(
@@ -384,7 +404,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                     ),
                                   ), // ),
 
-                                  InkWell(
+                                  GestureDetector(
                                     child: Container(
                                       padding: EdgeInsets.all(2),
                                       margin: EdgeInsets.all(8),
@@ -407,7 +427,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                   )
                                 ],
                               ),
-                              InkWell(
+                              GestureDetector(
                                 child: Container(
                                   margin: EdgeInsets.only(left: 8),
                                   padding: EdgeInsets.symmetric(
@@ -515,13 +535,13 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                 tag: "$index${saveLaterList[index].productList[0].id}",
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(7.0),
-                    child: CachedNetworkImage(
-                      imageUrl: saveLaterList[index].productList[0].image,
+                    child: FadeInImage(
+                      image: NetworkImage(saveLaterList[index].productList[0].image),
                       height: 60.0,
                       width: 60.0,
-                      fit: BoxFit.fill,
-                      errorWidget:(context, url,e) => placeHolder(60) ,
-                      placeholder: (context, url) => placeHolder(60),
+
+                      //errorWidget:(context, url,e) => placeHolder(60) ,
+                      placeholder:placeHolder(60),
                     ))),
             Expanded(
               child: Padding(
@@ -592,7 +612,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                 "null"
                         ? Row(
                             children: <Widget>[
-                              InkWell(
+                              GestureDetector(
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 8),
                                   padding: EdgeInsets.symmetric(
@@ -679,7 +699,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> _getSaveLater(String save) async {
+  Future<Null> _getSaveLater(String save) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -717,6 +737,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         _isNetworkAvail = false;
       });
     }
+
+    return null;
   }
 
   Future<void> addToCart(int index, String qty) async {
@@ -756,6 +778,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
           _controller[index].text = qty;
           totalPrice = 0;
+          taxAmt = double.parse(data[TAX_AMT]);
           totalPrice = delCharge + oriPrice + taxAmt;
         } else {
           setSnackbar(msg);
@@ -866,7 +889,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
         var getdata = json.decode(response.body);
 
-        print('response***slider**${parameter.toString()}***$headers');
+        print('response***slider**${parameter.toString()}***$getdata');
 
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -886,7 +909,10 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           } else {
             oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
             cartList[index].qty = qty.toString();
+
+
           }
+          taxAmt= double.parse(data[TAX_AMT]);
           totalPrice = 0;
           totalPrice = delCharge + oriPrice + taxAmt;
         } else {
@@ -932,7 +958,14 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                   Expanded(
                     child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: SingleChildScrollView(
+                        child:
+
+                        RefreshIndicator(
+                        key: _refreshIndicatorKey,
+                        onRefresh: _refresh,
+                        child:
+                        SingleChildScrollView(
+                          physics: const  AlwaysScrollableScrollPhysics(),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -965,7 +998,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                               ),
                             ],
                           ),
-                        )),
+                        ))),
                   ),
 
                   /*   Padding(

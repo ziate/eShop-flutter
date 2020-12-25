@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Product_Detail.dart';
@@ -58,7 +58,7 @@ class StatePreview extends State<ProductPreview> {
                         initialScale: PhotoViewComputedScale.contained * 0.9,
                         minScale: PhotoViewComputedScale.contained * 0.9,
                         imageProvider:
-                        CachedNetworkImageProvider(widget.imgList[curPos]));
+                        NetworkImage(widget.imgList[index]));
                   }),
               Padding(
                 padding: const EdgeInsets.only(top: 34.0),

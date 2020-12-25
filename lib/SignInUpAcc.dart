@@ -29,7 +29,7 @@ class _SignInUpAccState extends State<SignInUpAcc>
   _subLogo() {
     return Padding(
         padding: EdgeInsets.only(top: 30.0),
-        child: Image.asset('assets/images/homelogo.png', fit: BoxFit.fill));
+        child: Image.asset('assets/images/homelogo.png',));
   }
 
   welcomeEshopTxt() {

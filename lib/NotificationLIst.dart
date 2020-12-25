@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:eshop/Model/Notification_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +34,8 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -70,7 +72,6 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   Widget noInternet(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           noIntImage(),
           noIntText(context),
@@ -98,39 +99,53 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
     );
   }
 
+  Future<Null> _refresh() {
+    setState(() {
+      _isLoading = true;
+    });
+    offset = 0;
+    total = 0;
+    notiList.clear();
+    return getNotification();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: lightWhite,
         key: _scaffoldKey,
-        body: _isNetworkAvail?_isLoading
-            ? shimmer()
-            : notiList.length == 0
-            ? Padding(
-            padding: const EdgeInsets.only(top: kToolbarHeight),
-            child: Center(child: Text(noNoti)))
-            : ListView.builder(
-          shrinkWrap: true,
-          controller: controller,
-          itemCount: (offset < total)
-              ? notiList.length + 1
-              : notiList.length,
-          physics: BouncingScrollPhysics(),
-          itemBuilder: (context, index) {
-            print(
-                "load more****$offset***$total***${notiList.length}***$isLoadingmore**$index");
-            return (index == notiList.length && isLoadingmore)
-                ? Center(child: CircularProgressIndicator())
-                : listItem(index);
-          },
-        ):noInternet(context));
+        body: _isNetworkAvail
+            ? _isLoading
+                ? shimmer()
+                : notiList.length == 0
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: kToolbarHeight),
+                        child: Center(child: Text(noNoti)))
+                    : RefreshIndicator(
+                        key: _refreshIndicatorKey,
+                        onRefresh: _refresh,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          controller: controller,
+                          itemCount: (offset < total)
+                              ? notiList.length + 1
+                              : notiList.length,
+                          physics:  AlwaysScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            print(
+                                "load more****$offset***$total***${notiList.length}***$isLoadingmore**$index");
+                            return (index == notiList.length && isLoadingmore)
+                                ? Center(child: CircularProgressIndicator())
+                                : listItem(index);
+                          },
+                        ))
+            : noInternet(context));
   }
-
-
 
   Widget listItem(int index) {
     Notification_Model model = notiList[index];
     return Card(
+      elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -160,16 +175,17 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(3.0),
                   child: model.img != null
-                      ? CachedNetworkImage(
-                      imageUrl: model.img,
-                      height: 50,
-                      width: 50,
-                      fit: BoxFit.cover,
-                      errorWidget:(context, url,e) => placeHolder(50) ,
-                      placeholder: (context, url) => placeHolder(50))
+                      ? CircleAvatar(
+                          backgroundImage: NetworkImage(model.img),
+                          radius: 25,
+                          //height: 50,
+                         // width: 50,
+                         // errorWidget: (context, url, e) => placeHolder(50),
+                         // placeholder:  placeHolder(50)
+                  )
                       : Container(
-                    height: 0,
-                  )),
+                          height: 0,
+                        )),
             ),
           ],
         ),
@@ -177,8 +193,8 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> getNotification() async {
-    _isNetworkAvail= await isNetworkAvailable();
+  Future<Null> getNotification() async {
+    _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
         // print("product****${widget.id}");
@@ -189,11 +205,9 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
         };
 
         Response response =
-        await post(getNotificationApi, headers: headers, body: parameter)
-            .timeout(Duration(seconds: timeOut));
+            await post(getNotificationApi, headers: headers, body: parameter)
+                .timeout(Duration(seconds: timeOut));
 
-        print('response***product*$parameter');
-        print('response***product*${response.body.toString()}');
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -201,7 +215,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
 
         if (!error) {
           total = int.parse(getdata["total"]);
-          print('limit *****$offset****$total');
+
           if ((offset) < total) {
             tempList.clear();
             var data = getdata["data"];
@@ -230,8 +244,10 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
       }
     } else
       setState(() {
-        _isNetworkAvail=false;
+        _isNetworkAvail = false;
       });
+
+    return null;
   }
 
   setSnackbar(String msg) {

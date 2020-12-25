@@ -131,173 +131,173 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       backgroundColor: lightWhite,
       body: _isNetworkAvail
           ? _isLoading
-              ? getProgress()
-              : Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Card(
-                          elevation: 0,
-                          child: CUR_BALANCE != "0" &&
-                                  CUR_BALANCE.isNotEmpty &&
-                                  CUR_BALANCE != ""
-                              ? Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: CheckboxListTile(
-                                    dense: true,
-                                    contentPadding: EdgeInsets.all(0),
-                                    value: isUseWallet,
-                                    onChanged: (bool value) {
-                                      setState(() {
-                                        isUseWallet = value;
+          ? getProgress()
+          : Padding(
+        padding:
+        const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Card(
+                elevation: 0,
+                child: CUR_BALANCE != "0" &&
+                    CUR_BALANCE.isNotEmpty &&
+                    CUR_BALANCE != ""
+                    ? Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0),
+                  child: CheckboxListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.all(0),
+                    value: isUseWallet,
+                    onChanged: (bool value) {
+                      setState(() {
+                        isUseWallet = value;
 
-                                        if (value) {
-                                          if (totalPrice <=
-                                              double.parse(CUR_BALANCE)) {
-                                            remWalBal =
-                                                double.parse(CUR_BALANCE) -
-                                                    totalPrice;
+                        if (value) {
+                          if (totalPrice <=
+                              double.parse(CUR_BALANCE)) {
+                            remWalBal =
+                                double.parse(CUR_BALANCE) -
+                                    totalPrice;
 
-                                            usedBal = totalPrice;
-                                            payMethod = "Wallet";
+                            usedBal = totalPrice;
+                            payMethod = "Wallet";
 
-                                            isPayLayShow = false;
-                                          } else {
-                                            remWalBal = 0;
-                                            usedBal = double.parse(CUR_BALANCE);
-                                            isPayLayShow = true;
-                                          }
+                            isPayLayShow = false;
+                          } else {
+                            remWalBal = 0;
+                            usedBal = double.parse(CUR_BALANCE);
+                            isPayLayShow = true;
+                          }
 
-                                          totalPrice = totalPrice - usedBal;
-                                        } else {
-                                          totalPrice = totalPrice + usedBal;
-                                          remWalBal = double.parse(CUR_BALANCE);
-                                          payMethod = null;
-                                          usedBal = 0;
-                                          isPayLayShow = true;
-                                        }
+                          totalPrice = totalPrice - usedBal;
+                        } else {
+                          totalPrice = totalPrice + usedBal;
+                          remWalBal = double.parse(CUR_BALANCE);
+                          payMethod = null;
+                          usedBal = 0;
+                          isPayLayShow = true;
+                        }
 
-                                        widget.update();
-                                      });
-                                    },
-                                    title: Text(
-                                      USE_WALLET,
-                                      style:
-                                          Theme.of(context).textTheme.subtitle1,
-                                    ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8.0),
-                                      child: Text(
-                                        isUseWallet
-                                            ? REMAIN_BAL +
-                                                " : " +
-                                                CUR_CURRENCY +
-                                                " " +
-                                                remWalBal.toString()
-                                            : TOTAL_BAL +
-                                                " : " +
-                                                CUR_CURRENCY +
-                                                " " +
-                                                CUR_BALANCE,
-                                        style: TextStyle(
-                                            fontSize: 15, color: black),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : Container(),
-                        ),
-                        isTimeSlot
-                            ? Card(
-                                elevation: 0,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        PREFERED_TIME,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .subtitle1,
-                                      ),
-                                    ),
-                                    Divider(),
-                                    Container(
-                                      height: 90,
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 10),
-                                      child: ListView.builder(
-                                          shrinkWrap: true,
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: int.parse(allowDay),
-                                          itemBuilder: (context, index) {
-                                            return dateCell(index);
-                                          }),
-                                    ),
-                                    Divider(),
-                                    ListView.builder(
-                                        shrinkWrap: true,
-                                        physics: NeverScrollableScrollPhysics(),
-                                        itemCount: timeSlotList.length,
-                                        itemBuilder: (context, index) {
-                                          return timeSlotItem(index);
-                                        })
-                                  ],
-                                ),
-                              )
-                            : Container(),
-                        isPayLayShow
-                            ? Card(
-                                elevation: 0,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        SELECT_PAYMENT,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .subtitle1,
-                                      ),
-                                    ),
-                                    Divider(),
-                                    ListView.builder(
-                                        shrinkWrap: true,
-                                        physics: NeverScrollableScrollPhysics(),
-                                        itemCount: 7,
-                                        itemBuilder: (context, index) {
-                                          if (index == 0 && cod)
-                                            return paymentItem(index);
-                                          else if (index == 1 && paypal)
-                                            return paymentItem(index);
-                                          else if (index == 2 && paumoney)
-                                            return paymentItem(index);
-                                          else if (index == 3 && razorpay)
-                                            return paymentItem(index);
-                                          else if (index == 4 && paystack)
-                                            return paymentItem(index);
-                                          else if (index == 5 && flutterwave)
-                                            return paymentItem(index);
-                                          else
-                                            return Container();
-                                        }),
-                                  ],
-                                ),
-                              )
-                            : Container()
-                      ],
+                        widget.update();
+                      });
+                    },
+                    title: Text(
+                      USE_WALLET,
+                      style:
+                      Theme.of(context).textTheme.subtitle1,
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0),
+                      child: Text(
+                        isUseWallet
+                            ? REMAIN_BAL +
+                            " : " +
+                            CUR_CURRENCY +
+                            " " +
+                            remWalBal.toString()
+                            : TOTAL_BAL +
+                            " : " +
+                            CUR_CURRENCY +
+                            " " +
+                            CUR_BALANCE,
+                        style: TextStyle(
+                            fontSize: 15, color: black),
+                      ),
                     ),
                   ),
                 )
+                    : Container(),
+              ),
+              isTimeSlot
+                  ? Card(
+                elevation: 0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        PREFERED_TIME,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1,
+                      ),
+                    ),
+                    Divider(),
+                    Container(
+                      height: 90,
+                      padding:
+                      EdgeInsets.symmetric(horizontal: 10),
+                      child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: int.parse(allowDay),
+                          itemBuilder: (context, index) {
+                            return dateCell(index);
+                          }),
+                    ),
+                    Divider(),
+                    ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: timeSlotList.length,
+                        itemBuilder: (context, index) {
+                          return timeSlotItem(index);
+                        })
+                  ],
+                ),
+              )
+                  : Container(),
+              isPayLayShow
+                  ? Card(
+                elevation: 0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        SELECT_PAYMENT,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1,
+                      ),
+                    ),
+                    Divider(),
+                    ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: 7,
+                        itemBuilder: (context, index) {
+                          if (index == 0 && cod)
+                            return paymentItem(index);
+                          else if (index == 1 && paypal)
+                            return paymentItem(index);
+                          else if (index == 2 && paumoney)
+                            return paymentItem(index);
+                          else if (index == 3 && razorpay)
+                            return paymentItem(index);
+                          else if (index == 4 && paystack)
+                            return paymentItem(index);
+                          else if (index == 5 && flutterwave)
+                            return paymentItem(index);
+                          else
+                            return Container();
+                        }),
+                  ],
+                ),
+              )
+                  : Container()
+            ],
+          ),
+        ),
+      )
           : noInternet(context),
     );
   }
@@ -365,8 +365,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
           TYPE: PAYMENT_METHOD,
         };
         Response response =
-            await post(getSettingApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(getSettingApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         print('response***setting**${response.body.toString()}');
@@ -395,7 +395,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
           paypal = payment["paypal_payment_method"] == "1" ? true : false;
           paumoney = payment["payumoney_payment_method"] == "1" ? true : false;
           flutterwave =
-              payment["flutterwave_payment_method"] == "1" ? true : false;
+          payment["flutterwave_payment_method"] == "1" ? true : false;
           razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
           paystack = payment["paystack_payment_method"] == "1" ? true : false;
 
@@ -410,7 +410,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
           for (int i = 0; i < paymentMethodList.length; i++) {
             String img = '';
 
-          /*  if (i == 0) {
+            /*  if (i == 0) {
               if (cod &&
                   paymentMethodList[i].toString().toLowerCase() ==
                       "cash on delivery")
@@ -501,7 +501,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
     );
 
 
-  /*  return RadioListTile(
+    /*  return RadioListTile(
       dense: true,
       value: (index),
       groupValue: selectedMethod,

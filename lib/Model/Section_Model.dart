@@ -15,15 +15,15 @@ class Section_Model {
 
   Section_Model(
       {this.id,
-      this.title,
-      this.productList,
-      this.varientId,
-      this.qty,
-      this.productId,
-      this.perItemTotal,
-      this.perItemPrice,
-      this.style,
-      this.short_desc});
+        this.title,
+        this.productList,
+        this.varientId,
+        this.qty,
+        this.productId,
+        this.perItemTotal,
+        this.perItemPrice,
+        this.style,
+        this.short_desc});
 
   factory Section_Model.fromJson(Map<String, dynamic> parsedJson) {
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
@@ -75,7 +75,7 @@ class Product {
       noOfRating,
       attrIds,
       tax,
-      categoryId;
+      categoryId,shortDescription;
   List<String> otherImage;
   List<Product_Varient> prVarientList;
   List<Attribute> attributeList;
@@ -101,38 +101,39 @@ class Product {
 
   Product(
       {this.id,
-      this.name,
-      this.desc,
-      this.image,
-      this.catName,
-      this.type,
-      this.otherImage,
-      this.prVarientList,
-      this.attributeList,
-      this.isFav,
-      this.isCancelable,
-      this.isReturnable,
-      this.isPurchased,
-      this.availability,
-      this.noOfRating,
-      this.attrIds,
-      this.selectedId,
-      this.rating,
-      this.isFavLoading,
-      this.indicator,
-      this.madein,
-      this.tax,
-      this.total,
-      this.categoryId,
-      this.subList,
-      this.filterList,
-      this.stockType,
-      this.isFromProd,
-      this.cancleTill,
-      this.totalItem,
-      this.offset,
-      this.totalAllow,
-      this.banner});
+        this.name,
+        this.desc,
+        this.image,
+        this.catName,
+        this.type,
+        this.otherImage,
+        this.prVarientList,
+        this.attributeList,
+        this.isFav,
+        this.isCancelable,
+        this.isReturnable,
+        this.isPurchased,
+        this.availability,
+        this.noOfRating,
+        this.attrIds,
+        this.selectedId,
+        this.rating,
+        this.isFavLoading,
+        this.indicator,
+        this.madein,
+        this.tax,
+        this.shortDescription,
+        this.total,
+        this.categoryId,
+        this.subList,
+        this.filterList,
+        this.stockType,
+        this.isFromProd,
+        this.cancleTill,
+        this.totalItem,
+        this.offset,
+        this.totalAllow,
+        this.banner});
 
   factory Product.fromJson(Map<String, dynamic> json) {
     List<Product_Varient> varientList = (json[PRODUCT_VARIENT] as List)
@@ -175,6 +176,7 @@ class Product {
         isFavLoading: false,
         attrIds: json[ATTR_VALUE],
         madein: json[MADEIN],
+        shortDescription: json[SHORT],
         indicator: json[INDICATOR].toString(),
         stockType: json[STOCKTYPE].toString(),
         tax: json[TAX_PER],
@@ -221,15 +223,15 @@ class Product_Varient {
 
   Product_Varient(
       {this.id,
-      this.productId,
-      this.attr_name,
-      this.varient_value,
-      this.price,
-      this.disPrice,
-      this.attribute_value_ids,
-      this.availability,
-      this.cartCount,
-      this.images});
+        this.productId,
+        this.attr_name,
+        this.varient_value,
+        this.price,
+        this.disPrice,
+        this.attribute_value_ids,
+        this.availability,
+        this.cartCount,
+        this.images});
 
   factory Product_Varient.fromJson(Map<String, dynamic> json) {
     List<String> images = List<String>.from(json[IMAGES]);

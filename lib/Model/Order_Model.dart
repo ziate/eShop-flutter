@@ -33,35 +33,39 @@ class Order_Model {
 
   Order_Model(
       {this.id,
-      this.name,
-      this.mobile,
-      this.delCharge,
-      this.walBal,
-      this.promo,
-      this.promoDis,
-      this.payMethod,
-      this.total,
-      this.subTotal,
-      this.payable,
-      this.address,
-      this.taxPer,
-      this.taxAmt,
-      this.orderDate,
-      this.dateTime,
-      this.itemList,
-      this.listStatus,
-      this.listDate,
-      this.isReturnable,
-      this.isCancleable,
-      this.isAlrCancelled,
-      this.isAlrReturned,
-      this.rtnReqSubmitted,
-      this.activeStatus,
-      this.otp,this.invoice,
-      this.deliveryBoyId});
+        this.name,
+        this.mobile,
+        this.delCharge,
+        this.walBal,
+        this.promo,
+        this.promoDis,
+        this.payMethod,
+        this.total,
+        this.subTotal,
+        this.payable,
+        this.address,
+        this.taxPer,
+        this.taxAmt,
+        this.orderDate,
+        this.dateTime,
+        this.itemList,
+        this.listStatus,
+        this.listDate,
+        this.isReturnable,
+        this.isCancleable,
+        this.isAlrCancelled,
+        this.isAlrReturned,
+        this.rtnReqSubmitted,
+        this.activeStatus,
+        this.otp,this.invoice,
+        this.deliveryBoyId});
 
   factory Order_Model.fromJson(Map<String, dynamic> parsedJson) {
-    List<OrderItem> itemList = (parsedJson[ORDER_ITEMS] as List)
+    List<OrderItem> itemList=[];
+    var order=(parsedJson[ORDER_ITEMS] as List);
+    if (order == null || order.isEmpty) return null;
+    else
+   itemList = order
         .map((data) => new OrderItem.fromJson(data))
         .toList();
     String date = parsedJson[DATE_ADDED];
@@ -129,23 +133,23 @@ class OrderItem {
 
   OrderItem(
       {this.qty,
-      this.id,
-      this.name,
-      this.price,
-      this.subTotal,
-      this.status,
-      this.image,
-      this.varientId,
-      this.listDate,
-      this.listStatus,
-      this.isCancle,
-      this.isReturn,
-      this.isAlrReturned,
-      this.isAlrCancelled,
-      this.rtnReqSubmitted,
-      this.attr_name,
-      this.productId,
-      this.varient_values});
+        this.id,
+        this.name,
+        this.price,
+        this.subTotal,
+        this.status,
+        this.image,
+        this.varientId,
+        this.listDate,
+        this.listStatus,
+        this.isCancle,
+        this.isReturn,
+        this.isAlrReturned,
+        this.isAlrCancelled,
+        this.rtnReqSubmitted,
+        this.attr_name,
+        this.productId,
+        this.varient_values});
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     List<String> lStatus = [];

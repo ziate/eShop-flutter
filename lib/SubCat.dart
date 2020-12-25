@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:eshop/Model/Section_Model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -70,20 +70,17 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    print("inital called**************");
+
     this._addInitailTab();
     controller.addListener(_scrollListener);
     if (subList != null) {
-      // for (int i = 0; i < subList.length; i++) {
+
       if (subList[0].subList == null || subList[0].subList.isEmpty) {
-        print("inital called**************inside*******");
-        curTabId = subList[0].id;
-        print("product list=========$curTabId}");
+         curTabId = subList[0].id;
         _isLoading = true;
         getProduct(curTabId, 0);
 
       }
-      //print("inital called**************inside*****len**${subList[0].subList.length}");
 
     }
 
@@ -149,17 +146,15 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   }
 
   TabController _makeNewTabController(int pos) => TabController(
-        vsync: this,
-        length: _tabs.length,
-        initialIndex: pos,
-      );
+    vsync: this,
+    length: _tabs.length,
+    initialIndex: pos,
+  );
 
   void _addTab(List<Product> subItem, int index) {
-    print('add****${subItem[index].name}');
 
     setState(() {
       _tabs.add({
-        // 'text': "Tab ${_tabs.length + 1}",
         'text': subItem[index].name,
       });
       _views.add(createTabContent(index, subItem));
@@ -170,7 +165,6 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           setState(() {
             if (subList[_tc.index].subList == null ||
                 subList[_tc.index].subList.isEmpty) {
-              print("getting list*****");
               clearList();
             }
           });
@@ -197,14 +191,13 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       _tc = _makeNewTabController(0)
         ..addListener(() {
 
-          print("tab cahange*");
+
           setState(() {
             if (subList[_tc.index].subList == null ||
                 subList[_tc.index].subList.isEmpty) {
 
               clearList();
             }else{
-              print("getting list*****${subList[_tc.index].subList.length}");
 
             }
           });
@@ -235,11 +228,12 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             decoration: shadow(),
             child: Card(
               elevation: 0,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 4.0),
-                child: InkWell(
+              child: InkWell(
+                borderRadius:  BorderRadius.circular(4),
+                onTap: () => Navigator.of(context).pop(),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 4.0),
                   child: Icon(Icons.keyboard_arrow_left, color: primary),
-                  onTap: () => Navigator.of(context).pop(),
                 ),
               ),
             ),
@@ -250,8 +244,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           isScrollable: true,
           tabs: _tabs
               .map((tab) => Tab(
-                    text: tab['text'],
-                  ))
+            text: tab['text'],
+          ))
               .toList(),
         ),
         actions: <Widget>[
@@ -260,65 +254,72 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             decoration: shadow(),
             child: Card(
               elevation: 0,
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: InkWell(
-                    child: Icon(
+              child: InkWell(
+                borderRadius:  BorderRadius.circular(4),
+                onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Search(
+                            updateHome: widget.updateHome,
+                            menuopen: false,
+                          ),
+                        ));
+                  },
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Icon(
                       Icons.search,
                       color: primary,
                       size: 22,
                     ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Search(
-                              updateHome: widget.updateHome,
-                              menuopen: false,
-                            ),
-                          ));
-                    }),
+                ),
               ),
             ),
           ),
           subList[_tc.index].isFromProd &&   subList[_tc.index].filterList != null && subList[_tc.index].filterList.length > 0
               ? Container(
-                  margin: EdgeInsets.symmetric(vertical: 10),
-                  decoration: shadow(),
-                  child: Card(
-                      elevation: 0,
-                      child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: InkWell(
-                              child: Icon(
-                                Icons.tune,
-                                color: primary,
-                                size: 22,
-                              ),
-                              onTap: () {
-                               // if (filterList.length != 0)
-                                  return filterDialog();
-                              }))))
+              margin: EdgeInsets.symmetric(vertical: 10),
+              decoration: shadow(),
+              child: Card(
+                  elevation: 0,
+                  child: InkWell(
+                    borderRadius:  BorderRadius.circular(4),
+                    onTap: () {
+                          return filterDialog();
+                        },
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                            Icons.tune,
+                            color: primary,
+                            size: 22,
+                          ),
+                    ),
+                  )))
               : Container(),
           subList[_tc.index].isFromProd &&
-                  subList[_tc.index].subList != null &&
-                  subList[_tc.index].subList.length > 0
+              subList[_tc.index].subList != null &&
+              subList[_tc.index].subList.length > 0
               ? Container(
-                  margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
-                  decoration: shadow(),
-                  child: Card(
-                      elevation: 0,
-                      child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: InkWell(
-                              child: Icon(
-                                Icons.filter_list,
-                                color: primary,
-                                size: 22,
-                              ),
-                              onTap: () {
-                                return sortDialog();
-                              }))))
+              margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+              decoration: shadow(),
+              child: Card(
+                  elevation: 0,
+                  child: InkWell(
+                    borderRadius:  BorderRadius.circular(4),
+                    onTap: () {
+                          return sortDialog();
+                        },
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                            Icons.filter_list,
+                            color: primary,
+                            size: 22,
+                          ),
+                    ),
+                  )))
               : Container()
         ],
       ),
@@ -332,218 +333,213 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   Widget createTabContent(int i, List<Product> subList) {
     List<Product> subItem = subList[i].subList;
 
-    print("product list==========*********$i****${subList[i].isFromProd}");
-    return !subList[i].isFromProd && (subItem != null)
+     return !subList[i].isFromProd && (subItem != null)
         ? SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                CachedNetworkImage(
-                  imageUrl: subList[i].banner,
-                  height: 150,
-                  width: double.maxFinite,
-                  fit: BoxFit.fill,
-                  placeholder: (context, url) => Image.asset(
-                    "assets/images/sliderph.png",
-                    height: 150,
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                GridView.count(
-                    shrinkWrap: true,
-                    crossAxisCount: 3,
-                    childAspectRatio: 1,
-                    physics: NeverScrollableScrollPhysics(),
-                    children: List.generate(
-                      subItem.length,
-                      (index) {
-                        return listItem(index, subItem);
-                      },
-                    ))
-              ],
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          FadeInImage(
+            fadeInDuration: Duration(milliseconds: 150),
+            image: NetworkImage(subList[i].banner),
+            height: 150,
+            width: double.maxFinite,
+            fit: BoxFit.fill,
+            placeholder: AssetImage(
+              "assets/images/sliderph.png",
             ),
-          )
+          ),
+          GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 3,
+              childAspectRatio: 1,
+              physics: NeverScrollableScrollPhysics(),
+              children: List.generate(
+                subItem.length,
+                    (index) {
+                  return listItem(index, subItem);
+                },
+              ))
+        ],
+      ),
+    )
         : SingleChildScrollView(
-            controller: controller,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CachedNetworkImage(
-                  imageUrl: subList[i].banner,
-                  height: 150,
-                  width: double.maxFinite,
-                  fit: BoxFit.fill,
-                  placeholder: (context, url) => Image.asset(
-                    "assets/images/sliderph.png",
-                    height: 150,
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                _isLoading
-                    ? shimmer()
-                    : subItem.length == 0
-                        ? Flexible(flex: 1, child: getNoItem())
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            itemCount:
-                                (subList[i].offset < subList[i].totalItem)
-                                    ? subItem.length + 1
-                                    : subItem.length,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              print(
-                                  "loading***$isLoadingmore**$index***${subItem.length}***$offset***$total");
-
-                              return (index == subItem.length && isLoadingmore)
-                                  ? Center(child: CircularProgressIndicator())
-                                  : productListItem(index, subItem);
-                            },
-                          )
-              ],
+      controller: controller,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FadeInImage(
+            fadeInDuration: Duration(milliseconds: 150),
+            image: NetworkImage(subList[i].banner),
+            height: 150,
+            width: double.maxFinite,
+            fit: BoxFit.fill,
+            placeholder:AssetImage(
+              "assets/images/sliderph.png",
             ),
-          );
+          ),
+          _isLoading
+              ? shimmer()
+              : subItem.length == 0
+              ? Flexible(flex: 1, child: getNoItem())
+              : ListView.builder(
+            shrinkWrap: true,
+            itemCount:
+            (subList[i].offset < subList[i].totalItem)
+                ? subItem.length + 1
+                : subItem.length,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+
+              return (index == subItem.length && isLoadingmore)
+                  ? Center(child: CircularProgressIndicator())
+                  : productListItem(index, subItem);
+            },
+          )
+        ],
+      ),
+    );
   }
 
   Widget productListItem(int index, List<Product> subItem) {
-    print("desc*****${subItem[index].desc}");
 
     double price = double.parse(subItem[index].prVarientList[0].disPrice);
     if (price == 0) price = double.parse(subItem[index].prVarientList[0].price);
 
     return subItem.length >= index
         ? Card(
-            elevation: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: InkWell(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      subItem[index].availability == "0"
-                          ? Text(OUT_OF_STOCK_LBL,
+      elevation: 0,
+      child: InkWell(
+        borderRadius:  BorderRadius.circular(4),
+        onTap: () {
+          Product model = subItem[index];
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+               // transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
+                  model: model,
+                  updateParent: updateProductList,
+                  index: index,
+                  secPos: 0,
+                  updateHome: widget.updateHome,
+                  list: true,
+                  //  title: productList[index].name,
+                )),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                subItem[index].availability == "0"
+                    ? Text(OUT_OF_STOCK_LBL,
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle1
+                        .copyWith(color: Colors.red))
+                    : Container(),
+                Row(
+                  children: <Widget>[
+                    Hero(
+                      tag: "$index${subItem[index].id}",
+                      child: FadeInImage(
+                        fadeInDuration: Duration(milliseconds: 150),
+                        image: NetworkImage(subItem[index].image),
+                        height: 80.0,
+                        width: 80.0,
+                        placeholder: placeHolder(80),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              subItem[index].name,
                               style: Theme.of(context)
                                   .textTheme
-                                  .subtitle1
-                                  .copyWith(color: Colors.red))
-                          : Container(),
-                      Row(
-                        children: <Widget>[
-                          Hero(
-                            tag: "$index${subItem[index].id}",
-                            child: CachedNetworkImage(
-                              imageUrl: subItem[index].image,
-                              height: 80.0,
-                              width: 80.0,
-                              placeholder: (context, url) => placeHolder(80),
+                                  .subtitle2
+                                  .copyWith(
+                                  color: lightBlack,
+                                  fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    subItem[index].name,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .subtitle2
-                                        .copyWith(
-                                            color: lightBlack,
-                                            fontWeight: FontWeight.bold),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.star,
-                                        color: Colors.yellow,
-                                        size: 12,
-                                      ),
-                                      Text(
-                                        " " + subItem[index].rating,
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 12,
+                                ),
+                                Text(
+                                  " " + subItem[index].rating,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .overline,
+                                ),
+                                Text(
+                                  " (" + subItem[index].noOfRating + ")",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .overline,
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Text(
+                                      int.parse(subItem[index]
+                                          .prVarientList[0]
+                                          .disPrice) !=
+                                          0
+                                          ? CUR_CURRENCY +
+                                          "" +
+                                          subItem[index]
+                                              .prVarientList[0]
+                                              .price
+                                          : "",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .overline
+                                          .copyWith(
+                                          decoration: TextDecoration
+                                              .lineThrough,
+                                          letterSpacing: 0),
+                                    ),
+                                    Text(
+                                        " " +
+                                            CUR_CURRENCY +
+                                            " " +
+                                            price.toString(),
                                         style: Theme.of(context)
                                             .textTheme
-                                            .overline,
-                                      ),
-                                      Text(
-                                        " (" + subItem[index].noOfRating + ")",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .overline,
-                                      )
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Row(
-                                        children: <Widget>[
-                                          Text(
-                                            int.parse(subItem[index]
-                                                        .prVarientList[0]
-                                                        .disPrice) !=
-                                                    0
-                                                ? CUR_CURRENCY +
-                                                    "" +
-                                                    subItem[index]
-                                                        .prVarientList[0]
-                                                        .price
-                                                : "",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .overline
-                                                .copyWith(
-                                                    decoration: TextDecoration
-                                                        .lineThrough,
-                                                    letterSpacing: 0),
-                                          ),
-                                          Text(
-                                              " " +
-                                                  CUR_CURRENCY +
-                                                  " " +
-                                                  price.toString(),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .subtitle1),
-                                        ],
-                                      )
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                          )
-                        ],
-                      )
-                    ]),
-                splashColor: primary.withOpacity(0.2),
-                onTap: () {
-                  Product model = subItem[index];
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                        transitionDuration: Duration(seconds: 1),
-                        pageBuilder: (_, __, ___) => ProductDetail(
-                              model: model,
-                              updateParent: updateProductList,
-                              index: index,
-                              secPos: 0,
-                              updateHome: widget.updateHome,
-                              list: true,
-                              //  title: productList[index].name,
-                            )),
-                  );
-                },
-              ),
-            ),
-          )
+                                            .subtitle1),
+                                  ],
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                )
+              ]),
+        ),
+      ),
+    )
         : Container();
   }
 
   Widget listItem(int index, List<Product> subItem) {
-    return InkWell(
+    return GestureDetector(
       child: Padding(
         padding: const EdgeInsets.all(5.0),
         child: Column(
@@ -555,11 +551,12 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                 padding: const EdgeInsets.symmetric(vertical: 5.0),
                 child: new ClipRRect(
                   borderRadius: BorderRadius.circular(5.0),
-                  child: new CachedNetworkImage(
-                    imageUrl: subItem[index].image,
+                  child: new FadeInImage(
+                    fadeInDuration: Duration(milliseconds: 150),
+                    image: NetworkImage(subItem[index].image),
                     height: double.maxFinite,
                     width: double.maxFinite,
-                    placeholder: (context, url) => placeHolder(100),
+                    placeholder: placeHolder(100),
                   ),
                 ),
               ),
@@ -751,224 +748,216 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       builder: (builder) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-          return Column(mainAxisSize: MainAxisSize.min, children: [
-            Padding(
-                padding: const EdgeInsets.only(top: 30.0),
-                child: AppBar(
-                  title: Text(
-                    FILTER,
-                    style: TextStyle(
-                      color: fontColor,
-                    ),
-                  ),
-                  backgroundColor: white,
-                  elevation: 5,
-                  leading: Builder(builder: (BuildContext context) {
-                    return Container(
-                      margin: EdgeInsets.all(10),
-                      decoration: shadow(),
-                      child: Card(
-                        elevation: 0,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 4.0),
-                          child: InkWell(
-                            child:
-                                Icon(Icons.keyboard_arrow_left, color: primary),
-                            onTap: () => Navigator.of(context).pop(),
-                          ),
+              return Column(mainAxisSize: MainAxisSize.min, children: [
+                Padding(
+                    padding: const EdgeInsets.only(top: 30.0),
+                    child: AppBar(
+                      title: Text(
+                        FILTER,
+                        style: TextStyle(
+                          color: fontColor,
                         ),
                       ),
-                    );
-                  }),
-                  actions: [
-                    Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      alignment: Alignment.center,
-                      child: InkWell(
-                          child: Text(FILTER_CLEAR_LBL,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(
+                      backgroundColor: white,
+                      elevation: 5,
+                      leading: Builder(builder: (BuildContext context) {
+                        return Container(
+                          margin: EdgeInsets.all(10),
+                          decoration: shadow(),
+                          child: Card(
+
+                            elevation: 0,
+                            child: InkWell(
+                              borderRadius:  BorderRadius.circular(4),
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 4.0),
+                                child:
+                                Icon(Icons.keyboard_arrow_left, color: primary),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                      actions: [
+                        Container(
+                          margin: EdgeInsets.only(right: 10.0),
+                          alignment: Alignment.center,
+                          child: InkWell(
+                              child: Text(FILTER_CLEAR_LBL,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(
                                       fontWeight: FontWeight.normal,
                                       color: fontColor)),
-                          onTap: () {
-                            setState(() {
-                             subList[_tc.index].selectedId.clear();
-                            });
-                          }),
-                    ),
-                  ],
-                )),
-            Expanded(
-                child: Container(
-                    color: lightWhite,
-                    padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
-                    child: Card(
-                        child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                          Expanded(
-                              flex: 2,
-                              child: Container(
-                                  color: lightWhite,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    padding: EdgeInsets.only(top: 10.0),
-                                    itemCount: subList[_tc.index].filterList.length,
-                                    itemBuilder: (context, index) {
-                                      print("Attttt_name::::${subList[_tc.index].filterList[index].name}");
-                                      attsubList = subList[_tc.index].filterList[index]
-                                              .attributeValues
-                                          .split(',');
-
-                                      attListId = subList[_tc.index].filterList[index]
-                                              .attributeValId
-                                          .split(',');
-                                      print("Attsublist ****** $attsubList");
-                                      print("AttsublistId ****** $attListId");
-
-                                      if (filter == "") {
-                                        filter = subList[_tc.index].filterList[0].name;
-                                      }
-
-                                      return InkWell(
-                                          onTap: () {
-                                            setState(() {
-                                              filter =
-                                              subList[_tc.index].filterList[index].name;
-                                            });
-                                          },
-                                          child: Container(
-                                            padding: EdgeInsets.only(
-                                                left: 20,
-                                                top: 10.0,
-                                                bottom: 10.0),
-                                            decoration: BoxDecoration(
-                                                color: filter ==
-                                                    subList[_tc.index].filterList[index].name
-
-                                                    ? white
-                                                    : lightWhite,
-                                                borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(7),
-                                                    bottomLeft:
-                                                        Radius.circular(7))),
-                                            alignment: Alignment.centerLeft,
-                                            child: new Text(
-                                              subList[_tc.index].filterList[index].name,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .subtitle1
-                                                  .copyWith(
-                                                      color: filter ==
-                                                          subList[_tc.index].filterList[index].name
-                                                          ? fontColor
-                                                          : lightBlack,
-                                                      fontWeight:
-                                                          FontWeight.normal),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 2,
-                                            ),
-                                          ));
-                                    },
-                                  ))),
-                          Expanded(
-                              flex: 3,
-                              child: ListView.builder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.only(top: 10.0),
-                                  scrollDirection: Axis.vertical,
-                                  itemCount: subList[_tc.index].filterList.length,
-                                  itemBuilder: (context, index) {
-                                  //  print("filter******$filter******${filterList[index]["name"]}");
-
-                                    if (filter == subList[_tc.index].filterList[index].name) {
-                                      attsubList = subList[_tc.index].filterList[index].attributeValues
-                                          .split(',');
-
-                                      attListId = subList[_tc.index].filterList[index].attributeValId
-                                          .split(',');
-                                      print("Attsublist******===selected ${subList[_tc.index].selectedId}");
-                                      print("Attsublist******=== $attListId");
-                                      return Container(
+                              onTap: () {
+                                setState(() {
+                                  subList[_tc.index].selectedId.clear();
+                                });
+                              }),
+                        ),
+                      ],
+                    )),
+                Expanded(
+                    child: Container(
+                        color: lightWhite,
+                        padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
+                        child: Card(
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                          color: lightWhite,
                                           child: ListView.builder(
-                                              shrinkWrap: true,
-                                              physics:
-                                                  NeverScrollableScrollPhysics(),
-                                              itemCount: attListId.length,
-                                              itemBuilder: (context, i) {
-                                                print("selold111111*******************${subList[_tc.index].selectedId.contains(attListId[i])}");
-                                                return CheckboxListTile(
-                                                  dense: true,
-                                                  title: Text(attsubList[i],
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.vertical,
+                                            padding: EdgeInsets.only(top: 10.0),
+                                            itemCount: subList[_tc.index].filterList.length,
+                                            itemBuilder: (context, index) {
+
+                                              attsubList = subList[_tc.index].filterList[index]
+                                                  .attributeValues
+                                                  .split(',');
+
+                                              attListId = subList[_tc.index].filterList[index]
+                                                  .attributeValId
+                                                  .split(',');
+
+                                              if (filter == "") {
+                                                filter = subList[_tc.index].filterList[0].name;
+                                              }
+
+                                              return InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      filter =
+                                                          subList[_tc.index].filterList[index].name;
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20,
+                                                        top: 10.0,
+                                                        bottom: 10.0),
+                                                    decoration: BoxDecoration(
+                                                        color: filter ==
+                                                            subList[_tc.index].filterList[index].name
+
+                                                            ? white
+                                                            : lightWhite,
+                                                        borderRadius: BorderRadius.only(
+                                                            topLeft: Radius.circular(7),
+                                                            bottomLeft:
+                                                            Radius.circular(7))),
+                                                    alignment: Alignment.centerLeft,
+                                                    child: new Text(
+                                                      subList[_tc.index].filterList[index].name,
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .subtitle1
                                                           .copyWith(
-                                                          color: lightBlack,
+                                                          color: filter ==
+                                                              subList[_tc.index].filterList[index].name
+                                                              ? fontColor
+                                                              : lightBlack,
                                                           fontWeight:
-                                                          FontWeight
-                                                              .normal)),
-                                                  value: subList[_tc.index].selectedId
-                                                      .contains(attListId[i]),
-                                                  activeColor: primary,
-                                                  controlAffinity:
-                                                      ListTileControlAffinity
-                                                          .leading,
-                                                  onChanged: (bool val) {
-                                                    setState(() {
-                                                      if (val == true) {
-                                                        subList[_tc.index].selectedId
-                                                            .add(attListId[i]);
-                                                        print(
-                                                            "addListIDadd******${attListId[i]}");
-                                                       // print("selectId******$selectedId");
-                                                      } else {
-                                                        subList[_tc.index].selectedId.remove(attListId[i]);
-                                                       // print("addListIDremove******${attListId[i]}");
-                                                      }
-                                                    });
-                                                  },
-                                                );
-                                              }));
-                                    } else {
-                                      return Container();
-                                    }
-                                  })),
-                        ])))),
-            Container(
-              color: white,
-              child: Row(children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(left: 15.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(subList[_tc.index].totalItem.toString()),
-                        Text(PRODUCTS_FOUND_LBL),
-                      ],
-                    )),
-                Spacer(),
-                SimBtn(
-                  size: deviceWidth * 0.4,
-                  title: APPLY,
-                  onBtnSelected: () {
-                    if (subList[_tc.index].selectedId != null) {
-                      print("seletIDDDDD****${subList[_tc.index].selectedId.toString()}");
-                      selId = subList[_tc.index].selectedId.join(',');
-                      print("selIdnew****$selId");
-                      clearList();
-                      Navigator.pop(context, 'Product Filter');
-                    }
-                  },
-                ),
-              ]),
-            )
-          ]);
-        });
+                                                          FontWeight.normal),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 2,
+                                                    ),
+                                                  ));
+                                            },
+                                          ))),
+                                  Expanded(
+                                      flex: 3,
+                                      child: ListView.builder(
+                                          shrinkWrap: true,
+                                          padding: EdgeInsets.only(top: 10.0),
+                                          scrollDirection: Axis.vertical,
+                                          itemCount: subList[_tc.index].filterList.length,
+                                          itemBuilder: (context, index) {
+                                            //  print("filter******$filter******${filterList[index]["name"]}");
+
+                                            if (filter == subList[_tc.index].filterList[index].name) {
+                                              attsubList = subList[_tc.index].filterList[index].attributeValues
+                                                  .split(',');
+
+                                              attListId = subList[_tc.index].filterList[index].attributeValId
+                                                  .split(',');
+                                              return Container(
+                                                  child: ListView.builder(
+                                                      shrinkWrap: true,
+                                                      physics:
+                                                      NeverScrollableScrollPhysics(),
+                                                      itemCount: attListId.length,
+                                                      itemBuilder: (context, i) {
+                                                            return CheckboxListTile(
+                                                          dense: true,
+                                                          title: Text(attsubList[i],
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .subtitle1
+                                                                  .copyWith(
+                                                                  color: lightBlack,
+                                                                  fontWeight:
+                                                                  FontWeight
+                                                                      .normal)),
+                                                          value: subList[_tc.index].selectedId
+                                                              .contains(attListId[i]),
+                                                          activeColor: primary,
+                                                          controlAffinity:
+                                                          ListTileControlAffinity
+                                                              .leading,
+                                                          onChanged: (bool val) {
+                                                            setState(() {
+                                                              if (val == true) {
+                                                                subList[_tc.index].selectedId
+                                                                    .add(attListId[i]);
+                                                               } else {
+                                                                subList[_tc.index].selectedId.remove(attListId[i]);
+                                                                // print("addListIDremove******${attListId[i]}");
+                                                              }
+                                                            });
+                                                          },
+                                                        );
+                                                      }));
+                                            } else {
+                                              return Container();
+                                            }
+                                          })),
+                                ])))),
+                Container(
+                  color: white,
+                  child: Row(children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.only(left: 15.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(subList[_tc.index].totalItem.toString()),
+                            Text(PRODUCTS_FOUND_LBL),
+                          ],
+                        )),
+                    Spacer(),
+                    SimBtn(
+                      size: deviceWidth * 0.4,
+                      title: APPLY,
+                      onBtnSelected: () {
+                        if (subList[_tc.index].selectedId != null) {
+                              selId = subList[_tc.index].selectedId.join(',');
+                            clearList();
+                          Navigator.pop(context, 'Product Filter');
+                        }
+                      },
+                    ),
+                  ]),
+                )
+              ]);
+            });
       },
     );
   }
@@ -1069,9 +1058,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        // for (int i = 0; i < subList.length; i++) {
-        print("product list=========**********${id}*****${subList.length}");
-        var parameter = {
+          var parameter = {
           CATID: id,
           SORT: sortBy,
           ORDER: orderBy,
@@ -1085,12 +1072,10 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         }
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
-        print('response***product*$parameter');
-        Response response =
-            await post(getProductApi, headers: headers, body: parameter)
-                .timeout(Duration(seconds: timeOut));
+           Response response =
+        await post(getProductApi, headers: headers, body: parameter)
+            .timeout(Duration(seconds: timeOut));
 
-        print('response***product*${response.body.toString()}');
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -1098,7 +1083,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         if (!error) {
           total = int.parse(getdata["total"]);
           offset =
-              subList[cur].subList == null ? 0 : subList[cur].subList.length;
+          subList[cur].subList == null ? 0 : subList[cur].subList.length;
 
           if ( subList[cur].filterList == null ||  subList[cur].filterList.length == 0) {
 
@@ -1108,7 +1093,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             subList[cur].selectedId=[];
           }
 
-          print('limit *****$offset****$total');
+
           if (offset < total) {
             tempList.clear();
 
@@ -1125,9 +1110,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
 
             subList[cur].offset = offset;
             subList[cur].totalItem = total;
-            print(
-                "sublist ===========${subList.length}====${subList[cur].subList.length}");
-          }
+                }
         } else {
           if (offset == 0) subList[cur].subList = [];
           if (msg != "Products Not Found !") setSnackbar(msg);
@@ -1486,8 +1469,6 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-        print(
-            "limit after***scroll****${_tc.index}**${subList[_tc.index].offset}****${subList[_tc.index].totalItem}");
 
         if (subList[_tc.index].offset < subList[_tc.index].totalItem) {
           // setState(() {

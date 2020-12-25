@@ -132,7 +132,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
           mainAxisAlignment: MainAxisAlignment.center,
           children: map<Widget>(
             slideList,
-            (index, url) {
+                (index, url) {
               return Container(
                   width: 10.0,
                   height: 10.0,
@@ -177,36 +177,36 @@ class _GettingStartedScreenState extends State<Intro_Slider>
   skipBtn() {
     return _currentPage == 0 || _currentPage == 1
         ? Padding(
-            padding: EdgeInsets.only(top: 20.0, right: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                InkWell(
-                  onTap: () {
-                    setPrefrenceBool(ISFIRSTTIME, true);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => SignInUpAcc()),
-                    );
-                  },
-                  child: Row(children: [
-                    Text(SKIP,
-                        style: Theme.of(context).textTheme.caption.copyWith(
-                              color: fontColor,
-                            )),
-                    Icon(
-                      Icons.arrow_forward_ios,
+        padding: EdgeInsets.only(top: 20.0, right: 10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            InkWell(
+              onTap: () {
+                setPrefrenceBool(ISFIRSTTIME, true);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => SignInUpAcc()),
+                );
+              },
+              child: Row(children: [
+                Text(SKIP,
+                    style: Theme.of(context).textTheme.caption.copyWith(
                       color: fontColor,
-                      size: 12.0,
-                    ),
-                  ]),
+                    )),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: fontColor,
+                  size: 12.0,
                 ),
-              ],
-            ))
+              ]),
+            ),
+          ],
+        ))
         : Container(
-            margin: EdgeInsets.only(top: 50.0),
-            height: 15,
-          );
+      margin: EdgeInsets.only(top: 50.0),
+      height: 15,
+    );
   }
 
   @override
@@ -217,13 +217,13 @@ class _GettingStartedScreenState extends State<Intro_Slider>
 
     return Scaffold(
         body: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        skipBtn(),
-        _slider(),
-        _btn(),
-      ],
-    ));
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            skipBtn(),
+            _slider(),
+            _btn(),
+          ],
+        ));
   }
 }
 

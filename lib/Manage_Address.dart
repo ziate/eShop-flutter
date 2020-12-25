@@ -30,6 +30,8 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   List<RadioModel> addModel = new List<RadioModel>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+  new GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -111,8 +113,8 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
           USER_ID: CUR_USERID,
         };
         Response response =
-            await post(getAddressApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(getAddressApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         print('response***setting****$CUR_USERID**${response.body.toString()}');
@@ -148,6 +150,18 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
     }
   }
 
+  Future<Null> _refresh() {
+
+    if (widget.home) {
+      setState(() {
+        _isLoading = true;
+      });
+      _getAddress();
+    } else {
+      addAddressModel();
+    }
+    return null;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,63 +169,69 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
       backgroundColor: lightWhite,
       body: _isNetworkAvail
           ? Column(
+        children: [
+          Expanded(
+            child: _isLoading
+                ? shimmer()
+                : addressList.length == 0
+                ? Center(child: Text(NOADDRESS))
+                : Stack(
               children: [
-                Expanded(
-                  child: _isLoading
-                      ? shimmer()
-                      : addressList.length == 0
-                          ? Center(child: Text(NOADDRESS))
-                          : Stack(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: BouncingScrollPhysics(),
-                                      itemCount: addressList.length,
-                                      itemBuilder: (context, index) {
-                                        print(
-                                            "default***b${addressList[index].isDefault}***${addressList[index].name}");
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child:
+                  RefreshIndicator(
+                    key: _refreshIndicatorKey,
+                    onRefresh: _refresh,
+                    child:
+                  ListView.builder(
+                      shrinkWrap: true,
+                      physics: const AlwaysScrollableScrollPhysics(),
 
-                                        return addressItem(index);
-                                      }),
-                                ),
-                                showCircularProgress(_isProgress, primary),
-                              ],
-                            ),
+                      itemCount: addressList.length,
+                      itemBuilder: (context, index) {
+                        print(
+                            "default***b${addressList[index].isDefault}***${addressList[index].name}");
+
+                        return addressItem(index);
+                      })),
                 ),
-                InkWell(
-                  child: Container(
-                      alignment: Alignment.center,
-                      height: 55,
-                      decoration: new BoxDecoration(
-                        gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [grad1Color, grad2Color],
-                            stops: [0, 1]),
-                      ),
-                      child: Text(ADDADDRESS,
-                          style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                color: white,
-                              ))),
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => AddAddress(
-                                update: false,
-                            index: addressList.length,
-                              )),
-                    );
-                    setState(() {
-                      addModel.clear();
-                      addAddressModel();
-                    });
-                  },
-                )
+                showCircularProgress(_isProgress, primary),
               ],
-            )
+            ),
+          ),
+          InkWell(
+            child: Container(
+                alignment: Alignment.center,
+                height: 55,
+                decoration: new BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [grad1Color, grad2Color],
+                      stops: [0, 1]),
+                ),
+                child: Text(ADDADDRESS,
+                    style: Theme.of(context).textTheme.subtitle1.copyWith(
+                      color: white,
+                    ))),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => AddAddress(
+                      update: false,
+                      index: addressList.length,
+                    )),
+              );
+              setState(() {
+                addModel.clear();
+                addAddressModel();
+              });
+            },
+          )
+        ],
+      )
           : noInternet(context),
     );
   }
@@ -227,8 +247,8 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
 
       print('response******param--${data.toString()}');
       Response response =
-          await post(updateAddressApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(updateAddressApi, body: data, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
       print('response***UpdateUser**$headers***${response.body.toString()}');
@@ -285,7 +305,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
     return Card(
         elevation: 0.2,
         child: new InkWell(
-          //highlightColor: Colors.red,
+          borderRadius:  BorderRadius.circular(4),
           onTap: () {
             setState(() {
               selectedAddress = index;
@@ -306,8 +326,8 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
           ID: addressList[index].id,
         };
         Response response =
-            await post(deleteAddressApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(deleteAddressApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         print('response***delete****$CUR_USERID**${response.body.toString()}');
@@ -366,7 +386,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
             deleteAddress(i);
           },
           onEditSelected: () async {
-          await  Navigator.push(
+            await  Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddAddress(

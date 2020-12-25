@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:app_review/app_review.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
+
 import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
@@ -54,20 +55,18 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   getUserDetails() async {
+    print("after logout========");
     CUR_USERID = await getPrefrence(ID);
     CUR_USERNAME = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
     profile = await getPrefrence(IMAGE);
-    setState(() {
+    print("after logout========$email********$profile");
 
-    });
-  }
-
-  update() {
     setState(() {});
   }
 
   _getHeader() {
+    print("email***********$email");
     return Padding(
         padding: const EdgeInsets.only(bottom: 5.0),
         child: Container(
@@ -82,7 +81,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                     children: [
                       Text(
                         CUR_USERNAME == "" || CUR_USERNAME == null
-                            ? "Hello,\nguest"
+                            ? GUEST
                             : CUR_USERNAME,
                         style: Theme.of(context)
                             .textTheme
@@ -138,15 +137,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                     ),
                                   ],
                                 ),
-                                onTap: () async{
-                               await   Navigator.push(
+                                onTap: () async {
+                                  await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => Profile(),
                                       ));
-                               setState(() {
-                                 getUserDetails();
-                               });
+
+                                  getUserDetails();
                                 },
                               ))
                     ],
@@ -162,13 +160,15 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(100.0),
                   child: profile != null
-                      ? CachedNetworkImage(
-                          imageUrl: profile,
-                          height: 64,
-                          width: 64,
-                          fit: BoxFit.cover,
-                      errorWidget:(context, url,e) => placeHolder(64) ,
-                          placeholder: (context, url) {
+                      ? CircleAvatar(
+                         backgroundImage : NetworkImage(profile),
+                        radius: 32,
+
+                          //fit: BoxFit.cover,
+                          //errorWidget: (context, url, e) => placeHolder(64),
+                         // placeholder: placeHolder(64)
+                  )
+                          /*    (context, url) {
                             return new Container(
                               child: Icon(
                                 Icons.account_circle,
@@ -176,7 +176,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                 size: 64,
                               ),
                             );
-                          })
+                          })*/
                       : imagePlaceHolder(62),
                 ),
               ),
@@ -248,7 +248,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     );
   }
 
-
   _getDrawerItem(int index, String title, String img) {
     return ListTile(
       dense: true,
@@ -264,7 +263,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         title,
         style: TextStyle(color: lightBlack2, fontSize: 15),
       ),
-      onTap: () {
+      onTap: ()  {
         if (title == MY_ORDERS_LBL) {
           Navigator.push(
               context,
@@ -345,13 +344,15 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                 ),
               ));
         } else if (title == LOGOUT) {
-          Navigator.push(
+           Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => Logout(
                   title: LOGOUT,
                 ),
               ));
+
+
         }
       },
     );

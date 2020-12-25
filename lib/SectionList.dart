@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Home.dart';
 import 'package:flutter/cupertino.dart';
@@ -42,6 +41,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -109,6 +110,17 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     );
   }
 
+  Future<Null> _refresh() {
+    setState(() {
+      _isLoading = true;
+      isLoadingmore = true;
+    });
+    offset = 0;
+    total = 0;
+    offset = widget.section_model.productList.length;
+    return getSection();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,28 +128,31 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       backgroundColor: lightWhite,
       appBar: getAppBar(sectionList[widget.index].title, context),
       body: _isNetworkAvail
-          ? GridView.count(
-          padding: EdgeInsets.only(top: 5,left: 10,right:10),
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          childAspectRatio: 1,
-          physics: BouncingScrollPhysics(),
-          mainAxisSpacing:2,
-          crossAxisSpacing: 2,
-          controller: controller,
-          children: List.generate(
-            (offset < total)
-                ? widget.section_model.productList.length + 1
-                : widget.section_model.productList.length,
-                (index) {
-              print(
-                  "length***$index**${widget.section_model.productList.length}***$isLoadingmore***$offset**$total");
-              return (index == widget.section_model.productList.length &&
-                  isLoadingmore)
-                  ? Center(child: CircularProgressIndicator())
-                  : productItem(index);
-            },
-          ))
+          ? RefreshIndicator(
+              key: _refreshIndicatorKey,
+              onRefresh: _refresh,
+              child: GridView.count(
+                  padding: EdgeInsets.only(top: 5, left: 10, right: 10),
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  childAspectRatio: 1,
+                  physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics()),
+                  mainAxisSpacing: 2,
+                  crossAxisSpacing: 2,
+                  controller: controller,
+                  children: List.generate(
+                    (offset < total)
+                        ? widget.section_model.productList.length + 1
+                        : widget.section_model.productList.length,
+                    (index) {
+                       return (index ==
+                                  widget.section_model.productList.length &&
+                              isLoadingmore)
+                          ? Center(child: CircularProgressIndicator())
+                          : productItem(index);
+                    },
+                  )))
           : noInternet(context),
     );
   }
@@ -149,8 +164,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
         setState(() {
           isLoadingmore = true;
 
-          print("load more****limit *****$offset****$total");
-          if (offset < total) getSection();
+             if (offset < total) getSection();
         });
       }
     }
@@ -171,48 +185,49 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           children: <Widget>[
             Expanded(
                 child: Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Hero(
-                      tag:
+              alignment: Alignment.topRight,
+              children: [
+                Hero(
+                  tag:
                       "${sectionList[widget.index].productList[index].id}${widget.index}${index}",
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(5),
-                            topRight: Radius.circular(5)),
-                        child: CachedNetworkImage(
-                          imageUrl: widget.section_model.productList[index].image,
-                          height: double.maxFinite,
-                          width: double.maxFinite,
-                          errorWidget:(context, url,e) => placeHolder(width) ,
-                          placeholder: (context, url) => placeHolder(width),
-                        ),
-                      ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(5),
+                        topRight: Radius.circular(5)),
+                    child: FadeInImage(
+                      image: NetworkImage(
+                          widget.section_model.productList[index].image),
+                      height: double.maxFinite,
+                      width: double.maxFinite,
+                      //errorWidget:(context, url,e) => placeHolder(width) ,
+                      placeholder: placeHolder(width),
                     ),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(1.5),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: Colors.yellow,
-                              size: 10,
-                            ),
-                            Text(
-                              widget.section_model.productList[index].rating,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .overline
-                                  .copyWith(letterSpacing: 0.2),
-                            ),
-                          ],
+                  ),
+                ),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(1.5),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.star,
+                          color: primary,
+                          size: 10,
                         ),
-                      ),
+                        Text(
+                          widget.section_model.productList[index].rating,
+                          style: Theme.of(context)
+                              .textTheme
+                              .overline
+                              .copyWith(letterSpacing: 0.2),
+                        ),
+                      ],
                     ),
-                  ],
-                )),
+                  ),
+                ),
+              ],
+            )),
             Padding(
               padding: const EdgeInsets.all(5.0),
               child: Row(
@@ -230,44 +245,42 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                   ),
 
                   widget.section_model.productList[index].isFavLoading
-
                       ? Container(
-                      height: 15,
-                      width: 15,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 3),
-                      padding: const EdgeInsets.all(3),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 0.7,
-                      ))
-
+                          height: 15,
+                          width: 15,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 8.0, vertical: 3),
+                          padding: const EdgeInsets.all(3),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 0.7,
+                          ))
                       : InkWell(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 3),
-                        child: Icon(
-                          widget.section_model.productList[index].isFav ==
-                              "0"
-                              ? Icons.favorite_border
-                              : Icons.favorite,
-                          size: 15,
-                          color: primary,
-                        ),
-                      ),
-                      onTap: () {
-                        if (CUR_USERID != null) {
-                          widget.section_model.productList[index].isFav ==
-                              "0"
-                              ? _setFav(index)
-                              : _removeFav(index);
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Login()),
-                          );
-                        }
-                      })
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 3),
+                            child: Icon(
+                              widget.section_model.productList[index].isFav ==
+                                      "0"
+                                  ? Icons.favorite_border
+                                  : Icons.favorite,
+                              size: 15,
+                              color: primary,
+                            ),
+                          ),
+                          onTap: () {
+                            if (CUR_USERID != null) {
+                              widget.section_model.productList[index].isFav ==
+                                      "0"
+                                  ? _setFav(index)
+                                  : _removeFav(index);
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Login()),
+                              );
+                            }
+                          })
                   // IconButton(icon: Icon(Icons.favorite_border,),iconSize: 10, onPressed: null)
                 ],
               ),
@@ -278,12 +291,12 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                 children: <Widget>[
                   Text(
                     int.parse(widget.section_model.productList[index]
-                        .prVarientList[0].disPrice) !=
-                        0
+                                .prVarientList[0].disPrice) !=
+                            0
                         ? CUR_CURRENCY +
-                        "" +
-                        widget.section_model.productList[index]
-                            .prVarientList[0].price
+                            "" +
+                            widget.section_model.productList[index]
+                                .prVarientList[0].price
                         : "",
                     style: Theme.of(context).textTheme.overline.copyWith(
                         decoration: TextDecoration.lineThrough,
@@ -301,14 +314,15 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           Navigator.push(
             context,
             PageRouteBuilder(
-                transitionDuration: Duration(seconds: 1),
+               // transitionDuration: Duration(seconds: 1),
                 pageBuilder: (_, __, ___) => ProductDetail(
-                  model: model,
-                  updateParent: updateSectionList,
-                  updateHome: widget.updateHome,
-                  secPos: widget.index,
-                  index: index,
-                  list: false,)),
+                      model: model,
+                      updateParent: updateSectionList,
+                      updateHome: widget.updateHome,
+                      secPos: widget.index,
+                      index: index,
+                      list: false,
+                    )),
           );
         },
       ),
@@ -319,7 +333,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     setState(() {});
   }
 
-  Future<void> getSection() async {
+  Future<Null> getSection() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -328,17 +342,17 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           PRODUCT_OFFSET: offset.toString(),
           SEC_ID: widget.section_model.id
         };
-        print("section para**${parameter.toString()}");
-        if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+
+         print("response********param***$parameter");
+
         Response response =
-        await post(getSectionApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(getSectionApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
-        print('section get***');
-        print('response***sec**$headers***${response.body.toString()}');
-        bool error = getdata["error"];
+          bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           var data = getdata["data"];
@@ -349,7 +363,6 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                 .map((data) => new Section_Model.fromJson(data))
                 .toList();
 
-            print("temp***${temp.length}");
 
             sectionList[widget.index].productList.addAll(temp[0].productList);
             //temp[0];
@@ -362,7 +375,6 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
 
         setState(() {
           _isLoading = false;
-
         });
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
@@ -375,6 +387,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
         _isNetworkAvail = false;
       });
     }
+
+    return null;
   }
 
   _setFav(int index) async {
@@ -390,13 +404,11 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           PRODUCT_ID: widget.section_model.productList[index].id
         };
         Response response =
-        await post(setFavoriteApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(setFavoriteApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
-        print("set fav***${parameter.toString()}");
-        var getdata = json.decode(response.body);
-        print('response***setting**${response.body.toString()}');
-        bool error = getdata["error"];
+         var getdata = json.decode(response.body);
+         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           widget.section_model.productList[index].isFav = "1";
@@ -443,18 +455,17 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           PRODUCT_ID: widget.section_model.productList[index].id
         };
         Response response =
-        await post(removeFavApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(removeFavApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('response***setting**${response.body.toString()}');
-        bool error = getdata["error"];
+         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           widget.section_model.productList[index].isFav = "0";
 
           favList.removeWhere((item) =>
-          item.productList[0].prVarientList[0].id ==
+              item.productList[0].prVarientList[0].id ==
               widget.section_model.productList[index].prVarientList[0].id);
 
           widget.updateHome();

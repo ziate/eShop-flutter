@@ -186,10 +186,13 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
   }
 
   subLogo() {
-    return Container(
-      padding: EdgeInsets.only(top: 80.0),
-      child: Center(
-        child: new Image.asset('assets/images/homelogo.png', fit: BoxFit.fill),
+    return Expanded(
+      flex:     widget.title == SEND_OTP_TITLE
+          ?  4:5,
+      child: Container(
+        child: Center(
+          child: new Image.asset('assets/images/homelogo.png'),
+        ),
       ),
     );
   }
@@ -232,11 +235,11 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
 
   setCodeWithMono() {
     return Container(
-      width: deviceWidth*0.7,
+        width: deviceWidth * 0.7,
         //padding: EdgeInsets.only(left: 25.0, right: 25.0),
         child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.0),
+              borderRadius: BorderRadius.circular(7.0),
               color: lightWhite,
             ),
             child: Row(
@@ -267,8 +270,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
         initialSelection: 'IN',
         dialogSize: Size(width, height),
         alignLeft: true,
-        textStyle: TextStyle(
-            color: fontColor, fontWeight: FontWeight.bold),
+        textStyle: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
         onChanged: (CountryCode countryCode) {
           countrycode = countryCode.toString().replaceFirst("+", "");
           print("New Country selected: " + countryCode.toString());
@@ -421,35 +423,36 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
   }
 
   expandedBottomView() {
-    double width = deviceWidth;
-    return Expanded(
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: 100.0,
-          ),
-          child: SingleChildScrollView(
 
-      child: Form(
-          key: _formkey,
-          child: Card(
-            elevation: 0,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                createAccTxt(),
-                verifyCodeTxt(),
-                setCodeWithMono(),
-                verifyBtn(),
-                termAndPolicyTxt(),
-              ],
+    return Expanded(
+      flex:     widget.title == SEND_OTP_TITLE
+          ?  6:5,
+      child: Container(
+        alignment: Alignment.bottomCenter,
+        child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Form(
+            key: _formkey,
+            child: Card(
+              elevation: 0.5,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              margin: EdgeInsets.only(left: 20.0, right: 20.0,),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  createAccTxt(),
+                  verifyCodeTxt(),
+                  setCodeWithMono(),
+                  verifyBtn(),
+                  termAndPolicyTxt(),
+                ],
+              ),
             ),
           ),
+        ),
       ),
-    ),
-        ));
+    );
   }
 
   @override

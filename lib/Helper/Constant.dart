@@ -154,7 +154,7 @@ const String FLUTTERWAVE_LBL='Flutterwave';
 const String PROCEED='Proceed';
 const String PLACE_ORDER='Place Order';
 const String MORE_PRODUCT='More Product';
-
+const String GUEST='Hello,\nguest';
 
 //const String TOTAL="Total";
 const String CONFIRM_ORDER='Confirm Order';
@@ -287,3 +287,4 @@ const String IOSLBL='iOS:';
 const String APPFIND='You can find our app from below url\n\nAndroid:\n';
 const String SUBMIT_LBL='SUBMIT';
 const String REVIEW_W='Please Fill Details';
+const String EXIT_WR='Please Double tap to exit..';

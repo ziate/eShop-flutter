@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Model/Order_Model.dart';
 import 'package:flutter/cupertino.dart';
@@ -438,17 +438,17 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin{
         rDate = d[0] + "\n" + d[1] ;
       }
     }
-   // print("length=========${orderItem.image}");
+    // print("length=========${orderItem.image}");
     return Column(
       children: [
         Row(
           children: [
-            CachedNetworkImage(
-              imageUrl: orderItem.image,
+            FadeInImage(
+              image: NetworkImage(orderItem.image),
               height: 100.0,
               width: 100.0,
-              errorWidget:(context, url,e) => placeHolder(100) ,
-              placeholder: (context, url) => placeHolder(100),
+            //  errorWidget:(context, url,e) => placeHolder(100) ,
+              placeholder:  placeHolder(100),
             ),
             Expanded(
               child: Padding(

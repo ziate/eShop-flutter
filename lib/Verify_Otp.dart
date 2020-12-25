@@ -137,7 +137,6 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   }
 
   void _onVerifyCode() async {
-
     setState(() {
       isCodeSent = true;
     });
@@ -211,7 +210,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
 
     print("otp*********$code");
 
-    if(code.length==6) {
+    if (code.length == 6) {
       _playAnimation();
       AuthCredential _authCredential = PhoneAuthProvider.getCredential(
           verificationId: _verificationId, smsCode: code);
@@ -245,9 +244,9 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
         setSnackbar(error.toString());
         print("errror=========$error");
         await buttonController.reverse();
-       // setSnackbar("Something went wrong");
+        // setSnackbar("Something went wrong");
       });
-    }else{
+    } else {
       setSnackbar('Please Enter OTP!');
     }
   }
@@ -259,10 +258,10 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   }
 
   getImage() {
-    return Container(
-      padding: EdgeInsets.only(top: 80.0),
+    return Expanded(
+      flex: 4,
       child: Center(
-        child: new Image.asset('assets/images/homelogo.png', width: 200),
+        child: new Image.asset('assets/images/homelogo.png'),
       ),
     );
   }
@@ -367,19 +366,18 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   }
 
   expandedBottomView() {
-    double width = deviceWidth;
     return Expanded(
-      child: Padding(
-        padding: EdgeInsets.only(
-          top: 100.0,
-        ),
+      flex: 6,
+      child: Container(
+        alignment: Alignment.bottomCenter,
         child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
 
           child: Card(
+            elevation: 0.5,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
-            elevation: 0,
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: EdgeInsets.only(left: 20.0, right: 20.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[

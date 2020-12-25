@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Rating_Review.dart';
 
@@ -205,12 +206,11 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
     print("height========$deviceHeight");
     return InkWell(
-      splashColor: primary.withOpacity(0.2),
       onTap: () {
         Navigator.push(
             context,
             PageRouteBuilder(
-              transitionDuration: Duration(seconds: 1),
+              // transitionDuration: Duration(seconds: 1),
               pageBuilder: (_, __, ___) => ProductPreview(
                   pos: _curSlider,
                   secPos: widget.secPos,
@@ -229,7 +229,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               child: Container(
                 height: height,
                 width: double.infinity,
-                //padding: EdgeInsets.all(8.0),
                 child: PageView.builder(
                   itemCount: sliderList.length,
                   scrollDirection: Axis.horizontal,
@@ -241,215 +240,226 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     });
                   },
                   itemBuilder: (BuildContext context, int index) {
-                    return Stack(
-                      children: <Widget>[
-                        CachedNetworkImage(
-                          imageUrl: sliderList[_curSlider],
-                          placeholder: (context, url) => Image.asset(
-                            "assets/images/sliderph.png",
-                            fit: BoxFit.fill,
-                            height: height,
-                          ),
-                          errorWidget: (context, url, error) => Image.asset(
-                            "assets/images/sliderph.png",
-                            height: height,
-                          ),
-
-                          height: height,
-                          width: double.maxFinite,
-                        ),
-                        Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Container(
-                              margin: EdgeInsets.only(bottom: 5),
-                              child: Text(
-                                "${_curSlider + 1}/${sliderList.length}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption
-                                    .copyWith(color: primary),
-                              ),
-                              decoration: BoxDecoration(
-                                  color: lightWhite,
-                                  borderRadius: BorderRadius.circular(5)),
-                              padding: EdgeInsets.symmetric(horizontal: 5),
-                            )),
-
-                        indicatorImage(),
-                        // )
-                      ],
+                    return FadeInImage(
+                      image: NetworkImage(sliderList[index]),
+                      placeholder: AssetImage(
+                        "assets/images/sliderph.png",
+                        //fit: BoxFit.fill,
+                        // height: height,
+                      ),
+                      /* errorWidget: (context, url, error) => Image.asset(
+                        "assets/images/sliderph.png",
+                        height: height,
+                      ),*/
+                      height: height,
+                      width: double.maxFinite,
                     );
                   },
                 ),
               )),
+          Positioned.fill(
+            child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  margin: EdgeInsets.only(bottom: 5),
+                  child: Text(
+                    "${_curSlider + 1}/${sliderList.length}",
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: primary),
+                  ),
+                  decoration: BoxDecoration(
+                      color: lightWhite,
+                      borderRadius: BorderRadius.circular(5)),
+                  padding: EdgeInsets.symmetric(horizontal: 5),
+                )),
+          ),
+          indicatorImage(),
           Container(
             color: white30,
             width: deviceWidth,
             height: kToolbarHeight,
             margin: EdgeInsets.only(top: statusBarHeight),
           ),
-          Material(
-            color: Colors.transparent,
-            child: Container(
-              alignment: Alignment.centerLeft,
-              height: kToolbarHeight,
-              margin: EdgeInsets.only(top: statusBarHeight, left: 10),
-              decoration: shadow(),
-              child: Card(
-                elevation: 0,
+          Container(
+            width: 40,
+            alignment: Alignment.centerLeft,
+            height: kToolbarHeight,
+            margin: EdgeInsets.only(top: statusBarHeight, left: 10),
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                    color: lightWhite, offset: Offset(0, 0), blurRadius: 30)
+              ],
+            ),
+            child: Card(
+              elevation: 0,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () => Navigator.of(context).pop(),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 4.0),
-                  child: InkWell(
-                    child: Icon(Icons.keyboard_arrow_left, color: primary),
-                    onTap: () => Navigator.of(context).pop(),
-                  ),
+                  child: Icon(Icons.keyboard_arrow_left, color: primary),
                 ),
               ),
             ),
           ),
-          Container(
-              margin: EdgeInsets.only(top: statusBarHeight),
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding:
-                    const EdgeInsets.only(top: 10.0, bottom: 10, right: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                        decoration: shadow(),
-                        child: Card(
-                            elevation: 0,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: Icon(
-                                      Icons.share_outlined,
-                                      color: primary,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  onTap: () async {
-                                    var str =
-                                        "${widget.model.name}\n\n$appName\n\nYou can find our app from below url\n\nAndroid:\n"
-                                        "$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
-                                    // Share.shareFiles([sliderList[0]],text:str);
-
-                                    final response = await get(sliderList[0]);
-
-                                    final Directory temp =
-                                        await getTemporaryDirectory();
-                                    final File imageFile =
-                                        File('${temp.path}/tempImage');
-                                    imageFile
-                                        .writeAsBytesSync(response.bodyBytes);
-                                    Share.shareFiles(
-                                      ['${temp.path}/tempImage'],
-                                      text: str,
-                                    );
-                                  }),
-                            ))),
-                    Container(
-                        decoration: shadow(),
-                        child: Card(
-                            elevation: 0,
-                            child: widget.model.isFavLoading
-                                ? Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                        height: 10,
-                                        width: 10,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 0.7,
-                                        )),
-                                  )
-                                : Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Icon(
-                                            widget.model.isFav == "0"
-                                                ? Icons.favorite_border
-                                                : Icons.favorite,
-                                            color: primary,
-                                            size: 20,
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          if (CUR_USERID != null) {
-                                            widget.model.isFav == "0"
-                                                ? _setFav()
-                                                : _removeFav();
-                                          } else {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Login()),
-                                            );
-                                          }
-                                        }),
-                                  ))),
-                    Container(
-                      // decoration: shadow(),
-                      child: InkWell(
-                        child: Card(
-                          elevation: 0,
-                          child: new Stack(children: <Widget>[
-                            Center(
-                              child: Image.asset(
-                                'assets/images/noti_cart.png',
-                                width: 30,
-                              ),
-                            ),
-                            (CUR_CART_COUNT != null &&
-                                    CUR_CART_COUNT.isNotEmpty &&
-                                    CUR_CART_COUNT != "0")
-                                ? new Positioned(
-                                    top: 0.0,
-                                    right: 5.0,
-                                    bottom: 10,
-                                    child: Container(
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: primary.withOpacity(0.5)),
-                                        child: new Center(
-                                          child: Padding(
-                                            padding: EdgeInsets.all(3),
-                                            child: new Text(
-                                              CUR_CART_COUNT,
-                                              style: TextStyle(
-                                                  fontSize: 7,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-                                        )),
-                                  )
-                                : Container()
-                          ]),
-                        ),
-                        onTap: () async {
-                          CUR_USERID == null
-                              ? Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Login(),
-                                  ))
-                              : Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        Cart(widget.updateHome, updateDetail),
-                                  ));
-                        },
-                      ),
-                    ),
+          Align(
+            alignment: Alignment.topRight,
+            child: Container(
+                margin: EdgeInsets.only(top: statusBarHeight),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                        color: lightWhite, offset: Offset(0, 0), blurRadius: 30)
                   ],
                 ),
-              ))
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(top: 10.0, bottom: 10, right: 10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                          child: Card(
+                              elevation: 0,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Icon(
+                                        Icons.share_outlined,
+                                        color: primary,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    onTap: () async {
+                                      var str =
+                                          "${widget.model.name}\n\n$appName\n\nYou can find our app from below url\n\nAndroid:\n"
+                                          "$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
+                                      // Share.shareFiles([sliderList[0]],text:str);
+
+                                      final response = await get(sliderList[0]);
+
+                                      final Directory temp =
+                                          await getTemporaryDirectory();
+                                      final File imageFile =
+                                          File('${temp.path}/tempImage');
+                                      imageFile
+                                          .writeAsBytesSync(response.bodyBytes);
+                                      Share.shareFiles(
+                                        ['${temp.path}/tempImage'],
+                                        text: str,
+                                      );
+                                    }),
+                              ))),
+                      Container(
+                          //  decoration: shadow(),
+                          child: Card(
+                              elevation: 0,
+                              child: widget.model.isFavLoading
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                          height: 10,
+                                          width: 10,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 0.7,
+                                          )),
+                                    )
+                                  : Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(5.0),
+                                            child: Icon(
+                                              widget.model.isFav == "0"
+                                                  ? Icons.favorite_border
+                                                  : Icons.favorite,
+                                              color: primary,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            if (CUR_USERID != null) {
+                                              widget.model.isFav == "0"
+                                                  ? _setFav()
+                                                  : _removeFav();
+                                            } else {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Login()),
+                                              );
+                                            }
+                                          }),
+                                    ))),
+                      Container(
+                        //decoration: shadow(),
+                        child: Card(
+                          elevation: 0,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(4),
+                            onTap: () async {
+                              CUR_USERID == null
+                                  ? Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Login(),
+                                      ))
+                                  : Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Cart(
+                                            widget.updateHome, updateDetail),
+                                      ));
+                            },
+                            child: new Stack(children: <Widget>[
+                              Center(
+                                child: Image.asset(
+                                  'assets/images/noti_cart.png',
+                                  width: 30,
+                                ),
+                              ),
+                              (CUR_CART_COUNT != null &&
+                                      CUR_CART_COUNT.isNotEmpty &&
+                                      CUR_CART_COUNT != "0")
+                                  ? new Positioned(
+                                      top: 0.0,
+                                      right: 5.0,
+                                      bottom: 10,
+                                      child: Container(
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: primary.withOpacity(0.5)),
+                                          child: new Center(
+                                            child: Padding(
+                                              padding: EdgeInsets.all(3),
+                                              child: new Text(
+                                                CUR_CART_COUNT,
+                                                style: TextStyle(
+                                                    fontSize: 7,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                          )),
+                                    )
+                                  : Container()
+                            ]),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+          )
         ],
       ),
     );
@@ -457,19 +467,14 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   indicatorImage() {
     String indicator = widget.model.indicator;
-    print("Indicator:::::$indicator");
-
-    if (indicator == "1") {
-      return Align(
-          alignment: Alignment.bottomRight,
-          child: Image.asset("assets/images/vag.png"));
-    } else if (indicator == "2") {
-      return Align(
-          alignment: Alignment.bottomRight,
-          child: Image.asset("assets/images/nonvag.png"));
-    } else {
-      return Container();
-    }
+    return Positioned.fill(
+        child: Align(
+            alignment: Alignment.bottomRight,
+            child: indicator == "1"
+                ? Image.asset("assets/images/vag.png")
+                : indicator == "2"
+                    ? Image.asset("assets/images/nonvag.png")
+                    : Container()));
   }
 
   updateDetail() {
@@ -496,20 +501,18 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(4.0),
-                  child: CachedNetworkImage(
-                    imageUrl: sliderList[index],
+                  child: FadeInImage(
+                    image: NetworkImage(sliderList[index]),
                     fit: BoxFit.fill,
-                    placeholder: (context, url) => Image.asset(
+                    placeholder: AssetImage(
                       "assets/images/placeholder.png",
-                      height: width,
-                      fit: BoxFit.fill,
                     ),
-                    errorWidget: (context, url, error) => Image.asset(
+                    /*   errorWidget: (context, url, error) => Image.asset(
                       "assets/images/placeholder.png",
                       fit: BoxFit.fill,
                       height: width,
                       width: width,
-                    ),
+                    ),*/
                     height: width,
                     width: width,
                   )),
@@ -607,10 +610,12 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   _desc() {
     print("detail===${widget.model.desc}");
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Html(data: widget.model.desc),
-    );
+    return widget.model.desc.isNotEmpty
+        ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Html(data: widget.model.desc),
+          )
+        : Container();
     //Html(data:widget.model.productList[widget.proPos].desc);
   }
 
@@ -681,21 +686,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     ));
   }
 
-  _selectVarientTitle() {
-    print("varient****${widget.model.type}");
-
-    if (widget.model.type == "variable_product") {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Text(
-          selectVarient,
-          style: Theme.of(context).textTheme.subtitle1.copyWith(color: primary),
-        ),
-      );
-    } else {
-      return Container();
-    }
-  }
 
   _getVarient(int pos) {
     if (widget.model.type == "variable_product") {
@@ -756,7 +746,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   }
 
   void _extraDetail() {
-    showModalBottomSheet(
+    showModalBottomSheet<dynamic>(
         context: context,
         isScrollControlled: true,
         shape: RoundedRectangleBorder(
@@ -765,17 +755,37 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         builder: (builder) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _desc(),
-                widget.model.desc.isNotEmpty ? Divider() : Container(),
-                _madeIn(),
-                _otherDetail(_selVarient),
-                _cancleable(),
-              ],
-            );
+            return DraggableScrollableSheet(
+                expand: false,
+                builder:
+                    (BuildContext context, ScrollController scrollController) {
+                  return ListView(
+                      shrinkWrap: true,
+                      controller: scrollController,
+                      children: [
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _shortDesc(),
+                            widget.model.shortDescription.isNotEmpty
+                                ? Divider()
+                                : Container(),
+                            _desc(),
+                            widget.model.desc.isNotEmpty
+                                ? Divider()
+                                : Container(),
+                            _attr(),
+                            widget.model.attributeList.isNotEmpty
+                                ? Divider()
+                                : Container(),
+                            _madeIn(),
+                            _otherDetail(_selVarient),
+                            _cancleable(),
+                          ],
+                        )
+                      ]);
+                });
           });
         });
   }
@@ -1003,7 +1013,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       color: primary,
                       onPressed: available ? applyVarient : null,
                       child: Text(
-                        'Apply',
+                        APPLY,
                         style: TextStyle(color: white),
                       ),
                     ),
@@ -1270,7 +1280,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         Expanded(
           child: SingleChildScrollView(
             controller: notificationcontroller,
-            physics: BouncingScrollPhysics(),
+            //physics: BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -1499,6 +1509,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       elevation: 0.2,
       margin: EdgeInsets.only(bottom: 5, right: pad ? 5 : 0),
       child: InkWell(
+        borderRadius: BorderRadius.circular(4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1509,14 +1520,13 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       topLeft: Radius.circular(5),
                       topRight: Radius.circular(5)),
                   child: Hero(
-                    tag: "${productList[index].id}${widget.secPos}$index",
-                    child: CachedNetworkImage(
-                      imageUrl: productList[index].image,
+                    tag: "$index${productList[index].id}",
+                    child: FadeInImage(
+                      image: NetworkImage(productList[index].image),
                       height: double.maxFinite,
                       width: double.maxFinite,
-
-                      errorWidget:(context, url,e) => placeHolder(width) ,
-                      placeholder: (context, url) => placeHolder(width),
+                      //errorWidget: (context, url, e) => placeHolder(width),
+                      placeholder: placeHolder(width),
                     ),
                   )),
             ),
@@ -1574,10 +1584,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           Product model = productList[index];
           notificationoffset = 0;
 
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             PageRouteBuilder(
-                transitionDuration: Duration(seconds: 1),
+               // transitionDuration: Duration(seconds: 1),
                 pageBuilder: (_, __, ___) => ProductDetail(
                     model: model,
                     updateParent: widget.updateParent,
@@ -1600,7 +1610,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             shrinkWrap: true,
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
             itemCount: reviewList.length > 2 ? 2 : reviewList.length,
-            physics: BouncingScrollPhysics(),
+            //physics: BouncingScrollPhysics(),
             separatorBuilder: (BuildContext context, int index) => Divider(),
             itemBuilder: (context, index) {
               return Column(
@@ -1918,40 +1928,86 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         itemCount: reviewList[i].imgList.length,
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
-        physics: BouncingScrollPhysics(),
+        //physics: BouncingScrollPhysics(),
         itemBuilder: (context, index) {
-          return InkWell(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 10,bottom: 5.0,top: 5),
-              child: new ClipRRect(
-                borderRadius: BorderRadius.circular(5.0),
-                child: new CachedNetworkImage(
-                  imageUrl: reviewList[i].imgList[index],
-                  height: 50.0,
-                  width: 50.0,
-                  fit: BoxFit.cover,
-                  errorWidget:(context, url,e) => placeHolder(50) ,
-                  placeholder: (context, url) => placeHolder(50),
+          return Padding(
+            padding: const EdgeInsets.only(right: 10, bottom: 5.0, top: 5),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      transitionDuration: Duration(seconds: 1),
+                      pageBuilder: (_, __, ___) => ProductPreview(
+                          pos: index,
+                          secPos: widget.secPos,
+                          index: widget.index,
+                          id: '$index${reviewList[i].id}',
+                          imgList: reviewList[i].imgList,
+                          list: true),
+                    ));
+              },
+              child: Hero(
+                tag: "$index${reviewList[i].id}",
+                child: new ClipRRect(
+                  borderRadius: BorderRadius.circular(5.0),
+                  child: new FadeInImage(
+                    image: NetworkImage(reviewList[i].imgList[index]),
+                    height: 50.0,
+                    width: 50.0,
+                    placeholder: placeHolder(50),
+                  ),
                 ),
               ),
             ),
-            onTap: (){
-              Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    transitionDuration: Duration(seconds: 1),
-                    pageBuilder: (_, __, ___) => ProductPreview(
-                        pos: index,
-                        secPos: widget.secPos,
-                        index: widget.index,
-                        id: widget.model.id,
-                        imgList: reviewList[i].imgList,
-                        list: true),
-                  ));
-            },
           );
         },
       ),
     );
   }
+
+  _shortDesc() {
+    return widget.model.shortDescription.isNotEmpty
+        ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: ListTile(
+              dense: true,
+              title: Text(
+                widget.model.shortDescription,
+                style: Theme.of(context).textTheme.subtitle2,
+              ),
+            ))
+        : Container();
+  }
+
+  _attr() {
+    return widget.model.attributeList.isNotEmpty
+        ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: widget.model.attributeList.length,
+              itemBuilder: (context, i) {
+                return ListTile(
+                  trailing: Text(widget.model.attributeList[i].value),
+                  dense: true,
+                  title: Text(
+                    widget.model.attributeList[i].name,
+                    style: Theme.of(context).textTheme.subtitle2,
+                  ),
+                );
+              },
+            ),
+          )
+        : Container();
+  }
+
+/* return widget.model.attributeList.length>0
+        ? Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
+      child: Text(widget.model.attributeList),
+    )
+        : Container();*/
+
 }

@@ -1,13 +1,12 @@
 import 'package:flutter/cupertino.dart';
 
 import '../Helper/String.dart';
+import 'Section_Model.dart';
 
 class Model {
   String id, type, typeId, image;
-
-  String name,   banner;
-
-
+  var list;
+  String name, banner;
 
   Model(
       {this.id,
@@ -15,16 +14,27 @@ class Model {
       this.typeId,
       this.image,
       this.name,
-
       this.banner,
-     });
+      this.list});
 
   factory Model.fromSlider(Map<String, dynamic> parsedJson) {
+    var listContent = parsedJson["data"];
+    if (listContent == null || listContent.isEmpty)
+      listContent = [];
+    else {
+      listContent = listContent[0];
+      if (parsedJson[TYPE] == "categories")
+        listContent = new Product.fromCat(listContent);
+      else if (parsedJson[TYPE] == "products")
+        listContent = new Product.fromJson(listContent);
+    }
+
     return new Model(
         id: parsedJson[ID],
         image: parsedJson[IMAGE],
         type: parsedJson[TYPE],
-        typeId: parsedJson[TYPE_ID]);
+        typeId: parsedJson[TYPE_ID],
+        list: listContent);
   }
 
   factory Model.fromTimeSlot(Map<String, dynamic> parsedJson) {
@@ -37,6 +47,4 @@ class Model {
       name: name,
     );
   }
-
-
 }

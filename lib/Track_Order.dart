@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eshop/Model/Order_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -119,7 +118,7 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
               : orderList.length == 0 && deliveredList.length == 0
                   ? Center(child: Text(noItem))
                   : SingleChildScrollView(
-                      physics: BouncingScrollPhysics(),
+                     // physics: BouncingScrollPhysics(),
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: Column(
@@ -174,22 +173,17 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       try {
         if (CUR_USERID != null) {
-          String status="$PLACED, $SHIPED, $PROCESSED, $CANCLED, $RETURNED";
-          var parameter = {
-            USER_ID: CUR_USERID,
-            ACTIVE_STATUS: status
-          };
+          String status = "$PLACED, $SHIPED, $PROCESSED, $CANCLED, $RETURNED";
+          var parameter = {USER_ID: CUR_USERID, ACTIVE_STATUS: status};
           Response response =
               await post(getOrderApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
 
           var getdata = json.decode(response.body);
-          print('response***fav****par***${parameter.toString()}');
-          print('response***fav****${response.body.toString()}');
-          bool error = getdata["error"];
+           bool error = getdata["error"];
           String msg = getdata["message"];
           orderList.clear();
-          print('section get***favorite get');
+
           if (!error) {
             var data = getdata["data"];
             orderList = (data as List)
@@ -241,12 +235,10 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
                   .timeout(Duration(seconds: timeOut));
 
           var getdata = json.decode(response.body);
-          print('response***fav****par***${parameter.toString()}');
-          print('response***fav****${response.body.toString()}');
           bool error = getdata["error"];
           String msg = getdata["message"];
 
-          print('section get***favorite get');
+
           if (!error) {
             var data = getdata["data"];
             deliveredList.clear();
@@ -357,11 +349,15 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
               children: [
                 Text(
                   ORDER_ID_LBL + " : " + orderList[index].id,
-                  style: Theme.of(context).textTheme.subtitle2.copyWith(
-                      color: fontColor, fontWeight: FontWeight.bold),
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle2
+                      .copyWith(color: fontColor, fontWeight: FontWeight.bold),
                 ),
                 Text(ORDER_DATE + " : " + orderList[index].orderDate),
-                orderList[index].otp!="0"?Text(ORDER_OTP + " : " + orderList[index].otp):Container(),
+                orderList[index].otp != "0"
+                    ? Text(ORDER_OTP + " : " + orderList[index].otp)
+                    : Container(),
                 Text(orderList[index].itemList[0].name +
                     "${orderList[index].itemList.length > 1 ? " and more items" : ""} "),
               ],
@@ -499,12 +495,13 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
 
     return Row(
       children: [
-        CachedNetworkImage(
-          imageUrl: orderItem.image,
+        FadeInImage(
+          fadeInDuration: Duration(milliseconds: 150),
+          image: NetworkImage(orderItem.image),
           height: 100.0,
           width: 100.0,
-          errorWidget:(context, url,e) => placeHolder(100) ,
-          placeholder: (context, url) => placeHolder(100),
+          // errorWidget:(context, url,e) => placeHolder(100) ,
+          placeholder: placeHolder(100),
         ),
         Expanded(
           child: Column(
@@ -713,9 +710,7 @@ class StateTrack extends State<TrackOrder> with TickerProviderStateMixin {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Icon(
-                        dDate == null
-                            ? Icons.stop_circle
-                            : Icons.check_circle,
+                        dDate == null ? Icons.stop_circle : Icons.check_circle,
                         color: dDate == null ? Colors.grey : primary,
                       ),
                     ),

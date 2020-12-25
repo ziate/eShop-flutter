@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:eshop/Cart.dart';
@@ -810,12 +810,13 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   children: [
                     ClipRRect(
                         borderRadius: BorderRadius.circular(10.0),
-                        child: CachedNetworkImage(
-                          imageUrl: orderItem.image,
+                        child: FadeInImage(
+                          fadeInDuration: Duration(milliseconds: 150),
+                          image: NetworkImage(orderItem.image),
                           height: 90.0,
                           width: 90.0,
-                          errorWidget: (context, url, e) => placeHolder(90),
-                          placeholder: (context, url) => placeHolder(90),
+                          // errorWidget: (context, url, e) => placeHolder(90),
+                          placeholder: placeHolder(90),
                         )),
                     Expanded(
                       child: Padding(
@@ -834,25 +835,27 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Row(children: [
-                              Text(
-                                orderItem.attr_name + ":",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subtitle2
-                                    .copyWith(color: lightBlack2),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 5.0),
-                                child: Text(
-                                  orderItem.varient_values,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
-                                      .copyWith(color: lightBlack),
-                                ),
-                              )
-                            ]),
+                            orderItem.attr_name.isNotEmpty
+                                ? Row(children: [
+                                    Text(
+                                      orderItem.attr_name + ":",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subtitle2
+                                          .copyWith(color: lightBlack2),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 5.0),
+                                      child: Text(
+                                        orderItem.varient_values,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle2
+                                            .copyWith(color: lightBlack),
+                                      ),
+                                    )
+                                  ])
+                                : Container(),
                             //Text(PAYMENT_METHOD_LBL + " : " + model.payMethod),
                             Row(children: [
                               Text(
@@ -904,315 +907,86 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                       getShipped(sDate, cDate),
                       getDelivered(dDate, cDate),
                       getCanceled(cDate),
-                      getReturned(rDate, model),
+                      getReturned(orderItem,rDate, model),
                     ],
                   ),
                 ),
+
+                model.itemList.length > 1
+                    ? (!orderItem.listStatus.contains(DELIVERD) &&
+                            (!orderItem.listStatus.contains(RETURNED)) &&
+                            orderItem.isCancle == "1" &&
+                            orderItem.isAlrCancelled == "0")
+                        ? Column(
+                            children: [
+                              Divider(),
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: CupertinoButton(
+                                  padding: EdgeInsets.zero,
+                                  child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 5),
+                                      decoration: BoxDecoration(
+                                          color: lightWhite,
+                                          borderRadius: new BorderRadius.all(
+                                              const Radius.circular(4.0))),
+                                      child: Text(ITEM_CANCEL,
+                                          textAlign: TextAlign.center,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .button
+                                              .copyWith(
+                                                color: fontColor,
+                                              ))),
+                                  onPressed: () {
+                                    cancelOrder(CANCLED, updateOrderItemApi,
+                                        orderItem.id);
+                                  },
+                                ),
+                              ),
+                            ],
+                          )
+                        : (orderItem.listStatus.contains(DELIVERD) &&
+                                orderItem.isReturn == "1" &&
+                                orderItem.isAlrReturned == "0")
+                            /*  &&model.rtnReqSubmitted=="0"? returnable(true,RETURN_ORDER)
+                      :model.rtnReqSubmitted=="2"?returnable(false, text)*/
+                            ? Column(
+                                children: [
+                                  Divider(),
+                                  Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: CupertinoButton(
+                                      padding: EdgeInsets.zero,
+                                      child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 15, vertical: 5),
+                                          decoration: BoxDecoration(
+                                              color: lightWhite,
+                                              borderRadius: new BorderRadius
+                                                      .all(
+                                                  const Radius.circular(4.0))),
+                                          child: Text(ITEM_RETURN,
+                                              textAlign: TextAlign.center,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .button
+                                                  .copyWith(
+                                                    color: fontColor,
+                                                  ))),
+                                      onPressed: () {
+                                        cancelOrder(RETURNED,
+                                            updateOrderItemApi, orderItem.id);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Container()
+                    : Container(),
               ],
             )));
-  }
-
-  orderProcess(String pDate, prDate, cDate, dDate, sDate, rDate) {
-    /*return Column(
-      children: [
-        Icon(
-          Icons.circle,
-          color: primary,
-          size: 10.0,
-        ),
-        Container(
-            height: 40,
-            child: VerticalDivider(
-              thickness: 2,
-              color: prDate == null ? Colors.grey : primary,
-            )),
-        Icon(
-          Icons.circle,
-          color: primary,
-          size: 10.0,
-        ),
-      ],
-    );*/
-
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(
-        height: 200,
-        child: Column(
-          children: [
-            Column(children: [
-              Icon(
-                Icons.circle,
-                color: primary,
-                size: 10.0,
-              ),
-              cDate == null
-                  ? Flexible(
-                      flex: 1,
-                      child: VerticalDivider(
-                        thickness: 2,
-                        color: prDate == null ? Colors.grey : primary,
-                      ))
-                  : prDate == null
-                      ? Container()
-                      : Flexible(
-                          flex: 1,
-                          child: VerticalDivider(
-                            thickness: 2,
-                            color: primary,
-                          )),
-              cDate == null
-                  ? Icon(Icons.circle,
-                      color: prDate == null ? Colors.grey : primary, size: 10.0)
-                  : prDate == null
-                      ? Container()
-                      : Icon(
-                          Icons.circle,
-                          color: primary,
-                          size: 10.0,
-                        ),
-            ]),
-            Column(children: [
-              cDate == null
-                  ? Flexible(
-                      flex: 1,
-                      child: VerticalDivider(
-                        thickness: 2,
-                        color: sDate == null ? Colors.grey : primary,
-                      ))
-                  : sDate == null
-                      ? Container()
-                      : Flexible(
-                          flex: 1,
-                          child: VerticalDivider(
-                            thickness: 2,
-                          )),
-              cDate == null
-                  ? Icon(Icons.circle,
-                      color: sDate == null ? Colors.grey : primary, size: 10.0)
-                  : sDate == null
-                      ? Container()
-                      : Icon(Icons.circle, color: primary, size: 10.0),
-            ]),
-            Column(children: [
-              cDate == null
-                  ? Flexible(
-                      flex: 1,
-                      child: VerticalDivider(
-                        thickness: 2,
-                        color: dDate == null ? Colors.grey : primary,
-                      ))
-                  : Container(),
-              cDate == null
-                  ? Icon(
-                      Icons.circle,
-                      color: dDate == null ? Colors.grey : primary,
-                      size: 10.0,
-                    )
-                  : Container(),
-            ]),
-            cDate != null
-                ? Column(children: [
-                    Flexible(
-                        flex: 1,
-                        child: VerticalDivider(
-                          thickness: 2,
-                          color: Colors.red,
-                        )),
-                    Icon(
-                      Icons.cancel_rounded,
-                      color: Colors.red,
-                    )
-                  ])
-                : Container(),
-            widget.model.listStatus.contains(RETURNED)
-                ? Column(children: [
-                    Flexible(
-                        flex: 1,
-                        child: VerticalDivider(
-                          thickness: 2,
-                          color: Colors.red,
-                        )),
-                    Icon(
-                      Icons.cancel_rounded,
-                      color: Colors.red,
-                    )
-                  ])
-                : Container(),
-          ],
-        ),
-      ),
-      /* Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-              height: 45,
-              padding: EdgeInsets.only(left: 7.0),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ORDER_NPLACED,
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(color: lightBlack),
-                    ),
-                    Text(
-                      pDate,
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption
-                          .copyWith(color: lightBlack2),
-                    )
-                  ])),
-          Container(
-              height: 50,
-              padding: EdgeInsets.only(left: 7.0),
-              child: Column(children: [
-                cDate == null
-                    ? Text(
-                        ORDER_PROCESSED,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle2
-                            .copyWith(color: lightBlack),
-                      )
-                    : prDate == null
-                        ? Container()
-                        : Text(
-                            ORDER_PROCESSED,
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(color: lightBlack),
-                          ),
-                cDate == null
-                    ? Text(
-                        prDate ?? " ",
-                        style: Theme.of(context)
-                            .textTheme
-                            .caption
-                            .copyWith(color: lightBlack2),
-                      )
-                    : prDate == null
-                        ? Container()
-                        : Text(
-                            prDate ?? " ",
-                            style: Theme.of(context)
-                                .textTheme
-                                .caption
-                                .copyWith(color: lightBlack2),
-                          )
-              ])),
-          Container(
-              padding: EdgeInsets.only(left: 7.0),
-              height: 50,
-              child: Column(children: [
-                cDate == null
-                    ? Text(
-                        ORDER_SHIPPED,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle2
-                            .copyWith(color: lightBlack),
-                      )
-                    : sDate == null
-                        ? Container()
-                        : Text(
-                            ORDER_SHIPPED,
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(color: lightBlack),
-                          ),
-                cDate == null
-                    ? Text(
-                        sDate ?? " ",
-                        style: Theme.of(context)
-                            .textTheme
-                            .caption
-                            .copyWith(color: lightBlack2),
-                      )
-                    : sDate == null
-                        ? Container()
-                        : Text(
-                            sDate ?? " ",
-                            style: Theme.of(context)
-                                .textTheme
-                                .caption
-                                .copyWith(color: lightBlack2),
-                          ),
-              ])),
-          Container(
-              height: 50,
-              padding: EdgeInsets.only(left: 7.0),
-              child: Column(children: [
-                cDate == null
-                    ? Text(
-                        ORDER_DELIVERED,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle2
-                            .copyWith(color: lightBlack),
-                      )
-                    : Container(),
-                cDate == null
-                    ? Text(
-                        dDate ?? " ",
-                        style: Theme.of(context)
-                            .textTheme
-                            .caption
-                            .copyWith(color: lightBlack2),
-                      )
-                    : Container()
-              ])),
-          cDate != null
-              ? Container(
-                  height: 50,
-                  padding: EdgeInsets.only(left: 7.0),
-                  child: Column(children: [
-                    Text(
-                      ORDER_CANCLED,
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(color: lightBlack),
-                    ),
-                    Text(
-                      cDate ?? " ",
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption
-                          .copyWith(color: lightBlack2),
-                    )
-                  ]))
-              : Container(),
-          widget.model.listStatus.contains(RETURNED)
-              ? Container(
-                  height: 50,
-                  padding: EdgeInsets.only(left: 7.0),
-                  child: Column(children: [
-                    Padding(
-                        padding: EdgeInsets.only(top: 10.0),
-                        child: Text(
-                          ORDER_RETURNED,
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle2
-                              .copyWith(color: lightBlack),
-                        )),
-                    Text(
-                      rDate ?? " ",
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption
-                          .copyWith(color: lightBlack2),
-                    )
-                  ]))
-              : Container(),
-        ],
-      )*/
-    ]);
   }
 
   getPlaced(String pDate) {
@@ -1221,7 +995,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
         Icon(
           Icons.circle,
           color: primary,
-          // size: 15,
+          size: 15,
         ),
         Container(
           margin: const EdgeInsets.only(left: 10),
@@ -1251,7 +1025,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
               Column(
                 children: [
                   Container(
-                      height: 40,
+                      height: 30,
                       child: VerticalDivider(
                         thickness: 2,
                         color: prDate == null ? Colors.grey : primary,
@@ -1259,7 +1033,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   Icon(
                     Icons.circle,
                     color: prDate == null ? Colors.grey : primary,
-                    // size: 15,
+                    size: 15,
                   ),
                 ],
               ),
@@ -1286,7 +1060,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
             : Column(
                 children: [
                   Container(
-                    height: 40,
+                    height: 30,
                     child: VerticalDivider(
                       thickness: 2,
                       color: primary,
@@ -1299,7 +1073,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   Icon(
                     Icons.circle,
                     color: primary,
-                    // size: 15,
+                    size: 15,
                   ),
                 ],
               );
@@ -1313,7 +1087,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
               Column(
                 children: [
                   Container(
-                    height: 40,
+                    height: 30,
                     child: VerticalDivider(
                       thickness: 2,
                       color: sDate == null ? Colors.grey : primary,
@@ -1322,7 +1096,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   Icon(
                     Icons.circle,
                     color: sDate == null ? Colors.grey : primary,
-                    // size: 15,
+                    size: 15,
                   ),
                 ],
               ),
@@ -1350,7 +1124,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
             : Column(
                 children: [
                   Container(
-                    height: 40,
+                    height: 30,
                     child: VerticalDivider(
                       thickness: 2,
                     ),
@@ -1363,6 +1137,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   Icon(
                     Icons.circle,
                     color: primary,
+                    size: 15,
                   ),
                 ],
               );
@@ -1376,7 +1151,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
               Column(
                 children: [
                   Container(
-                    height: 40,
+                    height: 30,
                     child: VerticalDivider(
                       thickness: 2,
                       color: dDate == null ? Colors.grey : primary,
@@ -1385,7 +1160,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   Icon(
                     Icons.circle,
                     color: dDate == null ? Colors.grey : primary,
-                    // size: 15,
+                    size: 15,
                   ),
                 ],
               ),
@@ -1420,7 +1195,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
               Column(
                 children: [
                   Container(
-                    height: 40,
+                    height: 30,
                     child: VerticalDivider(
                       thickness: 2,
                       color: primary,
@@ -1429,6 +1204,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   Icon(
                     Icons.cancel_rounded,
                     color: primary,
+                    size: 15,
                   ),
                 ],
               ),
@@ -1454,18 +1230,20 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
         : Container();
   }
 
-  getReturned(
+  getReturned(OrderItem item,
     String rDate,
-    Order_Model model,
+    Order_Model model
   ) {
-    return model.listStatus.contains(RETURNED)
+   // searchList[index].itemList[0];
+    print("status**********${model.listStatus}");
+    return item.listStatus.contains(RETURNED)
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Column(
                 children: [
                   Container(
-                    height: 40,
+                    height: 30,
                     child: VerticalDivider(
                       thickness: 2,
                       color: primary,
@@ -1474,7 +1252,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                   Icon(
                     Icons.cancel_rounded,
                     color: primary,
-                    // size: 15,
+                    size: 15,
                   ),
                 ],
               ),

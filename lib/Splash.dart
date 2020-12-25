@@ -51,7 +51,6 @@ class _SplashScreen extends State<Splash> {
             child: Center(
               child: Image.asset(
                 'assets/images/splashlogo.png',
-                fit: BoxFit.fill,
               ),
             ),
           ),
@@ -86,24 +85,6 @@ class _SplashScreen extends State<Splash> {
 
 
 
-/*  void _registerToken(String token, String uid) async {
-    var parameter = {USER_ID: uid, FCM_ID: token};
-
-    Response response =
-        await post("$SET_FCM", body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
-
-    // print('Response status: ${response.statusCode}');
-    //  print('Response body: ${response.body}***$token_api**$data');
-
-    var getdata = json.decode(response.body);
-
-    print("set token**${response.body.toString()}");
-    //var error = getdata['error'].toString();
-    // if (error.compareTo('false') == 0) {}
-  }*/
-
-
 
 /*  Future<void> checkNetwork() async {
     bool avail = await isNetworkAvailable();
@@ -136,15 +117,14 @@ class _SplashScreen extends State<Splash> {
     Response response = await post(getJwtKeyApi, headers: headers)
         .timeout(Duration(seconds: timeOut));
 
-    print('response***jwtkey*${response.body.toString()}');
-    var getdata = json.decode(response.body);
+      var getdata = json.decode(response.body);
 
     bool error = getdata["error"];
     String msg = getdata["message"];
     if (!error) {
       var data = getdata["data"];
       jwtKey = data;
-      print("jwtkey****$jwtKey");
+
       startTime();
     } else {
       setSnackbar(msg);

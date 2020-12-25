@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
@@ -45,8 +45,7 @@ class StateRate extends State<RatingReview> {
         setState(() {
           isLoadingmore = true;
 
-          print("load more****limit *****$offset****$total");
-          if (offset < total) getReview();
+             if (offset < total) getReview();
         });
       }
     }
@@ -71,12 +70,11 @@ class StateRate extends State<RatingReview> {
        itemCount: (offset < total)
            ? reviewList.length + 1
            : reviewList.length,
-        physics: BouncingScrollPhysics(),
+       // physics: BouncingScrollPhysics(),
         separatorBuilder: (BuildContext context, int index) => Divider(),
         itemBuilder: (context, index) {
 
-          print("lenth************${reviewList[index].username}");
-          return
+           return
             (index == reviewList.length && isLoadingmore)
                 ? Center(child: CircularProgressIndicator())
                 :
@@ -129,37 +127,39 @@ class StateRate extends State<RatingReview> {
         itemCount: reviewList[i].imgList.length,
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
-        physics: BouncingScrollPhysics(),
+       // physics: BouncingScrollPhysics(),
         itemBuilder: (context, index) {
-          return InkWell(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 10,bottom: 5.0,top: 5),
-              child: new ClipRRect(
-                borderRadius: BorderRadius.circular(5.0),
-                child: new CachedNetworkImage(
-                  imageUrl: reviewList[i].imgList[index],
-                  height: 50.0,
-                  width: 50.0,
-                  fit: BoxFit.cover,
-                  errorWidget:(context, url,e) => placeHolder(50) ,
-                  placeholder: (context, url) => placeHolder(50),
+          return Padding(
+            padding: const EdgeInsets.only(right: 10,bottom: 5.0,top: 5),
+            child: InkWell(
+              onTap: (){
+                Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      transitionDuration: Duration(seconds: 1),
+                      pageBuilder: (_, __, ___) => ProductPreview(
+                          pos: index,
+                          secPos: 0,
+                          index: 0,
+                          id:  "$index${reviewList[i].id}",
+                          imgList: reviewList[i].imgList,
+                          list: true),
+                    ));
+              },
+              child: Hero(
+                tag:'$index${reviewList[i].id}',
+                child: new ClipRRect(
+                  borderRadius: BorderRadius.circular(5.0),
+                  child: new FadeInImage(
+                    image: NetworkImage(reviewList[i].imgList[index]),
+                    height: 50.0,
+                    width: 50.0,
+
+                    placeholder: placeHolder(50),
+                  ),
                 ),
               ),
             ),
-            onTap: (){
-              Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    transitionDuration: Duration(seconds: 1),
-                    pageBuilder: (_, __, ___) => ProductPreview(
-                        pos: index,
-                        secPos: 0,
-                        index: 0,
-                        id:  reviewList[i].id,
-                        imgList: reviewList[i].imgList,
-                        list: true),
-                  ));
-            },
           );
         },
       ),
@@ -181,9 +181,7 @@ class StateRate extends State<RatingReview> {
 
         var getdata = json.decode(response.body);
 
-        print('response***review**${widget.id}**${response.body.toString()}');
-
-        bool error = getdata["error"];
+       bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           total = int.parse(getdata["total"]);

@@ -722,27 +722,27 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                       style: Theme.of(this.context).textTheme.caption.copyWith(
                           color: lightBlack2, fontWeight: FontWeight.normal),
                     ),
-                    areaName != "" || cityName != ""
-                        ? areaName != ""
-                            ? Text(
-                                "$areaName,$cityName",
-                                style: Theme.of(this.context)
-                                    .textTheme
-                                    .subtitle2
-                                    .copyWith(
-                                        color: lightBlack,
-                                        fontWeight: FontWeight.bold),
-                              )
-                            : Text(
-                                "$cityName",
-                                style: Theme.of(this.context)
-                                    .textTheme
-                                    .subtitle2
-                                    .copyWith(
-                                        color: lightBlack,
-                                        fontWeight: FontWeight.bold),
-                              )
-                        : Container()
+
+                    areaName!=null&&
+                    areaName != ""
+                        ? Text(
+                            "$cityName,$areaName",
+                            style: Theme.of(this.context)
+                                .textTheme
+                                .subtitle2
+                                .copyWith(
+                                    color: lightBlack,
+                                    fontWeight: FontWeight.bold),
+                          )
+                        : Text(
+                            "${cityName??''}",
+                            style: Theme.of(this.context)
+                                .textTheme
+                                .subtitle2
+                                .copyWith(
+                                    color: lightBlack,
+                                    fontWeight: FontWeight.bold),
+                          )
                   ],
                 )),
             Spacer(),
@@ -777,7 +777,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                     style: Theme.of(this.context)
                                         .textTheme
                                         .subtitle1
-                                        .copyWith(color: fontColor),
+                                        .copyWith(
+                                            color: fontColor,
+                                            fontWeight: FontWeight.bold),
                                   )),
                               Divider(color: lightBlack),
                               Padding(
@@ -805,7 +807,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                           .subtitle2
                                           .copyWith(
                                               color: fontColor,
-                                              fontWeight: FontWeight.normal),
+                                              fontWeight: FontWeight.bold),
                                     ),
                                     value: city,
                                     onChanged: (newValue) {
@@ -918,10 +920,16 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold)),
                                 onPressed: () {
-                                  setState(() {
-                                    Navigator.pop(context);
-                                    checkNetwork();
-                                  });
+                                  print("valuee****$areaName****$cityName");
+                                  if (areaName != "" &&
+                                      areaName != null &&
+                                      cityName != null &&
+                                      cityName != "") {
+                                    setState(() {
+                                      Navigator.pop(context);
+                                      checkNetwork();
+                                    });
+                                  }
                                 })
                           ],
                         );

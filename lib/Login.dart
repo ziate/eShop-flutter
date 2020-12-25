@@ -25,8 +25,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   final mobileController = TextEditingController();
   final passwordController = TextEditingController();
   String countryName;
-  FocusNode passFocus,
-      monoFocus= FocusNode();
+  FocusNode passFocus, monoFocus = FocusNode();
 
   bool _isClickable = true;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
@@ -36,7 +35,6 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       username,
       email,
       id,
-
       mobileno,
       city,
       area,
@@ -73,6 +71,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     buttonController.dispose();
     super.dispose();
   }
+
   _fieldFocusChange(
       BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
     currentFocus.unfocus();
@@ -190,11 +189,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       CUR_USERID = id;
       CUR_USERNAME = username;
 
-
       saveUserDetail(id, username, email, mobile, city, area, address, pincode,
           latitude, longitude, image);
-
-
 
       Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
     } else {
@@ -203,10 +199,10 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   }
 
   _subLogo() {
-    return Container(
-      padding: EdgeInsets.only(top: 80.0),
+    return Expanded(
+      flex: 4,
       child: Center(
-        child: new Image.asset('assets/images/homelogo.png', fit: BoxFit.fill),
+        child: new Image.asset('assets/images/homelogo.png', ),
       ),
     );
   }
@@ -230,15 +226,14 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   setMobileNo() {
     return Container(
-      width: deviceWidth*0.7,
+      width: deviceWidth * 0.7,
       padding: EdgeInsets.only(
         top: 30.0,
-
       ),
       child: TextFormField(
         keyboardType: TextInputType.number,
         controller: mobileController,
-        style: TextStyle(color: fontColor,fontWeight: FontWeight.normal),
+        style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
         focusNode: monoFocus,
         textInputAction: TextInputAction.next,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -259,18 +254,18 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
           hintStyle: Theme.of(this.context)
               .textTheme
               .subtitle2
-              .copyWith(color: fontColor,fontWeight: FontWeight.normal),
+              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
           filled: true,
           fillColor: lightWhite,
           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: fontColor),
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(7.0),
           ),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: lightWhite),
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(7.0),
           ),
         ),
       ),
@@ -279,8 +274,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   setPass() {
     return Container(
-      width: deviceWidth*0.7,
-        padding: EdgeInsets.only( top: 20.0),
+        width: deviceWidth * 0.7,
+        padding: EdgeInsets.only(top: 20.0),
         child: TextFormField(
           keyboardType: TextInputType.text,
           obscureText: true,
@@ -301,7 +296,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
             hintStyle: Theme.of(this.context)
                 .textTheme
                 .subtitle2
-                .copyWith(color: fontColor,fontWeight: FontWeight.normal),
+                .copyWith(color: fontColor, fontWeight: FontWeight.normal),
             filled: true,
             fillColor: lightWhite,
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -320,8 +315,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   forgetPass() {
     return Padding(
-        padding:
-            EdgeInsets.only(left: 25.0, right: 25.0, top: 10.0),
+        padding: EdgeInsets.only(left: 25.0, right: 25.0, top: 10.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
@@ -330,14 +324,16 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
                 setPrefrence(ID, id);
                 setPrefrence(MOBILE, mobile);
 
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SendOtp(title: FORGOT_PASS_TITLE,)));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SendOtp(
+                              title: FORGOT_PASS_TITLE,
+                            )));
               },
               child: Text(FORGOT_PASSWORD_LBL,
-                  style: Theme.of(context)
-                      .textTheme
-                      .subtitle2
-                      .copyWith(color: fontColor,fontWeight: FontWeight.normal)),
+                  style: Theme.of(context).textTheme.subtitle2.copyWith(
+                      color: fontColor, fontWeight: FontWeight.normal)),
             ),
           ],
         ));
@@ -346,7 +342,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   termAndPolicyTxt() {
     return Padding(
       padding:
-          EdgeInsets.only(bottom: 20.0, left: 25.0, right: 25.0,top:10.0),
+          EdgeInsets.only(bottom: 20.0, left: 25.0, right: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -358,7 +354,9 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
           InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => SendOtp(title:SEND_OTP_TITLE,),
+                  builder: (BuildContext context) => SendOtp(
+                    title: SEND_OTP_TITLE,
+                  ),
                 ));
               },
               child: Text(
@@ -379,41 +377,41 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       btnAnim: buttonSqueezeanimation,
       btnCntrl: buttonController,
       onBtnSelected: () async {
-    validateAndSubmit();
+        validateAndSubmit();
       },
     );
   }
 
   _expandedBottomView() {
     return Expanded(
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: 100.0,
-          ),
-          child: SingleChildScrollView(
-
-      child: Form(
-          key: _formkey,
-          child: Card(
-            elevation: 0,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                signInTxt(),
-                setMobileNo(),
-                setPass(),
-                forgetPass(),
-                loginBtn(),
-                termAndPolicyTxt(),
-              ],
+      flex: 6,
+      child: Container(
+        alignment: Alignment.bottomCenter,
+        child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Form(
+            key: _formkey,
+            child: Card(
+              elevation: 0.5,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  signInTxt(),
+                  setMobileNo(),
+                  setPass(),
+                  forgetPass(),
+                  loginBtn(),
+                  termAndPolicyTxt(),
+                ],
+              ),
             ),
           ),
+        ),
       ),
-    ),
-        ));
+    );
   }
 
   @override

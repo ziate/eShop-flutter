@@ -61,11 +61,11 @@ shadow() {
 }
 
 placeHolder(double height) {
-  return Image.asset(
+  return AssetImage(
     'assets/images/placeholder.png',
-    height: height,
-    width: double.maxFinite,
-    fit: BoxFit.fill,
+    //height: height,
+   // width: double.maxFinite,
+
   );
 }
 
@@ -85,11 +85,12 @@ getAppBar(String title, BuildContext context) {
         decoration: shadow(),
         child: Card(
           elevation: 0,
-          child: Padding(
-            padding: const EdgeInsets.only(right: 4.0),
-            child: InkWell(
+          child: InkWell(
+            borderRadius:  BorderRadius.circular(4),
+            onTap: () => Navigator.of(context).pop(),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4.0),
               child: Icon(Icons.keyboard_arrow_left, color: primary),
-              onTap: () => Navigator.of(context).pop(),
             ),
           ),
         ),
@@ -102,7 +103,7 @@ getAppBar(String title, BuildContext context) {
       ),
     ),
     backgroundColor: white,
-   // elevation: ,
+    // elevation: ,
   );
 }
 
@@ -214,9 +215,14 @@ Future<void> clearUserSession() async {
   waitList.add(prefs.remove(ID));
   waitList.add(prefs.remove(NAME));
   waitList.add(prefs.remove(MOBILE));
-
+  waitList.add(prefs.remove(EMAIL));
   CUR_USERID = '';
   CUR_USERNAME = "";
+  CUR_CART_COUNT = "";
+  CUR_BALANCE = '';
+
+  print("after logout========in session${prefs.getString(EMAIL)}********");
+
   await prefs.clear();
 }
 
