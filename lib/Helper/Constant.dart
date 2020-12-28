@@ -1,4 +1,4 @@
-import 'package:eshop/Track_Order.dart';
+
 
 final String appName = 'eShop';
 
@@ -35,6 +35,8 @@ const String ADD_CART= 'ADD TO CART';
 const String CART='Cart';
 const String FILTER='Filter By';
 const String SORT_BY='Sort By';
+const String TOP_RATED='Top Rated';
+
 const String F_NEWEST='Newest First';
 const String F_OLDEST='Oldest First';
 const String F_LOW='Price - Low to High';
@@ -94,7 +96,7 @@ const String noItem='No Item Found..!!';
 const String noFav='No Favorite Found..!!';
 const String noNoti='No Notification Found..!!';
 const String goToLogin='Please login to access favorite..!!';
-const String searchHint='Find Grocery items here..';
+const String searchHint='Search for desired products here';
 const String selectVarient='Select Variant';
 const String addressWarning='Please Select Address..!!';
 const String dateWarning='Please Select Delivery Date..!!';
@@ -287,4 +289,5 @@ const String IOSLBL='iOS:';
 const String APPFIND='You can find our app from below url\n\nAndroid:\n';
 const String SUBMIT_LBL='SUBMIT';
 const String REVIEW_W='Please Fill Details';
-const String EXIT_WR='Please Double tap to exit..';
+const String EXIT_WR='Double tap back button to exit';
+const String VAR_SEL=' : Please Select';

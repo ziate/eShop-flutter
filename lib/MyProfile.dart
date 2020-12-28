@@ -15,7 +15,7 @@ import 'Faqs.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/NotificationLIst.dart';
 import 'package:eshop/Setting.dart';
-import 'package:eshop/Track_Order.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -55,7 +55,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   getUserDetails() async {
-    print("after logout========");
+
     CUR_USERID = await getPrefrence(ID);
     CUR_USERNAME = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
@@ -306,19 +306,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       home: true,
                     ),
                   ));
-        } else if (title == TRACK_ORDER) {
-          CUR_USERID == null
-              ? Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Login(),
-                  ))
-              : Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TrackOrder(),
-                  ));
-        } else if (title == CUSTOMER_SUPPORT_LBL) {
+        }else if (title == CUSTOMER_SUPPORT_LBL) {
         } else if (title == RATE_US) {
           AppReview.requestReview.then((onValue) {
             print("==========$onValue");
@@ -344,20 +332,71 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                 ),
               ));
         } else if (title == LOGOUT) {
-           Navigator.push(
+        /*   Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => Logout(
                   title: LOGOUT,
                 ),
-              ));
-
+              ));*/
+          logOutDailog();
 
         }
       },
     );
   }
-
+  logOutDailog() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                  content:
+                  Text(
+                    LOGOUTTXT,
+                    style: Theme.of(this.context)
+                        .textTheme
+                        .subtitle1
+                        .copyWith(color: fontColor),
+                  ),
+                  actions: <Widget>[
+                    new FlatButton(
+                        child: Text(
+                          LOGOUTNO,
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
+                              color: lightBlack, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop(false);
+                        }),
+                    new FlatButton(
+                        child: Text(
+                          LOGOUTYES,
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
+                              color: fontColor, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          clearUserSession();
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) => Home()),
+                              ModalRoute.withName('/'));
+                        })
+                  ],
+                );
+              });
+        });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

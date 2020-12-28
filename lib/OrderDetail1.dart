@@ -214,6 +214,10 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
+
     Order_Model model = widget.model;
     String pDate, prDate, sDate, dDate, cDate, rDate;
 
@@ -1318,15 +1322,19 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
     files = await FilePicker.getMultiFile(type: FileType.image);
     if (files != null) {
       setState(() {});
-      /*setState(() {
-        _isLoading = true;
-      });*/
-      //setRating(0, "", files);
 
-      /* files.forEach((f) {
-        print('path**${f.path}');
-      });*/
     }
+
+
+    ///for ios uncomment below code and update file picker library version in pubspec.yaml
+  /*  FilePickerResult result = await FilePicker.platform.pickFiles(allowMultiple: true);
+    if(result != null) {
+      files= result.paths.map((path) => File(path)).toList();
+    } else {
+      // User canceled the picker
+    }*/
+
+
   }
 
   Future<void> setRating(
@@ -1433,8 +1441,10 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
               });
               var targetPath;
 
-              if (Platform.isIOS)
-                targetPath = await getApplicationDocumentsDirectory();
+              if (Platform.isIOS) {
+                Directory target = await getApplicationDocumentsDirectory();
+                targetPath=target.path.toString();
+              }
               else
                 targetPath = await ExtStorage.getExternalStoragePublicDirectory(
                     ExtStorage.DIRECTORY_DOWNLOADS);

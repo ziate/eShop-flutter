@@ -136,7 +136,7 @@ class StateRate extends State<RatingReview> {
                 Navigator.push(
                     context,
                     PageRouteBuilder(
-                      transitionDuration: Duration(seconds: 1),
+                      //transitionDuration: Duration(seconds: 1),
                       pageBuilder: (_, __, ___) => ProductPreview(
                           pos: index,
                           secPos: 0,

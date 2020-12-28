@@ -88,9 +88,9 @@ getAppBar(String title, BuildContext context) {
           child: InkWell(
             borderRadius:  BorderRadius.circular(4),
             onTap: () => Navigator.of(context).pop(),
-            child: Padding(
-              padding: const EdgeInsets.only(right: 4.0),
-              child: Icon(Icons.keyboard_arrow_left, color: primary),
+            child: Center(
+              //padding: const EdgeInsets.all(5),
+              child: Icon(Icons.keyboard_arrow_left, color: primary,),
             ),
           ),
         ),
@@ -221,7 +221,6 @@ Future<void> clearUserSession() async {
   CUR_CART_COUNT = "";
   CUR_BALANCE = '';
 
-  print("after logout========in session${prefs.getString(EMAIL)}********");
 
   await prefs.clear();
 }
@@ -423,8 +422,9 @@ Widget shimmer() {
 String getToken() {
   final claimSet =
       new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
+  String jwtKey = "68f05dec6014f68e760c5c5fa3e31bcf391a2e10";
   String token = issueJwtHS256(claimSet, jwtKey);
-  print("token***$token");
+
   return token;
 }
 

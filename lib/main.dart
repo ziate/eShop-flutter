@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
         CountryLocalizations.delegate,
       ],
       title: appName,
-      theme: //AppTheme().lightTheme,
+      theme:
 
       ThemeData(
           primarySwatch: primary_app,

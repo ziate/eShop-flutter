@@ -134,7 +134,9 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   _showForm() {
     return Padding(
         padding: EdgeInsets.all(10.0),
-        child: ListView.builder(
+        child:
+
+    _isLoading?shimmer():ListView.builder(
           controller: controller,
           itemCount: faqs_list.length,
           physics: BouncingScrollPhysics(),

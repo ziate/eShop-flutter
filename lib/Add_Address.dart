@@ -45,7 +45,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       type = "Home",
       isDefault;
   bool checkedDefault = false;
-bool _isProgress=false;
+  bool _isProgress=false;
   //bool _isLoading = false;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -131,6 +131,8 @@ bool _isProgress=false;
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: lightWhite,
@@ -235,6 +237,7 @@ bool _isProgress=false;
       textInputAction: TextInputAction.next,
       focusNode: nameFocus,
       controller: nameC,
+      textCapitalization: TextCapitalization.words,
       validator: validateUserName,
       onSaved: (String value) {
         name = value;
@@ -370,6 +373,7 @@ bool _isProgress=false;
           child: TextFormField(
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
+            textCapitalization: TextCapitalization.sentences,
             style: Theme.of(context)
                 .textTheme
                 .subtitle2
@@ -406,14 +410,14 @@ bool _isProgress=false;
                   context,
                   MaterialPageRoute(
                       builder: (context) => Map(
-                            latitude: latitude == null
-                                ? position.latitude
-                                : double.parse(latitude),
-                            longitude: longitude == null
-                                ? position.longitude
-                                : double.parse(longitude),
-                            from: ADDADDRESS,
-                          )));
+                        latitude: latitude == null
+                            ? position.latitude
+                            : double.parse(latitude),
+                        longitude: longitude == null
+                            ? position.longitude
+                            : double.parse(longitude),
+                        from: ADDADDRESS,
+                      )));
               setState(() {});
               List<Placemark> placemark = await placemarkFromCoordinates(
                   double.parse(latitude), double.parse(longitude));
@@ -439,7 +443,7 @@ bool _isProgress=false;
       controller: pincodeC,
       style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      validator: validatePincode,
+      //validator: validatePincode,
       onSaved: (String value) {
         pincode = value;
       },
@@ -497,8 +501,8 @@ bool _isProgress=false;
       };
 
       Response response =
-          await post(getAreaByCityApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(getAreaByCityApi, body: data, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       print('response***Area****${response.body.toString()}');
       var getdata = json.decode(response.body);
@@ -516,7 +520,7 @@ bool _isProgress=false;
         setSnackbar(msg);
       }
       if(mounted)
-      setState(() {});
+        setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
@@ -554,6 +558,7 @@ bool _isProgress=false;
   setStateField() {
     return TextFormField(
       keyboardType: TextInputType.text,
+      textCapitalization: TextCapitalization.sentences,
       controller: stateC,
       style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
 
@@ -575,6 +580,7 @@ bool _isProgress=false;
   setCountry() {
     return TextFormField(
       keyboardType: TextInputType.text,
+      textCapitalization: TextCapitalization.sentences,
       controller: countryC,
       style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
       onSaved: (String value) {
@@ -601,8 +607,8 @@ bool _isProgress=false;
         USER_ID: CUR_USERID,
         NAME: name,
         MOBILE: mobile,
-       // ALT_MOBNO: altMob,
-       // LANDMARK: landmark,
+        // ALT_MOBNO: altMob,
+        // LANDMARK: landmark,
         PINCODE: pincode,
         CITY_ID: city,
         AREA_ID: area,
@@ -618,9 +624,9 @@ bool _isProgress=false;
 
       print('response******param--${data.toString()}');
       Response response = await post(
-              widget.update ? updateAddressApi : getAddAddressApi,
-              body: data,
-              headers: headers)
+          widget.update ? updateAddressApi : getAddAddressApi,
+          body: data,
+          headers: headers)
           .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
@@ -651,7 +657,7 @@ bool _isProgress=false;
           selectedAddress = widget.index;
         }
 
-      
+
 
         setState(() {
           _isProgress=false;
@@ -813,7 +819,7 @@ bool _isProgress=false;
                       children: [
                         Padding(
                           padding:
-                              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           child: Card(
                             elevation: 0,
                             child: Padding(
@@ -858,8 +864,8 @@ bool _isProgress=false;
                       ),
                       child: Text(SAVE_LBL,
                           style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                color: white,
-                              ))),
+                            color: white,
+                          ))),
                   onTap: () {
                     validateAndSubmit();
                   },

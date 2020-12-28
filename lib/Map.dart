@@ -162,7 +162,7 @@ class _MapState extends State<Map> {
 
   Future<void> getLocation() async {
     List<Placemark> placemark =
-        await placemarkFromCoordinates(latlong.latitude, latlong.longitude);
+    await placemarkFromCoordinates(latlong.latitude, latlong.longitude);
 
     var address;
     address = placemark[0].name;

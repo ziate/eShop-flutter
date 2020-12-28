@@ -101,27 +101,27 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
 
     return _isLoading
         ? Scaffold(
-            key: _scaffoldKey,
-            appBar: getAppBar(widget.title, context),
-            body: getProgress(),
-          )
+      key: _scaffoldKey,
+      appBar: getAppBar(widget.title, context),
+      body: getProgress(),
+    )
         : privacy != null
-            ? WebviewScaffold(
-                appBar: getAppBar(widget.title, context),
+        ? WebviewScaffold(
+      appBar: getAppBar(widget.title, context),
 
-                withJavascript: true,
-                appCacheEnabled: true,
-                scrollBar: false,
-                // hidden: true,
-                url: new Uri.dataFromString(privacy,
-                        mimeType: 'text/html', encoding: utf8)
-                    .toString(),
-              )
-            : Scaffold(
-                key: _scaffoldKey,
-                appBar: getAppBar(widget.title, context),
-                body: _isNetworkAvail ? Container() : noInternet(context),
-              );
+      withJavascript: true,
+      appCacheEnabled: true,
+      scrollBar: false,
+      // hidden: true,
+      url: new Uri.dataFromString(privacy,
+          mimeType: 'text/html', encoding: utf8)
+          .toString(),
+    )
+        : Scaffold(
+      key: _scaffoldKey,
+      appBar: getAppBar(widget.title, context),
+      body: _isNetworkAvail ? Container() : noInternet(context),
+    );
   }
 
   Future<void> getSetting() async {
@@ -137,8 +137,8 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
 
         var parameter = {TYPE: type};
         Response response =
-            await post(getSettingApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(getSettingApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         print('response***setting**$headers***${response.body.toString()}');

@@ -132,8 +132,6 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                               : notiList.length,
                           physics:  AlwaysScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
-                            print(
-                                "load more****$offset***$total***${notiList.length}***$isLoadingmore**$index");
                             return (index == notiList.length && isLoadingmore)
                                 ? Center(child: CircularProgressIndicator())
                                 : listItem(index);
@@ -269,7 +267,6 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
         setState(() {
           isLoadingmore = true;
 
-          print("load more****limit *****$offset****$total");
           if (offset < total) getNotification();
         });
       }

@@ -213,7 +213,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         var responseData = await response.stream.toBytes();
         var responseString = String.fromCharCodes(responseData);
 
-        print("profile====$responseString*****${_image.path}");
 
         var getdata = json.decode(responseString);
         bool error = getdata["error"];
@@ -319,6 +318,21 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       });
       setProfilePic(image);
     }
+
+  /*  FilePickerResult result = await FilePicker.platform.pickFiles();
+    if(result != null) {
+      File image = File(result.files.single.path);
+      if (image != null) {
+        print('path**${image.path}');
+        setState(() {
+          _isLoading = true;
+        });
+        setProfilePic(image);
+      }
+    } else {
+      // User canceled the picker
+    }*/
+
   }
 
   Future<void> getCities() async {
@@ -1329,6 +1343,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: lightWhite,

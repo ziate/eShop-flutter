@@ -18,14 +18,13 @@ import 'package:intl/intl.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/SimBtn.dart';
 import 'Payment.dart';
-import 'Test.dart';
+
 import 'Cart.dart';
 import 'Helper/Color.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Order_Success.dart';
 import 'Manage_Address.dart';
-
 
 class CheckOut extends StatefulWidget {
   final Function updateHome;
@@ -52,7 +51,7 @@ int selectedTime, selectedDate, selectedMethod;
 double promoAmt = 0;
 double remWalBal, usedBal = 0;
 String razorpayId, paystackId;
-int selectedAddress;
+int selectedAddress = 0;
 StateCheckout stateCheck;
 bool isTimeSlot, isPromoValid = false, isUseWallet = false, isPayLayShow = true;
 
@@ -66,7 +65,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true, _isProgress = false;
   List<TextEditingController> _controller = [];
-  var items ;
+  var items;
+
   TextEditingController promoC = new TextEditingController();
 
   @override
@@ -133,6 +133,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
+
+
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
@@ -208,152 +210,158 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: lightWhite,
       appBar: getAppBar(CHECKOUT, context),
       body: _isNetworkAvail
-          ? Column(
-              children: [
-                Expanded(
-                  child: Stack(
-                    children: <Widget>[
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // stepper(),
-                              //Divider(),
-                              address(),
-                              payment(),
-                              cartItems(),
-                              promo(),
-                              orderSummary(),
-                              // fragments[_curIndex]
-                            ],
-                          ),
-                        ),
-                      ),
-                      showCircularProgress(_isProgress, primary),
-                    ],
-                  ),
-                ),
-                Container(
-                  color: white,
-                  child: Row(children: <Widget>[
-                    Padding(
-                        padding: EdgeInsets.only(left: 15.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              CUR_CURRENCY + " $totalPrice",
-                              style: TextStyle(
-                                  color: fontColor,
-                                  fontWeight: FontWeight.bold),
+          ? cartList.length == 0
+              ? cartEmpty()
+              : Column(
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        children: <Widget>[
+                          SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  address(),
+                                  payment(),
+                                  cartItems(),
+                                  promo(),
+                                  orderSummary(),
+                                ],
+                              ),
                             ),
-                            Text(cartList.length.toString() + " Items"),
-                          ],
-                        )),
-                    Spacer(),
-                    SimBtn(
-                        size: deviceWidth * 0.4,
-                        title: PLACE_ORDER,
-                        onBtnSelected: () {
-                          if (selAddress == null || selAddress.isEmpty)
-                            setSnackbar(addressWarning);
-                          else if (payMethod == null || payMethod.isEmpty)
-                            setSnackbar(payWarning);
-                          else if (isTimeSlot &&
-                              (selDate == null || selDate.isEmpty))
-                            setSnackbar(dateWarning);
-                          else if (isTimeSlot &&
-                              (selTime == null || selTime.isEmpty))
-                            setSnackbar(timeWarning);
-                          else if (payMethod == PAYPAL_LBL)
-                            placeOrder('');
-                          else if (payMethod == RAZORPAY_LBL)
-                            razorpayPayment();
-                          else if (payMethod == PAYSTACK_LBL)
-                            paystackPayment(context);
-                          else
-                            placeOrder('');
-                        }),
-                  ]),
-                ),
-              ],
-            )
-          : noInternet(context),
-      /* persistentFooterButtons: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              fit: FlexFit.loose,
-              child: Container(
-                width: deviceWidth * 0.6,
-                child: Text(
-                  TOTAL + " : " + CUR_CURRENCY + " " + totalPrice.toString(),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ),
-            Container(
-                alignment: Alignment.center,
-                height: 35,
-                width: deviceWidth * 0.35,
-                padding: EdgeInsets.only(right: 6.0),
-                decoration: new BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [grad1Color, grad2Color],
-                      stops: [0, 1]),
-                  borderRadius:
-                      new BorderRadius.all(const Radius.circular(10.0)),
-                ),
-                child: TextButton.icon(
-                    icon: Icon(
-                      _curIndex == 2 ? Icons.check : Icons.navigate_next,
-                      color: white,
+                          ),
+                          showCircularProgress(_isProgress, primary),
+                        ],
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        if (_curIndex == 0) {
-                          _curIndex = _curIndex + 1;
-                        } else if (_curIndex == 1) {
-                          if (selAddress == null || selAddress.isEmpty)
-                            setSnackbar(addressWarning);
-                          else
-                            _curIndex = _curIndex + 1;
-                        } else if (_curIndex == 2) {
-                          if (isTimeSlot &&
-                              (selDate == null || selDate.isEmpty))
-                            setSnackbar(dateWarning);
-                          else if (isTimeSlot &&
-                              (selTime == null || selTime.isEmpty))
-                            setSnackbar(timeWarning);
-                          else if (payMethod == null || payMethod.isEmpty)
-                            setSnackbar(payWarning);
-                          else if (payMethod == PAYPAL_LBL)
-                            placeOrder('');
-                          else if (payMethod == RAZORPAY_LBL)
-                            razorpayPayment();
-                          else if (payMethod == PAYSTACK_LBL)
-                            paystackPayment(context);
-                          else
-                            placeOrder('');
-                        }
-                      });
-                    },
-                    label: Text(_curIndex == 2 ? PROCEED : CONTINUE,
-                        style: Theme.of(context).textTheme.button.copyWith(
-                            color: white, fontWeight: FontWeight.normal))))
-          ],
-        )
-      ],*/
+                    Container(
+                      color: white,
+                      child: Row(children: <Widget>[
+                        Padding(
+                            padding: EdgeInsets.only(left: 15.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  CUR_CURRENCY + " $totalPrice",
+                                  style: TextStyle(
+                                      color: fontColor,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(cartList.length.toString() + " Items"),
+                              ],
+                            )),
+                        Spacer(),
+                        SimBtn(
+                            size: 0.4,
+                            title: PLACE_ORDER,
+                            onBtnSelected: () {
+                              if (selAddress == null || selAddress.isEmpty)
+                                setSnackbar(addressWarning);
+                              else if (payMethod == null || payMethod.isEmpty)
+                                setSnackbar(payWarning);
+                              else if (isTimeSlot &&
+                                  (selDate == null || selDate.isEmpty))
+                                setSnackbar(dateWarning);
+                              else if (isTimeSlot &&
+                                  (selTime == null || selTime.isEmpty))
+                                setSnackbar(timeWarning);
+                              else if (payMethod == PAYPAL_LBL)
+                                placeOrder('');
+                              else if (payMethod == RAZORPAY_LBL)
+                                razorpayPayment();
+                              else if (payMethod == PAYSTACK_LBL)
+                                paystackPayment(context);
+                              else
+                                placeOrder('');
+                            }),
+                      ]),
+                    ),
+                  ],
+                )
+          : noInternet(context),
+    );
+  }
+
+  cartEmpty() {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          noCartImage(context),
+          noCartText(context),
+          noCartDec(context),
+          shopNow()
+        ]),
+      ),
+    );
+  }
+
+  noCartImage(BuildContext context) {
+    return Image.asset(
+      'assets/images/empty_cart.png',
+      fit: BoxFit.contain,
+    );
+  }
+
+  noCartText(BuildContext context) {
+    return Container(
+        child: Text(NO_CART,
+            style: Theme.of(context)
+                .textTheme
+                .headline5
+                .copyWith(color: primary, fontWeight: FontWeight.normal)));
+  }
+
+  noCartDec(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0),
+      child: Text(CART_DESC,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headline6.copyWith(
+                color: lightBlack2,
+                fontWeight: FontWeight.normal,
+              )),
+    );
+  }
+
+  shopNow() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 28.0),
+      child: CupertinoButton(
+        child: Container(
+            width: deviceWidth * 0.7,
+            height: 45,
+            alignment: FractionalOffset.center,
+            decoration: new BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [grad1Color, grad2Color],
+                  stops: [0, 1]),
+              borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
+            ),
+            child: Text(SHOP_NOW,
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .headline6
+                    .copyWith(color: white, fontWeight: FontWeight.normal))),
+        onPressed: () {
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (BuildContext context) => Home()),
+              ModalRoute.withName('/'));
+        },
+      ),
     );
   }
 
@@ -364,8 +372,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         i++) {
       if (cartList[index].varientId ==
           cartList[index].productList[0].prVarientList[i].id) selectedPos = i;
-
-         }
+    }
 
     double price = double.parse(
         cartList[index].productList[0].prVarientList[selectedPos].disPrice);
@@ -378,7 +385,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         (price * double.parse(cartList[index].qty)).toString();
 
     items = new List<String>.generate(
-        int.parse(cartList[index].productList[0].totalAllow), (i) => (i+1).toString());
+        int.parse(cartList[index].productList[0].totalAllow),
+        (i) => (i + 1).toString());
 
     _controller[index].text = cartList[index].qty;
 
@@ -399,10 +407,11 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                     child: ClipRRect(
                         borderRadius: BorderRadius.circular(7.0),
                         child: FadeInImage(
-                          image: NetworkImage(cartList[index].productList[0].image),
+                          image: NetworkImage(
+                              cartList[index].productList[0].image),
                           height: 60.0,
                           width: 60.0,
-                         // errorWidget: (context, url, e) => placeHolder(60),
+                          // errorWidget: (context, url, e) => placeHolder(60),
                           placeholder: placeHolder(60),
                         ))),
                 Expanded(
@@ -540,7 +549,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                                 size: 1,
                                               ),
                                               onSelected: (String value) {
-
                                                 addToCart(index, value);
                                               },
                                               itemBuilder:
@@ -687,7 +695,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           CUR_CART_COUNT = data['cart_count'];
           if (qty == "0") remove = true;
 
-
           if (remove) {
             oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
 
@@ -699,13 +706,25 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           }
           taxAmt = double.parse(data[TAX_AMT]);
           totalPrice = 0;
+
           totalPrice = delCharge + oriPrice + taxAmt;
+
+          if (isPromoValid) {
+            validatePromo();
+          } else {
+
+            setState(() {
+              _isProgress = false;
+            });
+
+          }
         } else {
           setSnackbar(msg);
+          setState(() {
+            _isProgress = false;
+          });
         }
-        setState(() {
-          _isProgress = false;
-        });
+
         if (widget.updateHome != null) widget.updateHome();
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
@@ -740,7 +759,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
         var getdata = json.decode(response.body);
 
-          bool error = getdata["error"];
+        bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           var data = getdata["data"];
@@ -748,20 +767,30 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           String qty = data['total_quantity'];
           CUR_CART_COUNT = data['cart_count'];
 
-
           cartList[index].qty = qty;
           taxAmt = double.parse(data[TAX_AMT]);
-          oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
+          oriPrice=double.parse(data['sub_total']);
+          //oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
           _controller[index].text = qty;
           totalPrice = 0;
 
           totalPrice = delCharge + oriPrice + taxAmt;
+
+          if (isPromoValid) {
+            validatePromo();
+          } else {
+            setState(() {
+              _isProgress = false;
+            });
+          }
         } else {
           setSnackbar(msg);
+          setState(() {
+            _isProgress = false;
+          });
         }
-        setState(() {
-          _isProgress = false;
-        });
+
+
         widget.updateHome();
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
@@ -803,6 +832,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
               selAddress = addressList[i].id;
             }
           }
+
+          if (addressList.length == 1) selAddress = addressList[0].id;
         } else {
           //if (msg != 'Cart Is Empty !') setSnackbar(msg);
         }
@@ -820,7 +851,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
-
     placeOrder(response.paymentId);
   }
 
@@ -839,9 +869,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     String contact = await getPrefrence(MOBILE);
     String email = await getPrefrence(EMAIL);
 
-
     double amt = totalPrice * 100;
-
 
     if (contact != '' && email != '') {
       setState(() {
@@ -892,15 +920,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       if (response.status) {
         placeOrder(response.reference);
       } else {
-        //print("ERROR: " + response.code.toString() + " - " + response.message);
-        setSnackbar(response.message);
+         setSnackbar(response.message);
         setState(() {
           _isProgress = false;
         });
       }
 
-      // setState(() => _isProgress = false);
-      //_updateStatus(response.reference, '$response');
 
     } catch (e) {
       setState(() => _isProgress = false);
@@ -971,10 +996,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     ));
   }
 
-
-
-
-
   Future<void> placeOrder(String tranId) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
@@ -985,7 +1006,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             varientId != null ? varientId + "," + sec.varientId : sec.varientId;
         quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
       }
-
 
       if (payMethod == COD_LBL) payMethod = "COD";
       try {
@@ -1020,13 +1040,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           parameter[ACTIVE_STATUS] = WAITING;
         }
 
-
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-           bool error = getdata["error"];
+        bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           String orderId = getdata["order_id"].toString();
@@ -1073,7 +1092,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-
 
       bool error = getdata["error"];
       String msg = getdata["message"];
@@ -1139,6 +1157,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   address() {
+
     return Card(
       elevation: 0,
       child: Padding(
@@ -1251,7 +1270,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     return Card(
       elevation: 0,
       child: InkWell(
-        borderRadius:  BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4),
         onTap: () async {
           Navigator.push(
               context,
@@ -1347,6 +1366,21 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                   )
                 ],
               ),
+              isPromoValid
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          PROMO_CODE_DIS_LBL,
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                        Text(
+                          CUR_CURRENCY + " " + promoAmt.toString(),
+                          style: Theme.of(context).textTheme.caption,
+                        )
+                      ],
+                    )
+                  : Container(),
             ],
           ),
         ));

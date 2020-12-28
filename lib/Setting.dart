@@ -377,91 +377,89 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                   contentPadding: const EdgeInsets.all(0.0),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                  content: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                              padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                              child: Text(
-                                CHOOSE_THEME_LBL,
-                                style: Theme.of(this.context)
-                                    .textTheme
-                                    .subtitle1
-                                    .copyWith(color: fontColor),
-                              )),
-                          Padding(
-                              padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
-                              child: Text(
-                                COMINGSOON,
-                                style: Theme.of(context).textTheme.caption,
-                              )),
-                          Divider(color: lightBlack),
-                          ListView.separated(
-                              separatorBuilder: (BuildContext context, int index) =>
-                                  Padding(
-                                      padding:
-                                      EdgeInsets.only(left: 20.0, right: 20.0),
-                                      child: Divider(color: lightBlack)),
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: themeList.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                    padding:
-                                    EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0),
-                                    child: Row(
-                                      children: [
-                                        InkWell(
-                                          onTap: () {
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                          child: Text(
+                            CHOOSE_THEME_LBL,
+                            style: Theme.of(this.context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(color: fontColor),
+                          )),
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
+                          child: Text(
+                            COMINGSOON,
+                            style: Theme.of(context).textTheme.caption,
+                          )),
+                      Divider(color: lightBlack),
+                      ListView.separated(
+                          separatorBuilder: (BuildContext context, int index) =>
+                              Padding(
+                                  padding:
+                                  EdgeInsets.only(left: 20.0, right: 20.0),
+                                  child: Divider(color: lightBlack)),
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: themeList.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                                padding:
+                                EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0),
+                                child: Row(
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
 
-                                          },
-                                          child: Container(
-                                            height: 25.0,
-                                            decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: selectedIndex == index
-                                                    ? grad2Color
-                                                    : white,
-                                                border:
-                                                Border.all(color: grad2Color)),
-                                            child: Padding(
-                                                padding: const EdgeInsets.all(2.0),
-                                                child: selectedIndex == index
-                                                    ? Icon(
-                                                  Icons.check,
-                                                  size: 17.0,
-                                                  color: white,
-                                                )
-                                                    : Icon(
-                                                  Icons
-                                                      .check_box_outline_blank,
-                                                  size: 15.0,
-                                                  color: white,
-                                                )),
-                                          ),
+                                      },
+                                      child: Container(
+                                        height: 25.0,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: selectedIndex == index
+                                                ? grad2Color
+                                                : white,
+                                            border:
+                                            Border.all(color: grad2Color)),
+                                        child: Padding(
+                                            padding: const EdgeInsets.all(2.0),
+                                            child: selectedIndex == index
+                                                ? Icon(
+                                              Icons.check,
+                                              size: 17.0,
+                                              color: white,
+                                            )
+                                                : Icon(
+                                              Icons
+                                                  .check_box_outline_blank,
+                                              size: 15.0,
+                                              color: white,
+                                            )),
+                                      ),
+                                    ),
+                                    Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 15.0,
                                         ),
-                                        Padding(
-                                            padding: EdgeInsets.only(
-                                              left: 15.0,
-                                            ),
-                                            child: Text(
-                                              themeList[index],
-                                              style: Theme.of(this.context)
-                                                  .textTheme
-                                                  .subtitle1
-                                                  .copyWith(color: lightBlack),
-                                            ))
-                                      ],
-                                    ));
-                              }),
-                          Padding(
-                              padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                              child: Divider(color: lightBlack)),
-                        ],
-                      )),
+                                        child: Text(
+                                          themeList[index],
+                                          style: Theme.of(this.context)
+                                              .textTheme
+                                              .subtitle1
+                                              .copyWith(color: lightBlack),
+                                        ))
+                                  ],
+                                ));
+                          }),
+                      Padding(
+                          padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                          child: Divider(color: lightBlack)),
+                    ],
+                  ),
                   actions: <Widget>[
                     new FlatButton(
                         child: Text(
@@ -494,6 +492,11 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         });
   }
 
+
+
+
+
+
   languageDialog() async {
     await showDialog(
         context: context,
@@ -505,7 +508,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5.0))),
                   content: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
+
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -526,6 +529,9 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                 style: Theme.of(context).textTheme.caption,
                               )),
                           Divider(color: lightBlack),
+                    Container(
+
+                    height: 400,child:
                           ListView.separated(
                               separatorBuilder: (BuildContext context, int index) =>
                                   Padding(
@@ -585,7 +591,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                             ))
                                       ],
                                     ));
-                              }),
+                              })),
                           Padding(
                               padding: EdgeInsets.only(left: 20.0, right: 20.0),
                               child: Divider(color: lightBlack)),
@@ -821,16 +827,18 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
       backgroundColor: lightWhite,
       appBar: getAppBar(SETTING, context),
       body: _isNetworkAvail
-          ? Column(
+          ? SingleChildScrollView(
+            child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          changePass(),
-          changeLangauge(),
-          changeTheme(),
-          privacyPolicy(),
-          termCondition(),
+            changePass(),
+            changeLangauge(),
+            changeTheme(),
+            privacyPolicy(),
+            termCondition(),
         ],
-      )
+      ),
+          )
           : noInternet(context),
     );
   }

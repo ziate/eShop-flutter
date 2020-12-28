@@ -78,7 +78,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       if (subList[0].subList == null || subList[0].subList.isEmpty) {
          curTabId = subList[0].id;
         _isLoading = true;
-        getProduct(curTabId, 0);
+        getProduct(curTabId, 0,"0");
 
       }
 
@@ -165,7 +165,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           setState(() {
             if (subList[_tc.index].subList == null ||
                 subList[_tc.index].subList.isEmpty) {
-              clearList();
+              clearList("0");
             }
           });
         });
@@ -196,7 +196,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             if (subList[_tc.index].subList == null ||
                 subList[_tc.index].subList.isEmpty) {
 
-              clearList();
+              clearList("0");
             }else{
 
             }
@@ -211,6 +211,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     //super.build(context); //
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: lightWhite,
       appBar: AppBar(
@@ -590,64 +592,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     );
   }
 
-/*  void sortDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return new CupertinoAlertDialog(
-            title: new Text(
-              SORT_BY,
-              style: Theme.of(context).textTheme.headline6,
-            ),
-            actions: [
-              CupertinoActionSheetAction(
-                  child: new Text(
-                    F_NEWEST,
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  onPressed: () {
-                    sortBy = 'p.date_added';
-                    orderBy = 'DESC';
-                    clearList();
-                    Navigator.pop(context, 'option 1');
-                  }),
-              CupertinoActionSheetAction(
-                  child: new Text(
-                    F_OLDEST,
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  onPressed: () {
-                    sortBy = 'p.date_added';
-                    orderBy = 'ASC';
-                    clearList();
-                    Navigator.pop(context, 'option 2');
-                  }),
-              CupertinoActionSheetAction(
-                  child: new Text(
-                    F_LOW,
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  onPressed: () {
-                    sortBy = 'pv.price';
-                    orderBy = 'ASC';
-                    clearList();
-                    Navigator.pop(context, 'option 3');
-                  }),
-              CupertinoActionSheetAction(
-                  child: new Text(
-                    F_HIGH,
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  onPressed: () {
-                    sortBy = 'pv.price';
-                    orderBy = 'DESC';
-                    clearList();
-                    Navigator.pop(context, 'option 4');
-                  }),
-            ],
-          );
-        });
-  }*/
+
   void sortDialog() {
     showDialog(
         context: context,
@@ -669,6 +614,22 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         style: Theme.of(context).textTheme.headline6,
                       )),
                   Divider(color: lightBlack),
+
+
+                  TextButton(
+                      child: Text(TOP_RATED,
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1
+                              .copyWith(color: lightBlack)),
+                      onPressed: () {
+                        sortBy = '';
+                        orderBy = 'DESC';
+
+                        clearList("1");
+                        Navigator.pop(context, 'option 1');
+                      }),
+                  Divider(color: lightBlack),
                   TextButton(
                       child: Text(F_NEWEST,
                           style: Theme.of(context)
@@ -679,7 +640,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         sortBy = 'p.date_added';
                         orderBy = 'DESC';
 
-                        clearList();
+                        clearList("0");
                         Navigator.pop(context, 'option 1');
                       }),
                   Divider(color: lightBlack),
@@ -695,7 +656,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         sortBy = 'p.date_added';
                         orderBy = 'ASC';
 
-                        clearList();
+                        clearList("0");
                         Navigator.pop(context, 'option 2');
                       }),
                   Divider(color: lightBlack),
@@ -711,7 +672,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         sortBy = 'pv.price';
                         orderBy = 'ASC';
 
-                        clearList();
+                        clearList("0");
                         Navigator.pop(context, 'option 3');
                       }),
                   Divider(color: lightBlack),
@@ -729,7 +690,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                             sortBy = 'pv.price';
                             orderBy = 'DESC';
 
-                            clearList();
+                            clearList("0");
                             Navigator.pop(context, 'option 4');
                           })),
                 ])),
@@ -944,12 +905,12 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         )),
                     Spacer(),
                     SimBtn(
-                      size: deviceWidth * 0.4,
+                      size:   0.4,
                       title: APPLY,
                       onBtnSelected: () {
                         if (subList[_tc.index].selectedId != null) {
                               selId = subList[_tc.index].selectedId.join(',');
-                            clearList();
+                            clearList("0");
                           Navigator.pop(context, 'Product Filter');
                         }
                       },
@@ -1054,7 +1015,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     }
   }*/
 
-  Future<void> getProduct(String id, int cur) async {
+  Future<void> getProduct(String id, int cur,String top) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -1066,6 +1027,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           OFFSET: subList[cur].subList == null
               ? '0'
               : subList[cur].subList.length.toString(),
+            TOP_RETAED:top
         };
         if (selId != null && selId != "") {
           parameter[ATTRIBUTE_VALUE_ID] = selId;
@@ -1102,9 +1064,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                 .map((data) => new Product.fromJson(data))
                 .toList();
             if (offset == 0) subList[cur].subList = [];
-            // subList[cur].subList.clear();
-            //productList.clear();
-            //productList.addAll(tempList);
+
             subList[cur].subList.addAll(tempList);
             offset = subList[cur].offset + perPage;
 
@@ -1230,7 +1190,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     }
   }*/
 
-  clearList() {
+  clearList(String top) {
     setState(() {
       _isLoading = true;
       _views[_tc.index] = createTabContent(_tc.index, subList);
@@ -1239,10 +1199,9 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       subList[_tc.index].totalItem = 0;
       subList[_tc.index].offset = 0;
       subList[_tc.index].subList=[];
-      //subList[_tc.index].selectedId=[];
       curTabId = subList[_tc.index].id;
 
-      getProduct(curTabId, _tc.index);
+      getProduct(curTabId, _tc.index,top);
     });
   }
 
@@ -1476,7 +1435,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           // });
           curTabId = subList[_tc.index].id;
           _views[_tc.index] = createTabContent(_tc.index, subList);
-          getProduct(curTabId, _tc.index);
+          getProduct(curTabId, _tc.index,"0");
         }
       }
     }

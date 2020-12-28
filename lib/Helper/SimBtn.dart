@@ -6,13 +6,15 @@ import 'Color.dart';
 class SimBtn extends StatelessWidget {
   final String title;
   final VoidCallback onBtnSelected;
-  final double size;
+   double size;
 
-  const SimBtn({Key key, this.title, this.onBtnSelected, this.size})
+   SimBtn({Key key, this.title, this.onBtnSelected, this.size})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
+    size=MediaQuery.of(context).size.width *size;
     return _buildBtnAnimation(context);
   }
 

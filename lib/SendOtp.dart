@@ -70,10 +70,10 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
     final form = _formkey.currentState;
     form.save();
     if (form.validate()) {
-      print("validated**********");
+
       return true;
     }
-    print("not validated**********");
+
     return false;
   }
 
@@ -137,7 +137,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
               .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***verifyuser**$mobile***${response.body.toString()}');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       await buttonController.reverse();
@@ -273,14 +273,11 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
         textStyle: TextStyle(color: fontColor, fontWeight: FontWeight.bold),
         onChanged: (CountryCode countryCode) {
           countrycode = countryCode.toString().replaceFirst("+", "");
-          print("New Country selected: " + countryCode.toString());
-          countryName = countryCode.name;
+           countryName = countryCode.name;
         },
         onInit: (code) {
-          print("on init ${code.name} ${code.dialCode} ${code.name}");
-          countrycode = code.toString().replaceFirst("+", "");
-          print("New Country selected: " + code.toString());
-        });
+           countrycode = code.toString().replaceFirst("+", "");
+         });
   }
 
   setMono() {
@@ -295,7 +292,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
         validator: validateMob,
         onSaved: (String value) {
           mobile = value;
-          print('Mobile no:$mobile');
+
         },
         decoration: InputDecoration(
           hintText: MOBILEHINT_LBL,
@@ -457,6 +454,8 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
         key: _scaffoldKey,
         body: _isNetworkAvail

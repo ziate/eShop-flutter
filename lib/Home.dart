@@ -43,7 +43,7 @@ import 'Profile.dart';
 import 'Search.dart';
 import 'SubCat.dart';
 
-import 'Track_Order.dart';
+
 import 'main.dart';
 
 class Home extends StatefulWidget {
@@ -74,7 +74,6 @@ class StateHome extends State<Home> {
       FlutterLocalNotificationsPlugin();
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
-
   @override
   void initState() {
     super.initState();
@@ -99,15 +98,14 @@ class StateHome extends State<Home> {
     var parameter = {USER_ID: CUR_USERID, FCM_ID: token};
 
     Response response =
-    await post("$updateFcmApi", body: parameter, headers: headers)
-        .timeout(Duration(seconds: timeOut));
-
+        await post("$updateFcmApi", body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
     var getdata = json.decode(response.body);
 
     print("set token**${response.body.toString()}");
-
   }
+
   @override
   Widget build(BuildContext context) {
     deviceHeight = MediaQuery.of(context).size.height;
@@ -373,8 +371,6 @@ class StateHome extends State<Home> {
   }*/
 
   _getAppbar() {
-    double width = deviceWidth;
-    double height = width / 2;
     String title = curSelected == 1 ? FAVORITE : NOTIFICATION;
     print("cart count***$CUR_CART_COUNT");
     return AppBar(
@@ -811,8 +807,8 @@ class StateHome extends State<Home> {
   void firebaseCloudMessaging_Listeners() {
     if (Platform.isIOS) iOS_Permission();
 
-     _firebaseMessaging.getToken().then((token) async {
-       CUR_USERID = await getPrefrence(ID);
+    _firebaseMessaging.getToken().then((token) async {
+      CUR_USERID = await getPrefrence(ID);
       if (CUR_USERID != null && CUR_USERID != "") _registerToken(token);
     });
 
@@ -821,6 +817,7 @@ class StateHome extends State<Home> {
         print('onmessage $message');
         await myBackgroundMessageHandler(message);
       },
+      onBackgroundMessage: myBackgroundMessageHandler,
       onResume: (message) async {
         print('onresume $message');
         await myBackgroundMessageHandler(message);
@@ -926,8 +923,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
 
-
-
   @override
   void initState() {
     super.initState();
@@ -967,6 +962,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
     return _home();
   }
 
@@ -1060,8 +1057,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                     children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
                         .map((_) => Container(
                               margin: EdgeInsets.symmetric(horizontal: 10),
-                              width: 80.0,
-                              height: 80.0,
+                              width: 50.0,
+                              height: 50.0,
                               color: white,
                             ))
                         .toList()),
@@ -1412,10 +1409,15 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             style: Theme.of(context).textTheme.subtitle1,
           ),
           InkWell(
-            child: Text(
-              seeAll,
-              style:
-                  Theme.of(context).textTheme.caption.copyWith(color: primary),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                seeAll,
+                style: Theme.of(context)
+                    .textTheme
+                    .caption
+                    .copyWith(color: primary),
+              ),
             ),
             onTap: () {
               Section_Model model = sectionList[index];
@@ -1436,483 +1438,321 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   _getOfferImage(index) {
-
-        return FadeInImage(
-            fadeInDuration: Duration(milliseconds: 150),
-          image: NetworkImage(offerImages[index].image),
-          width: double.maxFinite,
-          // errorWidget: (context, url, e) => placeHolder(50),
-          placeholder:   AssetImage(
+    return FadeInImage(
+        fadeInDuration: Duration(milliseconds: 150),
+        image: NetworkImage(offerImages[index].image),
+        width: double.maxFinite,
+        // errorWidget: (context, url, e) => placeHolder(50),
+        placeholder: AssetImage(
           "assets/images/sliderph.png",
-
         ));
-      }
-
-
+  }
 
   _getSection(int i) {
     print('style=====${sectionList[i].style}');
-    return sectionList[i].style == DEFAULT
-        ? GridView.count(
-            padding: EdgeInsets.only(top: 5),
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            childAspectRatio: 0.8,
-            physics: NeverScrollableScrollPhysics(),
-            children: List.generate(
-              sectionList[i].productList.length < 4
-                  ? sectionList[i].productList.length
-                  : 4,
-              (index) {
-                return productItem(i, index, index % 2 == 0 ? true : false);
-              },
-            ))
-        : sectionList[i].style == STYLE1
-            ? Row(
-                children: [
-                  Flexible(
-                      flex: 3,
-                      fit: FlexFit.loose,
-                      child: Container(
-                          height: deviceHeight * 0.4,
-                          child: productItem(i, 0, true))),
-                  Flexible(
-                    flex: 2,
-                    fit: FlexFit.loose,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+
+    return new OrientationBuilder(builder: (context, orientation) {
+      print(
+          "orientation******${orientation}*****${MediaQuery.of(context).orientation}");
+
+      var orient = MediaQuery.of(context).orientation;
+
+      return sectionList[i].style == DEFAULT
+          ? GridView.count(
+              padding: EdgeInsets.only(top: 5),
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              childAspectRatio: 0.8,
+              physics: NeverScrollableScrollPhysics(),
+              children: List.generate(
+                sectionList[i].productList.length < 4
+                    ? sectionList[i].productList.length
+                    : 4,
+                (index) {
+                  return productItem(i, index, index % 2 == 0 ? true : false);
+                },
+              ))
+          : sectionList[i].style == STYLE1
+              ? sectionList[i].productList.length > 0
+                  ? Row(
                       children: [
-                        Container(
-                            height: deviceHeight * 0.2,
-                            child: productItem(i, 1, false)),
-                        Container(
-                            height: deviceHeight * 0.2,
-                            child: productItem(i, 2, false)),
+                        Flexible(
+                            flex: 3,
+                            fit: FlexFit.loose,
+                            child: Container(
+                                height: orient == Orientation.portrait
+                                    ? MediaQuery.of(context).size.height * 0.4
+                                    : MediaQuery.of(context).size.height,
+                                child: productItem(i, 0, true))),
+                        Flexible(
+                          flex: 2,
+                          fit: FlexFit.loose,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                  height: orient == Orientation.portrait
+                                      ? deviceHeight * 0.2
+                                      : deviceHeight * 0.5,
+                                  child: productItem(i, 1, false)),
+                              Container(
+                                  height: orient == Orientation.portrait
+                                      ? deviceHeight * 0.2
+                                      : deviceHeight * 0.5,
+                                  child: productItem(i, 2, false)),
+                            ],
+                          ),
+                        ),
                       ],
-                    ),
-                  ),
-                ],
-              )
-            : sectionList[i].style == STYLE2
-                ? Row(
-                    children: [
-                      Flexible(
-                        flex: 2,
-                        fit: FlexFit.loose,
-                        child: Column(
+                    )
+                  : Container()
+              : sectionList[i].style == STYLE2
+                  ? Row(
+                      children: [
+                        Flexible(
+                          flex: 2,
+                          fit: FlexFit.loose,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                  height: orient == Orientation.portrait
+                                      ? deviceHeight * 0.2
+                                      : deviceHeight * 0.5,
+                                  child: productItem(i, 0, true)),
+                              Container(
+                                  height: orient == Orientation.portrait
+                                      ? deviceHeight * 0.2
+                                      : deviceHeight * 0.5,
+                                  child: productItem(i, 1, true)),
+                            ],
+                          ),
+                        ),
+                        Flexible(
+                            flex: 3,
+                            fit: FlexFit.loose,
+                            child: Container(
+                                height: orient == Orientation.portrait
+                                    ? deviceHeight * 0.4
+                                    : deviceHeight,
+                                child: productItem(i, 2, false))),
+                      ],
+                    )
+                  : sectionList[i].style == STYLE3
+                      ? Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            Flexible(
+                                flex: 1,
+                                fit: FlexFit.loose,
+                                child: Container(
+                                    height: orient == Orientation.portrait
+                                        ? deviceHeight * 0.3
+                                        : deviceHeight * 0.6,
+                                    child: productItem(i, 0, false))),
                             Container(
-                                height: deviceHeight * 0.2,
-                                child: productItem(i, 0, true)),
-                            Container(
-                                height: deviceHeight * 0.2,
-                                child: productItem(i, 1, true)),
+                              height: orient == Orientation.portrait
+                                  ? deviceHeight * 0.2
+                                  : deviceHeight * 0.5,
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                      flex: 1,
+                                      fit: FlexFit.loose,
+                                      child: productItem(i, 1, true)),
+                                  Flexible(
+                                      flex: 1,
+                                      fit: FlexFit.loose,
+                                      child: productItem(i, 2, true)),
+                                  Flexible(
+                                      flex: 1,
+                                      fit: FlexFit.loose,
+                                      child: productItem(i, 3, false)),
+                                ],
+                              ),
+                            ),
                           ],
-                        ),
-                      ),
-                      Flexible(
-                          flex: 3,
-                          fit: FlexFit.loose,
-                          child: Container(
-                              height: deviceHeight * 0.4,
-                              child: productItem(i, 2, false))),
-                    ],
-                  )
-                : sectionList[i].style == STYLE3
-                    ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                              flex: 1,
-                              fit: FlexFit.loose,
-                              child: Container(
-                                  height: deviceHeight * 0.3,
-                                  child: productItem(i, 0, false))),
-                          Container(
-                            height: deviceHeight * 0.2,
-                            child: Row(
+                        )
+                      : sectionList[i].style == STYLE4
+                          ? Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Flexible(
                                     flex: 1,
                                     fit: FlexFit.loose,
-                                    child: productItem(i, 1, true)),
-                                Flexible(
-                                    flex: 1,
-                                    fit: FlexFit.loose,
-                                    child: productItem(i, 2, true)),
-                                Flexible(
-                                    flex: 1,
-                                    fit: FlexFit.loose,
-                                    child: productItem(i, 3, false)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      )
-                    : sectionList[i].style == STYLE4
-                        ? Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                  flex: 1,
-                                  fit: FlexFit.loose,
-                                  child: Container(
-                                      height: deviceHeight * 0.3,
-                                      child: productItem(i, 0, false))),
-                              Container(
-                                height: deviceHeight * 0.2,
-                                child: Row(
-                                  children: [
-                                    Flexible(
-                                        flex: 1,
-                                        fit: FlexFit.loose,
-                                        child: productItem(i, 1, true)),
-                                    Flexible(
-                                        flex: 1,
-                                        fit: FlexFit.loose,
-                                        child: productItem(i, 2, false)),
-                                  ],
+                                    child: Container(
+                                        height: orient == Orientation.portrait
+                                            ? deviceHeight * 0.3
+                                            : deviceHeight * 0.6,
+                                        child: productItem(i, 0, false))),
+                                Container(
+                                  height: orient == Orientation.portrait
+                                      ? deviceHeight * 0.2
+                                      : deviceHeight * 0.5,
+                                  child: Row(
+                                    children: [
+                                      Flexible(
+                                          flex: 1,
+                                          fit: FlexFit.loose,
+                                          child: productItem(i, 1, true)),
+                                      Flexible(
+                                          flex: 1,
+                                          fit: FlexFit.loose,
+                                          child: productItem(i, 2, false)),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          )
-                        : GridView.count(
-                            padding: EdgeInsets.only(top: 5),
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            childAspectRatio: 1.0,
-                            physics: NeverScrollableScrollPhysics(),
-                            mainAxisSpacing: 0,
-                            crossAxisSpacing: 0,
-                            children: List.generate(
-                              sectionList[i].productList.length < 4
-                                  ? sectionList[i].productList.length
-                                  : 4,
-                              (index) {
-                                return productItem(
-                                    i, index, index % 2 == 0 ? true : false);
-                              },
-                            ));
+                              ],
+                            )
+                          : GridView.count(
+                              padding: EdgeInsets.only(top: 5),
+                              crossAxisCount: 2,
+                              shrinkWrap: true,
+                              childAspectRatio: 1.0,
+                              physics: NeverScrollableScrollPhysics(),
+                              mainAxisSpacing: 0,
+                              crossAxisSpacing: 0,
+                              children: List.generate(
+                                sectionList[i].productList.length < 4
+                                    ? sectionList[i].productList.length
+                                    : 4,
+                                (index) {
+                                  return productItem(
+                                      i, index, index % 2 == 0 ? true : false);
+                                },
+                              ));
+    });
   }
 
-  /*Widget productItemSmall(int secPos, int index) {
-    double price = double.parse(
-        sectionList[secPos].productList[index].prVarientList[0].disPrice);
-    if (price == 0)
-      price = double.parse(
-          sectionList[secPos].productList[index].prVarientList[0].price);
+  Widget productItem(int secPos, int index, bool pad) {
+    if (sectionList[secPos].productList.length > index) {
+      String offPer;
+      double price = double.parse(
+          sectionList[secPos].productList[index].prVarientList[0].disPrice);
+      if (price == 0) {
+        price = double.parse(
+            sectionList[secPos].productList[index].prVarientList[0].price);
+      } else {
+        double off = double.parse(
+                sectionList[secPos].productList[index].prVarientList[0].price) -
+            price;
+        print("==========$off");
+        offPer = ((off * 100) /
+                double.parse(sectionList[secPos]
+                    .productList[index]
+                    .prVarientList[0]
+                    .price))
+            .toStringAsFixed(2);
+      }
 
-    double width = deviceWidth * 0.5 - 20;
-    print(
-        "tag=============${sectionList[secPos].productList[index].id}${secPos}${index}========home");
+      double width = deviceWidth * 0.5;
 
-    return Container(
-      decoration: BoxDecoration(
-        boxShadow: [BoxShadow(color: black12, blurRadius: 10)],
-      ),
-      child: Card(
-        elevation: 0.0,
+      return Card(
+        elevation: 0.2,
+        margin: EdgeInsets.only(bottom: 5, right: pad ? 5 : 0),
         child: InkWell(
-          child: Container(
-            height: deviceHeight * 0.2,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 5.0),
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(5),
-                                topRight: Radius.circular(5)),
-                            child: Hero(
-                              transitionOnUserGestures: true,
-                              tag:
-                                  "${sectionList[secPos].productList[index].id}$secPos$index",
-                              child: CachedNetworkImage(
-                                imageUrl: sectionList[secPos]
-                                    .productList[index]
-                                    .image,
-                                height: double.maxFinite,
-                                width: double.maxFinite,
-                                //fit: BoxFit.fill,
-                                placeholder: (context, url) =>
-                                    placeHolder(width),
-                              ),
-                            )),
+          borderRadius: BorderRadius.circular(4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(5),
+                        topRight: Radius.circular(5)),
+                    child: Hero(
+                      tag:
+                          "${sectionList[secPos].productList[index].id}$secPos$index",
+                      child: FadeInImage(
+                        fadeInDuration: Duration(milliseconds: 150),
+                        image: NetworkImage(
+                            sectionList[secPos].productList[index].image),
+                        height: double.maxFinite,
+                        width: double.maxFinite,
+                        // errorWidget: (context, url, e) => placeHolder(width),
+                        placeholder: placeHolder(width),
                       ),
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(1.5),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.star,
-                                color: Colors.yellow,
-                                size: 10,
-                              ),
-                              Text(
-                                sectionList[secPos].productList[index].rating,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .overline
-                                    .copyWith(letterSpacing: 0.2),
-                              ),
-                            ],
+                    )),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 5.0, top: 5, bottom: 5),
+                child: Text(
+                  sectionList[secPos].productList[index].name,
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: lightBlack),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(" " + CUR_CURRENCY + " " + price.toString(),
+                  style:
+                      TextStyle(color: fontColor, fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
+                child: int.parse(sectionList[secPos]
+                            .productList[index]
+                            .prVarientList[0]
+                            .disPrice) !=
+                        0
+                    ? Row(
+                        children: <Widget>[
+                          Text(
+                            int.parse(sectionList[secPos]
+                                        .productList[index]
+                                        .prVarientList[0]
+                                        .disPrice) !=
+                                    0
+                                ? CUR_CURRENCY +
+                                    "" +
+                                    sectionList[secPos]
+                                        .productList[index]
+                                        .prVarientList[0]
+                                        .price
+                                : "",
+                            style: Theme.of(context)
+                                .textTheme
+                                .overline
+                                .copyWith(
+                                    decoration: TextDecoration.lineThrough,
+                                    letterSpacing: 0),
                           ),
-                        ),
+                          Text(" | " + "-$offPer%",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(color: primary, letterSpacing: 0)),
+                        ],
+                      )
+                    : Container(
+                        height: 5,
                       ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Text(
-                    sectionList[secPos].productList[index].name,
-                    style: Theme.of(context)
-                        .textTheme
-                        .overline
-                        .copyWith(color: black, letterSpacing: 0.5),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 5, left: 5),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                                int.parse(sectionList[secPos]
-                                            .productList[index]
-                                            .prVarientList[0]
-                                            .disPrice) !=
-                                        0
-                                    ? CUR_CURRENCY +
-                                        "" +
-                                        sectionList[secPos]
-                                            .productList[index]
-                                            .prVarientList[0]
-                                            .price
-                                    : "",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .overline
-                                    .copyWith(
-                                        decoration: TextDecoration.lineThrough,
-                                        letterSpacing: 1),
-                                textAlign: TextAlign.left),
-                            Text(
-                              CUR_CURRENCY + " " + price.toString(),
-                              style: TextStyle(color: primary),
-                              textAlign: TextAlign.left,
-                            ),
-                          ],
-                        ),
-                      ),
-                      sectionList[secPos].productList[index].isFavLoading
-                          ? Container(
-                              height: 15,
-                              width: 15,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 3),
-                              padding: const EdgeInsets.all(3),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 0.7,
-                              ))
-                          : InkWell(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0, vertical: 3),
-                                child: Icon(
-                                  sectionList[secPos]
-                                              .productList[index]
-                                              .isFav ==
-                                          "0"
-                                      ? Icons.favorite_border
-                                      : Icons.favorite,
-                                  size: 15,
-                                  color: primary,
-                                ),
-                              ),
-                              onTap: () {
-                                if (CUR_USERID != null) {
-                                  sectionList[secPos]
-                                              .productList[index]
-                                              .isFav ==
-                                          "0"
-                                      ? _setFav(secPos, index)
-                                      : _removeFav(secPos, index);
-                                } else {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => Login()),
-                                  );
-                                }
-                              })
-                    ],
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
           onTap: () {
             Product model = sectionList[secPos].productList[index];
             Navigator.push(
               context,
               PageRouteBuilder(
-                  transitionDuration: Duration(seconds: 1),
+                  // transitionDuration: Duration(milliseconds: 150),
                   pageBuilder: (_, __, ___) => ProductDetail(
-                        model: model,
-                        updateParent: updateHomePage,
-                        secPos: secPos,
-                        index: index,
-                        updateHome: widget.updateHome,
-                        list: false,
-                        //  title: sectionList[secPos].title,
+                      model: model,
+                      updateParent: updateHomePage,
+                      secPos: secPos,
+                      index: index,
+                      updateHome: widget.updateHome,
+                      list: false
+                      //  title: sectionList[secPos].title,
                       )),
             );
           },
         ),
-      ),
-    );
-  }
-*/
-  Widget productItem(int secPos, int index, bool pad) {
-    String offPer;
-    double price = double.parse(
-        sectionList[secPos].productList[index].prVarientList[0].disPrice);
-    if (price == 0) {
-      price = double.parse(
-          sectionList[secPos].productList[index].prVarientList[0].price);
-    } else {
-      double off = double.parse(
-              sectionList[secPos].productList[index].prVarientList[0].price) -
-          price;
-      print("==========$off");
-      offPer = ((off * 100) /
-              double.parse(sectionList[secPos]
-                  .productList[index]
-                  .prVarientList[0]
-                  .price))
-          .toStringAsFixed(2);
-    }
-
-    double width = deviceWidth * 0.5;
-
-    return Card(
-      elevation: 0.2,
-      margin: EdgeInsets.only(bottom: 5, right: pad ? 5 : 0),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(5),
-                      topRight: Radius.circular(5)),
-                  child: Hero(
-                    tag:
-                        "${sectionList[secPos].productList[index].id}$secPos$index",
-                    child: FadeInImage(
-                      fadeInDuration: Duration(milliseconds: 150),
-                      image: NetworkImage(
-                          sectionList[secPos].productList[index].image),
-                      height: double.maxFinite,
-                      width: double.maxFinite,
-                      // errorWidget: (context, url, e) => placeHolder(width),
-                      placeholder: placeHolder(width),
-                    ),
-                  )),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 5.0, top: 5, bottom: 5),
-              child: Text(
-                sectionList[secPos].productList[index].name,
-                style: Theme.of(context)
-                    .textTheme
-                    .caption
-                    .copyWith(color: lightBlack),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Text(" " + CUR_CURRENCY + " " + price.toString(),
-                style:
-                    TextStyle(color: fontColor, fontWeight: FontWeight.bold)),
-            Padding(
-              padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
-              child: int.parse(sectionList[secPos]
-                          .productList[index]
-                          .prVarientList[0]
-                          .disPrice) !=
-                      0
-                  ? Row(
-                      children: <Widget>[
-                        Text(
-                          int.parse(sectionList[secPos]
-                                      .productList[index]
-                                      .prVarientList[0]
-                                      .disPrice) !=
-                                  0
-                              ? CUR_CURRENCY +
-                                  "" +
-                                  sectionList[secPos]
-                                      .productList[index]
-                                      .prVarientList[0]
-                                      .price
-                              : "",
-                          style: Theme.of(context).textTheme.overline.copyWith(
-                              decoration: TextDecoration.lineThrough,
-                              letterSpacing: 0),
-                        ),
-                        Text(" | " + "-$offPer%",
-                            style: Theme.of(context)
-                                .textTheme
-                                .overline
-                                .copyWith(color: primary, letterSpacing: 0)),
-                      ],
-                    )
-                  : Container(
-                      height: 5,
-                    ),
-            )
-          ],
-        ),
-        onTap: () {
-          Product model = sectionList[secPos].productList[index];
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-                // transitionDuration: Duration(milliseconds: 150),
-                pageBuilder: (_, __, ___) => ProductDetail(
-                    model: model,
-                    updateParent: updateHomePage,
-                    secPos: secPos,
-                    index: index,
-                    updateHome: widget.updateHome,
-                    list: false
-                    //  title: sectionList[secPos].title,
-                    )),
-          );
-        },
-      ),
-    );
+      );
+    } else
+      return Container();
   }
 
   _setFav(int secPos, int index) async {
@@ -2032,8 +1872,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         pages = homeSliderList.map((slider) {
           return _buildImagePageItem(slider);
         }).toList();
-
-
       } else {
         setSnackbar(msg);
       }
@@ -2183,7 +2021,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildImagePageItem(Model slider) {
-
     double height = deviceWidth / 2.2;
 
     return GestureDetector(
@@ -2202,8 +2039,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             width: double.maxFinite,
           )),
       onTap: () async {
-        print(
-            "type***********${homeSliderList[_curSlider].type}");
+        print("type***********${homeSliderList[_curSlider].type}");
         if (homeSliderList[_curSlider].type == "products") {
           Product item = homeSliderList[_curSlider].list;
 
@@ -2218,14 +2054,12 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                     index: 0,
                     updateHome: widget.updateHome,
                     list: true
-                  //  title: sectionList[secPos].title,
-                )),
+                    //  title: sectionList[secPos].title,
+                    )),
           );
-        } else if (homeSliderList[_curSlider].type ==
-            "categories") {
+        } else if (homeSliderList[_curSlider].type == "categories") {
           Product item = homeSliderList[_curSlider].list;
-          if (item.subList == null ||
-              item.subList.length == 0) {
+          if (item.subList == null || item.subList.length == 0) {
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -2247,10 +2081,5 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         }
       },
     );
-
   }
-
-
-
-
 }

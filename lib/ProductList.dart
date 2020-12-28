@@ -62,7 +62,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     controller.addListener(_scrollListener);
-    getProduct();
+    getProduct("0");
 
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
@@ -131,7 +131,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                 if (_isNetworkAvail) {
                   offset = 0;
                   total = 0;
-                  getProduct();
+                  getProduct("0");
                 } else {
                   await buttonController.reverse();
                   setState(() {});
@@ -297,7 +297,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     setState(() {});
   }
 
-  Future<Null> getProduct() async {
+  Future<Null> getProduct(String top) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -307,6 +307,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           ORDER: orderBy,
           LIMIT: perPage.toString(),
           OFFSET: offset.toString(),
+          TOP_RETAED:top
         };
         if (selId != null && selId != "") {
           parameter[ATTRIBUTE_VALUE_ID] = selId;
@@ -314,7 +315,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
 
-        print('response*******$parameter');
+
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
@@ -573,98 +574,119 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(5.0))),
                 contentPadding: const EdgeInsets.all(0.0),
-                content: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Padding(
-                      padding: EdgeInsets.only(top: 19.0, bottom: 16.0),
-                      child: Text(
-                        SORT_BY,
-                        style: Theme.of(context).textTheme.headline6,
-                      )),
-                  Divider(color: lightBlack),
-                  TextButton(
-                      child: Text(F_NEWEST,
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(color: lightBlack)),
-                      onPressed: () {
-                        sortBy = 'p.date_added';
-                        orderBy = 'DESC';
-                        setState(() {
-                          _isLoading = true;
-                          total = 0;
-                          offset = 0;
-                          productList.clear();
-                        });
-                        getProduct();
-                        Navigator.pop(context, 'option 1');
-                      }),
-                  Divider(color: lightBlack),
-                  TextButton(
-                      child: Text(
-                        F_OLDEST,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(color: lightBlack),
-                      ),
-                      onPressed: () {
-                        sortBy = 'p.date_added';
-                        orderBy = 'ASC';
-                        setState(() {
-                          _isLoading = true;
-                          total = 0;
-                          offset = 0;
-                          productList.clear();
-                        });
-                        getProduct();
-                        Navigator.pop(context, 'option 2');
-                      }),
-                  Divider(color: lightBlack),
-                  TextButton(
-                      child: new Text(
-                        F_LOW,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(color: lightBlack),
-                      ),
-                      onPressed: () {
-                        sortBy = 'pv.price';
-                        orderBy = 'ASC';
-                        setState(() {
-                          _isLoading = true;
-                          total = 0;
-                          offset = 0;
-                          productList.clear();
-                        });
-                        getProduct();
-                        Navigator.pop(context, 'option 3');
-                      }),
-                  Divider(color: lightBlack),
-                  Padding(
-                      padding: EdgeInsets.only(bottom: 5.0),
-                      child: TextButton(
-                          child: new Text(
-                            F_HIGH,
+                content: SingleChildScrollView(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Padding(
+                        padding: EdgeInsets.only(top: 19.0, bottom: 16.0),
+                        child: Text(
+                          SORT_BY,
+                          style: Theme.of(context).textTheme.headline6,
+                        )),
+                    Divider(color: lightBlack),
+                    TextButton(
+                        child: Text(TOP_RATED,
                             style: Theme.of(context)
                                 .textTheme
                                 .subtitle1
-                                .copyWith(color: lightBlack),
-                          ),
-                          onPressed: () {
-                            sortBy = 'pv.price';
-                            orderBy = 'DESC';
-                            setState(() {
-                              _isLoading = true;
-                              total = 0;
-                              offset = 0;
-                              productList.clear();
-                            });
-                            getProduct();
-                            Navigator.pop(context, 'option 4');
-                          })),
-                ])),
+                                .copyWith(color: lightBlack)),
+                        onPressed: () {
+                          sortBy = '';
+                          orderBy = 'DESC';
+                          setState(() {
+                            _isLoading = true;
+                            total = 0;
+                            offset = 0;
+                            productList.clear();
+                          });
+                          getProduct("1");
+                          Navigator.pop(context, 'option 1');
+                        }),
+                    Divider(color: lightBlack),
+                    TextButton(
+                        child: Text(F_NEWEST,
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(color: lightBlack)),
+                        onPressed: () {
+                          sortBy = 'p.date_added';
+                          orderBy = 'DESC';
+                          setState(() {
+                            _isLoading = true;
+                            total = 0;
+                            offset = 0;
+                            productList.clear();
+                          });
+                          getProduct("0");
+                          Navigator.pop(context, 'option 1');
+                        }),
+                    Divider(color: lightBlack),
+                    TextButton(
+                        child: Text(
+                          F_OLDEST,
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1
+                              .copyWith(color: lightBlack),
+                        ),
+                        onPressed: () {
+                          sortBy = 'p.date_added';
+                          orderBy = 'ASC';
+                          setState(() {
+                            _isLoading = true;
+                            total = 0;
+                            offset = 0;
+                            productList.clear();
+                          });
+                          getProduct("0");
+                          Navigator.pop(context, 'option 2');
+                        }),
+                    Divider(color: lightBlack),
+                    TextButton(
+                        child: new Text(
+                          F_LOW,
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1
+                              .copyWith(color: lightBlack),
+                        ),
+                        onPressed: () {
+                          sortBy = 'pv.price';
+                          orderBy = 'ASC';
+                          setState(() {
+                            _isLoading = true;
+                            total = 0;
+                            offset = 0;
+                            productList.clear();
+                          });
+                          getProduct("0");
+                          Navigator.pop(context, 'option 3');
+                        }),
+                    Divider(color: lightBlack),
+                    Padding(
+                        padding: EdgeInsets.only(bottom: 5.0),
+                        child: TextButton(
+                            child: new Text(
+                              F_HIGH,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(color: lightBlack),
+                            ),
+                            onPressed: () {
+                              sortBy = 'pv.price';
+                              orderBy = 'DESC';
+                              setState(() {
+                                _isLoading = true;
+                                total = 0;
+                                offset = 0;
+                                productList.clear();
+                              });
+                              getProduct("0");
+                              Navigator.pop(context, 'option 4');
+                            })),
+                  ]),
+                )),
           );
         });
   }
@@ -676,7 +698,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         setState(() {
           isLoadingmore = true;
 
-          if (offset < total) getProduct();
+          if (offset < total) getProduct("0");
         });
       }
     }
@@ -768,8 +790,11 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     setState(() {
       _isLoading = true;
       isLoadingmore = true;
+      offset=0;
+      total=0;
+      productList.clear();
     });
-    return getProduct();
+    return getProduct("0");
   }
 
   _showForm() {
@@ -995,7 +1020,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     )),
                 Spacer(),
                 SimBtn(
-                    size: deviceWidth * 0.4,
+                    size:  0.4,
                     title: APPLY,
                     onBtnSelected: () {
                       if (selectedId != null) {
@@ -1008,7 +1033,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         offset = 0;
                         productList.clear();
                       });
-                      getProduct();
+                      getProduct("0");
                       Navigator.pop(context, 'Product Filter');
                     }),
               ]),

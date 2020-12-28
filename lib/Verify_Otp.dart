@@ -166,7 +166,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           setSnackbar("Error validating OTP, try again");
         }
       }).catchError((error) {
-        print("error========$error");
+
 
         setSnackbar("Try again after sometime");
       });
@@ -208,7 +208,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   void _onFormSubmitted() async {
     String code = otp.trim();
 
-    print("otp*********$code");
+
 
     if (code.length == 6) {
       _playAnimation();
@@ -242,7 +242,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
         }
       }).catchError((error) async {
         setSnackbar(error.toString());
-        print("errror=========$error");
+
         await buttonController.reverse();
         // setSnackbar("Something went wrong");
       });

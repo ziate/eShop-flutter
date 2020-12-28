@@ -138,6 +138,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
         key: _scaffoldKey,
         backgroundColor: lightWhite,
@@ -204,7 +207,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     cartList[index].perItemTotal =
         (price * double.parse(cartList[index].qty)).toString();
 
-    print("price****$oriPrice***$price---$index");
+    print("price****${_controller.length}***$price---$index");
+if(_controller.length<index+1)
+  _controller.add(new TextEditingController());
 
     _controller[index].text = cartList[index].qty;
 
@@ -267,7 +272,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                             ),
                           ),
                           onTap: () {
-                            removeFromCart(index, true);
+                            removeFromCart(index, true,cartList);
                           },
                         )
                       ],
@@ -342,7 +347,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                               Radius.circular(3))),
                                     ),
                                     onTap: () {
-                                      removeFromCart(index, false);
+                                      removeFromCart(index, false,cartList);
                                     },
                                   ),
                                   /*        Text(
@@ -576,7 +581,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                             ),
                           ),
                           onTap: () {
-                            removeFromCart(index, true);
+                            removeFromCart(index, true,saveLaterList);
                           },
                         )
                       ],
@@ -774,18 +779,28 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
           print('total*****add*$qty');
           cartList[index].qty = qty;
-
-          oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
-          _controller[index].text = qty;
+//double sub=data['sub_total'];
+          //double sub=double.parse(data['sub_total']);
+          oriPrice=double.parse(data['sub_total']);
+           _controller[index].text = qty;
           totalPrice = 0;
           taxAmt = double.parse(data[TAX_AMT]);
           totalPrice = delCharge + oriPrice + taxAmt;
+
+
         } else {
           setSnackbar(msg);
         }
+
+
+
+
         setState(() {
           _isProgress = false;
         });
+
+
+
         widget.updateHome();
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
@@ -869,7 +884,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     }
   }
 
-  removeFromCart(int index, bool remove) async {
+  removeFromCart(int index, bool remove, List<Section_Model> cartList) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -952,7 +967,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     return _isLoading
         ? shimmer()
         : cartList.length == 0 && saveLaterList.length == 0
-            ? cartEmpty()
+        ? cartEmpty()
             : Column(
                 children: <Widget>[
                   Expanded(
@@ -1089,7 +1104,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                           )),
                       Spacer(),
                       SimBtn(
-                          size: deviceWidth * 0.4,
+                          size:  0.4,
                           title: PROCEED_CHECKOUT,
                           onBtnSelected: () async{
                             if (oriPrice > 0) {

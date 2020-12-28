@@ -231,6 +231,9 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         top: 30.0,
       ),
       child: TextFormField(
+        onFieldSubmitted: (v) {
+          FocusScope.of(context).requestFocus(passFocus);
+        },
         keyboardType: TextInputType.number,
         controller: mobileController,
         style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
@@ -241,9 +244,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         onSaved: (String value) {
           mobile = value;
         },
-        onFieldSubmitted: (v) {
-          _fieldFocusChange(context, monoFocus, passFocus);
-        },
+
         decoration: InputDecoration(
           prefixIcon: Icon(
             Icons.call_outlined,
@@ -416,6 +417,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+                 
     return Scaffold(
         key: _scaffoldKey,
         body: _isNetworkAvail

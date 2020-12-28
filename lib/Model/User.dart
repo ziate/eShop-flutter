@@ -61,7 +61,7 @@ class User {
     for (String i in allSttus) item.add(i);
 
     date = DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
-    print('date***$date');
+
     return new User(
       id: parsedJson[ID],
       date: date,

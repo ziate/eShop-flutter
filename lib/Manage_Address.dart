@@ -302,6 +302,11 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
       selectedAddress = index;
       selAddress = addressList[index].id;
     }
+
+    if(addressList.length==1)
+      selAddress = addressList[0].id;
+
+    print("selected addd=========$selAddress");
     return Card(
         elevation: 0.2,
         child: new InkWell(

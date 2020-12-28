@@ -66,12 +66,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     productList.clear();
-    //  categList.clear();
 
-    //  this.categList = List.from(catList);
-
-    // Model m = Model.setAllCat("0", "All Category");
-    // categList.insert(0, m);
     notificationoffset = 0;
     _isSearching = false;
     notificationcontroller = ScrollController(keepScrollOffset: true);
@@ -126,7 +121,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         notificationcontroller.position.maxScrollExtent &&
         !notificationcontroller.position.outOfRange) {
       setState(() {
-        print("load4");
+
         getProduct();
       });
     }
@@ -705,8 +700,6 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('response***${parameter.toString()}');
-        print('response***slider**${response.body.toString()}***$headers');
 
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -758,7 +751,6 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
 
         var getdata = json.decode(response.body);
 
-        print('response***slider**${response.body.toString()}***$headers');
 
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -827,11 +819,9 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             LIMIT: perPage.toString(),
             OFFSET: notificationoffset.toString(),
           };
-          /*  if (pos != null && pos != 0) {
-            parameter[CATID] = categList[pos].id;
-          }*/
 
-          print("title=======$parameter");
+
+
           if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
           Response response =
@@ -994,7 +984,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                     if (notificationisloadmore &&
                         index == (productList.length - 1) &&
                         notificationcontroller.position.pixels <= 0) {
-                      print("load5");
+
                       getProduct();
                     }
                   } on Exception catch (_) {}

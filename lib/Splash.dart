@@ -31,7 +31,8 @@ class _SplashScreen extends State<Splash> {
   @override
   void initState() {
     super.initState();
-    getJwtKey();
+    startTime();
+    //getJwtKey();
   }
 
   @override
@@ -113,7 +114,7 @@ class _SplashScreen extends State<Splash> {
     super.dispose();
   }
 
-  Future<void> getJwtKey() async {
+/*  Future<void> getJwtKey() async {
     Response response = await post(getJwtKeyApi, headers: headers)
         .timeout(Duration(seconds: timeOut));
 
@@ -129,5 +130,5 @@ class _SplashScreen extends State<Splash> {
     } else {
       setSnackbar(msg);
     }
-  }
+  }*/
 }
