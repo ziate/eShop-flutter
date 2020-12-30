@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Set_Password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:eshop/Home.dart';
 import 'package:flutter/painting.dart';
-import 'package:flutter_html/style.dart';
-import 'package:http/http.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Session.dart';
@@ -35,8 +31,6 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   bool isCodeSent = false;
   String _verificationId;
   String signature = "";
-
-  //bool _isLoading = false;
   bool _isClickable = false;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
@@ -87,7 +81,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
       if (_isClickable) {
         _onVerifyCode();
       } else {
-        setSnackbar('Request new OTP after 60 seconds');
+        setSnackbar(OTPWR);
       }
     } else {
       setState(() {
@@ -100,13 +94,9 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           if (_isClickable)
             _onVerifyCode();
           else {
-            setSnackbar('Request new OTP after 60 seconds');
+            setSnackbar(OTPWR);
           }
         } else {
-          /*   setState(() {
-            _isLoading = false;
-          });*/
-
           await buttonController.reverse();
           setSnackbar(somethingMSg);
         }
@@ -146,7 +136,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           .signInWithCredential(phoneAuthCredential)
           .then((UserCredential value) {
         if (value.user != null) {
-          setSnackbar("OTP verified successfully");
+          setSnackbar(OTPMSG);
           setPrefrence(MOBILE, mobile);
           setPrefrence(COUNTRY_CODE, countrycode);
           if (widget.title == SEND_OTP_TITLE) {
@@ -163,12 +153,10 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
             });
           }
         } else {
-          setSnackbar("Error validating OTP, try again");
+          setSnackbar(OTPERROR);
         }
       }).catchError((error) {
-
-
-        setSnackbar("Try again after sometime");
+        setSnackbar(error.toString());
       });
     };
     final PhoneVerificationFailed verificationFailed =
@@ -208,8 +196,6 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   void _onFormSubmitted() async {
     String code = otp.trim();
 
-
-
     if (code.length == 6) {
       _playAnimation();
       AuthCredential _authCredential = PhoneAuthProvider.getCredential(
@@ -220,7 +206,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           .then((UserCredential value) async {
         if (value.user != null) {
           await buttonController.reverse();
-          setSnackbar("OTP verified successfully");
+          setSnackbar(OTPMSG);
           setPrefrence(MOBILE, mobile);
           setPrefrence(COUNTRY_CODE, countrycode);
           if (widget.title == SEND_OTP_TITLE) {
@@ -237,17 +223,16 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
             });
           }
         } else {
-          setSnackbar("Error validating OTP, try again");
+          setSnackbar(OTPERROR);
           await buttonController.reverse();
         }
       }).catchError((error) async {
         setSnackbar(error.toString());
 
         await buttonController.reverse();
-        // setSnackbar("Something went wrong");
       });
     } else {
-      setSnackbar('Please Enter OTP!');
+      setSnackbar(ENTEROTP);
     }
   }
 
@@ -372,7 +357,6 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
         alignment: Alignment.bottomCenter,
         child: SingleChildScrollView(
           physics: BouncingScrollPhysics(),
-
           child: Card(
             elevation: 0.5,
             shape:

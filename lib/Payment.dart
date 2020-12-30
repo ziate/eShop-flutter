@@ -10,11 +10,9 @@ import 'Cart.dart';
 import 'CheckOut.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
-import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Model/Model.dart';
-import 'CheckOut.dart';
 import 'Helper/PaymentRadio.dart';
 
 class Payment extends StatefulWidget {
@@ -54,8 +52,6 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
     'assets/images/flutterwave.png'
   ];
 
-
-
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
@@ -64,10 +60,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _getdateTime();
-
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
-
     buttonSqueezeanimation = new Tween(
       begin: deviceWidth * 0.7,
       end: 50.0,
@@ -124,7 +118,6 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    print("cur***$CUR_BALANCE");
     return Scaffold(
       key: _scaffoldKey,
       appBar: getAppBar(PAYMENT_METHOD_LBL, context),
@@ -154,14 +147,12 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                     onChanged: (bool value) {
                       setState(() {
                         isUseWallet = value;
-
                         if (value) {
                           if (totalPrice <=
                               double.parse(CUR_BALANCE)) {
                             remWalBal =
                                 double.parse(CUR_BALANCE) -
                                     totalPrice;
-
                             usedBal = totalPrice;
                             payMethod = "Wallet";
 
@@ -403,34 +394,11 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
           if (paystack) {
             paystackId = payment["paystack_key_id"];
 
-            print("paystack=========$paystackId");
             PaystackPlugin.initialize(publicKey: paystackId);
           }
 
           for (int i = 0; i < paymentMethodList.length; i++) {
             String img = '';
-
-            /*  if (i == 0) {
-              if (cod &&
-                  paymentMethodList[i].toString().toLowerCase() ==
-                      "cash on delivery")
-                img = paymentIconList[i];
-            }
-            else if (i == 1){
-              if (paypal &&
-                paymentMethodList[i].toString().toLowerCase() == "paypal")
-              img = 'assets/images/paypal.png';}
-            else if (i == 3) {
-              if (razorpay &&
-                  paymentMethodList[i].toString().toLowerCase() == "razorpay")
-                img = 'assets/images/rozerpay.png';
-            }
-            else if (i == 4) {
-              if (paystack &&
-                  paymentMethodList[i].toString().toLowerCase() == "paystack")
-                img = 'assets/images/paystack.png';
-            }
-            print("img*********$img****$i****$paypal***$paystack***$razorpay");*/
 
             payModel.add(RadioModel(
                 isSelected: i == selectedMethod ? true : false, name: paymentMethodList[i], img:  paymentIconList[i]));
@@ -443,7 +411,6 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
 
         setState(() {
           _isLoading = false;
-          // widget.model.isFavLoading = false;
         });
       } on TimeoutException catch (_) {
         //setSnackbar(somethingMSg);
@@ -467,26 +434,9 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       },
       child: new RadioItem(timeModel[index]),
     );
-
-/*    return RadioListTile(
-      dense: true,
-      value: (index),
-      groupValue: selectedTime,
-      onChanged: (val) {
-        setState(() {
-          selectedTime = val;
-          selTime = timeSlotList[selectedTime].name;
-        });
-      },
-      title: Text(
-        timeSlotList[index].name,
-        style: TextStyle(color: lightBlack, ),
-      ),
-    );*/
   }
 
   Widget paymentItem(int index) {
-
     return new InkWell(
       onTap: () {
         setState(() {
@@ -499,22 +449,5 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       },
       child: new RadioItem(payModel[index]),
     );
-
-
-    /*  return RadioListTile(
-      dense: true,
-      value: (index),
-      groupValue: selectedMethod,
-      onChanged: (val) {
-        setState(() {
-          selectedMethod = val;
-          payMethod = paymentMethodList[selectedMethod];
-        });
-      },
-      title: Text(
-        paymentMethodList[index],
-        style: TextStyle(color: lightBlack, fontSize: 15),
-      ),
-    );*/
   }
 }

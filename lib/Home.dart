@@ -1,22 +1,18 @@
 import 'dart:async';
-import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-import 'dart:io';
-import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/All_Category.dart';
-import 'package:eshop/Faqs.dart';
 import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
+import 'package:eshop/Helper/PushNotificationService.dart';
 import 'package:eshop/MyProfile.dart';
 import 'package:flutter/rendering.dart';
-import 'package:http/http.dart' as http;
-import 'package:eshop/Privacy_Policy.dart';
+
 import 'package:eshop/Product_Detail.dart';
 import 'package:eshop/SectionList.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,9 +21,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart';
 
 import 'package:eshop/ProductList.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share/share.dart';
-import 'package:eshop/ProductList.dart';
 import 'package:shimmer/shimmer.dart';
 import 'Cart.dart';
 import 'Helper/AppBtn.dart';
@@ -35,14 +28,11 @@ import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Login.dart';
-import 'Logout.dart';
 import 'Model/Model.dart';
 import 'Model/Section_Model.dart';
 import 'NotificationLIst.dart';
-import 'Profile.dart';
 import 'Search.dart';
 import 'SubCat.dart';
-
 
 import 'main.dart';
 
@@ -69,16 +59,12 @@ class StateHome extends State<Home> {
   HomePage home;
   String profile;
   int curDrwSel = 0;
-  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
 
-    // getUserData();
     home = new HomePage(updateHome);
     fragments = [
       HomePage(updateHome),
@@ -86,24 +72,12 @@ class StateHome extends State<Home> {
       NotificationList(),
       MyProfile(updateHome),
     ];
-    firebaseCloudMessaging_Listeners();
+
     firNotificationInitialize();
   }
 
   updateHome() {
     setState(() {});
-  }
-
-  void _registerToken(String token) async {
-    var parameter = {USER_ID: CUR_USERID, FCM_ID: token};
-
-    Response response =
-        await post("$updateFcmApi", body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
-
-    var getdata = json.decode(response.body);
-
-    print("set token**${response.body.toString()}");
   }
 
   @override
@@ -123,7 +97,6 @@ class StateHome extends State<Home> {
 
   Future<bool> onWillPop() {
     DateTime now = DateTime.now();
-    print("back===============$curSelected");
     if (curSelected != 0) {
       curSelected = 0;
       final CurvedNavigationBarState navBarState =
@@ -153,226 +126,9 @@ class StateHome extends State<Home> {
     ));
   }
 
-  /*_getDrawer() {
-    print("current==========$CUR_USERNAME===$CUR_USERID");
-    return Drawer(
-      child: Container(
-        color: white,
-        child: ListView(
-          padding: EdgeInsets.all(0),
-          shrinkWrap: true,
-          physics: BouncingScrollPhysics(),
-          children: <Widget>[
-            _getHeader(),
-            _getDrawerItem(0, HOME_LBL, Icons.home_outlined),
-
-            _getDrawerItem(1, CART, Icons.shopping_cart_outlined),
-
-            _getDrawerItem(2, TRACK_ORDER, Icons.art_track_outlined),
-
-            _getDrawerItem(3, PROFILE, Icons.person_outline),
-
-            _getDrawerItem(4, FAVORITE, Icons.favorite_outline),
-
-            _getDrawerItem(5, NOTIFICATION, Icons.notifications_outlined),
-
-            //_getDrawerItem(SETTING, Icons.settings),
-            _getDivider(),
-            _getDrawerItem(6, RATE_APP, Icons.star_outline),
-
-            _getDrawerItem(7, SHARE_APP, Icons.share_outlined),
-
-            _getDrawerItem(8, PRIVACY, Icons.lock_outline),
-
-            _getDrawerItem(9, TERM, Icons.speaker_notes_outlined),
-
-            _getDrawerItem(10, CONTACT_LBL, Icons.info_outline),
-
-            CUR_USERID == "" || CUR_USERID == null
-                ? Container()
-                : _getDivider(),
-            CUR_USERID == "" || CUR_USERID == null
-                ? Container()
-                : _getDrawerItem(11, LOGOUT, Icons.input),
-          ],
-        ),
-      ),
-    );
-  }
-
-  _getDivider() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Divider(
-        height: 1,
-
-      ),
-    );
-  }
-
-  _getDrawerItem(int index, String title, IconData icn) {
-    return Container(
-      margin: EdgeInsets.only(right: 20),
-      decoration: BoxDecoration(
-          gradient: curDrwSel == index
-              ? LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                secondary.withOpacity(0.2),
-                primary.withOpacity(0.2)
-              ],
-              stops: [
-                0,
-                1
-              ])
-              : null,
-          // color: curDrwSel == index ? primary.withOpacity(0.2) : Colors.transparent,
-
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(50),
-            bottomRight: Radius.circular(50),
-          )),
-      child: ListTile(
-        dense: true,
-        leading: Icon(
-          icn,
-          color: curDrwSel == index ? primary : lightBlack2,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-              color: curDrwSel == index ? primary : lightBlack2, fontSize: 15),
-        ),
-        onTap: () {
-          Navigator.of(context).pop();
-          if (title == HOME_LBL) {
-            setState(() {
-              curDrwSel = index;
-              _curSelected = 0;
-            });
-          } else if (title == CART) {
-            setState(() {
-              curDrwSel = index;
-            });
-            CUR_USERID == null
-                ? Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Login(),
-                ))
-                : Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Cart(this.updateHome, null),
-                ));
-          } else if (title == TRACK_ORDER) {
-            CUR_USERID == null
-                ? Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Login(),
-                ))
-                : setState(() {
-              _curSelected = 3;
-              curDrwSel = index;
-            });
-          } else if (title == PROFILE) {
-            setState(() {
-              curDrwSel = index;
-            });
-            CUR_USERID == null
-                ? Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Login(),
-                ))
-                : Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Profile(),
-                ));
-          } else if (title == FAVORITE) {
-            setState(() {
-              _curSelected = 1;
-              curDrwSel = index;
-            });
-          } else if (title == NOTIFICATION) {
-            setState(() {
-              _curSelected = 2;
-              curDrwSel = index;
-            });
-          } else if (title == SHARE_APP) {
-            setState(() {
-              curDrwSel = index;
-            });
-            var str =
-                "$appName\n\nYou can find our app from below url\n\nAndroid:\n$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
-            Share.share(str);
-          } else if (title == RATE_APP) {
-            setState(() {
-              curDrwSel = index;
-            });
-            AppReview.requestReview.then((onValue) {
-              print("==========$onValue");
-            });
-          } else if (title == PRIVACY) {
-            setState(() {
-              curDrwSel = index;
-            });
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Privacy_Policy(
-                        title: PRIVACY,
-                      ),
-                ));
-          } else if (title == TERM) {
-            setState(() {
-              curDrwSel = index;
-            });
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Privacy_Policy(
-                        title: TERM,
-                      ),
-                ));
-          } else if (title == CONTACT_LBL) {
-            setState(() {
-              curDrwSel = index;
-            });
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Privacy_Policy(
-                        title: CONTACT_LBL,
-                      ),
-                ));
-          } else if (title == LOGOUT) {
-            setState(() {
-              curDrwSel = index;
-            });
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Logout(
-                        title: LOGOUT,
-                      ),
-                ));
-          }
-        },
-      ),
-    );
-  }*/
-
   _getAppbar() {
     String title = curSelected == 1 ? FAVORITE : NOTIFICATION;
-    print("cart count***$CUR_CART_COUNT");
+
     return AppBar(
       title: curSelected == 0
           ? Image.asset('assets/images/titleicon.png')
@@ -438,43 +194,6 @@ class StateHome extends State<Home> {
             ),
           ),
         ),
-        /* InkWell(
-          onTap: () {
-            if (CUR_USERID != null) {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Profile(),
-                  ));
-            } else {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Login(),
-                  ));
-            }
-          },
-          child: Padding(
-            padding: EdgeInsets.only(top: 10.0, bottom: 10, right: 10),
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(color: Color(0x1a0400ff),
-                      offset: Offset(0, 0),
-                      blurRadius: 30)
-                ],
-
-              ),
-              child: Card(
-                elevation: 0,
-                child: Image.asset(
-                  'assets/images/profile.png',
-                  width: 30,
-                ),
-              ),
-            ),
-          ),
-        )*/
       ],
       backgroundColor: curSelected == 0 ? Colors.transparent : white,
       elevation: 0,
@@ -526,222 +245,6 @@ class StateHome extends State<Home> {
             curSelected = index;
           });
         });
-
-/*    return BottomAppBar(
-      color: white,
-      elevation: 15,
-      child: Container(
-          decoration: BoxDecoration(
-              boxShadow: [BoxShadow(color: black26, blurRadius: 10)],
-              borderRadius: new BorderRadius.only(
-                topLeft: const Radius.circular(25.0),
-                topRight: const Radius.circular(25.0),
-              )),
-          child: ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(25),
-                topRight: Radius.circular(25),
-              ),
-              child: BottomNavigationBar(
-                showSelectedLabels: false,
-                showUnselectedLabels: false,
-                currentIndex: _curSelected,
-
-                type: BottomNavigationBarType.fixed,
-                */ /*   onTap: (int index) {
-                  print("current=====$index");
-                  setState(() {
-                    _curSelected = index;
-                  });
-                },*/ /*
-                items: [
-                  BottomNavigationBarItem(
-                    label: '',
-                    icon: LikeButton(
-                      onTap: (bool isLiked) {
-                        return onNavigationTap(isLiked, 0);
-                      },
-                      circleColor: CircleColor(
-                          start: primary, end: primary.withOpacity(0.1)),
-                      bubblesColor: BubblesColor(
-                        dotPrimaryColor: primary,
-                        dotSecondaryColor: primary.withOpacity(0.1),
-                      ),
-                      likeBuilder: (bool isLiked) {
-                        return Image.asset(
-                          "assets/images/desel_home.png",
-                        );
-                      },
-                    ),
-                    activeIcon: LikeButton(
-                      onTap: (bool isLiked) {
-                        return onNavigationTap(isLiked, 0);
-                      },
-                      circleColor: CircleColor(
-                          start: primary, end: primary.withOpacity(0.1)),
-                      bubblesColor: BubblesColor(
-                        dotPrimaryColor: primary,
-                        dotSecondaryColor: primary.withOpacity(0.1),
-                      ),
-                      likeBuilder: (bool isLiked) {
-                        return Image.asset(
-                          "assets/images/sel_home.png",
-                        );
-                      },
-                    ),
-                  ),
-                  BottomNavigationBarItem(
-                    label: '',
-                    icon: LikeButton(
-                      onTap: (bool isLiked) {
-                        return onNavigationTap(isLiked, 1);
-                      },
-                      circleColor: CircleColor(
-                          start: primary, end: primary.withOpacity(0.1)),
-                      bubblesColor: BubblesColor(
-                        dotPrimaryColor: primary,
-                        dotSecondaryColor: primary.withOpacity(0.1),
-                      ),
-                      likeBuilder: (bool isLiked) {
-                        return Image.asset(
-                          "assets/images/desel_fav.png",
-                        );
-                      },
-                    ),
-                    activeIcon: LikeButton(
-                      onTap: (bool isLiked) {
-                        return onNavigationTap(isLiked, 1);
-                      },
-                      circleColor: CircleColor(
-                          start: primary, end: primary.withOpacity(0.1)),
-                      bubblesColor: BubblesColor(
-                        dotPrimaryColor: primary,
-                        dotSecondaryColor: primary.withOpacity(0.1),
-                      ),
-                      likeBuilder: (bool isLiked) {
-                        return Image.asset(
-                          "assets/images/sel_fav.png",
-                        );
-                      },
-                    ),
-                  ),
-                  BottomNavigationBarItem(
-                    label: '',
-                    icon: LikeButton(
-                      onTap: (bool isLiked) {
-                        return onNavigationTap(isLiked, 2);
-                      },
-                      circleColor: CircleColor(
-                          start: primary, end: primary.withOpacity(0.1)),
-                      bubblesColor: BubblesColor(
-                        dotPrimaryColor: primary,
-                        dotSecondaryColor: primary.withOpacity(0.1),
-                      ),
-                      likeBuilder: (bool isLiked) {
-                        return Image.asset(
-                          "assets/images/desel_notification.png",
-                        );
-                      },
-                    ),
-                    activeIcon: LikeButton(
-                      onTap: (bool isLiked) {
-                        return onNavigationTap(isLiked, 2);
-                      },
-                      circleColor: CircleColor(
-                          start: primary, end: primary.withOpacity(0.1)),
-                      bubblesColor: BubblesColor(
-                        dotPrimaryColor: primary,
-                        dotSecondaryColor: primary.withOpacity(0.1),
-                      ),
-                      likeBuilder: (bool isLiked) {
-                        return Image.asset(
-                          "assets/images/sel_notification.png",
-                        );
-                      },
-                    ),
-                  ),
-                  BottomNavigationBarItem(
-                    label: '',
-                    icon: LikeButton(
-                      onTap: (bool isLiked) {
-                        return onNavigationTap(isLiked, 3);
-                      },
-                      circleColor: CircleColor(
-                          start: primary, end: primary.withOpacity(0.1)),
-                      bubblesColor: BubblesColor(
-                        dotPrimaryColor: primary,
-                        dotSecondaryColor: primary.withOpacity(0.1),
-                      ),
-                      likeBuilder: (bool isLiked) {
-                        return Image.asset(
-                          "assets/images/desel_tracks.png",
-                        );
-                      },
-                    ),
-                    activeIcon: LikeButton(
-                      onTap: (bool isLiked) {
-                        return onNavigationTap(isLiked, 3);
-                      },
-                      circleColor: CircleColor(
-                          start: primary, end: primary.withOpacity(0.1)),
-                      bubblesColor: BubblesColor(
-                        dotPrimaryColor: primary,
-                        dotSecondaryColor: primary.withOpacity(0.1),
-                      ),
-                      likeBuilder: (bool isLiked) {
-                        return Image.asset(
-                          "assets/images/sel_tracks.png",
-                        );
-                      },
-                    ),
-                  ),
-                ],
-
-                */ /*       Image.asset(
-                  "assets/images/home.png",
-                ),
-                InkWell(
-                  child: Image.asset(
-                    "assets/images/fav.png",
-                  ),
-                  splashColor: primary.withOpacity(0.8),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Favorite(),
-                        ));
-                  },
-                ),
-                InkWell(
-                  child: Image.asset(
-                    "assets/images/notification.png",
-                  ),
-                  splashColor: primary.withOpacity(0.8),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NotificationList(),
-                        ));
-                  },
-                ),
-                InkWell(
-                  child: Image.asset(
-                    "assets/images/user.png",
-                  ),
-                  splashColor: primary.withOpacity(0.8),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Profile(),
-                        ));
-                  },
-                ),*/ /*
-                //]         ))),,
-              ))),
-    );*/
   }
 
   goToCart() {
@@ -750,21 +253,27 @@ class StateHome extends State<Home> {
         MaterialPageRoute(
           builder: (context) => Cart(updateHome, null),
         )).then((val) => home.updateHomepage());
-    //  if (nav == true || nav == null) home.updateHomepage();
   }
 
   void firNotificationInitialize() {
     //for firebase push notification
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-// initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-    var initializationSettingsAndroid =
+    FlutterLocalNotificationsPlugin();
+// initialise the plugin. ic_launcher needs to be a added as a drawable resource to the Android head project
+    const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettingsIOS = IOSInitializationSettings(
-        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-    var initializationSettings = InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    final IOSInitializationSettings initializationSettingsIOS =
+        IOSInitializationSettings(
+            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+    final MacOSInitializationSettings initializationSettingsMacOS =
+        MacOSInitializationSettings();
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsIOS,
+            macOS: initializationSettingsMacOS);
+
+    PushNotificationService.flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
         onSelectNotification: onSelectNotification);
   }
 
@@ -794,106 +303,15 @@ class StateHome extends State<Home> {
     );
   }
 
-  Future onSelectNotification(String payload) async {
+  Future onSelectNotification(String payload) {
     if (payload != null) {
       debugPrint('notification payload: $payload');
     }
-    await Navigator.push(
+
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => MyApp()),
     );
-  }
-
-  void firebaseCloudMessaging_Listeners() {
-    if (Platform.isIOS) iOS_Permission();
-
-    _firebaseMessaging.getToken().then((token) async {
-      CUR_USERID = await getPrefrence(ID);
-      if (CUR_USERID != null && CUR_USERID != "") _registerToken(token);
-    });
-
-    _firebaseMessaging.configure(
-      onMessage: (message) async {
-        print('onmessage $message');
-        await myBackgroundMessageHandler(message);
-      },
-      onBackgroundMessage: myBackgroundMessageHandler,
-      onResume: (message) async {
-        print('onresume $message');
-        await myBackgroundMessageHandler(message);
-      },
-      onLaunch: (message) async {
-        print('onlaunch $message');
-        await myBackgroundMessageHandler(message);
-      },
-    );
-  }
-
-  void iOS_Permission() {
-    _firebaseMessaging.requestNotificationPermissions(
-        IosNotificationSettings(sound: true, badge: true, alert: true));
-    _firebaseMessaging.onIosSettingsRegistered.listen((settings) {
-      //  print("Settings registered: $settings");
-    });
-  }
-
-  static Future<dynamic> myBackgroundMessageHandler(
-      Map<String, dynamic> message) async {
-    if (message.containsKey('data') || message.containsKey('notification')) {
-      var data = message['data'];
-
-      var image = data['image'].toString();
-      var title = data['title'].toString();
-      var msg = data['body'].toString();
-
-      print("data******$data");
-      if (image != null) {
-        var largeIconPath = await _downloadAndSaveImage(image, 'largeIcon');
-        var bigPicturePath = await _downloadAndSaveImage(image, 'bigPicture');
-        var bigPictureStyleInformation = BigPictureStyleInformation(
-            FilePathAndroidBitmap(bigPicturePath),
-            hideExpandedLargeIcon: true,
-            contentTitle: title,
-            htmlFormatContentTitle: true,
-            summaryText: msg,
-            htmlFormatSummaryText: true);
-        var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-            'big text channel id',
-            'big text channel name',
-            'big text channel description',
-            largeIcon: FilePathAndroidBitmap(largeIconPath),
-            styleInformation: bigPictureStyleInformation);
-        var platformChannelSpecifics =
-            NotificationDetails(androidPlatformChannelSpecifics, null);
-        await flutterLocalNotificationsPlugin.show(
-            0, title, msg, platformChannelSpecifics);
-      } else {
-        var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-            'your channel id', 'your channel name', 'your channel description',
-            importance: Importance.Max,
-            priority: Priority.High,
-            ticker: 'ticker');
-        var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-        var platformChannelSpecifics = NotificationDetails(
-            androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-        await flutterLocalNotificationsPlugin
-            .show(0, title, msg, platformChannelSpecifics, payload: 'item x');
-      }
-
-      // print('on message $data');
-    }
-  }
-
-  static Future<String> _downloadAndSaveImage(
-      String url, String fileName) async {
-    var directory = await getApplicationDocumentsDirectory();
-    var filePath = '${directory.path}/$fileName';
-    var response = await http.get(url);
-
-    // print("path***$filePath");
-    var file = File(filePath);
-    await file.writeAsBytes(response.bodyBytes);
-    return filePath;
   }
 }
 
@@ -941,7 +359,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       ),
     ));
     WidgetsBinding.instance.addPostFrameCallback((_) => _animateSlider());
-    // WidgetsBinding.instance.addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
   }
 
   @override
@@ -1274,7 +691,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => All_Category(
+                    builder: (context) => AllCategory(
                           updateHome: widget.updateHome,
                         )),
               );
@@ -1449,179 +866,172 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   _getSection(int i) {
-    print('style=====${sectionList[i].style}');
+    var orient = MediaQuery.of(context).orientation;
 
-    return new OrientationBuilder(builder: (context, orientation) {
-      print(
-          "orientation******${orientation}*****${MediaQuery.of(context).orientation}");
-
-      var orient = MediaQuery.of(context).orientation;
-
-      return sectionList[i].style == DEFAULT
-          ? GridView.count(
-              padding: EdgeInsets.only(top: 5),
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              childAspectRatio: 0.8,
-              physics: NeverScrollableScrollPhysics(),
-              children: List.generate(
-                sectionList[i].productList.length < 4
-                    ? sectionList[i].productList.length
-                    : 4,
-                (index) {
-                  return productItem(i, index, index % 2 == 0 ? true : false);
-                },
-              ))
-          : sectionList[i].style == STYLE1
-              ? sectionList[i].productList.length > 0
-                  ? Row(
-                      children: [
-                        Flexible(
-                            flex: 3,
-                            fit: FlexFit.loose,
-                            child: Container(
-                                height: orient == Orientation.portrait
-                                    ? MediaQuery.of(context).size.height * 0.4
-                                    : MediaQuery.of(context).size.height,
-                                child: productItem(i, 0, true))),
-                        Flexible(
-                          flex: 2,
+    return sectionList[i].style == DEFAULT
+        ? GridView.count(
+            padding: EdgeInsets.only(top: 5),
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            childAspectRatio: 0.8,
+            physics: NeverScrollableScrollPhysics(),
+            children: List.generate(
+              sectionList[i].productList.length < 4
+                  ? sectionList[i].productList.length
+                  : 4,
+              (index) {
+                return productItem(i, index, index % 2 == 0 ? true : false);
+              },
+            ))
+        : sectionList[i].style == STYLE1
+            ? sectionList[i].productList.length > 0
+                ? Row(
+                    children: [
+                      Flexible(
+                          flex: 3,
                           fit: FlexFit.loose,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                  height: orient == Orientation.portrait
-                                      ? deviceHeight * 0.2
-                                      : deviceHeight * 0.5,
-                                  child: productItem(i, 1, false)),
-                              Container(
-                                  height: orient == Orientation.portrait
-                                      ? deviceHeight * 0.2
-                                      : deviceHeight * 0.5,
-                                  child: productItem(i, 2, false)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    )
-                  : Container()
-              : sectionList[i].style == STYLE2
-                  ? Row(
-                      children: [
-                        Flexible(
-                          flex: 2,
-                          fit: FlexFit.loose,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                  height: orient == Orientation.portrait
-                                      ? deviceHeight * 0.2
-                                      : deviceHeight * 0.5,
-                                  child: productItem(i, 0, true)),
-                              Container(
-                                  height: orient == Orientation.portrait
-                                      ? deviceHeight * 0.2
-                                      : deviceHeight * 0.5,
-                                  child: productItem(i, 1, true)),
-                            ],
-                          ),
-                        ),
-                        Flexible(
-                            flex: 3,
-                            fit: FlexFit.loose,
-                            child: Container(
-                                height: orient == Orientation.portrait
-                                    ? deviceHeight * 0.4
-                                    : deviceHeight,
-                                child: productItem(i, 2, false))),
-                      ],
-                    )
-                  : sectionList[i].style == STYLE3
-                      ? Column(
+                          child: Container(
+                              height: orient == Orientation.portrait
+                                  ? MediaQuery.of(context).size.height * 0.4
+                                  : MediaQuery.of(context).size.height,
+                              child: productItem(i, 0, true))),
+                      Flexible(
+                        flex: 2,
+                        fit: FlexFit.loose,
+                        child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Flexible(
-                                flex: 1,
-                                fit: FlexFit.loose,
-                                child: Container(
-                                    height: orient == Orientation.portrait
-                                        ? deviceHeight * 0.3
-                                        : deviceHeight * 0.6,
-                                    child: productItem(i, 0, false))),
                             Container(
-                              height: orient == Orientation.portrait
-                                  ? deviceHeight * 0.2
-                                  : deviceHeight * 0.5,
-                              child: Row(
-                                children: [
-                                  Flexible(
-                                      flex: 1,
-                                      fit: FlexFit.loose,
-                                      child: productItem(i, 1, true)),
-                                  Flexible(
-                                      flex: 1,
-                                      fit: FlexFit.loose,
-                                      child: productItem(i, 2, true)),
-                                  Flexible(
-                                      flex: 1,
-                                      fit: FlexFit.loose,
-                                      child: productItem(i, 3, false)),
-                                ],
-                              ),
-                            ),
+                                height: orient == Orientation.portrait
+                                    ? deviceHeight * 0.2
+                                    : deviceHeight * 0.5,
+                                child: productItem(i, 1, false)),
+                            Container(
+                                height: orient == Orientation.portrait
+                                    ? deviceHeight * 0.2
+                                    : deviceHeight * 0.5,
+                                child: productItem(i, 2, false)),
                           ],
-                        )
-                      : sectionList[i].style == STYLE4
-                          ? Column(
-                              mainAxisSize: MainAxisSize.min,
+                        ),
+                      ),
+                    ],
+                  )
+                : Container()
+            : sectionList[i].style == STYLE2
+                ? Row(
+                    children: [
+                      Flexible(
+                        flex: 2,
+                        fit: FlexFit.loose,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                                height: orient == Orientation.portrait
+                                    ? deviceHeight * 0.2
+                                    : deviceHeight * 0.5,
+                                child: productItem(i, 0, true)),
+                            Container(
+                                height: orient == Orientation.portrait
+                                    ? deviceHeight * 0.2
+                                    : deviceHeight * 0.5,
+                                child: productItem(i, 1, true)),
+                          ],
+                        ),
+                      ),
+                      Flexible(
+                          flex: 3,
+                          fit: FlexFit.loose,
+                          child: Container(
+                              height: orient == Orientation.portrait
+                                  ? deviceHeight * 0.4
+                                  : deviceHeight,
+                              child: productItem(i, 2, false))),
+                    ],
+                  )
+                : sectionList[i].style == STYLE3
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                              flex: 1,
+                              fit: FlexFit.loose,
+                              child: Container(
+                                  height: orient == Orientation.portrait
+                                      ? deviceHeight * 0.3
+                                      : deviceHeight * 0.6,
+                                  child: productItem(i, 0, false))),
+                          Container(
+                            height: orient == Orientation.portrait
+                                ? deviceHeight * 0.2
+                                : deviceHeight * 0.5,
+                            child: Row(
                               children: [
                                 Flexible(
                                     flex: 1,
                                     fit: FlexFit.loose,
-                                    child: Container(
-                                        height: orient == Orientation.portrait
-                                            ? deviceHeight * 0.3
-                                            : deviceHeight * 0.6,
-                                        child: productItem(i, 0, false))),
-                                Container(
-                                  height: orient == Orientation.portrait
-                                      ? deviceHeight * 0.2
-                                      : deviceHeight * 0.5,
-                                  child: Row(
-                                    children: [
-                                      Flexible(
-                                          flex: 1,
-                                          fit: FlexFit.loose,
-                                          child: productItem(i, 1, true)),
-                                      Flexible(
-                                          flex: 1,
-                                          fit: FlexFit.loose,
-                                          child: productItem(i, 2, false)),
-                                    ],
-                                  ),
-                                ),
+                                    child: productItem(i, 1, true)),
+                                Flexible(
+                                    flex: 1,
+                                    fit: FlexFit.loose,
+                                    child: productItem(i, 2, true)),
+                                Flexible(
+                                    flex: 1,
+                                    fit: FlexFit.loose,
+                                    child: productItem(i, 3, false)),
                               ],
-                            )
-                          : GridView.count(
-                              padding: EdgeInsets.only(top: 5),
-                              crossAxisCount: 2,
-                              shrinkWrap: true,
-                              childAspectRatio: 1.0,
-                              physics: NeverScrollableScrollPhysics(),
-                              mainAxisSpacing: 0,
-                              crossAxisSpacing: 0,
-                              children: List.generate(
-                                sectionList[i].productList.length < 4
-                                    ? sectionList[i].productList.length
-                                    : 4,
-                                (index) {
-                                  return productItem(
-                                      i, index, index % 2 == 0 ? true : false);
-                                },
-                              ));
-    });
+                            ),
+                          ),
+                        ],
+                      )
+                    : sectionList[i].style == STYLE4
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                  flex: 1,
+                                  fit: FlexFit.loose,
+                                  child: Container(
+                                      height: orient == Orientation.portrait
+                                          ? deviceHeight * 0.3
+                                          : deviceHeight * 0.6,
+                                      child: productItem(i, 0, false))),
+                              Container(
+                                height: orient == Orientation.portrait
+                                    ? deviceHeight * 0.2
+                                    : deviceHeight * 0.5,
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                        flex: 1,
+                                        fit: FlexFit.loose,
+                                        child: productItem(i, 1, true)),
+                                    Flexible(
+                                        flex: 1,
+                                        fit: FlexFit.loose,
+                                        child: productItem(i, 2, false)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
+                        : GridView.count(
+                            padding: EdgeInsets.only(top: 5),
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            childAspectRatio: 1.0,
+                            physics: NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 0,
+                            crossAxisSpacing: 0,
+                            children: List.generate(
+                              sectionList[i].productList.length < 4
+                                  ? sectionList[i].productList.length
+                                  : 4,
+                              (index) {
+                                return productItem(
+                                    i, index, index % 2 == 0 ? true : false);
+                              },
+                            ));
   }
 
   Widget productItem(int secPos, int index, bool pad) {
@@ -1636,7 +1046,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         double off = double.parse(
                 sectionList[secPos].productList[index].prVarientList[0].price) -
             price;
-        print("==========$off");
         offPer = ((off * 100) /
                 double.parse(sectionList[secPos]
                     .productList[index]
@@ -1799,42 +1208,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     ));
   }
 
-  _removeFav(int secPos, int index) async {
-    try {
-      setState(() {
-        sectionList[secPos].productList[index].isFavLoading = true;
-      });
-
-      var parameter = {
-        USER_ID: CUR_USERID,
-        PRODUCT_ID: sectionList[secPos].productList[index].id
-      };
-      Response response =
-          await post(removeFavApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
-
-      var getdata = json.decode(response.body);
-
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        sectionList[secPos].productList[index].isFav = "0";
-
-        favList.removeWhere((item) =>
-            item.productList[0].prVarientList[0].id ==
-            sectionList[secPos].productList[index].prVarientList[0].id);
-      } else {
-        setSnackbar(msg);
-      }
-
-      setState(() {
-        sectionList[secPos].productList[index].isFavLoading = false;
-      });
-    } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
-    }
-  }
-
   Future<void> callApi() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
@@ -1854,7 +1227,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> getSlider() async {
+  Future<Null> getSlider() async {
     try {
       Response response = await post(getSliderApi, headers: headers)
           .timeout(Duration(seconds: timeOut));
@@ -1878,6 +1251,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
+    return null;
   }
 
   Future<void> getCat() async {
@@ -1987,7 +1361,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> getOfferImages() async {
+  Future<Null> getOfferImages() async {
     try {
       Response response = await post(getOfferImageApi, headers: headers)
           .timeout(Duration(seconds: timeOut));
@@ -2017,7 +1391,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         _isCatLoading = false;
       });
     }
-    return 'success';
+    return null;
   }
 
   Widget _buildImagePageItem(Model slider) {
@@ -2025,21 +1399,19 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
     return GestureDetector(
       child: ClipRRect(
-          borderRadius: BorderRadius.circular(7.0),
-          child: FadeInImage(
-            fadeInDuration: Duration(milliseconds: 150),
-            image: NetworkImage(
-              slider.image,
-            ),
-            placeholder: AssetImage(
-              "assets/images/sliderph.png",
-            ),
-            fit: BoxFit.fill,
-            height: height,
-            width: double.maxFinite,
-          )),
+        borderRadius: BorderRadius.circular(7.0),
+        child: CachedNetworkImage(
+          imageUrl: slider.image,
+          fit: BoxFit.fill,
+          height: height,
+          width: double.maxFinite,
+          placeholder: (context, url) => Image.asset(
+            "assets/images/sliderph.png",
+          ),
+        ),
+
+      ),
       onTap: () async {
-        print("type***********${homeSliderList[_curSlider].type}");
         if (homeSliderList[_curSlider].type == "products") {
           Product item = homeSliderList[_curSlider].list;
 

@@ -20,7 +20,7 @@ import 'Search.dart';
 
 class SectionList extends StatefulWidget {
   final int index;
-   Section_Model section_model;
+  Section_Model section_model;
   final Function updateHome;
 
   SectionList({Key key, this.index, this.section_model, this.updateHome})
@@ -29,7 +29,6 @@ class SectionList extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => StateSection();
 }
-
 
 class StateSection extends State<SectionList> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -57,11 +56,9 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     super.initState();
     widget.section_model.offset = widget.section_model.productList.length;
 
-    widget.section_model.selectedId=[];
+    widget.section_model.selectedId = [];
 
-
-
-  widget.section_model.productList.clear();
+    widget.section_model.productList.clear();
     getSection("0");
     controller.addListener(_scrollListener);
     buttonController = new AnimationController(
@@ -128,10 +125,10 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     setState(() {
       _isLoading = true;
       isLoadingmore = true;
-      widget.section_model.offset=0;
-      widget.section_model.totalItem=0;
-      widget.section_model.selectedId=[];
-      selId='';
+      widget.section_model.offset = 0;
+      widget.section_model.totalItem = 0;
+      widget.section_model.selectedId = [];
+      selId = '';
     });
 
     total = 0;
@@ -158,7 +155,6 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(4),
                 onTap: () => Navigator.of(context).pop(),
                 child: Center(
-                  //padding: const EdgeInsets.all(5),
                   child: Icon(
                     Icons.keyboard_arrow_left,
                     color: primary,
@@ -204,46 +200,44 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
               ),
             ),
           ),
-        Container(
-                  margin: EdgeInsets.symmetric(vertical: 10),
-                  decoration: shadow(),
-                  child: Card(
-                      elevation: 0,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(4),
-                        onTap: () {
-                          return filterDialog();
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Icon(
-                            Icons.tune,
-                            color: primary,
-                            size: 22,
-                          ),
-                        ),
-                      )))
-              ,
-         Container(
-                  margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
-                  decoration: shadow(),
-                  child: Card(
-                      elevation: 0,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(4),
-                        onTap: () {
-                          return sortDialog();
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Icon(
-                            Icons.filter_list,
-                            color: primary,
-                            size: 22,
-                          ),
-                        ),
-                      )))
-
+          Container(
+              margin: EdgeInsets.symmetric(vertical: 10),
+              decoration: shadow(),
+              child: Card(
+                  elevation: 0,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: () {
+                      return filterDialog();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                        Icons.tune,
+                        color: primary,
+                        size: 22,
+                      ),
+                    ),
+                  ))),
+          Container(
+              margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+              decoration: shadow(),
+              child: Card(
+                  elevation: 0,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: () {
+                      return sortDialog();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                        Icons.filter_list,
+                        color: primary,
+                        size: 22,
+                      ),
+                    ),
+                  )))
         ],
       ),
       body: _isNetworkAvail
@@ -263,7 +257,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                       crossAxisSpacing: 2,
                       controller: controller,
                       children: List.generate(
-                        (widget.section_model.offset < widget.section_model.totalItem)
+                        (widget.section_model.offset <
+                                widget.section_model.totalItem)
                             ? widget.section_model.productList.length + 1
                             : widget.section_model.productList.length,
                         (index) {
@@ -299,8 +294,6 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         style: Theme.of(context).textTheme.headline6,
                       )),
                   Divider(color: lightBlack),
-
-
                   TextButton(
                       child: Text(TOP_RATED,
                           style: Theme.of(context)
@@ -394,216 +387,232 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       builder: (builder) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              return Column(mainAxisSize: MainAxisSize.min, children: [
-                Padding(
-                    padding: const EdgeInsets.only(top: 30.0),
-                    child: AppBar(
-                      title: Text(
-                        FILTER,
-                        style: TextStyle(
-                          color: fontColor,
+          return Column(mainAxisSize: MainAxisSize.min, children: [
+            Padding(
+                padding: const EdgeInsets.only(top: 30.0),
+                child: AppBar(
+                  title: Text(
+                    FILTER,
+                    style: TextStyle(
+                      color: fontColor,
+                    ),
+                  ),
+                  backgroundColor: white,
+                  elevation: 5,
+                  leading: Builder(builder: (BuildContext context) {
+                    return Container(
+                      margin: EdgeInsets.all(10),
+                      decoration: shadow(),
+                      child: Card(
+                        elevation: 0,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(4),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 4.0),
+                            child:
+                                Icon(Icons.keyboard_arrow_left, color: primary),
+                          ),
                         ),
                       ),
-                      backgroundColor: white,
-                      elevation: 5,
-                      leading: Builder(builder: (BuildContext context) {
-                        return Container(
-                          margin: EdgeInsets.all(10),
-                          decoration: shadow(),
-                          child: Card(
-
-                            elevation: 0,
-                            child: InkWell(
-                              borderRadius:  BorderRadius.circular(4),
-                              onTap: () => Navigator.of(context).pop(),
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 4.0),
-                                child:
-                                Icon(Icons.keyboard_arrow_left, color: primary),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                      actions: [
-                        Container(
-                          margin: EdgeInsets.only(right: 10.0),
-                          alignment: Alignment.center,
-                          child: InkWell(
-                              child: Text(FILTER_CLEAR_LBL,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
-                                      .copyWith(
+                    );
+                  }),
+                  actions: [
+                    Container(
+                      margin: EdgeInsets.only(right: 10.0),
+                      alignment: Alignment.center,
+                      child: InkWell(
+                          child: Text(FILTER_CLEAR_LBL,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
                                       fontWeight: FontWeight.normal,
                                       color: fontColor)),
-                              onTap: () {
-                                setState(() {
-                                  widget.section_model.selectedId.clear();
-                                });
-                              }),
-                        ),
-                      ],
-                    )),
-                Expanded(
-                    child: Container(
-                        color: lightWhite,
-                        padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
-                        child: Card(
-                            child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Expanded(
-                                      flex: 2,
-                                      child: Container(
-                                          color: lightWhite,
+                          onTap: () {
+                            setState(() {
+                              widget.section_model.selectedId.clear();
+                            });
+                          }),
+                    ),
+                  ],
+                )),
+            Expanded(
+                child: Container(
+                    color: lightWhite,
+                    padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
+                    child: Card(
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                          Expanded(
+                              flex: 2,
+                              child: Container(
+                                  color: lightWhite,
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.vertical,
+                                    padding: EdgeInsets.only(top: 10.0),
+                                    itemCount:
+                                        widget.section_model.filterList.length,
+                                    itemBuilder: (context, index) {
+                                      attsubList = widget.section_model
+                                          .filterList[index].attributeValues
+                                          .split(',');
+
+                                      attListId = widget.section_model
+                                          .filterList[index].attributeValId
+                                          .split(',');
+
+                                      if (filter == "") {
+                                        filter = widget
+                                            .section_model.filterList[0].name;
+                                      }
+
+                                      return InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              filter = widget.section_model
+                                                  .filterList[index].name;
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.only(
+                                                left: 20,
+                                                top: 10.0,
+                                                bottom: 10.0),
+                                            decoration: BoxDecoration(
+                                                color: filter ==
+                                                        widget
+                                                            .section_model
+                                                            .filterList[index]
+                                                            .name
+                                                    ? white
+                                                    : lightWhite,
+                                                borderRadius: BorderRadius.only(
+                                                    topLeft: Radius.circular(7),
+                                                    bottomLeft:
+                                                        Radius.circular(7))),
+                                            alignment: Alignment.centerLeft,
+                                            child: new Text(
+                                              widget.section_model
+                                                  .filterList[index].name,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                      color: filter ==
+                                                              widget
+                                                                  .section_model
+                                                                  .filterList[
+                                                                      index]
+                                                                  .name
+                                                          ? fontColor
+                                                          : lightBlack,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                            ),
+                                          ));
+                                    },
+                                  ))),
+                          Expanded(
+                              flex: 3,
+                              child: ListView.builder(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.only(top: 10.0),
+                                  scrollDirection: Axis.vertical,
+                                  itemCount:
+                                      widget.section_model.filterList.length,
+                                  itemBuilder: (context, index) {
+
+                                    if (filter ==
+                                        widget.section_model.filterList[index]
+                                            .name) {
+                                      attsubList = widget.section_model
+                                          .filterList[index].attributeValues
+                                          .split(',');
+
+                                      attListId = widget.section_model
+                                          .filterList[index].attributeValId
+                                          .split(',');
+                                      return Container(
                                           child: ListView.builder(
-                                            shrinkWrap: true,
-                                            scrollDirection: Axis.vertical,
-                                            padding: EdgeInsets.only(top: 10.0),
-                                            itemCount: widget.section_model.filterList.length,
-                                            itemBuilder: (context, index) {
-
-                                              attsubList = widget.section_model.filterList[index]
-                                                  .attributeValues
-                                                  .split(',');
-
-                                              attListId = widget.section_model.filterList[index]
-                                                  .attributeValId
-                                                  .split(',');
-
-                                              if (filter == "") {
-                                                filter = widget.section_model.filterList[0].name;
-                                              }
-
-                                              return InkWell(
-                                                  onTap: () {
-                                                    setState(() {
-                                                      filter =
-                                                          widget.section_model.filterList[index].name;
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    padding: EdgeInsets.only(
-                                                        left: 20,
-                                                        top: 10.0,
-                                                        bottom: 10.0),
-                                                    decoration: BoxDecoration(
-                                                        color: filter ==
-                                                            widget.section_model.filterList[index].name
-
-                                                            ? white
-                                                            : lightWhite,
-                                                        borderRadius: BorderRadius.only(
-                                                            topLeft: Radius.circular(7),
-                                                            bottomLeft:
-                                                            Radius.circular(7))),
-                                                    alignment: Alignment.centerLeft,
-                                                    child: new Text(
-                                                      widget.section_model.filterList[index].name,
+                                              shrinkWrap: true,
+                                              physics:
+                                                  NeverScrollableScrollPhysics(),
+                                              itemCount: attListId.length,
+                                              itemBuilder: (context, i) {
+                                                return CheckboxListTile(
+                                                  dense: true,
+                                                  title: Text(attsubList[i],
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .subtitle1
                                                           .copyWith(
-                                                          color: filter ==
-                                                              widget.section_model.filterList[index].name
-                                                              ? fontColor
-                                                              : lightBlack,
-                                                          fontWeight:
-                                                          FontWeight.normal),
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 2,
-                                                    ),
-                                                  ));
-                                            },
-                                          ))),
-                                  Expanded(
-                                      flex: 3,
-                                      child: ListView.builder(
-                                          shrinkWrap: true,
-                                          padding: EdgeInsets.only(top: 10.0),
-                                          scrollDirection: Axis.vertical,
-                                          itemCount: widget.section_model.filterList.length,
-                                          itemBuilder: (context, index) {
-                                            //  print("filter******$filter******${filterList[index]["name"]}");
-
-                                            if (filter == widget.section_model.filterList[index].name) {
-                                              attsubList = widget.section_model.filterList[index].attributeValues
-                                                  .split(',');
-
-                                              attListId = widget.section_model.filterList[index].attributeValId
-                                                  .split(',');
-                                              return Container(
-                                                  child: ListView.builder(
-                                                      shrinkWrap: true,
-                                                      physics:
-                                                      NeverScrollableScrollPhysics(),
-                                                      itemCount: attListId.length,
-                                                      itemBuilder: (context, i) {
-                                                        return CheckboxListTile(
-                                                          dense: true,
-                                                          title: Text(attsubList[i],
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .subtitle1
-                                                                  .copyWith(
-                                                                  color: lightBlack,
-                                                                  fontWeight:
+                                                              color: lightBlack,
+                                                              fontWeight:
                                                                   FontWeight
                                                                       .normal)),
-                                                          value: widget.section_model.selectedId
-                                                              .contains(attListId[i]),
-                                                          activeColor: primary,
-                                                          controlAffinity:
-                                                          ListTileControlAffinity
-                                                              .leading,
-                                                          onChanged: (bool val) {
-                                                            setState(() {
-                                                              if (val == true) {
-                                                                widget.section_model.selectedId
-                                                                    .add(attListId[i]);
-                                                              } else {
-                                                                widget.section_model.selectedId.remove(attListId[i]);
-                                                                // print("addListIDremove******${attListId[i]}");
-                                                              }
-                                                            });
-                                                          },
-                                                        );
-                                                      }));
-                                            } else {
-                                              return Container();
-                                            }
-                                          })),
-                                ])))),
-                Container(
-                  color: white,
-                  child: Row(children: <Widget>[
-                    Padding(
-                        padding: EdgeInsets.only(left: 15.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(widget.section_model.totalItem.toString()),
-                            Text(PRODUCTS_FOUND_LBL),
-                          ],
-                        )),
-                    Spacer(),
-                    SimBtn(
-                      size:   0.4,
-                      title: APPLY,
-                      onBtnSelected: () {
-                        if (widget.section_model.selectedId != null) {
-                          selId = widget.section_model.selectedId.join(',');
-                          clearList("0");
-                          Navigator.pop(context, 'Product Filter');
-                        }
-                      },
-                    ),
-                  ]),
-                )
-              ]);
-            });
+                                                  value: widget
+                                                      .section_model.selectedId
+                                                      .contains(attListId[i]),
+                                                  activeColor: primary,
+                                                  controlAffinity:
+                                                      ListTileControlAffinity
+                                                          .leading,
+                                                  onChanged: (bool val) {
+                                                    setState(() {
+                                                      if (val == true) {
+                                                        widget.section_model
+                                                            .selectedId
+                                                            .add(attListId[i]);
+                                                      } else {
+                                                        widget.section_model
+                                                            .selectedId
+                                                            .remove(
+                                                                attListId[i]);
+
+                                                      }
+                                                    });
+                                                  },
+                                                );
+                                              }));
+                                    } else {
+                                      return Container();
+                                    }
+                                  })),
+                        ])))),
+            Container(
+              color: white,
+              child: Row(children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.only(left: 15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.section_model.totalItem.toString()),
+                        Text(PRODUCTS_FOUND_LBL),
+                      ],
+                    )),
+                Spacer(),
+                SimBtn(
+                  size: 0.4,
+                  title: APPLY,
+                  onBtnSelected: () {
+                    if (widget.section_model.selectedId != null) {
+                      selId = widget.section_model.selectedId.join(',');
+                      clearList("0");
+                      Navigator.pop(context, 'Product Filter');
+                    }
+                  },
+                ),
+              ]),
+            )
+          ]);
+        });
       },
     );
   }
@@ -615,11 +624,13 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
         setState(() {
           isLoadingmore = true;
 
-          if (widget.section_model.offset < widget.section_model.totalItem) getSection("0");
+          if (widget.section_model.offset < widget.section_model.totalItem)
+            getSection("0");
         });
       }
     }
   }
+
   clearList(String top) {
     setState(() {
       _isLoading = true;
@@ -627,10 +638,9 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       offset = 0;
       widget.section_model.totalItem = 0;
       widget.section_model.offset = 0;
-      widget.section_model.productList=[];
+      widget.section_model.productList = [];
 
-getSection(top);
-
+      getSection(top);
     });
   }
 
@@ -805,7 +815,7 @@ getSection(top);
           PRODUCT_LIMIT: perPage.toString(),
           PRODUCT_OFFSET: widget.section_model.productList.length.toString(),
           SEC_ID: widget.section_model.id,
-          TOP_RETAED:top,
+          TOP_RETAED: top,
           PSORT: sortBy,
           PORDER: orderBy,
         };
@@ -813,7 +823,6 @@ getSection(top);
         if (selId != null && selId != "") {
           parameter[ATTRIBUTE_VALUE_ID] = selId;
         }
-
 
         Response response =
             await post(getSectionApi, body: parameter, headers: headers)
@@ -826,9 +835,7 @@ getSection(top);
         if (!error) {
           var data = getdata["data"];
 
-
-          offset =
-              widget.section_model.productList.length;
+          offset = widget.section_model.productList.length;
 
           total = int.parse(data[0]["total"]);
 
@@ -840,16 +847,10 @@ getSection(top);
             sectionList[widget.index].productList.addAll(temp[0].productList);
             //temp[0];
 
-
-
-
-
             offset = widget.section_model.offset + perPage;
-
 
             widget.section_model.offset = offset;
             widget.section_model.totalItem = total;
-
           }
         } else {
           isLoadingmore = false;

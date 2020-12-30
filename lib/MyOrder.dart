@@ -1,22 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
-
 import 'package:eshop/Model/Order_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
-
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Login.dart';
-
-import 'Helper/SimBtn.dart';
-import 'OrderDetail1.dart';
+import 'OrderDetail.dart';
 
 class MyOrder extends StatefulWidget {
   @override
@@ -187,9 +181,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                                   itemCount: searchList.length,
                                   physics: NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
-                                    //  print("load more****$offset***$total***${favList.length}***$isLoadingmore**$index");
-                                    //return orderItem(index);
-                                    if (searchList[index]!= null &&
+                                      if (searchList[index]!= null &&
                                         searchList[index].itemList.length > 0) {
                                       OrderItem orderItem =
                                           searchList[index].itemList[0];
@@ -221,10 +213,9 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       try {
         if (CUR_USERID != null) {
-          // String status = "$PLACED, $SHIPED, $PROCESSED, $CANCLED, $RETURNED";
-          var parameter = {USER_ID: CUR_USERID};
+           var parameter = {USER_ID: CUR_USERID};
 
-          print("param********$parameter");
+
           Response response =
               await post(getOrderApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
@@ -305,17 +296,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     ));
   }
 
-  /* orderItem(int index) {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: searchList[index].itemList.length,
-      physics: NeverScrollableScrollPhysics(),
-      itemBuilder: (context, i) {
-        OrderItem orderItem = searchList[index].itemList[i];
-        return productItem(index, orderItem);
-      },
-    );
-  }*/
 
   productItem(int index, OrderItem orderItem) {
     String sDate = orderItem.listDate.last;
@@ -388,7 +368,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
           await Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => OrderDetail1(model: searchList[index])),
+                builder: (context) => OrderDetail(model: searchList[index])),
           );
           setState(() {
             _isLoading = true;

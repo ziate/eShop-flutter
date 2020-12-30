@@ -56,17 +56,13 @@ StateCheckout stateCheck;
 bool isTimeSlot, isPromoValid = false, isUseWallet = false, isPayLayShow = true;
 
 class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
-  int _curIndex = 0;
   Razorpay _razorpay;
   static GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
-  //List<Widget> fragments;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true, _isProgress = false;
   List<TextEditingController> _controller = [];
   var items;
-
   TextEditingController promoC = new TextEditingController();
 
   @override
@@ -85,11 +81,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
 
-    /*  fragments = [
-      Delivery(updateCheckout),
-      ManageAddress(),
-      Payment(updateCheckout)
-    ];*/
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
 
@@ -134,29 +125,33 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
         var getdata = json.decode(response.body);
 
-
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           var data = getdata["data"][0];
 
-          String disType = data["discount_type"];
-          String dis = data["discount"];
-
-          promocode = data["promo_code"];
-          if (disType.toLowerCase() == "percentage") {
-            promoAmt = (oriPrice * double.parse(dis)) / 100;
-          } else if (disType.toLowerCase() == "amount") {
-            promoAmt = double.parse(dis);
-          }
-          totalPrice = totalPrice - promoAmt;
+          totalPrice = double.parse(data["final_total"]);
+          promoAmt = double.parse(data["final_discount"]);
 
           isPromoValid = true;
           stateCheck.setSnackbar(PROMO_SUCCESS);
         } else {
+          isPromoValid = false;
           stateCheck.setSnackbar(msg);
         }
         setState(() {
+          if (isUseWallet) {
+            setState(() {
+              remWalBal = 0;
+              payMethod = null;
+              usedBal = 0;
+              isUseWallet=false;
+              isPayLayShow = true;
+              _isProgress = false;
+            });
+          }
+
+
           _isProgress = false;
         });
       } on TimeoutException catch (_) {
@@ -385,7 +380,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         (price * double.parse(cartList[index].qty)).toString();
 
     items = new List<String>.generate(
-        int.parse(cartList[index].productList[0].totalAllow),
+        cartList[index].productList[0].totalAllow != null
+            ? int.parse(cartList[index].productList[0].totalAllow)
+            : 10,
         (i) => (i + 1).toString());
 
     _controller[index].text = cartList[index].qty;
@@ -685,7 +682,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
         var getdata = json.decode(response.body);
 
-
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
@@ -711,12 +707,19 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
           if (isPromoValid) {
             validatePromo();
+          } else if (isUseWallet) {
+            setState(() {
+              remWalBal = 0;
+              payMethod = null;
+              usedBal = 0;
+              isPayLayShow = true;
+              isUseWallet=false;
+              _isProgress = false;
+            });
           } else {
-
             setState(() {
               _isProgress = false;
             });
-
           }
         } else {
           setSnackbar(msg);
@@ -769,8 +772,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
           cartList[index].qty = qty;
           taxAmt = double.parse(data[TAX_AMT]);
-          oriPrice=double.parse(data['sub_total']);
-          //oriPrice = oriPrice + double.parse(cartList[index].perItemPrice);
+          oriPrice = double.parse(data['sub_total']);
           _controller[index].text = qty;
           totalPrice = 0;
 
@@ -778,6 +780,15 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
           if (isPromoValid) {
             validatePromo();
+          } else if (isUseWallet) {
+            setState(() {
+              remWalBal = 0;
+              payMethod = null;
+              usedBal = 0;
+              isUseWallet=false;
+              isPayLayShow = true;
+              _isProgress = false;
+            });
           } else {
             setState(() {
               _isProgress = false;
@@ -789,7 +800,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             _isProgress = false;
           });
         }
-
 
         widget.updateHome();
       } on TimeoutException catch (_) {
@@ -834,15 +844,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           }
 
           if (addressList.length == 1) selAddress = addressList[0].id;
-        } else {
-          //if (msg != 'Cart Is Empty !') setSnackbar(msg);
-        }
-        setState(() {
-          //_isLoading = false;
-        });
-      } on TimeoutException catch (_) {
-        //  setSnackbar(somethingMSg);
-      }
+        } else {}
+        setState(() {});
+      } on TimeoutException catch (_) {}
     } else {
       setState(() {
         _isNetworkAvail = false;
@@ -880,7 +884,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         KEY: razorpayId,
         AMOUNT: amt.toString(),
         NAME: CUR_USERNAME,
-        // 'description': 'Fine T-Shirt',
         'prefill': {CONTACT: contact, EMAIL: email},
         'external': {
           'wallets': ['paytm']
@@ -920,16 +923,13 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       if (response.status) {
         placeOrder(response.reference);
       } else {
-         setSnackbar(response.message);
+        setSnackbar(response.message);
         setState(() {
           _isProgress = false;
         });
       }
-
-
     } catch (e) {
       setState(() => _isProgress = false);
-      // _showMessage("Check console for error");
       rethrow;
     }
   }
@@ -1019,8 +1019,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           TAX_AMT: taxAmt.toString(),
           TAX_PER: taxPer.toString(),
           FINAL_TOTAL: totalPrice.toString(),
-          /*   LATITUDE: latitude,
-        LONGITUDE: longitude,*/
           PAYMENT_METHOD: payMethod,
           ADD_ID: selAddress,
           ISWALLETBALUSED: isUseWallet ? "1" : "0",
@@ -1055,7 +1053,19 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             paypalPayment(orderId);
           } else {
             CUR_CART_COUNT = "0";
-
+            promoAmt = 0;
+            remWalBal = 0;
+            usedBal = 0;
+            payMethod = '';
+            isPromoValid = false;
+            isUseWallet = false;
+            isPayLayShow = true;
+            selectedMethod = 0;
+            totalPrice = 0;
+            oriPrice = 0;
+            taxAmt = 0;
+            taxPer = 0;
+            delCharge = 0;
             Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
@@ -1072,7 +1082,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         setState(() {
           _isProgress = false;
         });
-        //  setSnackbar(somethingMSg);
       }
     } else {
       setState(() {
@@ -1103,14 +1112,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                 builder: (BuildContext context) => PaypalWebview(
                       url: data,
                     )));
-
-        /*      CUR_CART_COUNT = "0";
-
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (BuildContext context) => OrderSuccess()),
-            ModalRoute.withName('/home'));*/
       } else {
         setSnackbar(msg);
       }
@@ -1140,7 +1141,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       bool error = getdata["error"];
       String msg1 = getdata["message"];
       if (!error) {
-        //var data = getdata["data"];
         CUR_CART_COUNT = "0";
 
         Navigator.pushAndRemoveUntil(
@@ -1157,7 +1157,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   address() {
-
     return Card(
       elevation: 0,
       child: Padding(
@@ -1381,6 +1380,21 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                       ],
                     )
                   : Container(),
+              isUseWallet
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          WALLET_BAL,
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                        Text(
+                          CUR_CURRENCY + " " + usedBal.toString(),
+                          style: Theme.of(context).textTheme.caption,
+                        )
+                      ],
+                    )
+                  : Container(),
             ],
           ),
         ));
@@ -1406,7 +1420,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                     size: 15,
                   ),
                   onTap: () {
-                    if (promoAmt != 0) {
+                    if (promoAmt != 0 && isPromoValid) {
                       setState(() {
                         totalPrice = totalPrice + promoAmt;
                         promoC.text = '';
@@ -1442,17 +1456,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  /*        SimBtn(
-                    title: APPLY,
-                    size: deviceWidth * 0.2,
-                    onBtnSelected: () async {
-                      if (promoC.text.trim().isEmpty)
-                        stateCheck.setSnackbar(ADD_PROMO);
-                      else
-                        validatePromo();
-                    },
-                  ),*/
-
                   CupertinoButton(
                     child: Container(
                         padding:
@@ -1470,8 +1473,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                     onPressed: () {
                       if (promoC.text.trim().isEmpty)
                         stateCheck.setSnackbar(ADD_PROMO);
-                      else
-                        validatePromo();
+                      else if (!isPromoValid) validatePromo();
                     },
                   ),
                 ],
@@ -1482,364 +1484,4 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       ),
     );
   }
-}
-
-class Delivery extends StatefulWidget {
-  Function update;
-
-  Delivery(this.update);
-
-  @override
-  State<StatefulWidget> createState() {
-    return StateDelivery();
-  }
-}
-
-class StateDelivery extends State<Delivery> with TickerProviderStateMixin {
-  // static   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  bool _isProgress = false;
-  Animation buttonSqueezeanimation;
-  AnimationController buttonController;
-  bool _isNetworkAvail = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: lightWhite,
-      body: _isNetworkAvail
-          ? Stack(
-              children: <Widget>[
-                //_deliveryContent(),
-                showCircularProgress(_isProgress, primary),
-              ],
-            )
-          : noInternet(context),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    buttonController = new AnimationController(
-        duration: new Duration(milliseconds: 2000), vsync: this);
-
-    buttonSqueezeanimation = new Tween(
-      begin: deviceWidth * 0.7,
-      end: 50.0,
-    ).animate(new CurvedAnimation(
-      parent: buttonController,
-      curve: new Interval(
-        0.0,
-        0.150,
-      ),
-    ));
-  }
-
-  @override
-  void dispose() {
-    buttonController.dispose();
-    super.dispose();
-  }
-
-  Future<Null> _playAnimation() async {
-    try {
-      await buttonController.forward();
-    } on TickerCanceled {}
-  }
-
-  Widget noInternet(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          noIntImage(),
-          noIntText(context),
-          noIntDec(context),
-          AppBtn(
-            title: TRY_AGAIN_INT_LBL,
-            btnAnim: buttonSqueezeanimation,
-            btnCntrl: buttonController,
-            onBtnSelected: () async {
-              _playAnimation();
-
-              Future.delayed(Duration(seconds: 2)).then((_) async {
-                _isNetworkAvail = await isNetworkAvailable();
-                if (_isNetworkAvail) {
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (BuildContext context) => super.widget));
-                } else {
-                  await buttonController.reverse();
-                  setState(() {});
-                }
-              });
-            },
-          )
-        ]),
-      ),
-    );
-  }
-
-/*  static setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
-      content: new Text(
-        msg,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: black),
-      ),
-      backgroundColor: white,
-      elevation: 1.0,
-    ));
-  }*/
-
-  orderItem(int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3.0),
-      child: Row(
-        children: [
-          Expanded(
-              flex: 4,
-              child: Text(
-                cartList[index].productList[0].name,
-              )),
-          Expanded(
-              flex: 1,
-              child: Text(
-                cartList[index].qty,
-                textAlign: TextAlign.end,
-              )),
-          Expanded(
-              flex: 1,
-              child: Text(
-                cartList[index].productList[0].tax + "%",
-                textAlign: TextAlign.end,
-              )),
-          Expanded(
-              flex: 2,
-              child: Text(
-                cartList[index].perItemTotal,
-                textAlign: TextAlign.end,
-              )),
-          Expanded(
-              flex: 2,
-              child: Text(
-                cartList[index].perItemTotal,
-                textAlign: TextAlign.end,
-              )),
-        ],
-      ),
-    );
-  }
-
-/*_deliveryContent() {
-    return SingleChildScrollView(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        PROMOCODE_LBL,
-                      ),
-                    ),
-                    Spacer(),
-                    InkWell(
-                      child: Icon(Icons.refresh),
-                      onTap: () {
-                        if (promoAmt != 0) {
-                          setState(() {
-                            totalPrice = totalPrice + promoAmt;
-                            promoC.text = '';
-                            isPromoValid = false;
-                            promoAmt = 0;
-                            promocode = '';
-                            widget.update();
-                          });
-                        }
-                      },
-                    )
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: promoC,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          contentPadding: EdgeInsets.all(
-                            10,
-                          ),
-                          hintText: 'Promo Code..',
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: primary),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: primary),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SimBtn(
-                      title: APPLY,
-                      size: deviceWidth * 0.2,
-                      onBtnSelected: () async {
-                        if (promoC.text.trim().isEmpty)
-                          stateCheck.setSnackbar(ADD_PROMO);
-                        else
-                          validatePromo();
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 15.0, top: 10),
-                  child: Text(
-                    ORDER_SUMMARY,
-                    style: Theme.of(context).textTheme.headline6,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Expanded(flex: 4, child: Text(PRODUCTNAME)),
-                    Expanded(
-                        flex: 1,
-                        child: Text(
-                          QUANTITY_LBL,
-                          textAlign: TextAlign.end,
-                        )),
-                    Expanded(
-                        flex: 1,
-                        child: Text(
-                          TAXPER,
-                          textAlign: TextAlign.end,
-                        )),
-                    Expanded(
-                        flex: 2,
-                        child: Text(
-                          PRICE_LBL,
-                          textAlign: TextAlign.end,
-                        )),
-                    Expanded(
-                        flex: 2,
-                        child: Text(
-                          SUBTOTAL,
-                          textAlign: TextAlign.end,
-                        )),
-                  ],
-                ),
-                Divider(),
-                ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: cartList.length,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return orderItem(index);
-                    }),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      top: 28, bottom: 8.0, left: 35, right: 35),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        SUB,
-                      ),
-                      Spacer(),
-                      Text(CUR_CURRENCY + "$oriPrice")
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      left: 35, right: 35, top: 8, bottom: 8),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        DELIVERY_CHARGE,
-                      ),
-                      Spacer(),
-                      Text(CUR_CURRENCY + " $delCharge")
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      left: 35, right: 35, top: 8, bottom: 8),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        TAXPER + "($taxPer %)",
-                      ),
-                      Spacer(),
-                      Text(CUR_CURRENCY + " $taxAmt")
-                    ],
-                  ),
-                ),
-                isPromoValid
-                    ? Padding(
-                        padding: const EdgeInsets.only(
-                            left: 35, right: 35, top: 8, bottom: 8),
-                        child: Row(
-                          children: <Widget>[
-                            Text(
-                              PROMO_LBL + " ($promocode)",
-                            ),
-                            Spacer(),
-                            Text(CUR_CURRENCY + " $promoAmt")
-                          ],
-                        ),
-                      )
-                    : Container(),
-                Divider(
-                  color: black,
-                  thickness: 1,
-                  indent: 20,
-                  endIndent: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      top: 8.0, bottom: 8, left: 35, right: 35),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        TOTAL_PRICE,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      Spacer(),
-                      Text(
-                        CUR_CURRENCY + " $totalPrice",
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    ));
-  }*/
 }

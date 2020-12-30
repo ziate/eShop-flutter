@@ -1,11 +1,7 @@
-
 import 'package:eshop/Helper/Color.dart';
-import 'package:eshop/Helper/Session.dart';
-import 'package:eshop/Product_Detail.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
-
 import 'Home.dart';
 
 class ProductPreview extends StatefulWidget {
@@ -34,7 +30,6 @@ class StatePreview extends State<ProductPreview> {
 
   @override
   Widget build(BuildContext context) {
-    // print("tag=======${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}");
 
     return Scaffold(
         body: Hero(

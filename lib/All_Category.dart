@@ -14,12 +14,11 @@ import 'ProductList.dart';
 import 'SubCat.dart';
 import 'Model/Model.dart';
 import 'Model/Section_Model.dart';
-class All_Category extends StatefulWidget {
 
+class AllCategory extends StatefulWidget {
   final Function updateHome;
 
-  const All_Category({Key key, this.updateHome}) : super(key: key);
-
+  const AllCategory({Key key, this.updateHome}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -27,11 +26,10 @@ class All_Category extends StatefulWidget {
   }
 }
 
-class StateCat extends State<All_Category> {
-
+class StateCat extends State<AllCategory> {
   int offset = perPage;
   int total = 0;
-  bool isLoadingmore = true,_isCatLoading=false;
+  bool isLoadingmore = true, _isCatLoading = false;
   ScrollController controller = new ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   List<Product> tempList = [];
@@ -45,7 +43,7 @@ class StateCat extends State<All_Category> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
+        key: _scaffoldKey,
         backgroundColor: lightWhite,
         appBar: getAppBar(ALL_CAT, context),
         body: GridView.count(
@@ -54,13 +52,10 @@ class StateCat extends State<All_Category> {
             crossAxisCount: 4,
             shrinkWrap: true,
             childAspectRatio: .8,
-           // physics: BouncingScrollPhysics(),
-            // mainAxisSpacing: 6,
-            // crossAxisSpacing: 3,
             children: List.generate(
               (offset < total) ? catList.length + 1 : catList.length,
               (index) {
-              return  (index == catList.length && isLoadingmore)
+                return (index == catList.length && isLoadingmore)
                     ? Center(child: CircularProgressIndicator())
                     : catItem(index, context);
               },
@@ -93,21 +88,20 @@ class StateCat extends State<All_Category> {
           if ((offset) < total) {
             tempList.clear();
             var data = getdata["data"];
-            tempList =
-                (data as List).map((data) => new Product.fromCat(data)).toList();
+            tempList = (data as List)
+                .map((data) => new Product.fromCat(data))
+                .toList();
             catList.addAll(tempList);
 
             offset = offset + perPage;
           }
         }
-
       } else {
         isLoadingmore = false;
         setSnackbar(msg);
       }
       setState(() {
         _isCatLoading = false;
-
       });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
@@ -117,6 +111,7 @@ class StateCat extends State<All_Category> {
       });
     }
   }
+
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
       content: new Text(
@@ -135,16 +130,14 @@ class StateCat extends State<All_Category> {
         children: <Widget>[
           ClipRRect(
               borderRadius: BorderRadius.circular(25.0),
-              child: FadeInImage(image:
-              NetworkImage(catList[index].image),
+              child: FadeInImage(
+                image: NetworkImage(catList[index].image),
                 fadeInDuration: Duration(milliseconds: 150),
                 height: 50,
                 width: 50,
                 fit: BoxFit.fill,
-              // errorWidget:(context, url,e) => placeHolder(50) ,
-                placeholder:placeHolder(50),
-              )
-          ),
+                placeholder: placeHolder(50),
+              )),
           Padding(
             padding: const EdgeInsets.only(top: 10.0),
             child: Text(
@@ -185,7 +178,6 @@ class StateCat extends State<All_Category> {
       },
     );
   }
-
 
   _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&

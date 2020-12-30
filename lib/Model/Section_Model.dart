@@ -171,7 +171,6 @@ class Product {
 
     List<String> other_image = List<String>.from(json[OTHER_IMAGE]);
     List<String> selected = [];
-    //  print("rs***********${json.toString()}");
 
     return new Product(
         id: json[ID],

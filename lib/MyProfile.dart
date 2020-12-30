@@ -1,36 +1,18 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+
 import 'package:app_review/app_review.dart';
-
-
-import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Home.dart';
-import 'package:eshop/Model/User.dart';
-import 'package:eshop/Map.dart';
 import 'Faqs.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:eshop/NotificationLIst.dart';
 import 'package:eshop/Setting.dart';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
+
 import 'package:share/share.dart';
 import 'Manage_Address.dart';
-import 'Add_Address.dart';
-import 'Cart.dart';
-import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
-import 'package:http/http.dart' as http;
-
 import 'Login.dart';
-import 'Logout.dart';
 import 'MyOrder.dart';
 import 'Privacy_Policy.dart';
 import 'Profile.dart';
@@ -55,18 +37,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   getUserDetails() async {
-
     CUR_USERID = await getPrefrence(ID);
     CUR_USERNAME = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
     profile = await getPrefrence(IMAGE);
-    print("after logout========$email********$profile");
-
     setState(() {});
   }
 
   _getHeader() {
-    print("email***********$email");
     return Padding(
         padding: const EdgeInsets.only(bottom: 5.0),
         child: Container(
@@ -186,7 +164,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   _getDrawerFirst() {
-    print("current==========$CUR_USERNAME===$CUR_USERID");
     return Card(
       margin: EdgeInsets.only(left: 10.0, right: 10.0),
       elevation: 0,
@@ -205,8 +182,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           _getDrawerItem(3, SETTING, 'assets/images/pro_setting.png'),
           _getDivider(),
           _getDrawerItem(4, MANAGE_ADD_LBL, 'assets/images/pro_address.png'),
-          //_getDivider(),
-          // _getDrawerItem(5, TRACK_ORDER, 'assets/images/pro_trackorder.png'),
         ],
       ),
     );
@@ -220,7 +195,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   _getDrawerSecond() {
-    print("current==========$CUR_USERNAME===$CUR_USERID");
     return Card(
       margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 15.0, bottom: 15.0),
       elevation: 0,
@@ -230,8 +204,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
         children: <Widget>[
-          //  _getDrawerItem(6, CUSTOMER_SUPPORT_LBL, 'assets/images/pro_customersupport.png'),
-          //  _getDivider(),
           _getDrawerItem(7, RATE_US, 'assets/images/pro_rateus.png'),
           _getDivider(),
           _getDrawerItem(8, SHARE_APP, 'assets/images/pro_share.png'),
@@ -332,13 +304,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                 ),
               ));
         } else if (title == LOGOUT) {
-        /*   Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Logout(
-                  title: LOGOUT,
-                ),
-              ));*/
           logOutDailog();
 
         }

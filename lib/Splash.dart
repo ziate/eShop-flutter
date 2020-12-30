@@ -1,21 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:eshop/Intro_Slider.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart';
-import 'package:path_provider/path_provider.dart';
-
 import 'Helper/Color.dart';
-import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
-import 'Home.dart';
-import 'main.dart';
+
 
 
 //splash screen of app
@@ -32,7 +23,6 @@ class _SplashScreen extends State<Splash> {
   void initState() {
     super.initState();
     startTime();
-    //getJwtKey();
   }
 
   @override
@@ -85,17 +75,6 @@ class _SplashScreen extends State<Splash> {
   }
 
 
-
-
-/*  Future<void> checkNetwork() async {
-    bool avail = await isNetworkAvailable();
-    if (avail) {
-      navigationPage();
-    } else {
-      setSnackbar(internetMsg);
-    }
-  }*/
-
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
       content: new Text(
@@ -114,21 +93,4 @@ class _SplashScreen extends State<Splash> {
     super.dispose();
   }
 
-/*  Future<void> getJwtKey() async {
-    Response response = await post(getJwtKeyApi, headers: headers)
-        .timeout(Duration(seconds: timeOut));
-
-      var getdata = json.decode(response.body);
-
-    bool error = getdata["error"];
-    String msg = getdata["message"];
-    if (!error) {
-      var data = getdata["data"];
-      jwtKey = data;
-
-      startTime();
-    } else {
-      setSnackbar(msg);
-    }
-  }*/
 }

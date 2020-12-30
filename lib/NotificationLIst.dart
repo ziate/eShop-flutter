@@ -1,13 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-
-
 import 'package:eshop/Model/Notification_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:shimmer/shimmer.dart';
-
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -27,9 +23,7 @@ bool _isLoading = true;
 
 class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
   ScrollController controller = new ScrollController();
-
   List<Notification_Model> tempList = [];
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
@@ -130,7 +124,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                           itemCount: (offset < total)
                               ? notiList.length + 1
                               : notiList.length,
-                          physics:  AlwaysScrollableScrollPhysics(),
+                          physics: AlwaysScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
                             return (index == notiList.length && isLoadingmore)
                                 ? Center(child: CircularProgressIndicator())
@@ -167,24 +161,20 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            Container(
-              width: 50,
-              height: 50,
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(3.0),
-                  child: model.img != null
-                      ? CircleAvatar(
+            model.img != null && model.img != ''
+                ? Container(
+                    width: 50,
+                    height: 50,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(3.0),
+                        child: CircleAvatar(
                           backgroundImage: NetworkImage(model.img),
                           radius: 25,
-                          //height: 50,
-                         // width: 50,
-                         // errorWidget: (context, url, e) => placeHolder(50),
-                         // placeholder:  placeHolder(50)
-                  )
-                      : Container(
-                          height: 0,
                         )),
-            ),
+                  )
+                : Container(
+                    height: 0,
+                  ),
           ],
         ),
       ),
@@ -195,8 +185,6 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        // print("product****${widget.id}");
-
         var parameter = {
           LIMIT: perPage.toString(),
           OFFSET: offset.toString(),
@@ -205,7 +193,6 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
         Response response =
             await post(getNotificationApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];

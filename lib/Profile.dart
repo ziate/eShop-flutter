@@ -5,13 +5,10 @@ import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Model/User.dart';
-import 'package:eshop/Map.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
-
 import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
 import 'package:http/http.dart' as http;
@@ -106,8 +103,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     email = await getPrefrence(EMAIL);
     city = await getPrefrence(CITY);
     area = await getPrefrence(AREA);
-    //city = "40";
-    //area = "158";
     pincode = await getPrefrence(PINCODE);
     address = await getPrefrence(ADDRESS);
     image = await getPrefrence(IMAGE);
@@ -213,7 +208,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         var responseData = await response.stream.toBytes();
         var responseString = String.fromCharCodes(responseData);
 
-
         var getdata = json.decode(responseString);
         bool error = getdata["error"];
         String msg = getdata['message'];
@@ -224,7 +218,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
             image = i[IMAGE];
           }
           setPrefrence(IMAGE, image);
-          print("current image:*****$image");
+
         } else {
           setSnackbar(msg);
         }
@@ -245,7 +239,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   }
 
   Future<void> setUpdateUser() async {
-    print("area3************$area");
     var data = {USER_ID: CUR_USERID, USERNAME: name, EMAIL: email};
     if (newPass != null && newPass != "") {
       data[NEWPASS] = newPass;
@@ -279,7 +272,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
     var getdata = json.decode(response.body);
 
-    print('response***UpdateUser**$headers***${response.body.toString()}');
     bool error = getdata["error"];
     String msg = getdata["message"];
     await buttonController.reverse();
@@ -298,7 +290,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       lat = i[LATITUDE];
       long = i[LONGITUDE];
 
-      print("City:$city,Area:$area,image:$image");
       saveUserDetail(CUR_USERID, name, email, mobile, city, area, address,
           pincode, lat, long, image);
       setPrefrence(CITYNAME, cityName);
@@ -312,14 +303,15 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     File image = await FilePicker.getFile(type: FileType.image);
 
     if (image != null) {
-      print('path**${image.path}');
+
       setState(() {
         _isLoading = true;
       });
       setProfilePic(image);
     }
 
-  /*  FilePickerResult result = await FilePicker.platform.pickFiles();
+    ///for file picker greater version
+    /*  FilePickerResult result = await FilePicker.platform.pickFiles();
     if(result != null) {
       File image = File(result.files.single.path);
       if (image != null) {
@@ -332,19 +324,17 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     } else {
       // User canceled the picker
     }*/
-
   }
 
   Future<void> getCities() async {
-    print("city:$city,area:$area");
-    print("image:$image");
+
     try {
       var response = await http
           .post(getCitiesApi, headers: headers)
           .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***Cities**$headers***${response.body.toString()}');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -355,7 +345,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           if (cityList[i].id == city) {
             setState(() {
               cityName = cityList[i].name;
-              print("cityname*******$cityName");
+
             });
           }
         }
@@ -374,7 +364,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   }
 
   Future<void> getArea(StateSetter setState) async {
-    print("selectedcityforarea:$city");
+
     try {
       var data = {
         ID: city,
@@ -384,7 +374,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           .post(getAreaByCityApi, body: data, headers: headers)
           .timeout(Duration(seconds: timeOut));
 
-      print('response***Area****${response.body.toString()}');
+
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
@@ -398,22 +388,18 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
         areaList =
             (data as List).map((data) => new User.fromJson(data)).toList();
-        print("areaList****$areaList");
-        print("area****$area");
 
         if (areaList.length == 0) {
           areaName = "";
         } else {
           for (int i = 0; i < areaList.length; i++) {
-            print("area======${areaList[i].id}====$area");
+
             if (areaList[i].id == area) {
               areaName = areaList[i].name;
             }
           }
         }
 
-        print("areName1111*****$areaName");
-        print("area1111****$area");
       } else {
         setSnackbar(msg);
       }
@@ -736,9 +722,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                       style: Theme.of(this.context).textTheme.caption.copyWith(
                           color: lightBlack2, fontWeight: FontWeight.normal),
                     ),
-
-                    areaName!=null&&
-                    areaName != ""
+                    areaName != null && areaName != ""
                         ? Text(
                             "$cityName,$areaName",
                             style: Theme.of(this.context)
@@ -749,7 +733,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                     fontWeight: FontWeight.bold),
                           )
                         : Text(
-                            "${cityName??''}",
+                            "${cityName ?? ''}",
                             style: Theme.of(this.context)
                                 .textTheme
                                 .subtitle2
@@ -829,7 +813,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                         city = newValue;
                                         isArea = false;
                                       });
-                                      print(city);
+
                                       getArea(setStater);
                                     },
                                     items: cityList.map((User user) {
@@ -847,7 +831,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                         onTap: () {
                                           setStater(() {
                                             cityName = user.name;
-                                            print("cityname:*****$cityName");
+
                                           });
                                         },
                                       );
@@ -889,7 +873,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                             setState(() {
                                               area = newValue;
                                             });
-                                            print(area);
+
                                           }
                                         : null,
                                     items: areaList.map((User user) {
@@ -907,7 +891,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                         onTap: () {
                                           setStater(() {
                                             areaName = user.name;
-                                            print("areaName:****$areaName");
+
                                           });
                                         },
                                       );
@@ -934,7 +918,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold)),
                                 onPressed: () {
-                                  print("valuee****$areaName****$cityName");
+
                                   if (areaName != "" &&
                                       areaName != null &&
                                       cityName != null &&
@@ -1164,76 +1148,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         });
   }
 
-  /* setAddress() {
-    return Padding(
-        padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                keyboardType: TextInputType.text,
-                controller: addressC,
-                style: Theme.of(this.context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(color: fontColor),
-                onChanged: (v) => setState(() {
-                  address = v;
-                }),
-                onSaved: (String value) {
-                  address = value;
-                },
-                decoration: InputDecoration(
-                  hintText: ADDRESS_LBL,
-                  hintStyle: Theme.of(this.context)
-                      .textTheme
-                      .subtitle1
-                      .copyWith(color: lightBlack),
-                  filled: true,
-                  fillColor: white,
-                  contentPadding: new EdgeInsets.only(right: 30.0, left: 30.0),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: white),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: white),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 10),
-            Container(
-              width: 60,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
-                  border: Border.all(color: white),
-                  color: white),
-              child: IconButton(
-                icon: new Icon(Icons.my_location),
-                onPressed: () async {
-                  Position position = await Geolocator.getCurrentPosition(
-                      desiredAccuracy: LocationAccuracy.high);
-
-                  Navigator.push(
-                      this.context,
-                      MaterialPageRoute(
-                          builder: (context) => Map(
-                                latitude: lat == null
-                                    ? position.latitude
-                                    : double.parse(lat),
-                                longitude: long == null
-                                    ? position.longitude
-                                    : double.parse(long),
-                                from: EDIT_PROFILE_LBL,
-                              )));
-                },
-              ),
-            )
-          ],
-        ));
-  }*/
 
   profileImage() {
     return Container(
@@ -1343,7 +1257,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(

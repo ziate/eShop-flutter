@@ -1,19 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
-
-
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
-
-import 'package:shimmer/shimmer.dart';
-
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -97,14 +89,12 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
             btnCntrl: buttonController,
             onBtnSelected: () async {
               _playAnimation();
-
               Future.delayed(Duration(seconds: 2)).then((_) async {
                 _isNetworkAvail = await isNetworkAvailable();
                 if (_isNetworkAvail) {
                   _getFav();
                 } else {
                   await buttonController.reverse();
-                  // setState(() {});
                 }
               });
             },
@@ -129,14 +119,13 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
   }
 
   Widget listItem(int index) {
-     int selectedPos = 0;
+    int selectedPos = 0;
     for (int i = 0;
         i < favList[index].productList[0].prVarientList.length;
         i++) {
       if (favList[index].varientId ==
           favList[index].productList[0].prVarientList[i].id) selectedPos = i;
-
-        }
+    }
 
     double price = double.parse(
         favList[index].productList[0].prVarientList[selectedPos].disPrice);
@@ -147,7 +136,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
     return Card(
       elevation: 0.1,
       child: InkWell(
-        borderRadius:  BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -168,10 +157,11 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(4.0),
                           child: FadeInImage(
-                            image: NetworkImage(favList[index].productList[0].image),
+                            image: NetworkImage(
+                                favList[index].productList[0].image),
                             height: 80.0,
                             width: 80.0,
-                           // errorWidget: (context, url, e) => placeHolder(80),
+                            // errorWidget: (context, url, e) => placeHolder(80),
                             placeholder: placeHolder(80),
                           ))),
                   Expanded(
@@ -316,7 +306,6 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           Navigator.push(
             context,
             PageRouteBuilder(
-                //transitionDuration: Duration(seconds: 1),
                 pageBuilder: (_, __, ___) => ProductDetail(
                       model: model,
                       updateParent: updateFav,
@@ -354,7 +343,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           bool error = getdata["error"];
           String msg = getdata["message"];
 
-            if (!error) {
+          if (!error) {
             total = int.parse(getdata["total"]);
 
             if ((offset) < total) {
@@ -421,13 +410,11 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
               .toString(),
         };
 
-
         Response response =
             await post(manageCartApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-
 
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -497,7 +484,6 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-
 
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -577,7 +563,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
         setState(() {
           isLoadingmore = true;
 
-             if (offset < total) _getFav();
+          if (offset < total) _getFav();
         });
       }
     }
@@ -585,15 +571,13 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
 
   Future<Null> _refresh() {
     setState(() {
-      _isFavLoading=true;
+      _isFavLoading = true;
     });
     offset = 0;
     total = 0;
-    return
-
-    _getFav();
-
+    return _getFav();
   }
+
   _showContent() {
     return _isFavLoading
         ? shimmer()
@@ -607,10 +591,10 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                   controller: controller,
                   itemCount:
                       (offset < total) ? favList.length + 1 : favList.length,
-                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-
+                  physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics()),
                   itemBuilder: (context, index) {
-                     return (index == favList.length && isLoadingmore)
+                    return (index == favList.length && isLoadingmore)
                         ? Center(child: CircularProgressIndicator())
                         : listItem(index);
                   },

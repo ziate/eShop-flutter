@@ -16,8 +16,7 @@ import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
-import 'Login.dart';
-import 'SignUp.dart';
+
 
 class SendOtp extends StatefulWidget {
   String title;
@@ -236,7 +235,6 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
   setCodeWithMono() {
     return Container(
         width: deviceWidth * 0.7,
-        //padding: EdgeInsets.only(left: 25.0, right: 25.0),
         child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(7.0),

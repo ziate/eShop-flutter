@@ -15,6 +15,7 @@ import 'package:flutter/rendering.dart';
 
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart';
+
 import 'package:permission_handler/permission_handler.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
@@ -25,11 +26,11 @@ import 'Model/User.dart';
 import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
 import 'package:path_provider/path_provider.dart';
 
-class OrderDetail1 extends StatefulWidget {
+class OrderDetail extends StatefulWidget {
   final Order_Model model;
   final Function updateHome;
 
-  const OrderDetail1({Key key, this.model, this.updateHome}) : super(key: key);
+  const OrderDetail({Key key, this.model, this.updateHome}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -37,18 +38,14 @@ class OrderDetail1 extends StatefulWidget {
   }
 }
 
-class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
+class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   ScrollController controller = new ScrollController();
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   List<User> tempList = [];
-  bool _isCancleable,
-      _isReturnable,
-      _isLoading = true,
-      _showComment = false,
-      _isCommentEnable = false;
+  bool _isCancleable, _isReturnable, _isLoading = true;
   bool _isProgress = false;
   int offset = 0;
   int total = 0;
@@ -65,7 +62,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
     super.initState();
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
-
     buttonSqueezeanimation = new Tween(
       begin: deviceWidth * 0.7,
       end: 50.0,
@@ -130,7 +126,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
   _getAppbar() {
     double width = deviceWidth;
     double height = width / 2;
-    print("cart count***$CUR_CART_COUNT");
     return AppBar(
       title: Text(
         ORDER_DETAIL,
@@ -214,7 +209,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
 
@@ -268,8 +262,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
     _isCancleable = model.isCancleable == "1" ? true : false;
     _isReturnable = model.isReturnable == "1" ? true : false;
 
-    print("is cancle********$_isCancleable***$_isReturnable");
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: lightWhite,
@@ -300,7 +292,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                                                 .subtitle2
                                                 .copyWith(color: lightBlack2),
                                           )))),
-                              //Text(ORDER_DATE + " : " + model.orderDate),
                               ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: model.itemList.length,
@@ -577,17 +568,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                             style: Theme.of(context).textTheme.subtitle2,
                             keyboardType: TextInputType.multiline,
                             maxLines: null,
-                            onChanged: (String val) {
-                              if (_commentC.text.trim().isNotEmpty) {
-                                setState(() {
-                                  _isCommentEnable = true;
-                                });
-                              } else {
-                                setState(() {
-                                  _isCommentEnable = false;
-                                });
-                              }
-                            },
                             decoration: InputDecoration(
                               hintText: REVIEW_HINT_LBL,
                               hintStyle: Theme.of(context)
@@ -595,16 +575,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                                   .subtitle2
                                   .copyWith(
                                       color: lightBlack2.withOpacity(0.7)),
-                              /*    suffixIcon: IconButton(
-                                  icon: Icon(
-                                    Icons.send,
-                                    color: _isCommentEnable
-                                        ? primary
-                                        : Colors.transparent,
-                                  ),
-                                  onPressed: () => _isCommentEnable == true
-                                      ? setRating(0, _commentC.text, null)
-                                      : null),*/
                             ),
                           )),
                       Container(
@@ -686,77 +656,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
         : Container();
   }
 
-  /*Future<void> setRating(double rating, String comment, File _image) async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      try {
-        setState(() {
-          _isLoading = true;
-        });
-
-        var request = http.MultipartRequest("POST", Uri.parse(setRatingApi));
-        request.headers.addAll(headers);
-        print("CURUSERID*****$CUR_USERID");
-        request.fields[USER_ID] = CUR_USERID;
-        request.fields[PRODUCT_ID] = widget.model.itemList[0].productId;
-        if (_image != null) {
-          var pic = await http.MultipartFile.fromPath(IMAGES, _image.path);
-          request.files.add(pic);
-        }
-
-        if (comment != "") request.fields[COMMENT] = comment;
-        if (rating != 0) request.fields[RATING] = rating.toString();
-        var response = await request.send();
-        var responseData = await response.stream.toBytes();
-        var responseString = String.fromCharCodes(responseData);
-
-        print("profile====$responseString*****${_image.path}");
-
-        //  print('response***product**$parameter***${response.body.toString()}');
-
-        var getdata = json.decode(responseString);
-        bool error = getdata["error"];
-        String msg = getdata['message'];
-        if (!error) {
-          setSnackbar(msg);
-          _showComment = true;
-          reviewList.clear();
-          offset = 0;
-
-          var data = getdata["data"]["product_rating"];
-          rating = double.parse(getdata["data"]["no_of_rating"]);
-
-          setState(() {
-            image = getdata["data"]["images"];
-            print("image****$image");
-          });
-
-          print("rating*****$rating");
-
-          tempList =
-              (data as List).map((data) => new User.forReview(data)).toList();
-
-          reviewList.addAll(tempList);
-
-          offset = offset + perPage;
-        } else {
-          setSnackbar(msg);
-          initialRate = 0;
-        }
-        _isCommentEnable = false;
-        _commentC.text = "";
-        setState(() {
-          _isLoading = false;
-        });
-      } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
-      }
-    } else
-      setState(() {
-        _isNetworkAvail = false;
-      });
-  }
-*/
   _rating() {
     return Padding(
       padding: EdgeInsets.only(top: 7.0, bottom: 7.0),
@@ -774,8 +673,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
         ),
         onRatingUpdate: (rating) {
           curRating = rating;
-          //print(rating);
-          //setRating(rating, "", null);
         },
       ),
     );
@@ -802,8 +699,11 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
     if (orderItem.listStatus.contains(RETURNED)) {
       rDate = orderItem.listDate[orderItem.listStatus.indexOf(RETURNED)];
     }
-
-    print("length=========${orderItem.image}");
+    List att, val;
+    if (orderItem.attr_name.isNotEmpty) {
+      att = orderItem.attr_name.split(',');
+      val = orderItem.varient_values.split(',');
+    }
     return Card(
         elevation: 0,
         child: Padding(
@@ -819,7 +719,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                           image: NetworkImage(orderItem.image),
                           height: 90.0,
                           width: 90.0,
-                          // errorWidget: (context, url, e) => placeHolder(90),
                           placeholder: placeHolder(90),
                         )),
                     Expanded(
@@ -840,27 +739,36 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                               overflow: TextOverflow.ellipsis,
                             ),
                             orderItem.attr_name.isNotEmpty
-                                ? Row(children: [
-                                    Text(
-                                      orderItem.attr_name + ":",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subtitle2
-                                          .copyWith(color: lightBlack2),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 5.0),
-                                      child: Text(
-                                        orderItem.varient_values,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .subtitle2
-                                            .copyWith(color: lightBlack),
-                                      ),
-                                    )
-                                  ])
+                                ? ListView.builder(
+                                    physics: NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: att.length,
+                                    itemBuilder: (context, index) {
+                                      return Row(children: [
+                                        Flexible(
+                                          child: Text(
+                                            att[index].trim() + ":",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .subtitle2
+                                                .copyWith(color: lightBlack2),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(left: 5.0),
+                                          child: Text(
+                                            val[index],
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .subtitle2
+                                                .copyWith(color: lightBlack),
+                                          ),
+                                        )
+                                      ]);
+                                    })
                                 : Container(),
-                            //Text(PAYMENT_METHOD_LBL + " : " + model.payMethod),
+
                             Row(children: [
                               Text(
                                 QUANTITY_LBL + ":",
@@ -880,7 +788,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                                 ),
                               )
                             ]),
-                            //Text(QUANTITY_LBL + " : " + orderItem.qty),
                             Text(
                               CUR_CURRENCY + " " + orderItem.price,
                               style: Theme.of(context)
@@ -899,8 +806,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                 Divider(
                   color: lightBlack,
                 ),
-                //orderProcess(pDate, prDate, cDate, dDate, sDate, rDate)
-
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
@@ -911,11 +816,10 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                       getShipped(sDate, cDate),
                       getDelivered(dDate, cDate),
                       getCanceled(cDate),
-                      getReturned(orderItem,rDate, model),
+                      getReturned(orderItem, rDate, model),
                     ],
                   ),
                 ),
-
                 model.itemList.length > 1
                     ? (!orderItem.listStatus.contains(DELIVERD) &&
                             (!orderItem.listStatus.contains(RETURNED)) &&
@@ -954,8 +858,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
                         : (orderItem.listStatus.contains(DELIVERD) &&
                                 orderItem.isReturn == "1" &&
                                 orderItem.isAlrReturned == "0")
-                            /*  &&model.rtnReqSubmitted=="0"? returnable(true,RETURN_ORDER)
-                      :model.rtnReqSubmitted=="2"?returnable(false, text)*/
                             ? Column(
                                 children: [
                                   Divider(),
@@ -1234,12 +1136,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
         : Container();
   }
 
-  getReturned(OrderItem item,
-    String rDate,
-    Order_Model model
-  ) {
-   // searchList[index].itemList[0];
-    print("status**********${model.listStatus}");
+  getReturned(OrderItem item, String rDate, Order_Model model) {
     return item.listStatus.contains(RETURNED)
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1294,8 +1191,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
             .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('param========$parameter');
-        print('response***setting**${response.body.toString()}');
         bool error = getdata["error"];
         String msg = getdata["message"];
         setSnackbar(msg);
@@ -1322,25 +1217,19 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
     files = await FilePicker.getMultiFile(type: FileType.image);
     if (files != null) {
       setState(() {});
-
     }
 
-
     ///for ios uncomment below code and update file picker library version in pubspec.yaml
-  /*  FilePickerResult result = await FilePicker.platform.pickFiles(allowMultiple: true);
+    /*  FilePickerResult result = await FilePicker.platform.pickFiles(allowMultiple: true);
     if(result != null) {
       files= result.paths.map((path) => File(path)).toList();
     } else {
       // User canceled the picker
     }*/
-
-
   }
 
   Future<void> setRating(
       double rating, String comment, List<File> files) async {
-    print("Image******$files**********$rating*****$comment");
-
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -1349,7 +1238,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
         });
         var request = http.MultipartRequest("POST", Uri.parse(setRatingApi));
         request.headers.addAll(headers);
-        print("CURUSERID*****$CUR_USERID");
         request.fields[USER_ID] = CUR_USERID;
         request.fields[PRODUCT_ID] = widget.model.itemList[0].productId;
 
@@ -1360,19 +1248,11 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
           }
         }
 
-        /* _image.forEach((f) async {
-            print("image path******${f.path}");
-          var pic = await http.MultipartFile.fromPath(images, f.path);
-          request.files.add(pic);
-          });
-        }*/
         if (comment != "") request.fields[COMMENT] = comment;
         if (rating != 0) request.fields[RATING] = rating.toString();
         var response = await request.send();
         var responseData = await response.stream.toBytes();
         var responseString = String.fromCharCodes(responseData);
-        print("image====$responseString");
-        //  print('response***product**$parameter***${response.body.toString()}');
         var getdata = json.decode(responseString);
         bool error = getdata["error"];
         String msg = getdata['message'];
@@ -1382,7 +1262,7 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
           setSnackbar(msg);
           initialRate = 0;
         }
-        _isCommentEnable = false;
+
         _commentC.text = "";
         files.clear();
         setState(() {
@@ -1434,7 +1314,6 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
           onTap: () async {
             final status = await Permission.storage.request();
 
-            print("status==========$status");
             if (status == PermissionStatus.granted) {
               setState(() {
                 _isProgress = true;
@@ -1443,38 +1322,30 @@ class StateOrder extends State<OrderDetail1> with TickerProviderStateMixin {
 
               if (Platform.isIOS) {
                 Directory target = await getApplicationDocumentsDirectory();
-                targetPath=target.path.toString();
-              }
-              else
+                targetPath = target.path.toString();
+              } else
                 targetPath = await ExtStorage.getExternalStoragePublicDirectory(
                     ExtStorage.DIRECTORY_DOWNLOADS);
-              //await DownloadsPathProvider.downloadsDirectory;
 
-              //var targetPath = appDocDir.path;
               var targetFileName = "Invoice_${widget.model.id}";
-              //String targetPath= await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_DOWNLOADS);
 
               print("path****$targetPath");
               var generatedPdfFile =
                   await FlutterHtmlToPdf.convertFromHtmlContent(
                       widget.model.invoice, targetPath, targetFileName);
-              String generatedPdfFilePath = generatedPdfFile.path;
-              // setSnackbar("$INVOICE_PATH $targetFileName");
 
+              print("pdf generated**********$generatedPdfFile");
               _scaffoldKey.currentState.showSnackBar(new SnackBar(
                 content: new Text(
                   "$INVOICE_PATH $targetFileName",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: black),
                 ),
-                /*         action: SnackBarAction(label: VIEW, onPressed: () async {
-
-                  final result = await OpenFile.open(generatedPdfFilePath);
-
-                 */ /* setState(() {
-                    _openResult = "type=${result.type}  message=${result.message}";
+            /*    action: SnackBarAction(label: VIEW, onPressed: () async {
+                final result = await OpenFile.open(generatedPdfFile.path);
+                  setState(() {
+                    //_openResult = "type=${result.type}  message=${result.message}";
                   });
-*/ /*
                 }),*/
                 backgroundColor: white,
                 elevation: 1.0,

@@ -1,13 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/services.dart';
-
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Rating_Review.dart';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +12,9 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
-
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
-
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Home.dart';
@@ -125,7 +119,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             notificationcontroller.position.maxScrollExtent &&
         !notificationcontroller.position.outOfRange) {
       setState(() {
-
         getProduct();
       });
     }
@@ -251,8 +244,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       image: NetworkImage(sliderList[index]),
                       placeholder: AssetImage(
                         "assets/images/sliderph.png",
-                        //fit: BoxFit.fill,
-                        // height: height,
                       ),
                       height: height,
                       width: double.maxFinite,
@@ -337,8 +328,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                       var str =
                                           "${widget.model.name}\n\n$appName\n\nYou can find our app from below url\n\nAndroid:\n"
                                           "$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
-                                      // Share.shareFiles([sliderList[0]],text:str);
-
                                       final response = await get(sliderList[0]);
 
                                       final Directory temp =
@@ -484,7 +473,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   _smallImage() {
     double width = deviceWidth * .15;
 
-
     return Container(
       alignment: Alignment.topLeft,
       padding: EdgeInsets.symmetric(horizontal: 10),
@@ -601,23 +589,19 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   }
 
   _desc() {
-
     return widget.model.desc.isNotEmpty
         ? Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Html(data: widget.model.desc),
           )
         : Container();
-    //Html(data:widget.model.productList[widget.proPos].desc);
   }
 
   Future<void> setRating(double rating, String comment) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        // print("product****${widget.id}");
-
-        setState(() {
+       setState(() {
           _isLoading = true;
         });
         var parameter = {
@@ -630,7 +614,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         Response response =
             await post(setRatingApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -655,7 +638,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           _isLoading = false;
         });
 
-        //  WidgetsBinding.instance.addPostFrameCallback(_onLayoutDone);
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
       }
@@ -685,7 +667,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           widget.model.prVarientList[pos].varient_value.split(',');
       String val = '';
 
-
       for (int i = 0; i < attr_name.length; i++) {
         val = val + attr_value[i].length.toString() + " " + attr_name[i];
       }
@@ -703,30 +684,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             ),
             onTap: _chooseVarient,
           ),
-          /* widget.model.prVarientList[_selVarient].images.length > 0
-              ? _smallImage()
-              : Container(),*/
         ],
       );
-
-/*
-      return InkWell(
-          child: ListView.builder(
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              itemCount: attr_name.length,
-              physics: NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return ListTile(
-                  dense: true,
-                  title: Text(
-                    attr_name[index] + " : " + attr_value[index],
-                    style: Theme.of(context).textTheme.subtitle2,
-                  ),
-                  trailing: Icon(Icons.keyboard_arrow_right),
-                );
-              }),
-          onTap: _chooseVarient);*/
     } else {
       return Container();
     }
@@ -802,16 +761,12 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     for (int i = 0; i < widget.model.attributeList.length; i++) {
       List<String> sinList = widget.model.attributeList[i].id.split(',');
 
-
       for (int j = 0; j < sinList.length; j++) {
         if (selList.contains(sinList[j])) {
-
           _selectedIndex.insert(i, j);
         }
       }
       if (_selectedIndex.length == i) _selectedIndex.insert(i, null);
-
-
     }
 
     showModalBottomSheet(
@@ -825,8 +780,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               builder: (BuildContext context, StateSetter setState) {
             return ListView(
               shrinkWrap: true,
-              // mainAxisSize: MainAxisSize.min,
-              //crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.all(15.0),
@@ -854,7 +807,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     List<String> wholeAtt = widget.model.attrIds.split(',');
 
                     for (int i = 0; i < att.length; i++) {
-                      //  print("whole===$wholeAtt===${attId[i]}");
                       if (wholeAtt.contains(attId[i])) {
                         choiceChip = ChoiceChip(
                           selected: _selectedIndex.length > index
@@ -883,10 +835,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                           .model.attributeList[i].id
                                           .split(',');
 
-                                      //print("valuae***$i**${_selectedIndex.toString()}***${attId.toString()}**${selectedId.toString()}**}");
-
-                                      // print("${attId[_selectedIndex[i]]}");
-
                                       if (_selectedIndex[i] != null)
                                         selectedId.add(int.parse(
                                             attId[_selectedIndex[i]]));
@@ -901,7 +849,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                           .attribute_value_ids
                                           .split(",");
 
-                                       for (int j = 0;
+                                      for (int j = 0;
                                           j < selectedId.length;
                                           j++) {
                                         if (sinId.contains(
@@ -923,14 +871,14 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                       }
                                     }
 
-                                      if (selectedId.length == sinId.length &&
+                                    if (selectedId.length == sinId.length &&
                                         check.length == selectedId.length) {
                                       if (widget.model.stockType == "0" ||
                                           widget.model.stockType == "1") {
                                         if (widget.model.availability == "1") {
                                           available = true;
 
-                                            _oldSelVarient = varSelected;
+                                          _oldSelVarient = varSelected;
                                         } else {
                                           available = false;
                                         }
@@ -938,17 +886,17 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                           "null") {
                                         available = true;
 
-                                          _oldSelVarient = varSelected;
+                                        _oldSelVarient = varSelected;
                                       } else if (widget.model.stockType ==
                                           "2") {
-                                       if (widget
+                                        if (widget
                                                 .model
                                                 .prVarientList[varSelected]
                                                 .availability ==
                                             "1") {
                                           available = true;
 
-                                           _oldSelVarient = varSelected;
+                                          _oldSelVarient = varSelected;
                                         } else {
                                           available = false;
                                         }
@@ -975,7 +923,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                           1 +
                                           oldVarTotal;
 
-                                       _pageController.jumpToPage(p);
+                                      _pageController.jumpToPage(p);
                                     }
                                   });
                                 },
@@ -1028,16 +976,15 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       alignment: FractionalOffset.center,
                       height: 55,
                       decoration: BoxDecoration(
-                          gradient:
-                          available ?LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [grad1Color, grad2Color],
-                              stops: [0, 1]):null,
-
-                        color: available?null:disableColor,
+                        gradient: available
+                            ? LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [grad1Color, grad2Color],
+                                stops: [0, 1])
+                            : null,
+                        color: available ? null : disableColor,
                       ),
-
                       child: Text(APPLY,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.button.copyWith(
@@ -1075,15 +1022,13 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 .toString(),
           };
 
-             Response response =
+          Response response =
               await post(manageCartApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
 
           var getdata = json.decode(response.body);
 
-          print('response***cartadd**${response.body.toString()}***$headers');
-
-          bool error = getdata["error"];
+         bool error = getdata["error"];
           String msg = getdata["message"];
           if (!error) {
             var data = getdata["data"];
@@ -1123,46 +1068,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     }
   }
 
-  _ratingReview() {
-    print("buy=======${widget.model.isPurchased}");
-    return (widget.model.isPurchased == "true" || reviewList.length > 0)
-        ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
-            child: Text(
-              'Ratings & Reviews',
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle1
-                  .copyWith(color: primary),
-            ),
-          )
-        : Container();
-  }
-
-  _rating() {
-    print("purchase==========${widget.model.isPurchased}");
-    return widget.model.isPurchased == "true"
-        ? Center(
-            child: RatingBar.builder(
-              initialRating: initialRate,
-              minRating: 1,
-              direction: Axis.horizontal,
-              allowHalfRating: true,
-              itemCount: 5,
-              itemSize: 32,
-              itemPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-              itemBuilder: (context, _) => Icon(
-                Icons.star,
-                color: Colors.amber,
-              ),
-              onRatingUpdate: (rating) {
-                //print(rating);
-                setRating(rating, "");
-              },
-            ),
-          )
-        : Container();
-  }
 
   Future<void> getReview() async {
     _isNetworkAvail = await isNetworkAvailable();
@@ -1179,9 +1084,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-
-        print(
-            'response***review**${widget.model.id}**${response.body.toString()}');
 
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -1230,7 +1132,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('response***setting**${response.body.toString()}');
+
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
@@ -1269,7 +1171,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('response***setting**${response.body.toString()}');
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
@@ -1280,7 +1181,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               item.productList[0].prVarientList[0].id ==
               widget.model.prVarientList[0].id);
 
-          // home.updateHomepage();
         } else {
           setSnackbar(msg);
         }
@@ -1304,7 +1204,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         Expanded(
           child: SingleChildScrollView(
             controller: notificationcontroller,
-            //physics: BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -1341,9 +1240,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _reviewTitle(),
-                            //  _ratingReview(),
-
-                            // _rating(),
                             _review(),
                             InkWell(
                               child: Padding(
@@ -1393,7 +1289,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           if (notificationisloadmore &&
                               index == (productList.length - 1) &&
                               notificationcontroller.position.pixels <= 0) {
-                            print("load5");
                             getProduct();
                           }
                         } on Exception catch (_) {}
@@ -1403,30 +1298,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                             : productItem(index, index % 2 == 0 ? true : false);
                       },
                     )),
-
-                /*  ListView.builder(
-                    padding: EdgeInsetsDirectional.only(
-                        bottom: 5, start: 10, end: 10, top: 12),
-                    controller: notificationcontroller,
-                    physics: BouncingScrollPhysics(),
-                    itemCount: productList.length,
-                    itemBuilder: (context, index) {
-                      Product item;
-                      try {
-                        item =
-                        productList.isEmpty ? null : productList[index];
-                        if (notificationisloadmore &&
-                            index == (productList.length - 1) &&
-                            notificationcontroller.position.pixels <= 0) {
-                          print("load5");
-                          getProduct();
-                        }
-                      } on Exception catch (_) {}
-
-                      return item == null ? Container() : listItem(index);
-                    }),*/
-
-                // _writeReview()
               ],
             ),
           ),
@@ -1522,7 +1393,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     } else {
       double off =
           double.parse(productList[index].prVarientList[0].price) - price;
-      print("==========$off");
       offPer = ((off * 100) /
               double.parse(productList[index].prVarientList[0].price))
           .toStringAsFixed(2);
@@ -1603,9 +1473,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           ],
         ),
         onTap: () {
-          print(
-              "widgdtdd length=====${productList.length}*******$index****${widget.secPos}");
-
           Product model = productList[index];
           notificationoffset = 0;
 
@@ -1696,7 +1563,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             IS_SIMILAR: "1"
           };
 
-          print("title=======$parameter");
           if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
           Response response =
@@ -1732,7 +1598,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                             productList
                                 .where((i) => i.id == item.id)
                                 .map((obj) {
-                              //print("==item--${item.id}==${obj.id}");
                               allitems.remove(item);
                               return obj;
                             }).toList();
@@ -1763,65 +1628,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     }
   }
 
-  _writeReview() {
-    return widget.model.isPurchased == "true" && _showComment
-        ? Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _commentC,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  onChanged: (String val) {
-                    if (_commentC.text.trim().isNotEmpty) {
-                      setState(() {
-                        _isCommentEnable = true;
-                      });
-                    } else {
-                      setState(() {
-                        _isCommentEnable = false;
-                      });
-                    }
-                  },
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    prefixIcon: Icon(Icons.rate_review, color: primary),
-                    hintText: 'Write your review..',
-                    hintStyle: TextStyle(color: primary.withOpacity(0.5)),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: white),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: white),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 30,
-                child: IconButton(
-                    icon: Icon(
-                      Icons.send,
-                      color: _isCommentEnable ? primary : Colors.transparent,
-                    ),
-                    onPressed: () => _isCommentEnable == true
-                        ? setRating(0, _commentC.text)
-                        : null),
-              )
-            ],
-          )
-        : Container();
-  }
 
-  _otherDetailsTitle() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
-      child: Text(
-        'Other Details',
-        style: Theme.of(context).textTheme.subtitle1.copyWith(color: primary),
-      ),
-    );
-  }
 
   _otherDetail(int pos) {
     String returnable = widget.model.isReturnable;
@@ -1861,17 +1668,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     );
   }
 
-/*  void _onLayoutDone(Duration timeStamp) {
-    controller.animateTo(
-      controller.position.maxScrollExtent,
-      duration: Duration(milliseconds: 500),
-      curve: Curves.fastOutSlowIn,
-    );
-  }*/
-
   void getAvailVarient() {
     if (widget.model.stockType == "2") {
-      print("length***********$availVariant");
       for (int i = 0; i < widget.model.prVarientList.length; i++) {
         if (widget.model.prVarientList[i].availability == "1") {
           _selVarient = i;
@@ -1952,7 +1750,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         itemCount: reviewList[i].imgList.length,
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
-        //physics: BouncingScrollPhysics(),
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.only(right: 10, bottom: 5.0, top: 5),
@@ -1961,7 +1758,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 Navigator.push(
                     context,
                     PageRouteBuilder(
-                      // transitionDuration: Duration(seconds: 1),
                       pageBuilder: (_, __, ___) => ProductPreview(
                           pos: index,
                           secPos: widget.secPos,
@@ -2025,11 +1821,5 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         : Container();
   }
 
-/* return widget.model.attributeList.length>0
-        ? Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
-      child: Text(widget.model.attributeList),
-    )
-        : Container();*/
 
 }

@@ -1,16 +1,14 @@
-import 'dart:async';
+
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
-import 'package:eshop/Product_Detail.dart';
 import 'package:eshop/SignInUpAcc.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
-import 'Home.dart';
-import 'Login.dart';
+
 
 class Intro_Slider extends StatefulWidget {
   @override

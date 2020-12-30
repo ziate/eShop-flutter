@@ -1,23 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:eshop/Helper/AppBtn.dart';
 import 'package:eshop/Helper/SimBtn.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_html/style.dart';
 import 'package:http/http.dart';
-import 'package:shimmer/shimmer.dart';
-
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
-import 'Login.dart';
 import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
 import 'Search.dart';
@@ -125,7 +118,6 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             btnCntrl: buttonController,
             onBtnSelected: () async {
               _playAnimation();
-
               Future.delayed(Duration(seconds: 2)).then((_) async {
                 _isNetworkAvail = await isNetworkAvailable();
                 if (_isNetworkAvail) {
@@ -146,7 +138,6 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
   noIntBtn(BuildContext context) {
     double width = deviceWidth;
-
     return Container(
         padding: EdgeInsets.only(bottom: 10.0, top: 50.0),
         child: Center(
@@ -185,7 +176,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     return Card(
       elevation: 0,
       child: InkWell(
-        borderRadius:  BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
             Widget>[
           productList[index].availability == "0"
@@ -198,9 +189,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
-              // crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: <Widget>[
+            children: <Widget>[
                 Hero(
                   tag: "$index${productList[index].id}",
                   child: ClipRRect(
@@ -209,7 +198,6 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         image: NetworkImage(productList[index].image),
                         height: 80.0,
                         width: 80.0,
-                        //errorWidget:(context, url,e) => placeHolder(80) ,
                         placeholder: placeHolder(80),
                       )),
                 ),
@@ -278,7 +266,6 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           Navigator.push(
             context,
             PageRouteBuilder(
-               // transitionDuration: Duration(seconds: 1),
                 pageBuilder: (_, __, ___) => ProductDetail(
                       model: model,
                       updateParent: updateProductList,
@@ -307,14 +294,12 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           ORDER: orderBy,
           LIMIT: perPage.toString(),
           OFFSET: offset.toString(),
-          TOP_RETAED:top
+          TOP_RETAED: top
         };
         if (selId != null && selId != "") {
           parameter[ATTRIBUTE_VALUE_ID] = selId;
         }
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
-
-
 
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
@@ -398,7 +383,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           child: Card(
             elevation: 0,
             child: InkWell(
-              borderRadius:  BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4),
               onTap: () => Navigator.of(context).pop(),
               child: Padding(
                 padding: const EdgeInsets.only(right: 4.0),
@@ -415,22 +400,22 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           child: Card(
             elevation: 0,
             child: InkWell(
-              borderRadius:  BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4),
               onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Search(
-                            updateHome: widget.updateHome, menuopen: false),
-                      ));
-                },
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Search(
+                          updateHome: widget.updateHome, menuopen: false),
+                    ));
+              },
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Icon(
-                    Icons.search,
-                    color: primary,
-                    size: 22,
-                  ),
+                  Icons.search,
+                  color: primary,
+                  size: 22,
+                ),
               ),
             ),
           ),
@@ -442,17 +427,17 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                 child: Card(
                     elevation: 0,
                     child: InkWell(
-                      borderRadius:  BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4),
                       onTap: () {
-                            if (filterList.length != 0) return filterDialog();
-                          },
+                        if (filterList.length != 0) return filterDialog();
+                      },
                       child: Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: Icon(
-                              Icons.tune,
-                              color: primary,
-                              size: 22,
-                            ),
+                          Icons.tune,
+                          color: primary,
+                          size: 22,
+                        ),
                       ),
                     )))
             : Container(),
@@ -462,105 +447,23 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             child: Card(
                 elevation: 0,
                 child: InkWell(
-                  borderRadius:  BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4),
                   onTap: () {
-                        if (productList.length != 0) return sortDialog();
-                      },
+                    if (productList.length != 0) return sortDialog();
+                  },
                   child: Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Icon(
-                          Icons.filter_list,
-                          color: primary,
-                          size: 22,
-                        ),
+                      Icons.filter_list,
+                      color: primary,
+                      size: 22,
+                    ),
                   ),
                 )))
       ],
     );
   }
 
-  /* void sortDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return new CupertinoAlertDialog(
-            title: new Text(
-              SORT_BY,
-              style: Theme.of(context).textTheme.headline6,
-            ),
-            actions: [
-              CupertinoActionSheetAction(
-                  child: new Text(
-                    F_NEWEST,
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  onPressed: () {
-                    sortBy = 'p.date_added';
-                    orderBy = 'DESC';
-                    setState(() {
-                      _isLoading = true;
-                      total = 0;
-                      offset = 0;
-                      productList.clear();
-                    });
-                    getProduct();
-                    Navigator.pop(context, 'option 1');
-                  }),
-              CupertinoActionSheetAction(
-                  child: new Text(
-                    F_OLDEST,
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  onPressed: () {
-                    sortBy = 'p.date_added';
-                    orderBy = 'ASC';
-                    setState(() {
-                      _isLoading = true;
-                      total = 0;
-                      offset = 0;
-                      productList.clear();
-                    });
-                    getProduct();
-                    Navigator.pop(context, 'option 2');
-                  }),
-              CupertinoActionSheetAction(
-                  child: new Text(
-                    F_LOW,
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  onPressed: () {
-                    sortBy = 'pv.price';
-                    orderBy = 'ASC';
-                    setState(() {
-                      _isLoading = true;
-                      total = 0;
-                      offset = 0;
-                      productList.clear();
-                    });
-                    getProduct();
-                    Navigator.pop(context, 'option 3');
-                  }),
-              CupertinoActionSheetAction(
-                  child: new Text(
-                    F_HIGH,
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  onPressed: () {
-                    sortBy = 'pv.price';
-                    orderBy = 'DESC';
-                    setState(() {
-                      _isLoading = true;
-                      total = 0;
-                      offset = 0;
-                      productList.clear();
-                    });
-                    getProduct();
-                    Navigator.pop(context, 'option 4');
-                  }),
-            ],
-          );
-        });
-  }*/
   void sortDialog() {
     showDialog(
         context: context,
@@ -790,8 +693,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     setState(() {
       _isLoading = true;
       isLoadingmore = true;
-      offset=0;
-      total=0;
+      offset = 0;
+      total = 0;
       productList.clear();
     });
     return getProduct("0");
@@ -844,7 +747,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                       child: Card(
                         elevation: 0,
                         child: InkWell(
-                          borderRadius:  BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(4),
                           onTap: () => Navigator.of(context).pop(),
                           child: Padding(
                             padding: const EdgeInsets.only(right: 4.0),
@@ -1020,7 +923,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     )),
                 Spacer(),
                 SimBtn(
-                    size:  0.4,
+                    size: 0.4,
                     title: APPLY,
                     onBtnSelected: () {
                       if (selectedId != null) {

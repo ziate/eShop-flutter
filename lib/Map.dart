@@ -28,27 +28,16 @@ class _MapState extends State<Map> {
   CameraPosition _cameraPosition;
   GoogleMapController _controller;
   TextEditingController locationController = TextEditingController();
-
-  // String latitude, longitude;
-
   Set<Marker> _markers = Set();
 
-  //LatLng _mainLocation;
 
   Future getCurrentLocation() async {
 
-
-
     List<Placemark> placemark = await placemarkFromCoordinates(widget.latitude, widget.longitude);
 
-    print("lat**${widget.latitude}***${widget.longitude}");
     setState(() {
       latlong = new LatLng(widget.latitude, widget.longitude);
-      // latitude = widget.latitude.toString();
-      // longitude = widget.longitude.toString();
-      //_mainLocation = latlong;
-      print(widget.latitude);
-      print(widget.longitude);
+
       _cameraPosition = CameraPosition(target: latlong, zoom: 15.0, bearing: 0);
       if (_controller != null)
         _controller

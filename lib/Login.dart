@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/SendOtp.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:eshop/Home.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
@@ -13,7 +11,7 @@ import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
-import 'SignUp.dart';
+
 
 class Login extends StatefulWidget {
   @override
@@ -27,7 +25,6 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   String countryName;
   FocusNode passFocus, monoFocus = FocusNode();
 
-  bool _isClickable = true;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   bool visible = false;
   String password,
@@ -72,11 +69,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  _fieldFocusChange(
-      BuildContext context, FocusNode currentFocus, FocusNode nextFocus) {
-    currentFocus.unfocus();
-    FocusScope.of(context).requestFocus(nextFocus);
-  }
+
 
   Future<Null> _playAnimation() async {
     try {
@@ -202,7 +195,9 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     return Expanded(
       flex: 4,
       child: Center(
-        child: new Image.asset('assets/images/homelogo.png', ),
+        child: new Image.asset(
+          'assets/images/homelogo.png',
+        ),
       ),
     );
   }
@@ -244,7 +239,6 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         onSaved: (String value) {
           mobile = value;
         },
-
         decoration: InputDecoration(
           prefixIcon: Icon(
             Icons.call_outlined,
@@ -394,8 +388,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
             key: _formkey,
             child: Card(
               elevation: 0.5,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
               margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -417,7 +411,6 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-                 
     return Scaffold(
         key: _scaffoldKey,
         body: _isNetworkAvail

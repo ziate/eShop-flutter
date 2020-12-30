@@ -122,7 +122,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       else
         selectedType = 3;
 
-      print("isdefault**${item.isDefault}***$area**$city");
       checkedDefault = item.isDefault == "1" ? true : false;
     } else {
       getCurrentLoc();
@@ -195,7 +194,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   bool validateAndSave() {
     final form = _formkey.currentState;
 
-    print("lat***$latitude***$longitude");
 
     form.save();
     if (form.validate()) {
@@ -443,7 +441,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       controller: pincodeC,
       style: Theme.of(context).textTheme.subtitle2.copyWith(color: fontColor),
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      //validator: validatePincode,
       onSaved: (String value) {
         pincode = value;
       },
@@ -476,7 +473,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***Cities**$headers***${response.body.toString()}');
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -494,7 +490,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   }
 
   Future<void> getArea(String city, bool clear) async {
-    print("selectedcityforarea:$city");
+
     try {
       var data = {
         ID: city,
@@ -504,7 +500,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       await post(getAreaByCityApi, body: data, headers: headers)
           .timeout(Duration(seconds: timeOut));
 
-      print('response***Area****${response.body.toString()}');
+
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
@@ -601,14 +597,12 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       _isProgress=true;
     });
 
-    print("index***********${widget.index}");
+
     try {
       var data = {
         USER_ID: CUR_USERID,
         NAME: name,
         MOBILE: mobile,
-        // ALT_MOBNO: altMob,
-        // LANDMARK: landmark,
         PINCODE: pincode,
         CITY_ID: city,
         AREA_ID: area,
@@ -622,7 +616,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       };
       if (widget.update) data[ID] = addressList[widget.index].id;
 
-      print('response******param--${data.toString()}');
+
       Response response = await post(
           widget.update ? updateAddressApi : getAddAddressApi,
           body: data,
@@ -630,7 +624,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
-      print('response***UpdateUser**$headers***${response.body.toString()}');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
 
@@ -797,7 +791,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           dense: true,
           onChanged: (newValue) {
             setState(() {
-              print("value***$newValue");
               checkedDefault = newValue;
             });
           },

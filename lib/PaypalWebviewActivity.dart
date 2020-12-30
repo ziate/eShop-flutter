@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/String.dart';
@@ -18,31 +17,19 @@ class PaypalWebview extends StatefulWidget {
 }
 
 class StatePayPalWebview extends State<PaypalWebview> {
-  // String mainurl, from, amount, detail;
   String message = "";
-
   bool isloading = false;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final Completer<WebViewController> _controller =
   Completer<WebViewController>();
 
-  @override
-  void initState() {
-    // print("paypalurl--$mainurl");
-    //mainurl = mainurl + "&hash=" + Constant.CreatesJwt("paypal");
-  }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: BlankBar(),
         body:
-        //isloading ? Center(child: new CircularProgressIndicator(),) :
         Stack(
           children: <Widget>[
             WebView(
@@ -80,16 +67,8 @@ class StatePayPalWebview extends State<PaypalWebview> {
                     });
                     List<String> testdata = responseurl.split("&");
                     for (String data in testdata) {
-                      print("==id=====--${data}");
                       if (data.split("=")[0].toLowerCase() == "tx") {
                         String txid = data.split("=")[1];
-                        //print("==id=********=$data===$txid");
-
-                        /*   if (from == Constant.lblWallet) {
-                          AddMoneyToWallet();
-                        } else
-                          SetTransactionData(txid, "Paypal");*/
-
                         CUR_CART_COUNT = "0";
 
                         Navigator.pushAndRemoveUntil(

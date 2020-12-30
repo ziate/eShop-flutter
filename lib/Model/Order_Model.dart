@@ -65,9 +65,9 @@ class Order_Model {
     var order=(parsedJson[ORDER_ITEMS] as List);
     if (order == null || order.isEmpty) return null;
     else
-   itemList = order
-        .map((data) => new OrderItem.fromJson(data))
-        .toList();
+      itemList = order
+          .map((data) => new OrderItem.fromJson(data))
+          .toList();
     String date = parsedJson[DATE_ADDED];
     date = DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
     List<String> lStatus = [];

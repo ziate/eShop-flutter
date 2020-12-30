@@ -63,9 +63,6 @@ shadow() {
 placeHolder(double height) {
   return AssetImage(
     'assets/images/placeholder.png',
-    //height: height,
-   // width: double.maxFinite,
-
   );
 }
 
@@ -86,11 +83,13 @@ getAppBar(String title, BuildContext context) {
         child: Card(
           elevation: 0,
           child: InkWell(
-            borderRadius:  BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(4),
             onTap: () => Navigator.of(context).pop(),
             child: Center(
-              //padding: const EdgeInsets.all(5),
-              child: Icon(Icons.keyboard_arrow_left, color: primary,),
+              child: Icon(
+                Icons.keyboard_arrow_left,
+                color: primary,
+              ),
             ),
           ),
         ),
@@ -103,7 +102,6 @@ getAppBar(String title, BuildContext context) {
       ),
     ),
     backgroundColor: white,
-    // elevation: ,
   );
 }
 
@@ -135,52 +133,6 @@ noIntDec(BuildContext context) {
   );
 }
 
-/*appBtn(String ttl,AnimationController btnCntrl,Animation btnSqeez,Function performFunc) {
- title=ttl;
- btnAnim=btnSqeez;
- btnFunc=performFunc;
-
-  return
-    new AnimatedBuilder(
-      builder: _buildBtnAnimation,
-      animation: btnCntrl,
-    );
-}
-
-
-Widget _buildBtnAnimation(BuildContext context, Widget child) {
-  return CupertinoButton(
-    child: Container(
-      width: btnAnim.value,
-      height: 45,
-      alignment: FractionalOffset.center,
-      decoration: new BoxDecoration(
-        gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [primaryLight2, primaryLight3],
-            stops: [0, 1]),
-
-        borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
-      ),
-      child: btnAnim.value > 75.0
-          ? Text(title,
-          textAlign: TextAlign.center,
-          style: Theme
-              .of(context)
-              .textTheme
-              .headline6
-              .copyWith(color: white, fontWeight: FontWeight.normal))
-          : new CircularProgressIndicator(
-        valueColor: new AlwaysStoppedAnimation<Color>(white),
-      ),
-    ),
-
-    onPressed: () {
-    btnFunc();
-    },
-  );
-}*/
 
 Widget showCircularProgress(bool _isProgress, Color color) {
   if (_isProgress) {
@@ -221,7 +173,6 @@ Future<void> clearUserSession() async {
   CUR_CART_COUNT = "";
   CUR_BALANCE = '';
 
-
   await prefs.clear();
 }
 
@@ -230,7 +181,6 @@ Future<void> saveUserDetail(
     String name,
     String email,
     String mobile,
-    // String countrycode,
     String city,
     String area,
     String address,
@@ -244,7 +194,6 @@ Future<void> saveUserDetail(
   waitList.add(prefs.setString(USERNAME, name));
   waitList.add(prefs.setString(EMAIL, email));
   waitList.add(prefs.setString(MOBILE, mobile));
-  //waitList.add(prefs.setString(COUNTRY_CODE, countrycode));
   waitList.add(prefs.setString(CITY, city));
   waitList.add(prefs.setString(AREA, area));
   waitList.add(prefs.setString(ADDRESS, address));
@@ -258,82 +207,82 @@ Future<void> saveUserDetail(
 
 String validateUserName(String value) {
   if (value.isEmpty) {
-    return "Username is Required";
+    return USER_REQUIRED;
   }
   if (value.length <= 1) {
-    return "Username should be 2 character long";
+    return USER_LENGTH;
   }
   return null;
 }
 
 String validateMob(String value) {
   if (value.isEmpty) {
-    return "Mobile number required";
+    return MOB_REQUIRED ;
   }
-  if (value.length <= 9) {
-    return "Please enter valid mobile number";
+  if (value.length < 9) {
+    return VALID_MOB;
   }
   return null;
 }
 
 String validateCountryCode(String value) {
   if (value.isEmpty) {
-    return "Country Code required";
+    return COUNTRY_REQUIRED;
   }
   if (value.length <= 0) {
-    return "valid country code";
+    return VALID_COUNTRY;
   }
   return null;
 }
 
 String validatePass(String value) {
   if (value.length == 0)
-    return "Password is Required";
+    return PWD_REQUIRED;
   else if (value.length <= 5)
-    return "Your password should be  more then 6 char long";
+    return PWD_LENGTH;
   else
     return null;
 }
 
 String validateAltMob(String value) {
-  if (value.isNotEmpty) if (value.length <= 9) {
-    return "Please enter valid mobile number";
+  if (value.isNotEmpty) if (value.length <9) {
+    return VALID_MOB;
   }
   return null;
 }
 
 String validateField(String value) {
   if (value.length == 0)
-    return "This Field is Required";
+    return FIELD_REQUIRED;
   else
     return null;
 }
 
 String validatePincodeOptional(String value) {
   if (value.isNotEmpty) if (!RegExp(r'^[1-9][0-9]{5}$').hasMatch(value))
-    return "Please enter valid pincode";
+    return VALID_PIN;
   else
     return null;
 }
 
 String validatePincode(String value) {
   if (value.length == 0)
-    return "Pincode is Required";
+    return PIN_REQUIRED;
   else if (!RegExp(r'^[1-9][0-9]{5}$').hasMatch(value))
-    return "Please enter valid pincode";
+    return VALID_PIN;
   else
     return null;
 }
 
 String validateEmail(String value) {
   if (value.length == 0) {
-    return "Email is Required";
+    return EMAIL_REQUIRED ;
   } else if (!RegExp(
           r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
           r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
           r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
       .hasMatch(value)) {
-    return 'Please enter a valid email Address';
+    return VALID_EMAIL;
   } else {
     return null;
   }

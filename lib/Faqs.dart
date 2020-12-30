@@ -1,14 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Model/Faqs_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
-
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -41,8 +37,6 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   bool isLoadingmore = true;
   ScrollController controller = new ScrollController();
 
-  // String firstHalf;
-  //String secondHalf;
 
   @override
   void initState() {
@@ -134,88 +128,86 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   _showForm() {
     return Padding(
         padding: EdgeInsets.all(10.0),
-        child:
-
-    _isLoading?shimmer():ListView.builder(
-          controller: controller,
-          itemCount: faqs_list.length,
-          physics: BouncingScrollPhysics(),
-          itemBuilder: (context, index) {
-            return (index == faqs_list.length && isLoadingmore)
-                ? Center(child: CircularProgressIndicator())
-                : listItem(index);
-          },
-        ));
+        child: _isLoading
+            ? shimmer()
+            : ListView.builder(
+                controller: controller,
+                itemCount: faqs_list.length,
+                physics: BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return (index == faqs_list.length && isLoadingmore)
+                      ? Center(child: CircularProgressIndicator())
+                      : listItem(index);
+                },
+              ));
   }
 
   listItem(int index) {
     return Card(
         elevation: 0,
         child: InkWell(
-          borderRadius:  BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(4),
           onTap: () {
-              setState(() {
-                selectedIndex = index;
-                flag = !flag;
-              });
-            },
+            setState(() {
+              selectedIndex = index;
+              flag = !flag;
+            });
+          },
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
-                          faqs_list[index].question,
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              .copyWith(color: lightBlack),
-                        )),
-                    selectedIndex != index
-                        || flag? Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                            child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0),
-                                child: Text(
-                                  faqs_list[index].answer,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
-                                      .copyWith(
-                                      color: black.withOpacity(0.7)),
-                                  maxLines: 1,
-                                  overflow:TextOverflow.ellipsis,
-                                ))),
-                        Icon(Icons.keyboard_arrow_down)
-                      ],
-                    )
-                        : Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-
-                              child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: Text(
-                                    faqs_list[index].answer,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .subtitle2
-                                        .copyWith(
-                                        color:
-                                        black.withOpacity(0.7)),
-                                  ))),
-                          Icon(Icons.keyboard_arrow_up)
-                        ]),
-                  ]),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        faqs_list[index].question,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            .copyWith(color: lightBlack),
+                      )),
+                  selectedIndex != index || flag
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                                child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Text(
+                                      faqs_list[index].answer,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subtitle2
+                                          .copyWith(
+                                              color: black.withOpacity(0.7)),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ))),
+                            Icon(Icons.keyboard_arrow_down)
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                              Expanded(
+                                  child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0),
+                                      child: Text(
+                                        faqs_list[index].answer,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle2
+                                            .copyWith(
+                                                color: black.withOpacity(0.7)),
+                                      ))),
+                              Icon(Icons.keyboard_arrow_up)
+                            ]),
+                ]),
           ),
         ));
   }
@@ -228,7 +220,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
             .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print('response***Faqs**$headers***${response.body.toString()}');
+
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {

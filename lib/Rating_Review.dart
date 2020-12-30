@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
@@ -127,7 +126,6 @@ class StateRate extends State<RatingReview> {
         itemCount: reviewList[i].imgList.length,
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
-       // physics: BouncingScrollPhysics(),
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.only(right: 10,bottom: 5.0,top: 5),
@@ -136,7 +134,6 @@ class StateRate extends State<RatingReview> {
                 Navigator.push(
                     context,
                     PageRouteBuilder(
-                      //transitionDuration: Duration(seconds: 1),
                       pageBuilder: (_, __, ___) => ProductPreview(
                           pos: index,
                           secPos: 0,
@@ -154,7 +151,6 @@ class StateRate extends State<RatingReview> {
                     image: NetworkImage(reviewList[i].imgList[index]),
                     height: 50.0,
                     width: 50.0,
-
                     placeholder: placeHolder(50),
                   ),
                 ),
