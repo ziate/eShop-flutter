@@ -17,7 +17,7 @@ class User {
       latitude,
       longitude,
       user_id,
-      name;
+      name,deliveryCharge,freeAmt;
 
   List<String> imgList;
   String id, date, comment, rating;
@@ -52,12 +52,15 @@ class User {
       this.imgList,
       this.isDefault,
       this.state,
+        this.deliveryCharge,
+        this.freeAmt,
       this.country});
 
   factory User.forReview(Map<String, dynamic> parsedJson) {
     String date = parsedJson['data_added'];
     var allSttus = parsedJson['images'];
     List<String> item=[];
+
     for (String i in allSttus) item.add(i);
 
     date = DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
@@ -112,6 +115,8 @@ class User {
         user_id: parsedJson[USER_ID],
         name: parsedJson[NAME],
         type: parsedJson[TYPE],
+        deliveryCharge: parsedJson[DEL_CHARGES],
+        freeAmt: parsedJson[FREE_AMT],
         isDefault: parsedJson[ISDEFAULT]);
   }
 }

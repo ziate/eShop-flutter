@@ -37,6 +37,7 @@ class StateRate extends State<RatingReview> {
     controller.addListener(_scrollListener);
     super.initState();
   }
+
   _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
@@ -44,11 +45,12 @@ class StateRate extends State<RatingReview> {
         setState(() {
           isLoadingmore = true;
 
-             if (offset < total) getReview();
+          if (offset < total) getReview();
         });
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,77 +62,71 @@ class StateRate extends State<RatingReview> {
   }
 
   Widget _review() {
-
-
-   return ListView.separated(
+    return ListView.separated(
         shrinkWrap: true,
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-       controller: controller,
-       itemCount: (offset < total)
-           ? reviewList.length + 1
-           : reviewList.length,
-       // physics: BouncingScrollPhysics(),
+        controller: controller,
+        itemCount: (offset < total) ? reviewList.length + 1 : reviewList.length,
+        // physics: BouncingScrollPhysics(),
         separatorBuilder: (BuildContext context, int index) => Divider(),
         itemBuilder: (context, index) {
-
-           return
-            (index == reviewList.length && isLoadingmore)
-                ? Center(child: CircularProgressIndicator())
-                :
-            Card(
-              elevation: 0,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        reviewList[index].username,
-                        style: TextStyle(fontWeight: FontWeight.w400),
-                      ),
-                      Spacer(),
-                      Text(
-                        reviewList[index].date,
-                        style: TextStyle(color: lightBlack, fontSize: 11),
-                      )
-                    ],
-                  ),
-                  RatingBarIndicator(
-                    rating: double.parse(reviewList[index].rating),
-                    itemBuilder: (context, index) => Icon(
-                      Icons.star,
-                      color: Colors.amber,
+          return (index == reviewList.length && isLoadingmore)
+              ? Center(child: CircularProgressIndicator())
+              : Card(
+                  elevation: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              reviewList[index].username,
+                              style: TextStyle(fontWeight: FontWeight.w400),
+                            ),
+                            Spacer(),
+                            Text(
+                              reviewList[index].date,
+                              style: TextStyle(color: lightBlack, fontSize: 11),
+                            )
+                          ],
+                        ),
+                        RatingBarIndicator(
+                          rating: double.parse(reviewList[index].rating),
+                          itemBuilder: (context, index) => Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                          itemCount: 5,
+                          itemSize: 12.0,
+                          direction: Axis.horizontal,
+                        ),
+                        reviewList[index].comment != null
+                            ? Text(reviewList[index].comment ?? '')
+                            : Container(),
+                        reviewImage(index)
+                      ],
                     ),
-                    itemCount: 5,
-                    itemSize: 12.0,
-                    direction: Axis.horizontal,
                   ),
-                  reviewList[index].comment != null
-                      ? Text(reviewList[index].comment ?? '')
-                      : Container(),
-                  reviewImage(index)
-                ],
-          ),
-              ),
-            );
+                );
         });
   }
+
   reviewImage(int i) {
     return Container(
-      height: 50,
+      height: reviewList[i].imgList.length>0 ?50:0,
       child: ListView.builder(
         itemCount: reviewList[i].imgList.length,
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(right: 10,bottom: 5.0,top: 5),
+            padding: const EdgeInsets.only(right: 10, bottom: 5.0, top: 5),
             child: InkWell(
-              onTap: (){
+              onTap: () {
                 Navigator.push(
                     context,
                     PageRouteBuilder(
@@ -138,13 +134,13 @@ class StateRate extends State<RatingReview> {
                           pos: index,
                           secPos: 0,
                           index: 0,
-                          id:  "$index${reviewList[i].id}",
+                          id: "$index${reviewList[i].id}",
                           imgList: reviewList[i].imgList,
                           list: true),
                     ));
               },
               child: Hero(
-                tag:'$index${reviewList[i].id}',
+                tag: '$index${reviewList[i].id}',
                 child: new ClipRRect(
                   borderRadius: BorderRadius.circular(5.0),
                   child: new FadeInImage(
@@ -161,6 +157,7 @@ class StateRate extends State<RatingReview> {
       ),
     );
   }
+
   Future<void> getReview() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
@@ -177,7 +174,7 @@ class StateRate extends State<RatingReview> {
 
         var getdata = json.decode(response.body);
 
-       bool error = getdata["error"];
+        bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           total = int.parse(getdata["total"]);

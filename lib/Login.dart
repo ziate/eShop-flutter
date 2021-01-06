@@ -157,8 +157,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     var data = {MOBILE: mobile, PASSWORD: password};
 
     Response response =
-        await post(getUserLoginApi, body: data, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+    await post(getUserLoginApi, body: data, headers: headers)
+        .timeout(Duration(seconds: timeOut));
     var getdata = json.decode(response.body);
 
     bool error = getdata["error"];
@@ -323,8 +323,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
                     context,
                     MaterialPageRoute(
                         builder: (context) => SendOtp(
-                              title: FORGOT_PASS_TITLE,
-                            )));
+                          title: FORGOT_PASS_TITLE,
+                        )));
               },
               child: Text(FORGOT_PASSWORD_LBL,
                   style: Theme.of(context).textTheme.subtitle2.copyWith(
@@ -337,7 +337,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   termAndPolicyTxt() {
     return Padding(
       padding:
-          EdgeInsets.only(bottom: 20.0, left: 25.0, right: 25.0, top: 10.0),
+      EdgeInsets.only(bottom: 20.0, left: 25.0, right: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -415,16 +415,16 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         key: _scaffoldKey,
         body: _isNetworkAvail
             ? Container(
-                color: lightWhite,
-                padding: EdgeInsets.only(
-                  bottom: 20.0,
-                ),
-                child: Column(
-                  children: <Widget>[
-                    _subLogo(),
-                    _expandedBottomView(),
-                  ],
-                ))
+            color: lightWhite,
+            padding: EdgeInsets.only(
+              bottom: 20.0,
+            ),
+            child: Column(
+              children: <Widget>[
+                _subLogo(),
+                _expandedBottomView(),
+              ],
+            ))
             : noInternet(context));
   }
 }

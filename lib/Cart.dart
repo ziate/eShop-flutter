@@ -28,7 +28,8 @@ double totalPrice = 0, oriPrice = 0, delCharge = 0, taxAmt = 0, taxPer = 0;
 
 class StateCart extends State<Cart> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  bool _isProgress = false, _isLoading = true;
+  bool _isProgress = false;
+  bool _isCartLoad = true, _isSaveLoad = true;
   HomePage home;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
@@ -69,7 +70,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
   Future<Null> _refresh() {
     setState(() {
-      _isLoading = true;
+      _isCartLoad = true;
+      _isSaveLoad = true;
     });
     totalPrice = 0;
     oriPrice = 0;
@@ -581,7 +583,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         String msg = getdata["message"];
         if (!error) {
           var data = getdata["data"];
-          delCharge = double.parse(getdata[DEL_CHARGE]);
+
+          if (ISFLAT_DEL) delCharge = double.parse(getdata[DEL_CHARGE]);
+
           oriPrice = double.parse(getdata[SUB_TOTAL]);
           taxAmt = double.parse(getdata[TAX_AMT]);
           taxPer = double.parse(getdata[TAX_PER]);
@@ -596,7 +600,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           if (msg != 'Cart Is Empty !') setSnackbar(msg);
         }
         setState(() {
-          _isLoading = false;
+          _isCartLoad = false;
         });
         setState(() {});
       } on TimeoutException catch (_) {
@@ -634,7 +638,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           if (msg != 'Cart Is Empty !') setSnackbar(msg);
         }
         setState(() {
-          _isLoading = false;
+          _isSaveLoad = false;
         });
         setState(() {});
       } on TimeoutException catch (_) {
@@ -683,7 +687,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           _controller[index].text = qty;
           totalPrice = 0;
           taxAmt = double.parse(data[TAX_AMT]);
-          totalPrice = delCharge + oriPrice + taxAmt;
+          totalPrice = oriPrice + taxAmt;
         } else {
           setSnackbar(msg);
         }
@@ -742,14 +746,14 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             oriPrice = oriPrice - price;
 
             totalPrice = 0;
-            totalPrice = delCharge + oriPrice + taxAmt;
+            totalPrice = oriPrice + taxAmt;
           } else {
             cartList.add(curItem);
             saveLaterList.removeWhere((item) => item.varientId == id);
             oriPrice = oriPrice + price;
 
             totalPrice = 0;
-            totalPrice = delCharge + oriPrice + taxAmt;
+            totalPrice = oriPrice + taxAmt;
           }
         } else {
           setSnackbar(msg);
@@ -812,7 +816,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           }
           taxAmt = double.parse(data[TAX_AMT]);
           totalPrice = 0;
-          totalPrice = delCharge + oriPrice + taxAmt;
+          totalPrice = oriPrice + taxAmt;
         } else {
           setSnackbar(msg);
         }
@@ -847,7 +851,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   _showContent() {
-    return _isLoading
+    return _isCartLoad
         ? shimmer()
         : cartList.length == 0 && saveLaterList.length == 0
             ? cartEmpty()
@@ -861,37 +865,44 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                             onRefresh: _refresh,
                             child: SingleChildScrollView(
                               physics: const AlwaysScrollableScrollPhysics(),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: cartList.length,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemBuilder: (context, index) {
-                                      return listItem(index);
-                                    },
-                                  ),
-                                  saveLaterList.length > 0
-                                      ? Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            SAVEFORLATER_BTN,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .subtitle1,
-                                          ),
-                                        )
-                                      : Container(),
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: saveLaterList.length,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemBuilder: (context, index) {
-                                      return saveLaterItem(index);
-                                    },
-                                  ),
-                                ],
+                              child: Container(
+                                constraints: BoxConstraints(
+                                    maxHeight:
+                                        MediaQuery.of(context).size.height *
+                                            0.8),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: cartList.length,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemBuilder: (context, index) {
+                                        return listItem(index);
+                                      },
+                                    ),
+                                    saveLaterList.length > 0
+                                        ? Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              SAVEFORLATER_BTN,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle1,
+                                            ),
+                                          )
+                                        : Container(),
+                                    ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: saveLaterList.length,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemBuilder: (context, index) {
+                                        return saveLaterItem(index);
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ))),
                   ),
@@ -999,10 +1010,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                     .headline6
                     .copyWith(color: white, fontWeight: FontWeight.normal))),
         onPressed: () {
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (BuildContext context) => Home()),
-              ModalRoute.withName('/'));
+
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                '/home', (Route<dynamic> route) => false);
         },
       ),
     );

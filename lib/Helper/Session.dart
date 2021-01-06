@@ -133,7 +133,6 @@ noIntDec(BuildContext context) {
   );
 }
 
-
 Widget showCircularProgress(bool _isProgress, Color color) {
   if (_isProgress) {
     return Center(
@@ -217,7 +216,7 @@ String validateUserName(String value) {
 
 String validateMob(String value) {
   if (value.isEmpty) {
-    return MOB_REQUIRED ;
+    return MOB_REQUIRED;
   }
   if (value.length < 9) {
     return VALID_MOB;
@@ -245,7 +244,7 @@ String validatePass(String value) {
 }
 
 String validateAltMob(String value) {
-  if (value.isNotEmpty) if (value.length <9) {
+  if (value.isNotEmpty) if (value.length < 9) {
     return VALID_MOB;
   }
   return null;
@@ -276,7 +275,7 @@ String validatePincode(String value) {
 
 String validateEmail(String value) {
   if (value.length == 0) {
-    return EMAIL_REQUIRED ;
+    return EMAIL_REQUIRED;
   } else if (!RegExp(
           r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
           r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
@@ -369,11 +368,10 @@ Widget shimmer() {
 }
 
 String getToken() {
-  final claimSet =
-      new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
-  String jwtKey = "68f05dec6014f68e760c5c5fa3e31bcf391a2e10";
-  String token = issueJwtHS256(claimSet, jwtKey);
+  final claimSet = new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
 
+  String token = issueJwtHS256(claimSet, jwtKey);
+print("token***$token");
   return token;
 }
 

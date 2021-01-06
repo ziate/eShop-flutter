@@ -119,7 +119,8 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                         key: _refreshIndicatorKey,
                         onRefresh: _refresh,
                         child: ListView.builder(
-                          shrinkWrap: true,
+
+                         // shrinkWrap: true,
                           controller: controller,
                           itemCount: (offset < total)
                               ? notiList.length + 1
@@ -193,29 +194,30 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
         Response response =
             await post(getNotificationApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
+if(response.statusCode==200) {
+  var getdata = json.decode(response.body);
+  bool error = getdata["error"];
+  String msg = getdata["message"];
 
-        var getdata = json.decode(response.body);
-        bool error = getdata["error"];
-        String msg = getdata["message"];
+  if (!error) {
+    total = int.parse(getdata["total"]);
 
-        if (!error) {
-          total = int.parse(getdata["total"]);
+    if ((offset) < total) {
+      tempList.clear();
+      var data = getdata["data"];
+      tempList = (data as List)
+          .map((data) => new Notification_Model.fromJson(data))
+          .toList();
 
-          if ((offset) < total) {
-            tempList.clear();
-            var data = getdata["data"];
-            tempList = (data as List)
-                .map((data) => new Notification_Model.fromJson(data))
-                .toList();
+      notiList.addAll(tempList);
 
-            notiList.addAll(tempList);
-
-            offset = offset + perPage;
-          }
-        } else {
-          if (msg != "Products Not Found !") setSnackbar(msg);
-          isLoadingmore = false;
-        }
+      offset = offset + perPage;
+    }
+  } else {
+    if (msg != "Products Not Found !") setSnackbar(msg);
+    isLoadingmore = false;
+  }
+}
         if (mounted)
           setState(() {
             _isLoading = false;

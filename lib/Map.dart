@@ -116,7 +116,7 @@ class _MapState extends State<Map> {
                 RaisedButton(
                   child: Text("Update Location"),
                   onPressed: () {
-                    print("updated***$latlong");
+
 
                     if(widget.from==ADDADDRESS)
                     {

@@ -72,37 +72,38 @@ class StateCat extends State<AllCategory> {
       Response response =
           await post(getCatApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
-
-      var getdata = json.decode(response.body);
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
-
-        catList =
-            (data as List).map((data) => new Product.fromCat(data)).toList();
-
+      if (response.statusCode == 200) {
+        var getdata = json.decode(response.body);
+        bool error = getdata["error"];
+        String msg = getdata["message"];
         if (!error) {
-          total = int.parse(getdata["total"]);
+          var data = getdata["data"];
 
-          if ((offset) < total) {
-            tempList.clear();
-            var data = getdata["data"];
-            tempList = (data as List)
-                .map((data) => new Product.fromCat(data))
-                .toList();
-            catList.addAll(tempList);
+          catList =
+              (data as List).map((data) => new Product.fromCat(data)).toList();
 
-            offset = offset + perPage;
+          if (!error) {
+            total = int.parse(getdata["total"]);
+
+            if ((offset) < total) {
+              tempList.clear();
+              var data = getdata["data"];
+              tempList = (data as List)
+                  .map((data) => new Product.fromCat(data))
+                  .toList();
+              catList.addAll(tempList);
+
+              offset = offset + perPage;
+            }
           }
+        } else {
+          isLoadingmore = false;
+          setSnackbar(msg);
         }
-      } else {
-        isLoadingmore = false;
-        setSnackbar(msg);
+        setState(() {
+          _isCatLoading = false;
+        });
       }
-      setState(() {
-        _isCatLoading = false;
-      });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {

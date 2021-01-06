@@ -218,18 +218,19 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
       try {
         Response response = await post(getFaqsApi, headers: headers)
             .timeout(Duration(seconds: timeOut));
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
 
-        var getdata = json.decode(response.body);
-
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
-          faqs_list = (data as List)
-              .map((data) => new Faqs_Model.fromJson(data))
-              .toList();
-        } else {
-          setSnackbar(msg);
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
+            faqs_list = (data as List)
+                .map((data) => new Faqs_Model.fromJson(data))
+                .toList();
+          } else {
+            setSnackbar(msg);
+          }
         }
         setState(() {
           _isLoading = false;

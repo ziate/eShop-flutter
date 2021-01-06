@@ -413,7 +413,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
         Response response =
             await post(manageCartApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
+        if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -433,7 +433,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
         setState(() {
           _isProgress = false;
         });
-      } on TimeoutException catch (_) {
+      }} on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
         setState(() {
           _isProgress = false;
@@ -482,7 +482,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
         Response response =
             await post(manageCartApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
+        if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -508,7 +508,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
         setState(() {
           _isProgress = false;
         });
-      } on TimeoutException catch (_) {
+      }} on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
         setState(() {
           _isProgress = false;
@@ -587,12 +587,11 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                 key: _refreshIndicatorKey,
                 onRefresh: _refresh,
                 child: ListView.builder(
-                  shrinkWrap: true,
+                  //shrinkWrap: true,
                   controller: controller,
                   itemCount:
                       (offset < total) ? favList.length + 1 : favList.length,
-                  physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics()),
+                  physics: AlwaysScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     return (index == favList.length && isLoadingmore)
                         ? Center(child: CircularProgressIndicator())

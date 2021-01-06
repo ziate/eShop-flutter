@@ -12,6 +12,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'Model/User.dart';
+import 'Cart.dart';
 
 class ManageAddress extends StatefulWidget {
   final bool home;
@@ -30,7 +31,8 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   List<RadioModel> addModel = new List<RadioModel>();
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
@@ -92,6 +94,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
                 if (_isNetworkAvail) {
                   addressList.clear();
                   addModel.clear();
+                  if (!ISFLAT_DEL) delCharge = 0;
                   _getAddress();
                 } else {
                   await buttonController.reverse();
@@ -105,7 +108,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> _getAddress() async {
+  Future<Null> _getAddress() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -129,6 +132,12 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
             if (addressList[i].isDefault == "1") {
               selectedAddress = i;
               selAddress = addressList[i].id;
+              if (!ISFLAT_DEL) {
+                if (totalPrice < double.parse(addressList[i].freeAmt))
+                  delCharge = double.parse(addressList[i].deliveryCharge);
+                else
+                  delCharge = 0;
+              }
             }
           }
 
@@ -143,18 +152,17 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
         _isNetworkAvail = false;
       });
     }
+    return null;
   }
 
   Future<Null> _refresh() {
-    if (widget.home) {
-      setState(() {
-        _isLoading = true;
-      });
-      _getAddress();
-    } else {
-      addAddressModel();
-    }
-    return null;
+    setState(() {
+      _isLoading = true;
+    });
+    addressList.clear();
+    addModel.clear();
+    if (!ISFLAT_DEL) delCharge = 0;
+    return _getAddress();
   }
 
   @override
@@ -179,7 +187,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
                                       key: _refreshIndicatorKey,
                                       onRefresh: _refresh,
                                       child: ListView.builder(
-                                          shrinkWrap: true,
+                                          // shrinkWrap: true,
                                           physics:
                                               const AlwaysScrollableScrollPhysics(),
                                           itemCount: addressList.length,
@@ -249,7 +257,6 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
 
         for (User i in addressList) {
           i.isDefault = "0";
-
         }
 
         addressList[index].isDefault = "1";
@@ -265,21 +272,36 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
   }
 
   addressItem(int index) {
-    if (addressList[index].isDefault == "1") {
-      selectedAddress = index;
-      selAddress = addressList[index].id;
-    }
-
-    if (addressList.length == 1) selAddress = addressList[0].id;
-
     return Card(
         elevation: 0.2,
         child: new InkWell(
           borderRadius: BorderRadius.circular(4),
           onTap: () {
             setState(() {
+              if (!ISFLAT_DEL) {
+                if (oriPrice + taxAmt <
+                    double.parse(addressList[selectedAddress].freeAmt)) {
+                  delCharge =
+                      double.parse(addressList[selectedAddress].deliveryCharge);
+                } else
+                  delCharge = 0;
+                 totalPrice = totalPrice - delCharge;
+              }
+
               selectedAddress = index;
               selAddress = addressList[index].id;
+
+              if (!ISFLAT_DEL) {
+                if (totalPrice <
+                    double.parse(addressList[selectedAddress].freeAmt)) {
+                  delCharge =
+                      double.parse(addressList[selectedAddress].deliveryCharge);
+                } else
+                  delCharge = 0;
+
+                totalPrice = totalPrice + delCharge;
+                    }
+
               addModel.forEach((element) => element.isSelected = false);
               addModel[index].isSelected = true;
             });
@@ -303,7 +325,33 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
-          selAddress = "";
+          if (!ISFLAT_DEL) {
+            if (addressList.length != 1) {
+              if (oriPrice + taxAmt <
+                  double.parse(addressList[selectedAddress].freeAmt)) {
+                delCharge =
+                    double.parse(addressList[selectedAddress].deliveryCharge);
+              } else
+                delCharge = 0;
+                totalPrice = totalPrice - delCharge;
+
+              selectedAddress = 0;
+              selAddress = addressList[0].id;
+
+              if (totalPrice <
+                  double.parse(addressList[selectedAddress].freeAmt)) {
+                delCharge =
+                    double.parse(addressList[selectedAddress].deliveryCharge);
+              } else
+                delCharge = 0;
+
+              totalPrice = totalPrice + delCharge;
+             } else
+              selAddress = null;
+          } else {
+            selAddress = null;
+          }
+
           addressList.removeWhere((item) => item.id == addressList[index].id);
 
           addModel.clear();
@@ -328,7 +376,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
     for (int i = 0; i < addressList.length; i++) {
       addModel.add(RadioModel(
           isSelected: i == selectedAddress ? true : false,
-          name: addressList[i].name + "," + addressList[i].mobile,
+          name: addressList[i].name + ", " + addressList[i].mobile,
           add: addressList[i].address +
               ", " +
               addressList[i].area +
@@ -338,7 +386,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
               addressList[i].state +
               ", " +
               addressList[i].country +
-              "," +
+              ", " +
               addressList[i].pincode,
           addItem: addressList[i],
           show: !widget.home,

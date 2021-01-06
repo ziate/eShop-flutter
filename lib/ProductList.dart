@@ -304,7 +304,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-
+        if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -336,7 +336,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           setState(() {
             _isLoading = false;
           });
-      } on TimeoutException catch (_) {
+      } }on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
         setState(() {
           _isLoading = false;

@@ -240,7 +240,6 @@ class StateHome extends State<Home> {
                 )
         ],
         onTap: (int index) {
-          print("current=====$index");
           setState(() {
             curSelected = index;
           });
@@ -1177,7 +1176,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       Response response =
           await post(setFavoriteApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
-
+      if (response.statusCode == 200) {
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
@@ -1191,7 +1190,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       setState(() {
         sectionList[secPos].productList[index].isFavLoading = false;
       });
-    } on TimeoutException catch (_) {
+    } }on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
   }
@@ -1231,7 +1230,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     try {
       Response response = await post(getSliderApi, headers: headers)
           .timeout(Duration(seconds: timeOut));
-
+      if (response.statusCode == 200) {
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
@@ -1248,7 +1247,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-    } on TimeoutException catch (_) {
+    }} on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
     return null;
@@ -1262,7 +1261,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       Response response =
           await post(getCatApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
-
+      if (response.statusCode == 200) {
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
@@ -1274,12 +1273,12 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             (data as List).map((data) => new Product.fromCat(data)).toList();
       } else {
         setSnackbar(msg);
-      }
+      }}
       if (mounted)
         setState(() {
           _isCatLoading = false;
         });
-    } on TimeoutException catch (_) {
+     }on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       if (mounted)
         setState(() {
@@ -1296,28 +1295,28 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       Response response =
           await post(getSectionApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
+      if (response.statusCode == 200) {
+        var getdata = json.decode(response.body);
 
-      var getdata = json.decode(response.body);
-
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
-        sectionList.clear();
-        sectionList = (data as List)
-            .map((data) => new Section_Model.fromJson(data))
-            .toList();
-      } else {
-        setSnackbar(msg);
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+          sectionList.clear();
+          sectionList = (data as List)
+              .map((data) => new Section_Model.fromJson(data))
+              .toList();
+        } else {
+          setSnackbar(msg);
+        }
       }
-
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted)
           setState(() {
             _isCatLoading = false;
           });
       });
-    } on TimeoutException catch (_) {
+    }on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
         _isCatLoading = false;
@@ -1335,9 +1334,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       Response response = await post(getSettingApi,
               body: CUR_USERID != null ? parameter : null, headers: headers)
           .timeout(Duration(seconds: timeOut));
-
+      if (response.statusCode == 200) {
       var getdata = json.decode(response.body);
-      print('response***setting**cartcount***${response.body.toString()}');
+
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -1345,18 +1344,23 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         CUR_CURRENCY = data["currency"];
         RETURN_DAYS = data['max_product_return_days'];
         MAX_ITEMS = data["max_items_cart"];
-        print("max items*****$MAX_ITEMS");
+        String del=data["area_wise_delivery_charge"];
+        if(del=="0")
+          ISFLAT_DEL=true;
+        else
+          ISFLAT_DEL=false;
+
         CUR_CART_COUNT =
             getdata["data"]["user_data"][0]["cart_total_items"].toString();
 
         CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
 
-        print("Cart Count*****$CUR_CART_COUNT");
+
         widget.updateHome();
       } else {
         setSnackbar(msg);
       }
-    } on TimeoutException catch (_) {
+    } }on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
   }
@@ -1365,20 +1369,20 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     try {
       Response response = await post(getOfferImageApi, headers: headers)
           .timeout(Duration(seconds: timeOut));
+      if (response.statusCode == 200) {
+        var getdata = json.decode(response.body);
 
-      var getdata = json.decode(response.body);
-
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
-        offerImages.clear();
-        offerImages =
-            (data as List).map((data) => new Model.fromSlider(data)).toList();
-      } else {
-        setSnackbar(msg);
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+          offerImages.clear();
+          offerImages =
+              (data as List).map((data) => new Model.fromSlider(data)).toList();
+        } else {
+          setSnackbar(msg);
+        }
       }
-
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted)
           setState(() {
@@ -1400,16 +1404,25 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     return GestureDetector(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(7.0),
-        child: CachedNetworkImage(
-          imageUrl: slider.image,
+        child: /*NetworkImage(
+          url: slider.image,
           fit: BoxFit.fill,
           height: height,
           width: double.maxFinite,
           placeholder: (context, url) => Image.asset(
             "assets/images/sliderph.png",
           ),
+        ),*/
+        FadeInImage(
+          fadeInDuration: Duration(milliseconds: 150),
+          image: NetworkImage(slider.image),
+          height: height,
+          width: double.maxFinite,
+          fit: BoxFit.fill,
+          placeholder: AssetImage(
+            "assets/images/sliderph.png",
+          ),
         ),
-
       ),
       onTap: () async {
         if (homeSliderList[_curSlider].type == "products") {

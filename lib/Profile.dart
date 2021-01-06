@@ -269,7 +269,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     http.Response response = await http
         .post(getUpdateUserApi, body: data, headers: headers)
         .timeout(Duration(seconds: timeOut));
-
+    if (response.statusCode == 200) {
     var getdata = json.decode(response.body);
 
     bool error = getdata["error"];
@@ -297,7 +297,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     } else {
       setSnackbar(msg);
     }
-  }
+  }}
 
   _imgFromGallery() async {
     File image = await FilePicker.getFile(type: FileType.image);

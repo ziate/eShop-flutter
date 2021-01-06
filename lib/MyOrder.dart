@@ -215,7 +215,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
         if (CUR_USERID != null) {
            var parameter = {USER_ID: CUR_USERID};
 
-
           Response response =
               await post(getOrderApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));

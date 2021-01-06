@@ -67,11 +67,8 @@ class StateSuccess extends State<OrderSuccess> {
                             style: Theme.of(context).textTheme.headline6.copyWith(
                                 color: white, fontWeight: FontWeight.normal))),
                     onPressed: () {
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (BuildContext context) => Home()),
-                          ModalRoute.withName('/'));
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/home', (Route<dynamic> route) => false);
                     },
                   ),
                 )

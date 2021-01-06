@@ -25,11 +25,13 @@ class Payment extends StatefulWidget {
     return StatePayment();
   }
 }
+List<Model> timeSlotList = [];
+String allowDay;
 
 class StatePayment extends State<Payment> with TickerProviderStateMixin {
   bool _isLoading = true;
-  String allowDay, startingDate;
-  List<Model> timeSlotList = [];
+  String  startingDate;
+
   bool cod, paypal, razorpay, paumoney, paystack, flutterwave;
   List<RadioModel> timeModel = new List<RadioModel>();
   List<RadioModel> payModel = new List<RadioModel>();
@@ -60,6 +62,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _getdateTime();
+    timeSlotList.length=0;
+
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
     buttonSqueezeanimation = new Tween(
@@ -358,57 +362,63 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         Response response =
         await post(getSettingApi, body: parameter, headers: headers)
             .timeout(Duration(seconds: timeOut));
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
 
-        var getdata = json.decode(response.body);
-        print('response***setting**${response.body.toString()}');
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
-          var time_slot = data["time_slot_config"];
-          allowDay = time_slot["allowed_days"];
-          isTimeSlot = time_slot["is_time_slots_enabled"] == "1" ? true : false;
-          startingDate = time_slot["starting_date"];
-          var timeSlots = data["time_slots"];
-          timeSlotList = (timeSlots as List)
-              .map((timeSlots) => new Model.fromTimeSlot(timeSlots))
-              .toList();
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
+            var time_slot = data["time_slot_config"];
+            allowDay = time_slot["allowed_days"];
+            isTimeSlot =
+            time_slot["is_time_slots_enabled"] == "1" ? true : false;
+            startingDate = time_slot["starting_date"];
+            var timeSlots = data["time_slots"];
+            timeSlotList = (timeSlots as List)
+                .map((timeSlots) => new Model.fromTimeSlot(timeSlots))
+                .toList();
 
-          if (timeSlotList.length > 0) {
-            for (int i = 0; i < timeSlotList.length; i++) {
-              timeModel.add(new RadioModel(
-                  isSelected: i == selectedTime ? true : false, name: timeSlotList[i].name, img: ''));
+            if (timeSlotList.length > 0) {
+              for (int i = 0; i < timeSlotList.length; i++) {
+                timeModel.add(new RadioModel(
+                    isSelected: i == selectedTime ? true : false,
+                    name: timeSlotList[i].name,
+                    img: ''));
+              }
             }
+
+            var payment = data["payment_method"];
+            cod = payment["cod_method"] == "1" ? true : false;
+            paypal = payment["paypal_payment_method"] == "1" ? true : false;
+            paumoney =
+            payment["payumoney_payment_method"] == "1" ? true : false;
+            flutterwave =
+            payment["flutterwave_payment_method"] == "1" ? true : false;
+            razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
+            paystack = payment["paystack_payment_method"] == "1" ? true : false;
+
+            if (razorpay) razorpayId = payment["razorpay_key_id"];
+            if (paystack) {
+              paystackId = payment["paystack_key_id"];
+
+              PaystackPlugin.initialize(publicKey: paystackId);
+            }
+
+            for (int i = 0; i < paymentMethodList.length; i++) {
+              String img = '';
+
+              payModel.add(RadioModel(
+                  isSelected: i == selectedMethod ? true : false,
+                  name: paymentMethodList[i],
+                  img: paymentIconList[i]));
+            }
+
+
+          } else {
+            // setSnackbar(msg);
           }
-
-          var payment = data["payment_method"];
-          cod = payment["cod_method"] == "1" ? true : false;
-          paypal = payment["paypal_payment_method"] == "1" ? true : false;
-          paumoney = payment["payumoney_payment_method"] == "1" ? true : false;
-          flutterwave =
-          payment["flutterwave_payment_method"] == "1" ? true : false;
-          razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
-          paystack = payment["paystack_payment_method"] == "1" ? true : false;
-
-          if (razorpay) razorpayId = payment["razorpay_key_id"];
-          if (paystack) {
-            paystackId = payment["paystack_key_id"];
-
-            PaystackPlugin.initialize(publicKey: paystackId);
-          }
-
-          for (int i = 0; i < paymentMethodList.length; i++) {
-            String img = '';
-
-            payModel.add(RadioModel(
-                isSelected: i == selectedMethod ? true : false, name: paymentMethodList[i], img:  paymentIconList[i]));
-          }
-
-          print("days***$allowDay");
-        } else {
-          // setSnackbar(msg);
         }
-
         setState(() {
           _isLoading = false;
         });

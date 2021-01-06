@@ -766,9 +766,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           _selectedIndex.insert(i, j);
         }
       }
+
       if (_selectedIndex.length == i) _selectedIndex.insert(i, null);
     }
-
+    print("selected****${_selectedIndex.toString()}");
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -935,6 +936,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       }
                     }
 
+                  String value= index<=att.length && _selectedIndex[index]!=null? att[_selectedIndex[index]]:VAR_SEL;
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
@@ -942,8 +944,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                         children: <Widget>[
                           chips.length > 0
                               ? Text(
-                                  widget.model.attributeList[index].name +
-                                      "$VAR_SEL",
+                                  widget.model.attributeList[index].name +" : "+value,
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 )
                               : Container(),
@@ -1082,7 +1083,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         Response response =
             await post(getRatingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
+print("review****${response.body.toString()}");
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -1501,7 +1502,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         : ListView.separated(
             shrinkWrap: true,
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            itemCount: reviewList.length > 2 ? 2 : reviewList.length,
+            itemCount: reviewList.length >= 2 ? 2 : reviewList.length,
             //physics: BouncingScrollPhysics(),
             separatorBuilder: (BuildContext context, int index) => Divider(),
             itemBuilder: (context, index) {
@@ -1745,7 +1746,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   reviewImage(int i) {
     return Container(
-      height: 50,
+      height: reviewList[i].imgList.length>0 ?50:0,
       child: ListView.builder(
         itemCount: reviewList[i].imgList.length,
         scrollDirection: Axis.horizontal,

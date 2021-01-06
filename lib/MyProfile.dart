@@ -351,11 +351,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                         ),
                         onPressed: () {
                           clearUserSession();
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) => Home()),
-                              ModalRoute.withName('/'));
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/home', (Route<dynamic> route) => false);
                         })
                   ],
                 );

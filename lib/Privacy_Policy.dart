@@ -136,14 +136,15 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
         Response response =
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
-        var getdata = json.decode(response.body);
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          privacy = getdata["data"][type].toString();
-        } else {
-          setSnackbar(msg);
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            privacy = getdata["data"][type].toString();
+          } else {
+            setSnackbar(msg);
+          }
         }
         setState(() {
           _isLoading = false;

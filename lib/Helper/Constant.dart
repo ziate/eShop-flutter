@@ -13,9 +13,10 @@ final String baseUrl = 'http://eshop.wrteam.in/app/v1/api/';
 
 final int timeOut = 50;
 const int perPage =10;
+final String jwtKey = "68f05dec6014f68e760c5c5fa3e31bcf391a2e10";
 
 //label title and message that shown in app
-final String internetMsg = 'Check Internet Connection';
+
 final String somethingMSg = 'Something went wrong. Please try again after some time';
 final String profileCom = 'Please complete your profile to place the order';
 

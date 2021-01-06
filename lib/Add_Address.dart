@@ -19,6 +19,7 @@ import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/String.dart';
 import 'Model/User.dart';
+import 'Cart.dart';
 
 class AddAddress extends StatefulWidget {
   final bool update;
@@ -44,8 +45,9 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       altMob,
       type = "Home",
       isDefault;
-  bool checkedDefault = false;
-  bool _isProgress=false;
+  bool checkedDefault = false, isArea = true;
+  bool _isProgress = false;
+
   //bool _isLoading = false;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -130,8 +132,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: lightWhite,
@@ -186,14 +186,12 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
-
       checkNetwork();
     }
   }
 
   bool validateAndSave() {
     final form = _formkey.currentState;
-
 
     form.save();
     if (form.validate()) {
@@ -313,6 +311,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       onChanged: (String newValue) {
         setState(() {
           city = newValue;
+          isArea = false;
         });
         getArea(city, true);
       },
@@ -342,12 +341,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           AREASELECT_LBL,
         ),
         value: area,
-        onChanged: (String newValue) {
-          setState(() {
-            area = newValue;
-          });
-          print(area);
-        },
+        onChanged: isArea
+            ? (newValue) {
+                setState(() {
+                  area = newValue;
+                });
+              }
+            : null,
         items: areaList.map((User user) {
           return DropdownMenuItem<String>(
             value: user.id,
@@ -408,14 +408,14 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   context,
                   MaterialPageRoute(
                       builder: (context) => Map(
-                        latitude: latitude == null
-                            ? position.latitude
-                            : double.parse(latitude),
-                        longitude: longitude == null
-                            ? position.longitude
-                            : double.parse(longitude),
-                        from: ADDADDRESS,
-                      )));
+                            latitude: latitude == null
+                                ? position.latitude
+                                : double.parse(latitude),
+                            longitude: longitude == null
+                                ? position.longitude
+                                : double.parse(longitude),
+                            from: ADDADDRESS,
+                          )));
               setState(() {});
               List<Placemark> placemark = await placemarkFromCoordinates(
                   double.parse(latitude), double.parse(longitude));
@@ -483,23 +483,21 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      setState(() {});
+      if (mounted) setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
   }
 
   Future<void> getArea(String city, bool clear) async {
-
     try {
       var data = {
         ID: city,
       };
 
       Response response =
-      await post(getAreaByCityApi, body: data, headers: headers)
-          .timeout(Duration(seconds: timeOut));
-
+          await post(getAreaByCityApi, body: data, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -515,8 +513,10 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      if(mounted)
-        setState(() {});
+      if (mounted)
+        setState(() {
+          isArea = true;
+        });
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
@@ -592,11 +592,9 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   }
 
   Future<void> addNewAddress() async {
-
     setState(() {
-      _isProgress=true;
+      _isProgress = true;
     });
-
 
     try {
       var data = {
@@ -616,51 +614,103 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       };
       if (widget.update) data[ID] = addressList[widget.index].id;
 
-
       Response response = await post(
-          widget.update ? updateAddressApi : getAddAddressApi,
-          body: data,
-          headers: headers)
+              widget.update ? updateAddressApi : getAddAddressApi,
+              body: data,
+              headers: headers)
           .timeout(Duration(seconds: timeOut));
+      if (response.statusCode == 200) {
+        var getdata = json.decode(response.body);
 
-      var getdata = json.decode(response.body);
+        bool error = getdata["error"];
+        String msg = getdata["message"];
 
-      bool error = getdata["error"];
-      String msg = getdata["message"];
+        await buttonController.reverse();
+        if (!error) {
+          var data = getdata["data"];
 
-      await buttonController.reverse();
-      if (!error) {
-        var data = getdata["data"];
+          if (widget.update) {
+            if (checkedDefault.toString() == "true" ||
+                addressList.length == 1) {
+              for (User i in addressList) {
+                i.isDefault = "0";
+              }
 
-        if (widget.update) {
-          User value = new User.fromAddress(data[0]);
-          addressList[widget.index] = value;
-        } else {
-          User value = new User.fromAddress(data[0]);
-          addressList.add(value);
+              addressList[widget.index].isDefault = "1";
 
-        }
+              if (!ISFLAT_DEL) {
+                if (oriPrice + taxAmt <
+                    double.parse(addressList[selectedAddress].freeAmt)) {
+                  delCharge =
+                      double.parse(addressList[selectedAddress].deliveryCharge);
+                } else
+                  delCharge = 0;
 
-        if (checkedDefault.toString() == "true") {
-          for (User i in addressList) {
-            i.isDefault = "0";
-            print("after***before**${i.name}***${i.isDefault}");
+                totalPrice = totalPrice - delCharge;
+              }
+
+              User value = new User.fromAddress(data[0]);
+              addressList[widget.index] = value;
+
+              selectedAddress = widget.index;
+              selAddress = addressList[widget.index].id;
+
+              if (!ISFLAT_DEL) {
+                if (totalPrice <
+                    double.parse(addressList[selectedAddress].freeAmt)) {
+                  delCharge =
+                      double.parse(addressList[selectedAddress].deliveryCharge);
+                } else
+                  delCharge = 0;
+                totalPrice = totalPrice + delCharge;
+                 }
+            }
+          } else {
+            User value = new User.fromAddress(data[0]);
+            addressList.add(value);
+
+            if (checkedDefault.toString() == "true" ||
+                addressList.length == 1) {
+              for (User i in addressList) {
+                i.isDefault = "0";
+              }
+
+              addressList[widget.index].isDefault = "1";
+
+              if (!ISFLAT_DEL && addressList.length != 1) {
+                if (oriPrice + taxAmt <
+                    double.parse(addressList[selectedAddress].freeAmt)) {
+                  delCharge =
+                      double.parse(addressList[selectedAddress].deliveryCharge);
+                } else
+                  delCharge = 0;
+
+                totalPrice = totalPrice - delCharge;
+              }
+
+              selectedAddress = widget.index;
+              selAddress = addressList[widget.index].id;
+
+              if (!ISFLAT_DEL) {
+                if (totalPrice <
+                    double.parse(addressList[selectedAddress].freeAmt)) {
+                  delCharge =
+                      double.parse(addressList[selectedAddress].deliveryCharge);
+                } else
+                  delCharge = 0;
+                totalPrice = totalPrice + delCharge;
+                }
+            }
           }
-          selectedAddress = null;
-          addressList[widget.index].isDefault = "1";
-          selectedAddress = widget.index;
+
+          setState(() {
+            _isProgress = false;
+          });
+          Navigator.of(context).pop();
+        } else {
+          setSnackbar(msg);
         }
-
-
-
-        setState(() {
-          _isProgress=false;
-        });
-        Navigator.of(context).pop();
-      } else {
-        setSnackbar(msg);
       }
-      setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
@@ -701,7 +751,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   activeColor: fontColor,
                   value: 1,
                   onChanged: (val) {
-                    print("val***$val");
+
                     setState(() {
                       selectedType = val;
                       type = HOME;
@@ -794,8 +844,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               checkedDefault = newValue;
             });
           },
-          title: Text(DEFAULT_ADD,style: Theme.of(context).textTheme.subtitle2.copyWith(color: lightBlack,fontWeight: FontWeight.bold),),
-
+          title: Text(
+            DEFAULT_ADD,
+            style: Theme.of(context)
+                .textTheme
+                .subtitle2
+                .copyWith(color: lightBlack, fontWeight: FontWeight.bold),
+          ),
         ));
   }
 
@@ -811,8 +866,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                     child: Column(
                       children: [
                         Padding(
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
                           child: Card(
                             elevation: 0,
                             child: Padding(
@@ -837,9 +892,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                             ),
                           ),
                         ),
-
                         defaultAdd(),
-
                       ],
                     ),
                   ),
@@ -857,8 +910,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                       ),
                       child: Text(SAVE_LBL,
                           style: Theme.of(context).textTheme.subtitle1.copyWith(
-                            color: white,
-                          ))),
+                                color: white,
+                              ))),
                   onTap: () {
                     validateAndSubmit();
                   },
@@ -877,7 +930,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     longitude = position.longitude.toString();
 
     List<Placemark> placemark = await placemarkFromCoordinates(
-        double.parse(latitude), double.parse(longitude));
+        double.parse(latitude), double.parse(longitude),
+        localeIdentifier: "en");
 
     state = placemark[0].administrativeArea;
     country = placemark[0].country;

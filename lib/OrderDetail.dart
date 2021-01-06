@@ -663,7 +663,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         initialRating: 0,
         minRating: 1,
         direction: Axis.horizontal,
-        allowHalfRating: true,
+        allowHalfRating: false,
         itemCount: 5,
         itemSize: 32,
         itemPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
@@ -1329,13 +1329,12 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
 
               var targetFileName = "Invoice_${widget.model.id}";
 
-              print("path****$targetPath");
+
               var generatedPdfFile =
                   await FlutterHtmlToPdf.convertFromHtmlContent(
                       widget.model.invoice, targetPath, targetFileName);
 
-              print("pdf generated**********$generatedPdfFile");
-              _scaffoldKey.currentState.showSnackBar(new SnackBar(
+               _scaffoldKey.currentState.showSnackBar(new SnackBar(
                 content: new Text(
                   "$INVOICE_PATH $targetFileName",
                   textAlign: TextAlign.center,

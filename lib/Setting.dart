@@ -113,7 +113,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     Response response =
         await post(getUpdateUserApi, body: data, headers: headers)
             .timeout(Duration(seconds: timeOut));
-
+    if (response.statusCode == 200) {
     var getdata = json.decode(response.body);
 
     bool error = getdata["error"];
@@ -124,7 +124,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     } else {
       setSnackbar(msg);
     }
-  }
+  }}
 
   Widget noInternet(BuildContext context) {
     return Center(

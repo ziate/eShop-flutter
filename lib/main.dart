@@ -1,4 +1,3 @@
-
 import 'package:country_code_picker/country_localizations.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Constant.dart';
@@ -9,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'Helper/PushNotificationService.dart';
 
-
 import 'Home.dart';
 
 void main() async {
@@ -19,7 +17,6 @@ void main() async {
     statusBarColor: lightWhite, // status bar color
   ));
   runApp(MyApp());
-
 }
 
 class MyApp extends StatelessWidget {
@@ -40,9 +37,7 @@ class MyApp extends StatelessWidget {
         CountryLocalizations.delegate,
       ],
       title: appName,
-      theme:
-
-      ThemeData(
+      theme: ThemeData(
           primarySwatch: primary_app,
           cursorColor: primary,
           fontFamily: 'opensans',
@@ -52,7 +47,7 @@ class MyApp extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
               subtitle1:
-              TextStyle(color: fontColor, fontWeight: FontWeight.bold))),
+                  TextStyle(color: fontColor, fontWeight: FontWeight.bold))),
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {

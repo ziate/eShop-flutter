@@ -249,10 +249,9 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                   : GridView.count(
                       padding: EdgeInsets.only(top: 5, left: 10, right: 10),
                       crossAxisCount: 2,
-                      shrinkWrap: true,
+                     // shrinkWrap: true,
                       childAspectRatio: 1,
-                      physics: const BouncingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics()),
+                      physics:  AlwaysScrollableScrollPhysics(),
                       mainAxisSpacing: 2,
                       crossAxisSpacing: 2,
                       controller: controller,
