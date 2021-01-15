@@ -25,7 +25,7 @@ dependencies:
   share: ^0.6.5+4
   http: ^0.12.2
   shared_preferences: ^0.5.12
-  connectivity: ^0.4.8+6
+  connectivity: 2.0.2
   jaguar_jwt: ^2.1.6
   flutter_local_notifications: 3.0.2
   path_provider: 1.6.10
@@ -42,7 +42,7 @@ dependencies:
   google_maps_flutter: 1.0.6
   geolocator: ^6.1.13
   location: 3.0.2
-  file_picker: 1.9.0+1
+  file_picker: ^2.1.5+1
   shimmer: 1.1.2
   geocoding: 1.0.5
   razorpay_flutter: 1.2.2
@@ -50,11 +50,12 @@ dependencies:
   flutter_paystack: ^1.0.4+1
   flutter_html_to_pdf: ^0.5.2
   #flutter_full_pdf_viewer: ^1.0.6
-  #downloads_path_provider: ^0.1.0
+  downloads_path_provider: ^0.1.0
   permission_handler: ^5.0.1+1
-  ext_storage: ^1.0.3
-  app_review: ^2.0.1
-  #open_file: ^3.0.3
+
+  in_app_review: ^1.0.0
+  firebase_dynamic_links: ^0.6.3
+  open_file: ^3.0.3
 
 
 

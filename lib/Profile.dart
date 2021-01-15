@@ -300,7 +300,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   }}
 
   _imgFromGallery() async {
-    File image = await FilePicker.getFile(type: FileType.image);
+   /* File image = await FilePicker.getFile(type: FileType.image);
 
     if (image != null) {
 
@@ -308,10 +308,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         _isLoading = true;
       });
       setProfilePic(image);
-    }
+    }*/
 
     ///for file picker greater version
-    /*  FilePickerResult result = await FilePicker.platform.pickFiles();
+      FilePickerResult result = await FilePicker.platform.pickFiles();
     if(result != null) {
       File image = File(result.files.single.path);
       if (image != null) {
@@ -323,7 +323,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       }
     } else {
       // User canceled the picker
-    }*/
+    }
   }
 
   Future<void> getCities() async {

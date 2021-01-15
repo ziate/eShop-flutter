@@ -2,12 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Model/Order_Model.dart';
-import 'package:ext_storage/ext_storage.dart';
+
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import 'package:flutter/rendering.dart';
 
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart';
+import 'package:open_file/open_file.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'Helper/AppBtn.dart';
@@ -1214,18 +1216,22 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   _imgFromGallery() async {
-    files = await FilePicker.getMultiFile(type: FileType.image);
+   /* files = await FilePicker.getMultiFile(type: FileType.image);
     if (files != null) {
       setState(() {});
-    }
+    }*/
 
     ///for ios uncomment below code and update file picker library version in pubspec.yaml
-    /*  FilePickerResult result = await FilePicker.platform.pickFiles(allowMultiple: true);
+      FilePickerResult result = await FilePicker.platform.pickFiles(allowMultiple: true);
     if(result != null) {
       files= result.paths.map((path) => File(path)).toList();
+      setState(() {
+
+      });
     } else {
       // User canceled the picker
-    }*/
+    }
+
   }
 
   Future<void> setRating(
@@ -1320,13 +1326,13 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
               });
               var targetPath;
 
-              if (Platform.isIOS) {
+             /* if (Platform.isIOS) {
                 Directory target = await getApplicationDocumentsDirectory();
                 targetPath = target.path.toString();
-              } else
-                targetPath = await ExtStorage.getExternalStoragePublicDirectory(
-                    ExtStorage.DIRECTORY_DOWNLOADS);
-
+              } else {*/
+                Directory  downloadsDirectory = await DownloadsPathProvider.downloadsDirectory;
+                targetPath = downloadsDirectory.path.toString();
+              //}
               var targetFileName = "Invoice_${widget.model.id}";
 
 
@@ -1340,12 +1346,12 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                   textAlign: TextAlign.center,
                   style: TextStyle(color: black),
                 ),
-            /*    action: SnackBarAction(label: VIEW, onPressed: () async {
+                action: SnackBarAction(label: VIEW, onPressed: () async {
                 final result = await OpenFile.open(generatedPdfFile.path);
                   setState(() {
                     //_openResult = "type=${result.type}  message=${result.message}";
                   });
-                }),*/
+                }),
                 backgroundColor: white,
                 elevation: 1.0,
               ));

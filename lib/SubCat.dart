@@ -939,6 +939,9 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
+
+        print("response***${response.body.toString()}");
+
         if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -977,15 +980,19 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           isLoadingmore = false;
         }
 
-
+        setState(() {
+          _isLoading = false;
+        });
 
         subList[cur].isFromProd = true;
         _views[cur] = createTabContent(cur, subList);
 
-      }
-        setState(() {
-          _isLoading = false;
-        });
+      }else{
+          setState(() {
+            _isLoading = false;
+          });
+        }
+
 
       }on TimeoutException catch (_) {
         setSnackbar(somethingMSg);

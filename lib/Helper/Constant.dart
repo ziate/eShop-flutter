@@ -7,9 +7,11 @@ final String androidLink='https://play.google.com/store/apps/details?id=';
 
 final String iosPackage = 'com.wrteam.eshop';
 final String iosLink = 'your ios link here';
+final String appStoreId = 'your appp store id here';
 
 
 final String baseUrl = 'http://eshop.wrteam.in/app/v1/api/';
+
 
 final int timeOut = 50;
 const int perPage =10;

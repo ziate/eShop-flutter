@@ -335,9 +335,15 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
             LIMIT: perPage.toString(),
             OFFSET: offset.toString(),
           };
+
+          print("param***$parameter");
+
+
           Response response =
               await post(getFavApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
+
+          print("response***${response.body.toString()}");
 
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
@@ -555,7 +561,33 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
       });
     }
   }
+/*  Future<void> createDynamicLink(
+      int index, int secPos, bool list, String id) async {
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix: 'https://eshopwrteamin.page.link',
+      link: Uri.parse(
+          'https://eshop.com/?index=$index&secPos=$secPos&list=$list&id=$id'),
+      androidParameters: AndroidParameters(
+        packageName: 'com.wrteam.eshop',
+        minimumVersion: 1,
+      ),
+      iosParameters: IosParameters(
+        bundleId: 'com.wrteam.eshop ',
+        minimumVersion: '1',
+        appStoreId: '',
+      ),
+    );
 
+    final Uri longDynamicUrl = await parameters.buildUrl();
+    final ShortDynamicLink shortenedLink =
+    await DynamicLinkParameters.shortenUrl(
+      longDynamicUrl,
+      new DynamicLinkParametersOptions(
+          shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
+    );
+
+    Share.share(shortenedLink.shortUrl.toString(), subject: appName);
+  }*/
   _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {

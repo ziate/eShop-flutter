@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/All_Category.dart';
@@ -10,7 +10,7 @@ import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/PushNotificationService.dart';
 import 'package:eshop/MyProfile.dart';
 import 'package:flutter/rendering.dart';
-
+import 'package:eshop/ProductList.dart';
 import 'package:eshop/Product_Detail.dart';
 import 'package:eshop/SectionList.dart';
 
@@ -20,7 +20,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart';
 
-import 'package:eshop/ProductList.dart';
 import 'package:shimmer/shimmer.dart';
 import 'Cart.dart';
 import 'Helper/AppBtn.dart';
@@ -64,7 +63,7 @@ class StateHome extends State<Home> {
   @override
   void initState() {
     super.initState();
-
+    initDynamicLinks();
     home = new HomePage(updateHome);
     fragments = [
       HomePage(updateHome),
@@ -311,6 +310,89 @@ class StateHome extends State<Home> {
       context,
       MaterialPageRoute(builder: (context) => MyApp()),
     );
+  }
+
+  void initDynamicLinks() async {
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      final Uri deepLink = dynamicLink?.link;
+
+      if (deepLink != null) {
+        if (deepLink.queryParameters.length > 0) {
+          int index = int.parse(deepLink.queryParameters['index']);
+
+          int secPos = int.parse(deepLink.queryParameters['secPos']);
+
+          String id = deepLink.queryParameters['id'];
+
+          String list = deepLink.queryParameters['list'];
+
+          getProduct(id, index, secPos, list == "true" ? true : false);
+        }
+      }
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
+  }
+
+  Future<void> getProduct(String id, int index, int secPos, bool list) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        print("product****${id}");
+
+        var parameter = {
+          ID: id,
+        };
+
+        // if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+        Response response =
+            await post(getProductApi, headers: headers, body: parameter)
+                .timeout(Duration(seconds: timeOut));
+
+        print('response***product*$parameter');
+        print('response***product*${response.body.toString()}');
+
+        var getdata = json.decode(response.body);
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+          print("data****$data");
+          List<Product> items = new List<Product>();
+
+          items =
+              (data as List).map((data) => new Product.fromJson(data)).toList();
+
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => ProductDetail(
+                    index: list ? int.parse(id) : index,
+                    updateHome: updateHome,
+                    updateParent: updateParent,
+                    model: list
+                        ? items[0]
+                        : sectionList[secPos].productList[index],
+                    secPos: secPos,
+                    list: list,
+                  )));
+        } else {
+          if (msg != "Products Not Found !") setSnackbar(msg);
+        }
+      } on TimeoutException catch (_) {
+        setSnackbar(somethingMSg);
+      }
+    } else {
+      {
+        setState(() {
+          _isNetworkAvail = false;
+        });
+      }
+    }
+  }
+
+  updateParent() {
+    setState(() {});
   }
 }
 
@@ -1177,20 +1259,21 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           await post(setFavoriteApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
-      var getdata = json.decode(response.body);
+        var getdata = json.decode(response.body);
 
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        sectionList[secPos].productList[index].isFav = "1";
-      } else {
-        setSnackbar(msg);
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          sectionList[secPos].productList[index].isFav = "1";
+        } else {
+          setSnackbar(msg);
+        }
+
+        setState(() {
+          sectionList[secPos].productList[index].isFavLoading = false;
+        });
       }
-
-      setState(() {
-        sectionList[secPos].productList[index].isFavLoading = false;
-      });
-    } }on TimeoutException catch (_) {
+    } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
   }
@@ -1231,23 +1314,24 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       Response response = await post(getSliderApi, headers: headers)
           .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
-      var getdata = json.decode(response.body);
+        var getdata = json.decode(response.body);
 
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
 
-        homeSliderList =
-            (data as List).map((data) => new Model.fromSlider(data)).toList();
+          homeSliderList =
+              (data as List).map((data) => new Model.fromSlider(data)).toList();
 
-        pages = homeSliderList.map((slider) {
-          return _buildImagePageItem(slider);
-        }).toList();
-      } else {
-        setSnackbar(msg);
+          pages = homeSliderList.map((slider) {
+            return _buildImagePageItem(slider);
+          }).toList();
+        } else {
+          setSnackbar(msg);
+        }
       }
-    }} on TimeoutException catch (_) {
+    } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
     return null;
@@ -1262,23 +1346,24 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           await post(getCatApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
-      var getdata = json.decode(response.body);
+        var getdata = json.decode(response.body);
 
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"];
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
 
-        catList =
-            (data as List).map((data) => new Product.fromCat(data)).toList();
-      } else {
-        setSnackbar(msg);
-      }}
+          catList =
+              (data as List).map((data) => new Product.fromCat(data)).toList();
+        } else {
+          setSnackbar(msg);
+        }
+      }
       if (mounted)
         setState(() {
           _isCatLoading = false;
         });
-     }on TimeoutException catch (_) {
+    } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       if (mounted)
         setState(() {
@@ -1316,7 +1401,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             _isCatLoading = false;
           });
       });
-    }on TimeoutException catch (_) {
+    } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
       setState(() {
         _isCatLoading = false;
@@ -1335,32 +1420,32 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               body: CUR_USERID != null ? parameter : null, headers: headers)
           .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
-      var getdata = json.decode(response.body);
+        var getdata = json.decode(response.body);
 
-      bool error = getdata["error"];
-      String msg = getdata["message"];
-      if (!error) {
-        var data = getdata["data"]["system_settings"][0];
-        CUR_CURRENCY = data["currency"];
-        RETURN_DAYS = data['max_product_return_days'];
-        MAX_ITEMS = data["max_items_cart"];
-        String del=data["area_wise_delivery_charge"];
-        if(del=="0")
-          ISFLAT_DEL=true;
-        else
-          ISFLAT_DEL=false;
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"]["system_settings"][0];
+          CUR_CURRENCY = data["currency"];
+          RETURN_DAYS = data['max_product_return_days'];
+          MAX_ITEMS = data["max_items_cart"];
+          String del = data["area_wise_delivery_charge"];
+          if (del == "0")
+            ISFLAT_DEL = true;
+          else
+            ISFLAT_DEL = false;
 
-        CUR_CART_COUNT =
-            getdata["data"]["user_data"][0]["cart_total_items"].toString();
+          CUR_CART_COUNT =
+              getdata["data"]["user_data"][0]["cart_total_items"].toString();
 
-        CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
+          CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
 
-
-        widget.updateHome();
-      } else {
-        setSnackbar(msg);
+          widget.updateHome();
+        } else {
+          setSnackbar(msg);
+        }
       }
-    } }on TimeoutException catch (_) {
+    } on TimeoutException catch (_) {
       setSnackbar(somethingMSg);
     }
   }
@@ -1404,23 +1489,15 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     return GestureDetector(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(7.0),
-        child: /*NetworkImage(
-          url: slider.image,
-          fit: BoxFit.fill,
+        child: CachedNetworkImage(
+          imageUrl: (slider.image),
           height: height,
           width: double.maxFinite,
+          fit: BoxFit.fill,
           placeholder: (context, url) => Image.asset(
             "assets/images/sliderph.png",
-          ),
-        ),*/
-        FadeInImage(
-          fadeInDuration: Duration(milliseconds: 150),
-          image: NetworkImage(slider.image),
-          height: height,
-          width: double.maxFinite,
-          fit: BoxFit.fill,
-          placeholder: AssetImage(
-            "assets/images/sliderph.png",
+            fit: BoxFit.fill,
+            height: height,
           ),
         ),
       ),

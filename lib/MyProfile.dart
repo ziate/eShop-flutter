@@ -1,9 +1,10 @@
 
-import 'package:app_review/app_review.dart';
+
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Home.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'Faqs.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/Setting.dart';
@@ -29,7 +30,7 @@ class MyProfile extends StatefulWidget {
 class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   String profile, email;
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
-
+  final InAppReview _inAppReview = InAppReview.instance;
   @override
   void initState() {
     getUserDetails();
@@ -280,9 +281,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                   ));
         }else if (title == CUSTOMER_SUPPORT_LBL) {
         } else if (title == RATE_US) {
-          AppReview.requestReview.then((onValue) {
-            print("==========$onValue");
-          });
+
+          _openStoreListing();
         } else if (title == SHARE_APP) {
           var str =
               "$appName\n\n$APPFIND$androidLink$packageName\n\n $IOSLBL\n$iosLink$iosPackage";
@@ -310,6 +310,12 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
       },
     );
   }
+
+  Future<void> _openStoreListing() => _inAppReview.openStoreListing(
+    appStoreId: appStoreId,
+    microsoftStoreId: 'microsoftStoreId',
+  );
+
   logOutDailog() async {
     await showDialog(
         context: context,

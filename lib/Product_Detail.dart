@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/services.dart';
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Rating_Review.dart';
@@ -74,6 +75,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       notificationisgettingdata = false,
       notificationisnodata = false;
   List<Product> productList = [];
+  bool listType = true;
+  var isDarkTheme;
 
   @override
   void initState() {
@@ -129,6 +132,34 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     buttonController.dispose();
     notificationcontroller.dispose();
     super.dispose();
+  }
+
+  Future<void> createDynamicLink(
+      int index, int secPos, bool list, String id) async {
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix: 'https://eshopwrteamin.page.link',
+      link: Uri.parse(
+          'https://eshop.com/?index=$index&secPos=$secPos&list=$list&id=$id'),
+      androidParameters: AndroidParameters(
+        packageName: packageName,
+        minimumVersion: 1,
+      ),
+      iosParameters: IosParameters(
+        bundleId: iosPackage,
+        minimumVersion: '1',
+        appStoreId: appStoreId,
+      ),
+    );
+
+    final Uri longDynamicUrl = await parameters.buildUrl();
+    final ShortDynamicLink shortenedLink =
+        await DynamicLinkParameters.shortenUrl(
+      longDynamicUrl,
+      new DynamicLinkParametersOptions(
+          shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
+    );
+
+    Share.share(shortenedLink.shortUrl.toString(), subject: appName);
   }
 
   Future<Null> _playAnimation() async {
@@ -324,22 +355,12 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                         size: 20,
                                       ),
                                     ),
-                                    onTap: () async {
-                                      var str =
-                                          "${widget.model.name}\n\n$appName\n\nYou can find our app from below url\n\nAndroid:\n"
-                                          "$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
-                                      final response = await get(sliderList[0]);
-
-                                      final Directory temp =
-                                          await getTemporaryDirectory();
-                                      final File imageFile =
-                                          File('${temp.path}/tempImage');
-                                      imageFile
-                                          .writeAsBytesSync(response.bodyBytes);
-                                      Share.shareFiles(
-                                        ['${temp.path}/tempImage'],
-                                        text: str,
-                                      );
+                                    onTap: () {
+                                      createDynamicLink(
+                                          widget.index,
+                                          widget.secPos,
+                                          widget.list,
+                                          widget.model.id);
                                     }),
                               ))),
                       Container(
@@ -601,7 +622,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-       setState(() {
+        setState(() {
           _isLoading = true;
         });
         var parameter = {
@@ -637,7 +658,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         setState(() {
           _isLoading = false;
         });
-
       } on TimeoutException catch (_) {
         setSnackbar(somethingMSg);
       }
@@ -936,7 +956,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       }
                     }
 
-                  String value= index<=att.length && _selectedIndex[index]!=null? att[_selectedIndex[index]]:VAR_SEL;
+                    String value =
+                        index <= att.length && _selectedIndex[index] != null
+                            ? att[_selectedIndex[index]]
+                            : VAR_SEL;
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
@@ -944,7 +967,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                         children: <Widget>[
                           chips.length > 0
                               ? Text(
-                                  widget.model.attributeList[index].name +" : "+value,
+                                  widget.model.attributeList[index].name +
+                                      " : " +
+                                      value,
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 )
                               : Container(),
@@ -1029,7 +1054,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
           var getdata = json.decode(response.body);
 
-         bool error = getdata["error"];
+          bool error = getdata["error"];
           String msg = getdata["message"];
           if (!error) {
             var data = getdata["data"];
@@ -1069,7 +1094,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     }
   }
 
-
   Future<void> getReview() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
@@ -1083,7 +1107,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         Response response =
             await post(getRatingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-print("review****${response.body.toString()}");
+        print("review****${response.body.toString()}");
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -1181,7 +1205,6 @@ print("review****${response.body.toString()}");
           favList.removeWhere((item) =>
               item.productList[0].prVarientList[0].id ==
               widget.model.prVarientList[0].id);
-
         } else {
           setSnackbar(msg);
         }
@@ -1231,7 +1254,6 @@ print("review****${response.body.toString()}");
                     ],
                   ),
                 ),
-
                 reviewList.length > 0
                     ? Card(
                         elevation: 0,
@@ -1629,8 +1651,6 @@ print("review****${response.body.toString()}");
     }
   }
 
-
-
   _otherDetail(int pos) {
     String returnable = widget.model.isReturnable;
     if (returnable == "1")
@@ -1746,7 +1766,7 @@ print("review****${response.body.toString()}");
 
   reviewImage(int i) {
     return Container(
-      height: reviewList[i].imgList.length>0 ?50:0,
+      height: reviewList[i].imgList.length > 0 ? 50 : 0,
       child: ListView.builder(
         itemCount: reviewList[i].imgList.length,
         scrollDirection: Axis.horizontal,
@@ -1821,6 +1841,4 @@ print("review****${response.body.toString()}");
           )
         : Container();
   }
-
-
 }

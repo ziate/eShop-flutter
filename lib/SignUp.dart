@@ -155,6 +155,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         PASSWORD: password,
         COUNTRY_CODE: countrycode
       };
+
+      print("paramter***register***$data");
       Response response =
           await post(getUserSignUpApi, body: data, headers: headers)
               .timeout(Duration(seconds: timeOut));
