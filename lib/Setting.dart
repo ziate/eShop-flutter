@@ -4,15 +4,17 @@ import 'dart:convert';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Privacy_Policy.dart';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 
 import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
 import 'Helper/String.dart';
+import 'Helper/Theme.dart';
+import 'main.dart';
 
 class Setting extends StatefulWidget {
   @override
@@ -26,27 +28,16 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   bool _isNetworkAvail = true;
-  bool _isRight = false;
 
   Animation buttonSqueezeanimation;
 
   AnimationController buttonController;
-  int selectedIndex;
-  List<String> themeList = [SYSTEM_DEFAULT, LIGHT_THEME, DARK_THEME];
-  List<String> languageList = [
-    ENGLISH_LAN,
-    CHINESE_LAN,
-    SPANISH_LAN,
-    HINDI_LAN,
-    ARABIC_LAN,
-    RUSSIAN_LAN,
-    JAPANISE_LAN,
-    GERMAN_LAN
-  ];
 
   @override
   void initState() {
     super.initState();
+
+
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
 
@@ -60,17 +51,9 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         0.150,
       ),
     ));
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _getSavedTheme();
-    });
   }
 
-  _getSavedTheme() async {
-    selectedIndex =
-        themeList.indexOf(await getPrefrence(APP_THEME) ?? SYSTEM_DEFAULT);
-    setState(() {});
-  }
+
 
   Future<Null> _playAnimation() async {
     try {
@@ -84,25 +67,16 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  Future<void> checkNetwork() async {
-    bool avail = await isNetworkAvailable();
-    if (avail) {
-      setUpdateUser();
-    } else {
-      setState(() {
-        _isNetworkAvail = false;
-      });
-    }
-  }
+
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: fontColor),
+        style: TextStyle(color: colors.fontColor),
       ),
-      backgroundColor: lightWhite,
+      backgroundColor: colors.lightWhite,
       elevation: 1.0,
     ));
   }
@@ -114,17 +88,18 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         await post(getUpdateUserApi, body: data, headers: headers)
             .timeout(Duration(seconds: timeOut));
     if (response.statusCode == 200) {
-    var getdata = json.decode(response.body);
+      var getdata = json.decode(response.body);
 
-    bool error = getdata["error"];
-    String msg = getdata["message"];
-    await buttonController.reverse();
-    if (!error) {
-      setSnackbar(USER_UPDATE_MSG);
-    } else {
-      setSnackbar(msg);
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      await buttonController.reverse();
+      if (!error) {
+        setSnackbar(getTranslated(context, 'USER_UPDATE_MSG'));
+      } else {
+        setSnackbar(msg);
+      }
     }
-  }}
+  }
 
   Widget noInternet(BuildContext context) {
     return Center(
@@ -135,7 +110,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -165,7 +140,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
         child: Card(
             elevation: 0,
-            shadowColor: lightWhite,
+            shadowColor: colors.lightWhite,
             child: InkWell(
               borderRadius: BorderRadius.circular(4),
               child: Row(
@@ -174,19 +149,20 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                   Padding(
                       padding: EdgeInsets.all(12.0),
                       child: Text(
-                        CHANGE_PASS_LBL,
+                        getTranslated(context, 'CHANGE_PASS_LBL'),
                         style: Theme.of(this.context)
                             .textTheme
                             .subtitle2
                             .copyWith(
-                                color: lightBlack, fontWeight: FontWeight.bold),
+                                color: colors.lightBlack,
+                                fontWeight: FontWeight.bold),
                       )),
                   Spacer(),
                   Padding(
                       padding: EdgeInsets.only(right: 15.0),
                       child: Icon(
                         Icons.keyboard_arrow_right,
-                        color: primary,
+                        color: colors.primary,
                       )),
                 ],
               ),
@@ -201,7 +177,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
             elevation: 0,
-            shadowColor: lightWhite,
+            shadowColor: colors.lightWhite,
             child: InkWell(
                 borderRadius: BorderRadius.circular(4),
                 child: Row(
@@ -210,12 +186,12 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                     Padding(
                         padding: EdgeInsets.all(12.0),
                         child: Text(
-                          CHANGE_LANGUAUE_LBL,
+                          getTranslated(context, 'CHANGE_LANGUAGE_LBL'),
                           style: Theme.of(this.context)
                               .textTheme
                               .subtitle2
                               .copyWith(
-                                  color: lightBlack,
+                                  color: colors.lightBlack,
                                   fontWeight: FontWeight.bold),
                         )),
                     Spacer(),
@@ -223,12 +199,12 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                         padding: EdgeInsets.only(right: 15.0),
                         child: Icon(
                           Icons.keyboard_arrow_right,
-                          color: primary,
+                          color: colors.primary,
                         )),
                   ],
                 ),
                 onTap: () {
-                  languageDialog();
+               //   languageDialog();
                 })));
   }
 
@@ -237,7 +213,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
             elevation: 0,
-            shadowColor: lightWhite,
+            shadowColor: colors.lightWhite,
             child: InkWell(
                 borderRadius: BorderRadius.circular(4),
                 child: Row(
@@ -246,12 +222,12 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                     Padding(
                         padding: EdgeInsets.all(12.0),
                         child: Text(
-                          CHANGE_THEME_LBL,
+                          getTranslated(context, 'CHANGE_THEME_LBL'),
                           style: Theme.of(this.context)
                               .textTheme
                               .subtitle2
                               .copyWith(
-                                  color: lightBlack,
+                                  color: colors.lightBlack,
                                   fontWeight: FontWeight.bold),
                         )),
                     Spacer(),
@@ -259,12 +235,13 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                         padding: EdgeInsets.only(right: 15.0),
                         child: Icon(
                           Icons.keyboard_arrow_right,
-                          color: primary,
+                          color: colors.primary,
                         )),
                   ],
                 ),
                 onTap: () {
-                  themeDialog();
+
+                //  themeDialog();
                 })));
   }
 
@@ -273,7 +250,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
             elevation: 0,
-            shadowColor: lightWhite,
+            shadowColor: colors.lightWhite,
             child: InkWell(
               borderRadius: BorderRadius.circular(4),
               child: Row(
@@ -281,19 +258,19 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                 children: [
                   Padding(
                       padding: EdgeInsets.all(12.0),
-                      child: Text(PRIVACY,
+                      child: Text(getTranslated(context, 'PRIVACY'),
                           style: Theme.of(this.context)
                               .textTheme
                               .subtitle2
                               .copyWith(
-                                  color: lightBlack,
+                                  color: colors.lightBlack,
                                   fontWeight: FontWeight.bold))),
                   Spacer(),
                   Padding(
                       padding: EdgeInsets.only(right: 15.0),
                       child: Icon(
                         Icons.keyboard_arrow_right,
-                        color: primary,
+                        color: colors.primary,
                       )),
                 ],
               ),
@@ -302,7 +279,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                     context,
                     MaterialPageRoute(
                       builder: (context) => Privacy_Policy(
-                        title: PRIVACY,
+                        title: getTranslated(context, 'PRIVACY'),
                       ),
                     ));
               },
@@ -314,7 +291,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
         margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
         child: Card(
             elevation: 0,
-            shadowColor: lightWhite,
+            shadowColor: colors.lightWhite,
             child: InkWell(
               borderRadius: BorderRadius.circular(4),
               child: Row(
@@ -322,19 +299,19 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                 children: [
                   Padding(
                       padding: EdgeInsets.all(12.0),
-                      child: Text(TERM,
+                      child: Text(getTranslated(context, 'TERM'),
                           style: Theme.of(this.context)
                               .textTheme
                               .subtitle2
                               .copyWith(
-                                  color: lightBlack,
+                                  color: colors.lightBlack,
                                   fontWeight: FontWeight.bold))),
                   Spacer(),
                   Padding(
                       padding: EdgeInsets.only(right: 15.0),
                       child: Icon(
                         Icons.keyboard_arrow_right,
-                        color: primary,
+                        color: colors.primary,
                       )),
                 ],
               ),
@@ -343,266 +320,21 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                     context,
                     MaterialPageRoute(
                       builder: (context) => Privacy_Policy(
-                        title: TERM,
+                        title: getTranslated(context, 'TERM'),
                       ),
                     ));
               },
             )));
   }
 
-  themeDialog() async {
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setStater) {
-            return AlertDialog(
-              contentPadding: const EdgeInsets.all(0.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              content: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                      child: Text(
-                        CHOOSE_THEME_LBL,
-                        style: Theme.of(this.context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(color: fontColor),
-                      )),
-                  Padding(
-                      padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
-                      child: Text(
-                        COMINGSOON,
-                        style: Theme.of(context).textTheme.caption,
-                      )),
-                  Divider(color: lightBlack),
-                  ListView.separated(
-                      separatorBuilder: (BuildContext context, int index) =>
-                          Padding(
-                              padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                              child: Divider(color: lightBlack)),
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: themeList.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                            padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0),
-                            child: Row(
-                              children: [
-                                InkWell(
-                                  onTap: () {},
-                                  child: Container(
-                                    height: 25.0,
-                                    decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: selectedIndex == index
-                                            ? grad2Color
-                                            : white,
-                                        border: Border.all(color: grad2Color)),
-                                    child: Padding(
-                                        padding: const EdgeInsets.all(2.0),
-                                        child: selectedIndex == index
-                                            ? Icon(
-                                                Icons.check,
-                                                size: 17.0,
-                                                color: white,
-                                              )
-                                            : Icon(
-                                                Icons.check_box_outline_blank,
-                                                size: 15.0,
-                                                color: white,
-                                              )),
-                                  ),
-                                ),
-                                Padding(
-                                    padding: EdgeInsets.only(
-                                      left: 15.0,
-                                    ),
-                                    child: Text(
-                                      themeList[index],
-                                      style: Theme.of(this.context)
-                                          .textTheme
-                                          .subtitle1
-                                          .copyWith(color: lightBlack),
-                                    ))
-                              ],
-                            ));
-                      }),
-                  Padding(
-                      padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                      child: Divider(color: lightBlack)),
-                ],
-              ),
-              actions: <Widget>[
-                new FlatButton(
-                    child: Text(
-                      CANCEL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: lightBlack, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
-                new FlatButton(
-                    child: Text(
-                      OK_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: fontColor, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    })
-              ],
-            );
-          });
-        });
-  }
 
-  languageDialog() async {
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setStater) {
-            return AlertDialog(
-              contentPadding: const EdgeInsets.all(0.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              content: SingleChildScrollView(
-                  child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                      child: Text(
-                        CHOOSE_LANGUAGE_LB,
-                        style: Theme.of(this.context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(color: fontColor),
-                      )),
-                  Padding(
-                      padding: EdgeInsets.fromLTRB(20.0, 0.0, 0, 2.0),
-                      child: Text(
-                        COMINGSOON,
-                        style: Theme.of(context).textTheme.caption,
-                      )),
-                  Divider(color: lightBlack),
-                  Container(
-                      height: 400,
-                      child: ListView.separated(
-                          separatorBuilder: (BuildContext context, int index) =>
-                              Padding(
-                                  padding:
-                                      EdgeInsets.only(left: 20.0, right: 20.0),
-                                  child: Divider(color: lightBlack)),
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: languageList.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                                padding:
-                                    EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0),
-                                child: Row(
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        setStater(() {
-                                          selectedIndex = index;
-                                        });
-                                      },
-                                      child: Container(
-                                        height: 25.0,
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: selectedIndex == index
-                                                ? grad2Color
-                                                : white,
-                                            border:
-                                                Border.all(color: grad2Color)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(2.0),
-                                          child: selectedIndex == index
-                                              ? Icon(
-                                                  Icons.check,
-                                                  size: 17.0,
-                                                  color: white,
-                                                )
-                                              : Icon(
-                                                  Icons.check_box_outline_blank,
-                                                  size: 15.0,
-                                                  color: white,
-                                                ),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                        padding: EdgeInsets.only(
-                                          left: 15.0,
-                                        ),
-                                        child: Text(
-                                          languageList[index],
-                                          style: Theme.of(this.context)
-                                              .textTheme
-                                              .subtitle1
-                                              .copyWith(color: lightBlack),
-                                        ))
-                                  ],
-                                ));
-                          })),
-                  Padding(
-                      padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                      child: Divider(color: lightBlack)),
-                ],
-              )),
-              actions: <Widget>[
-                new FlatButton(
-                    child: Text(
-                      CANCEL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: lightBlack, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
-                new FlatButton(
-                    child: Text(
-                      OK_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: fontColor, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      final form = _formkey.currentState;
-                      if (form.validate()) {
-                        form.save();
-                        setState(() {
-                          Navigator.pop(context);
-                        });
-                        checkNetwork();
-                      }
-                    })
-              ],
-            );
-          });
-        });
-  }
+
+
+
+
+
+
+
 
   _showDialog() async {
     await showDialog(
@@ -623,13 +355,13 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                         Padding(
                             padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
                             child: Text(
-                              CHANGE_PASS_LBL,
+                              getTranslated(context, 'CHANGE_PASS_LBL'),
                               style: Theme.of(this.context)
                                   .textTheme
                                   .subtitle1
-                                  .copyWith(color: fontColor),
+                                  .copyWith(color: colors.fontColor),
                             )),
-                        Divider(color: lightBlack),
+                        Divider(color: colors.lightBlack),
                         Form(
                             key: _formkey,
                             child: new Column(
@@ -639,16 +371,21 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                         EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
                                     child: TextFormField(
                                       keyboardType: TextInputType.text,
-                                      validator: validatePass,
+                                      validator: (val) => validatePass(
+                                          val,
+                                          getTranslated(
+                                              context, 'PWD_REQUIRED'),
+                                          getTranslated(context, 'PWD_LENGTH')),
                                       autovalidateMode:
                                           AutovalidateMode.onUserInteraction,
                                       decoration: InputDecoration(
-                                          hintText: CUR_PASS_LBL,
+                                          hintText: getTranslated(
+                                              context, 'CUR_PASS_LBL'),
                                           hintStyle: Theme.of(this.context)
                                               .textTheme
                                               .subtitle1
                                               .copyWith(
-                                                  color: lightBlack,
+                                                  color: colors.lightBlack,
                                                   fontWeight:
                                                       FontWeight.normal),
                                           suffixIcon: IconButton(
@@ -656,7 +393,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                                 ? Icons.visibility
                                                 : Icons.visibility_off),
                                             iconSize: 20,
-                                            color: lightBlack,
+                                            color: colors.lightBlack,
                                             onPressed: () {
                                               setStater(() {
                                                 _showPassword = !_showPassword;
@@ -674,16 +411,21 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                         EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
                                     child: TextFormField(
                                       keyboardType: TextInputType.text,
-                                      validator: validatePass,
+                                      validator: (val) => validatePass(
+                                          val,
+                                          getTranslated(
+                                              context, 'PWD_REQUIRED'),
+                                          getTranslated(context, 'PWD_LENGTH')),
                                       autovalidateMode:
                                           AutovalidateMode.onUserInteraction,
                                       decoration: new InputDecoration(
-                                          hintText: NEW_PASS_LBL,
+                                          hintText: getTranslated(
+                                              context, 'NEW_PASS_LBL'),
                                           hintStyle: Theme.of(this.context)
                                               .textTheme
                                               .subtitle1
                                               .copyWith(
-                                                  color: lightBlack,
+                                                  color: colors.lightBlack,
                                                   fontWeight:
                                                       FontWeight.normal),
                                           suffixIcon: IconButton(
@@ -691,7 +433,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                                 ? Icons.visibility
                                                 : Icons.visibility_off),
                                             iconSize: 20,
-                                            color: lightBlack,
+                                            color: colors.lightBlack,
                                             onPressed: () {
                                               setStater(() {
                                                 _showPassword = !_showPassword;
@@ -711,9 +453,11 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                       keyboardType: TextInputType.text,
                                       validator: (value) {
                                         if (value.length == 0)
-                                          return CON_PASS_REQUIRED_MSG;
+                                          return getTranslated(
+                                              context, 'CON_PASS_REQUIRED_MSG');
                                         if (value != newPass) {
-                                          return CON_PASS_NOT_MATCH_MSG;
+                                          return getTranslated(context,
+                                              'CON_PASS_NOT_MATCH_MSG');
                                         } else {
                                           return null;
                                         }
@@ -721,12 +465,13 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                       autovalidateMode:
                                           AutovalidateMode.onUserInteraction,
                                       decoration: new InputDecoration(
-                                          hintText: CONFIRMPASSHINT_LBL,
+                                          hintText: getTranslated(
+                                              context, 'CONFIRMPASSHINT_LBL'),
                                           hintStyle: Theme.of(this.context)
                                               .textTheme
                                               .subtitle1
                                               .copyWith(
-                                                  color: lightBlack,
+                                                  color: colors.lightBlack,
                                                   fontWeight:
                                                       FontWeight.normal),
                                           suffixIcon: IconButton(
@@ -734,7 +479,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                                 ? Icons.visibility
                                                 : Icons.visibility_off),
                                             iconSize: 20,
-                                            color: lightBlack,
+                                            color: colors.lightBlack,
                                             onPressed: () {
                                               setStater(() {
                                                 _showPassword = !_showPassword;
@@ -753,24 +498,26 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
               actions: <Widget>[
                 new FlatButton(
                     child: Text(
-                      CANCEL,
+                      getTranslated(context, 'CANCEL'),
                       style: Theme.of(this.context)
                           .textTheme
                           .subtitle2
                           .copyWith(
-                              color: lightBlack, fontWeight: FontWeight.bold),
+                              color: colors.lightBlack,
+                              fontWeight: FontWeight.bold),
                     ),
                     onPressed: () {
                       Navigator.pop(context);
                     }),
                 new FlatButton(
                     child: Text(
-                      SAVE_LBL,
+                      getTranslated(context, 'SAVE_LBL'),
                       style: Theme.of(this.context)
                           .textTheme
                           .subtitle2
                           .copyWith(
-                              color: fontColor, fontWeight: FontWeight.bold),
+                              color: colors.fontColor,
+                              fontWeight: FontWeight.bold),
                     ),
                     onPressed: () {
                       final form = _formkey.currentState;
@@ -779,7 +526,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                         setState(() {
                           Navigator.pop(context);
                         });
-                        checkNetwork();
+                       // checkNetwork();
                       }
                     })
               ],
@@ -793,8 +540,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       resizeToAvoidBottomInset: false,
-      backgroundColor: lightWhite,
-      appBar: getAppBar(SETTING, context),
+      appBar: getAppBar(getTranslated(context, 'SETTING'), context),
       body: _isNetworkAvail
           ? SingleChildScrollView(
               child: Column(

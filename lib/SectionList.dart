@@ -40,7 +40,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+  new GlobalKey<RefreshIndicatorState>();
   String sortBy = 'p.id', orderBy = "DESC";
   List<String> attnameList;
   List<String> attsubList;
@@ -48,7 +48,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   String filter = "";
   String selId = "";
   int offset;
-
+  bool listType = false;
   int total = 0;
 
   @override
@@ -96,7 +96,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -143,7 +143,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: lightWhite,
+
       appBar: AppBar(
         leading: Builder(builder: (BuildContext context) {
           return Container(
@@ -157,7 +157,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                 child: Center(
                   child: Icon(
                     Icons.keyboard_arrow_left,
-                    color: primary,
+                    color: colors.primary,
                   ),
                 ),
               ),
@@ -167,10 +167,9 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
         title: Text(
           sectionList[widget.index].title,
           style: TextStyle(
-            color: fontColor,
+            color: colors.fontColor,
           ),
         ),
-        backgroundColor: white,
         actions: [
           Container(
             margin: EdgeInsets.symmetric(vertical: 10),
@@ -193,7 +192,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                   padding: const EdgeInsets.all(4.0),
                   child: Icon(
                     Icons.search,
-                    color: primary,
+                    color: colors.primary,
                     size: 22,
                   ),
                 ),
@@ -214,13 +213,16 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                       padding: const EdgeInsets.all(4.0),
                       child: Icon(
                         Icons.tune,
-                        color: primary,
+                        color: colors.primary,
                         size: 22,
                       ),
                     ),
                   ))),
           Container(
-              margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+              margin: EdgeInsets.only(
+                top: 10,
+                bottom: 10,
+              ),
               decoration: shadow(),
               child: Card(
                   elevation: 0,
@@ -233,42 +235,246 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                       padding: const EdgeInsets.all(4.0),
                       child: Icon(
                         Icons.filter_list,
-                        color: primary,
+                        color: colors.primary,
                         size: 22,
                       ),
                     ),
-                  )))
+                  ))),
+          Container(
+              margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+              decoration: shadow(),
+              child: Card(
+                  elevation: 0,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            listType ? Icons.grid_view : Icons.list,
+                            color: colors.primary,
+                            size: 22,
+                          ),
+                        ),
+                        onTap: () {
+                          widget.section_model.productList.length != 0
+                              ? setState(() {
+                            listType = !listType;
+                          })
+                              : null;
+                        }),
+                  ))),
         ],
       ),
       body: _isNetworkAvail
           ? RefreshIndicator(
-              key: _refreshIndicatorKey,
-              onRefresh: _refresh,
-              child: _isLoading
-                  ? shimmer()
-                  : GridView.count(
-                      padding: EdgeInsets.only(top: 5, left: 10, right: 10),
-                      crossAxisCount: 2,
-                     // shrinkWrap: true,
-                      childAspectRatio: 1,
-                      physics:  AlwaysScrollableScrollPhysics(),
-                      mainAxisSpacing: 2,
-                      crossAxisSpacing: 2,
-                      controller: controller,
-                      children: List.generate(
-                        (widget.section_model.offset <
-                                widget.section_model.totalItem)
-                            ? widget.section_model.productList.length + 1
-                            : widget.section_model.productList.length,
-                        (index) {
-                          return (index ==
-                                      widget.section_model.productList.length &&
-                                  isLoadingmore)
-                              ? Center(child: CircularProgressIndicator())
-                              : productItem(index);
-                        },
-                      )))
+          key: _refreshIndicatorKey,
+          onRefresh: _refresh,
+          child: _isLoading
+              ? shimmer()
+              : listType
+              ? ListView.builder(
+            controller: controller,
+            itemCount: (widget.section_model.offset <
+                widget.section_model.totalItem)
+                ? widget.section_model.productList.length + 1
+                : widget.section_model.productList.length,
+            physics: AlwaysScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              return (index ==
+                  widget
+                      .section_model.productList.length &&
+                  isLoadingmore)
+                  ? Center(child: CircularProgressIndicator())
+                  : listItem(index);
+            },
+          )
+              : GridView.count(
+              padding: EdgeInsets.only(top: 5, left: 10, right: 10),
+              crossAxisCount: 2,
+              childAspectRatio: 1,
+              physics: AlwaysScrollableScrollPhysics(),
+              mainAxisSpacing: 2,
+              crossAxisSpacing: 2,
+              controller: controller,
+              children: List.generate(
+                (widget.section_model.offset <
+                    widget.section_model.totalItem)
+                    ? widget.section_model.productList.length + 1
+                    : widget.section_model.productList.length,
+                    (index) {
+                  return (index ==
+                      widget.section_model.productList
+                          .length &&
+                      isLoadingmore)
+                      ? Center(child: CircularProgressIndicator())
+                      : productItem(index);
+                },
+              )))
           : noInternet(context),
+    );
+  }
+
+  Widget listItem(int index) {
+    double price = double.parse(
+        widget.section_model.productList[index].prVarientList[0].disPrice);
+    if (price == 0)
+      price = double.parse(
+          widget.section_model.productList[index].prVarientList[0].price);
+
+    return Card(
+      elevation: 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+            Widget>[
+          widget.section_model.productList[index].availability == "0"
+              ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+              style: Theme.of(context)
+                  .textTheme
+                  .subtitle1
+                  .copyWith(color: Colors.red))
+              : Container(),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: <Widget>[
+                Hero(
+                  tag: "$index${widget.section_model.productList[index].id}",
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(7.0),
+                      child: FadeInImage(
+                        image: NetworkImage(
+                            widget.section_model.productList[index].image),
+                        height: 80.0,
+                        width: 80.0,
+                        placeholder: placeHolder(80),
+                      )),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          widget.section_model.productList[index].name,
+                          style: TextStyle(
+                              color: colors.lightBlack,
+                              fontWeight: FontWeight.bold),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: colors.primary,
+                              size: 12,
+                            ),
+                            Text(
+                              " " +
+                                  widget
+                                      .section_model.productList[index].rating,
+                              style: Theme.of(context).textTheme.overline,
+                            ),
+                            Text(
+                              " (" +
+                                  widget.section_model.productList[index]
+                                      .noOfRating +
+                                  ")",
+                              style: Theme.of(context).textTheme.overline,
+                            )
+                          ],
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              double.parse(widget.section_model.productList[index]
+                                  .prVarientList[0].disPrice) !=
+                                  0
+                                  ? CUR_CURRENCY +
+                                  "" +
+                                  widget.section_model.productList[index]
+                                      .prVarientList[0].price
+                                  : "",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(
+                                  decoration: TextDecoration.lineThrough,
+                                  letterSpacing: 0),
+                            ),
+                            Text(" " + CUR_CURRENCY + " " + price.toString(),
+                                style: Theme.of(context).textTheme.subtitle1),
+                            Spacer(),
+                            widget.section_model.productList[index].isFavLoading
+                                ? Container(
+                                height: 15,
+                                width: 15,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 8.0, vertical: 3),
+                                padding: const EdgeInsets.all(3),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 0.7,
+                                ))
+                                : InkWell(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 3),
+                                  child: Icon(
+                                    widget.section_model.productList[index]
+                                        .isFav ==
+                                        "0"
+                                        ? Icons.favorite_border
+                                        : Icons.favorite,
+                                    size: 15,
+                                    color: colors.primary,
+                                  ),
+                                ),
+                                onTap: () {
+                                  if (CUR_USERID != null) {
+                                    widget.section_model.productList[index]
+                                        .isFav ==
+                                        "0"
+                                        ? _setFav(index)
+                                        : _removeFav(index);
+                                  } else {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Login()),
+                                    );
+                                  }
+                                })
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          )
+        ]),
+        onTap: () {
+          Product model = widget.section_model.productList[index];
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              // transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
+                  model: model,
+                  updateParent: updateSectionList,
+                  updateHome: widget.updateHome,
+                  secPos: widget.index,
+                  index: index,
+                  list: false,
+                )),
+          );
+        },
+      ),
     );
   }
 
@@ -289,16 +495,16 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                   Padding(
                       padding: EdgeInsets.only(top: 19.0, bottom: 16.0),
                       child: Text(
-                        SORT_BY,
+                        getTranslated(context, 'SORT_BY'),
                         style: Theme.of(context).textTheme.headline6,
                       )),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   TextButton(
-                      child: Text(TOP_RATED,
+                      child: Text(getTranslated(context,'TOP_RATED'),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
-                              .copyWith(color: lightBlack)),
+                              .copyWith(color: colors.lightBlack)),
                       onPressed: () {
                         sortBy = '';
                         orderBy = 'DESC';
@@ -306,13 +512,13 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         clearList("1");
                         Navigator.pop(context, 'option 1');
                       }),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   TextButton(
-                      child: Text(F_NEWEST,
+                      child: Text(getTranslated(context, 'F_NEWEST'),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
-                              .copyWith(color: lightBlack)),
+                              .copyWith(color: colors.lightBlack)),
                       onPressed: () {
                         sortBy = 'p.date_added';
                         orderBy = 'DESC';
@@ -320,14 +526,14 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         clearList("0");
                         Navigator.pop(context, 'option 1');
                       }),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   TextButton(
                       child: Text(
-                        F_OLDEST,
+                        getTranslated(context, 'F_OLDEST'),
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: lightBlack),
+                            .copyWith(color: colors.lightBlack),
                       ),
                       onPressed: () {
                         sortBy = 'p.date_added';
@@ -336,14 +542,14 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         clearList("0");
                         Navigator.pop(context, 'option 2');
                       }),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   TextButton(
                       child: new Text(
-                        F_LOW,
+                        getTranslated(context, 'F_LOW'),
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: lightBlack),
+                            .copyWith(color: colors.lightBlack),
                       ),
                       onPressed: () {
                         sortBy = 'pv.price';
@@ -352,16 +558,16 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         clearList("0");
                         Navigator.pop(context, 'option 3');
                       }),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   Padding(
                       padding: EdgeInsets.only(bottom: 5.0),
                       child: TextButton(
                           child: new Text(
-                            F_HIGH,
+                            getTranslated(context, 'F_HIGH'),
                             style: Theme.of(context)
                                 .textTheme
                                 .subtitle1
-                                .copyWith(color: lightBlack),
+                                .copyWith(color: colors.lightBlack),
                           ),
                           onPressed: () {
                             sortBy = 'pv.price';
@@ -386,232 +592,230 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       builder: (builder) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-          return Column(mainAxisSize: MainAxisSize.min, children: [
-            Padding(
-                padding: const EdgeInsets.only(top: 30.0),
-                child: AppBar(
-                  title: Text(
-                    FILTER,
-                    style: TextStyle(
-                      color: fontColor,
-                    ),
-                  ),
-                  backgroundColor: white,
-                  elevation: 5,
-                  leading: Builder(builder: (BuildContext context) {
-                    return Container(
-                      margin: EdgeInsets.all(10),
-                      decoration: shadow(),
-                      child: Card(
-                        elevation: 0,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(4),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 4.0),
-                            child:
-                                Icon(Icons.keyboard_arrow_left, color: primary),
-                          ),
+              return Column(mainAxisSize: MainAxisSize.min, children: [
+                Padding(
+                    padding: const EdgeInsets.only(top: 30.0),
+                    child: AppBar(
+                      title: Text(
+                        getTranslated(context, 'FILTER'),
+                        style: TextStyle(
+                          color: colors.fontColor,
                         ),
                       ),
-                    );
-                  }),
-                  actions: [
-                    Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      alignment: Alignment.center,
-                      child: InkWell(
-                          child: Text(FILTER_CLEAR_LBL,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(
+                      elevation: 5,
+                      leading: Builder(builder: (BuildContext context) {
+                        return Container(
+                          margin: EdgeInsets.all(10),
+                          decoration: shadow(),
+                          child: Card(
+                            elevation: 0,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(4),
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 4.0),
+                                child: Icon(Icons.keyboard_arrow_left,
+                                    color: colors.primary),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                      actions: [
+                        Container(
+                          margin: EdgeInsets.only(right: 10.0),
+                          alignment: Alignment.center,
+                          child: InkWell(
+                              child: Text(getTranslated(context, 'FILTER_CLEAR_LBL'),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(
                                       fontWeight: FontWeight.normal,
-                                      color: fontColor)),
-                          onTap: () {
-                            setState(() {
-                              widget.section_model.selectedId.clear();
-                            });
-                          }),
-                    ),
-                  ],
-                )),
-            Expanded(
-                child: Container(
-                    color: lightWhite,
-                    padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
-                    child: Card(
-                        child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                          Expanded(
-                              flex: 2,
-                              child: Container(
-                                  color: lightWhite,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    padding: EdgeInsets.only(top: 10.0),
-                                    itemCount:
-                                        widget.section_model.filterList.length,
-                                    itemBuilder: (context, index) {
-                                      attsubList = widget.section_model
-                                          .filterList[index].attributeValues
-                                          .split(',');
-
-                                      attListId = widget.section_model
-                                          .filterList[index].attributeValId
-                                          .split(',');
-
-                                      if (filter == "") {
-                                        filter = widget
-                                            .section_model.filterList[0].name;
-                                      }
-
-                                      return InkWell(
-                                          onTap: () {
-                                            setState(() {
-                                              filter = widget.section_model
-                                                  .filterList[index].name;
-                                            });
-                                          },
-                                          child: Container(
-                                            padding: EdgeInsets.only(
-                                                left: 20,
-                                                top: 10.0,
-                                                bottom: 10.0),
-                                            decoration: BoxDecoration(
-                                                color: filter ==
-                                                        widget
-                                                            .section_model
-                                                            .filterList[index]
-                                                            .name
-                                                    ? white
-                                                    : lightWhite,
-                                                borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(7),
-                                                    bottomLeft:
-                                                        Radius.circular(7))),
-                                            alignment: Alignment.centerLeft,
-                                            child: new Text(
-                                              widget.section_model
-                                                  .filterList[index].name,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .subtitle1
-                                                  .copyWith(
-                                                      color: filter ==
-                                                              widget
-                                                                  .section_model
-                                                                  .filterList[
-                                                                      index]
-                                                                  .name
-                                                          ? fontColor
-                                                          : lightBlack,
-                                                      fontWeight:
-                                                          FontWeight.normal),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 2,
-                                            ),
-                                          ));
-                                    },
-                                  ))),
-                          Expanded(
-                              flex: 3,
-                              child: ListView.builder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.only(top: 10.0),
-                                  scrollDirection: Axis.vertical,
-                                  itemCount:
-                                      widget.section_model.filterList.length,
-                                  itemBuilder: (context, index) {
-
-                                    if (filter ==
-                                        widget.section_model.filterList[index]
-                                            .name) {
-                                      attsubList = widget.section_model
-                                          .filterList[index].attributeValues
-                                          .split(',');
-
-                                      attListId = widget.section_model
-                                          .filterList[index].attributeValId
-                                          .split(',');
-                                      return Container(
+                                      color: colors.fontColor)),
+                              onTap: () {
+                                setState(() {
+                                  widget.section_model.selectedId.clear();
+                                });
+                              }),
+                        ),
+                      ],
+                    )),
+                Expanded(
+                    child: Container(
+                        color: colors.lightWhite,
+                        padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
+                        child: Card(
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                          color: colors.lightWhite,
                                           child: ListView.builder(
-                                              shrinkWrap: true,
-                                              physics:
-                                                  NeverScrollableScrollPhysics(),
-                                              itemCount: attListId.length,
-                                              itemBuilder: (context, i) {
-                                                return CheckboxListTile(
-                                                  dense: true,
-                                                  title: Text(attsubList[i],
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.vertical,
+                                            padding: EdgeInsets.only(top: 10.0),
+                                            itemCount:
+                                            widget.section_model.filterList.length,
+                                            itemBuilder: (context, index) {
+                                              attsubList = widget.section_model
+                                                  .filterList[index].attributeValues
+                                                  .split(',');
+
+                                              attListId = widget.section_model
+                                                  .filterList[index].attributeValId
+                                                  .split(',');
+
+                                              if (filter == "") {
+                                                filter = widget
+                                                    .section_model.filterList[0].name;
+                                              }
+
+                                              return InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      filter = widget.section_model
+                                                          .filterList[index].name;
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20,
+                                                        top: 10.0,
+                                                        bottom: 10.0),
+                                                    decoration: BoxDecoration(
+                                                        color: filter ==
+                                                            widget
+                                                                .section_model
+                                                                .filterList[index]
+                                                                .name
+                                                            ? colors.white
+                                                            : colors.lightWhite,
+                                                        borderRadius: BorderRadius.only(
+                                                            topLeft: Radius.circular(7),
+                                                            bottomLeft:
+                                                            Radius.circular(7))),
+                                                    alignment: Alignment.centerLeft,
+                                                    child: new Text(
+                                                      widget.section_model
+                                                          .filterList[index].name,
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .subtitle1
                                                           .copyWith(
-                                                              color: lightBlack,
-                                                              fontWeight:
+                                                          color: filter ==
+                                                              widget
+                                                                  .section_model
+                                                                  .filterList[
+                                                              index]
+                                                                  .name
+                                                              ? colors.fontColor
+                                                              : colors.lightBlack,
+                                                          fontWeight:
+                                                          FontWeight.normal),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 2,
+                                                    ),
+                                                  ));
+                                            },
+                                          ))),
+                                  Expanded(
+                                      flex: 3,
+                                      child: ListView.builder(
+                                          shrinkWrap: true,
+                                          padding: EdgeInsets.only(top: 10.0),
+                                          scrollDirection: Axis.vertical,
+                                          itemCount:
+                                          widget.section_model.filterList.length,
+                                          itemBuilder: (context, index) {
+                                            if (filter ==
+                                                widget.section_model.filterList[index]
+                                                    .name) {
+                                              attsubList = widget.section_model
+                                                  .filterList[index].attributeValues
+                                                  .split(',');
+
+                                              attListId = widget.section_model
+                                                  .filterList[index].attributeValId
+                                                  .split(',');
+                                              return Container(
+                                                  child: ListView.builder(
+                                                      shrinkWrap: true,
+                                                      physics:
+                                                      NeverScrollableScrollPhysics(),
+                                                      itemCount: attListId.length,
+                                                      itemBuilder: (context, i) {
+                                                        return CheckboxListTile(
+                                                          dense: true,
+                                                          title: Text(attsubList[i],
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .subtitle1
+                                                                  .copyWith(
+                                                                  color: colors
+                                                                      .lightBlack,
+                                                                  fontWeight:
                                                                   FontWeight
                                                                       .normal)),
-                                                  value: widget
-                                                      .section_model.selectedId
-                                                      .contains(attListId[i]),
-                                                  activeColor: primary,
-                                                  controlAffinity:
-                                                      ListTileControlAffinity
-                                                          .leading,
-                                                  onChanged: (bool val) {
-                                                    setState(() {
-                                                      if (val == true) {
-                                                        widget.section_model
-                                                            .selectedId
-                                                            .add(attListId[i]);
-                                                      } else {
-                                                        widget.section_model
-                                                            .selectedId
-                                                            .remove(
-                                                                attListId[i]);
-
-                                                      }
-                                                    });
-                                                  },
-                                                );
-                                              }));
-                                    } else {
-                                      return Container();
-                                    }
-                                  })),
-                        ])))),
-            Container(
-              color: white,
-              child: Row(children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(left: 15.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.section_model.totalItem.toString()),
-                        Text(PRODUCTS_FOUND_LBL),
-                      ],
-                    )),
-                Spacer(),
-                SimBtn(
-                  size: 0.4,
-                  title: APPLY,
-                  onBtnSelected: () {
-                    if (widget.section_model.selectedId != null) {
-                      selId = widget.section_model.selectedId.join(',');
-                      clearList("0");
-                      Navigator.pop(context, 'Product Filter');
-                    }
-                  },
-                ),
-              ]),
-            )
-          ]);
-        });
+                                                          value: widget
+                                                              .section_model.selectedId
+                                                              .contains(attListId[i]),
+                                                          activeColor: colors.primary,
+                                                          controlAffinity:
+                                                          ListTileControlAffinity
+                                                              .leading,
+                                                          onChanged: (bool val) {
+                                                            setState(() {
+                                                              if (val == true) {
+                                                                widget.section_model
+                                                                    .selectedId
+                                                                    .add(attListId[i]);
+                                                              } else {
+                                                                widget.section_model
+                                                                    .selectedId
+                                                                    .remove(
+                                                                    attListId[i]);
+                                                              }
+                                                            });
+                                                          },
+                                                        );
+                                                      }));
+                                            } else {
+                                              return Container();
+                                            }
+                                          })),
+                                ])))),
+                Container(
+                  color: colors.white,
+                  child: Row(children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.only(left: 15.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(widget.section_model.totalItem.toString()),
+                            Text(getTranslated(context, 'PRODUCTS_FOUND_LBL')),
+                          ],
+                        )),
+                    Spacer(),
+                    SimBtn(
+                      size: 0.4,
+                      title: getTranslated(context,'APPLY'),
+                      onBtnSelected: () {
+                        if (widget.section_model.selectedId != null) {
+                          selId = widget.section_model.selectedId.join(',');
+                          clearList("0");
+                          Navigator.pop(context, 'Product Filter');
+                        }
+                      },
+                    ),
+                  ]),
+                )
+              ]);
+            });
       },
     );
   }
@@ -658,49 +862,49 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           children: <Widget>[
             Expanded(
                 child: Stack(
-              alignment: Alignment.topRight,
-              children: [
-                Hero(
-                  tag:
+                  alignment: Alignment.topRight,
+                  children: [
+                    Hero(
+                      tag:
                       "${sectionList[widget.index].productList[index].id}${widget.index}${index}",
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(5),
-                        topRight: Radius.circular(5)),
-                    child: FadeInImage(
-                      image: NetworkImage(
-                          widget.section_model.productList[index].image),
-                      height: double.maxFinite,
-                      width: double.maxFinite,
-                      //errorWidget:(context, url,e) => placeHolder(width) ,
-                      placeholder: placeHolder(width),
-                    ),
-                  ),
-                ),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(1.5),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.star,
-                          color: primary,
-                          size: 10,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(5),
+                            topRight: Radius.circular(5)),
+                        child: FadeInImage(
+                          image: NetworkImage(
+                              widget.section_model.productList[index].image),
+                          height: double.maxFinite,
+                          width: double.maxFinite,
+                          //errorWidget:(context, url,e) => placeHolder(width) ,
+                          placeholder: placeHolder(width),
                         ),
-                        Text(
-                          widget.section_model.productList[index].rating,
-                          style: Theme.of(context)
-                              .textTheme
-                              .overline
-                              .copyWith(letterSpacing: 0.2),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            )),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(1.5),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: colors.primary,
+                              size: 10,
+                            ),
+                            Text(
+                              widget.section_model.productList[index].rating,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(letterSpacing: 0.2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )),
             Padding(
               padding: const EdgeInsets.all(5.0),
               child: Row(
@@ -711,7 +915,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                       style: Theme.of(context)
                           .textTheme
                           .caption
-                          .copyWith(color: black),
+                          .copyWith(color: colors.black),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -719,41 +923,41 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
 
                   widget.section_model.productList[index].isFavLoading
                       ? Container(
-                          height: 15,
-                          width: 15,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 8.0, vertical: 3),
-                          padding: const EdgeInsets.all(3),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 0.7,
-                          ))
+                      height: 15,
+                      width: 15,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 3),
+                      padding: const EdgeInsets.all(3),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 0.7,
+                      ))
                       : InkWell(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0, vertical: 3),
-                            child: Icon(
-                              widget.section_model.productList[index].isFav ==
-                                      "0"
-                                  ? Icons.favorite_border
-                                  : Icons.favorite,
-                              size: 15,
-                              color: primary,
-                            ),
-                          ),
-                          onTap: () {
-                            if (CUR_USERID != null) {
-                              widget.section_model.productList[index].isFav ==
-                                      "0"
-                                  ? _setFav(index)
-                                  : _removeFav(index);
-                            } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Login()),
-                              );
-                            }
-                          })
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 3),
+                        child: Icon(
+                          widget.section_model.productList[index].isFav ==
+                              "0"
+                              ? Icons.favorite_border
+                              : Icons.favorite,
+                          size: 15,
+                          color: colors.primary,
+                        ),
+                      ),
+                      onTap: () {
+                        if (CUR_USERID != null) {
+                          widget.section_model.productList[index].isFav ==
+                              "0"
+                              ? _setFav(index)
+                              : _removeFav(index);
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Login()),
+                          );
+                        }
+                      })
                   // IconButton(icon: Icon(Icons.favorite_border,),iconSize: 10, onPressed: null)
                 ],
               ),
@@ -763,20 +967,20 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
               child: Row(
                 children: <Widget>[
                   Text(
-                    int.parse(widget.section_model.productList[index]
-                                .prVarientList[0].disPrice) !=
-                            0
+                    double.parse(widget.section_model.productList[index]
+                        .prVarientList[0].disPrice) !=
+                        0
                         ? CUR_CURRENCY +
-                            "" +
-                            widget.section_model.productList[index]
-                                .prVarientList[0].price
+                        "" +
+                        widget.section_model.productList[index]
+                            .prVarientList[0].price
                         : "",
                     style: Theme.of(context).textTheme.overline.copyWith(
                         decoration: TextDecoration.lineThrough,
                         letterSpacing: 1),
                   ),
                   Text(" " + CUR_CURRENCY + " " + price.toString(),
-                      style: TextStyle(color: primary)),
+                      style: TextStyle(color: colors.primary)),
                 ],
               ),
             )
@@ -787,15 +991,15 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           Navigator.push(
             context,
             PageRouteBuilder(
-                // transitionDuration: Duration(seconds: 1),
+              // transitionDuration: Duration(seconds: 1),
                 pageBuilder: (_, __, ___) => ProductDetail(
-                      model: model,
-                      updateParent: updateSectionList,
-                      updateHome: widget.updateHome,
-                      secPos: widget.index,
-                      index: index,
-                      list: false,
-                    )),
+                  model: model,
+                  updateParent: updateSectionList,
+                  updateHome: widget.updateHome,
+                  secPos: widget.index,
+                  index: index,
+                  list: false,
+                )),
           );
         },
       ),
@@ -824,8 +1028,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
         }
 
         Response response =
-            await post(getSectionApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(getSectionApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -860,7 +1064,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           _isLoading = false;
         });
@@ -887,8 +1091,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           PRODUCT_ID: widget.section_model.productList[index].id
         };
         Response response =
-            await post(setFavoriteApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(setFavoriteApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -904,7 +1108,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           widget.section_model.productList[index].isFavLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
       setState(() {
@@ -918,9 +1122,9 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -938,8 +1142,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           PRODUCT_ID: widget.section_model.productList[index].id
         };
         Response response =
-            await post(removeFavApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(removeFavApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -948,7 +1152,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           widget.section_model.productList[index].isFav = "0";
 
           favList.removeWhere((item) =>
-              item.productList[0].prVarientList[0].id ==
+          item.productList[0].prVarientList[0].id ==
               widget.section_model.productList[index].prVarientList[0].id);
 
           widget.updateHome();
@@ -960,7 +1164,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           widget.section_model.productList[index].isFavLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
       setState(() {

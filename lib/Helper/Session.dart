@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:jaguar_jwt/jaguar_jwt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
-
+import 'Demo_Localization.dart';
 import 'Color.dart';
 import 'Constant.dart';
 import 'String.dart';
@@ -47,7 +47,7 @@ back() {
     gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [grad1Color, grad2Color],
+        colors: [colors.grad1Color, colors.grad2Color],
         stops: [0, 1]),
   );
 }
@@ -88,7 +88,7 @@ getAppBar(String title, BuildContext context) {
             child: Center(
               child: Icon(
                 Icons.keyboard_arrow_left,
-                color: primary,
+                color: colors.primary,
               ),
             ),
           ),
@@ -98,10 +98,9 @@ getAppBar(String title, BuildContext context) {
     title: Text(
       title,
       style: TextStyle(
-        color: fontColor,
+        color: colors.fontColor,
       ),
     ),
-    backgroundColor: white,
   );
 }
 
@@ -114,22 +113,22 @@ noIntImage() {
 
 noIntText(BuildContext context) {
   return Container(
-      child: Text(NO_INTERNET,
+      child: Text(getTranslated(context, 'NO_INTERNET'),
           style: Theme.of(context)
               .textTheme
               .headline5
-              .copyWith(color: primary, fontWeight: FontWeight.normal)));
+              .copyWith(color: colors.primary, fontWeight: FontWeight.normal)));
 }
 
 noIntDec(BuildContext context) {
   return Container(
     padding: EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0),
-    child: Text(NO_INTERNET_DISC,
+    child: Text(getTranslated(context,'NO_INTERNET_DISC'),
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.headline6.copyWith(
-              color: lightBlack2,
-              fontWeight: FontWeight.normal,
-            )),
+          color: colors.lightBlack2,
+          fontWeight: FontWeight.normal,
+        )),
   );
 }
 
@@ -137,8 +136,8 @@ Widget showCircularProgress(bool _isProgress, Color color) {
   if (_isProgress) {
     return Center(
         child: CircularProgressIndicator(
-      valueColor: new AlwaysStoppedAnimation<Color>(color),
-    ));
+          valueColor: new AlwaysStoppedAnimation<Color>(color),
+        ));
   }
   return Container(
     height: 0.0,
@@ -152,7 +151,7 @@ imagePlaceHolder(double size) {
     width: size,
     child: Icon(
       Icons.account_circle,
-      color: white,
+      color: colors.white,
       size: size,
     ),
   );
@@ -204,84 +203,79 @@ Future<void> saveUserDetail(
   await Future.wait(waitList);
 }
 
-String validateUserName(String value) {
+String validateUserName(String value,String msg1,String msg2) {
   if (value.isEmpty) {
-    return USER_REQUIRED;
+    return msg1;
   }
   if (value.length <= 1) {
-    return USER_LENGTH;
+    return msg2;
   }
   return null;
 }
 
-String validateMob(String value) {
+String validateMob(String value,String msg1,String msg2) {
   if (value.isEmpty) {
-    return MOB_REQUIRED;
+    return msg1;
   }
   if (value.length < 9) {
-    return VALID_MOB;
+    return msg2;
   }
   return null;
 }
 
-String validateCountryCode(String value) {
+String validateCountryCode(String value,String msg1,String msg2) {
   if (value.isEmpty) {
-    return COUNTRY_REQUIRED;
+    return msg1;
   }
   if (value.length <= 0) {
-    return VALID_COUNTRY;
+    return msg2;
   }
   return null;
 }
 
-String validatePass(String value) {
+String validatePass(String value,String msg1,String msg2) {
   if (value.length == 0)
-    return PWD_REQUIRED;
+    return msg1;
   else if (value.length <= 5)
-    return PWD_LENGTH;
+    return msg2;
   else
     return null;
 }
 
-String validateAltMob(String value) {
+String validateAltMob(String value,String msg) {
   if (value.isNotEmpty) if (value.length < 9) {
-    return VALID_MOB;
+    return msg;
   }
   return null;
 }
 
-String validateField(String value) {
+String validateField(String value,String msg) {
   if (value.length == 0)
-    return FIELD_REQUIRED;
+    return msg;
   else
     return null;
 }
 
-String validatePincodeOptional(String value) {
-  if (value.isNotEmpty) if (!RegExp(r'^[1-9][0-9]{5}$').hasMatch(value))
-    return VALID_PIN;
-  else
-    return null;
-}
 
-String validatePincode(String value) {
+
+String validatePincode(String value,String msg1,String msg2) {
   if (value.length == 0)
-    return PIN_REQUIRED;
+    return msg1;
   else if (!RegExp(r'^[1-9][0-9]{5}$').hasMatch(value))
-    return VALID_PIN;
+    return msg2;
   else
     return null;
 }
 
-String validateEmail(String value) {
+String validateEmail(String value,String msg1,String msg2) {
   if (value.length == 0) {
-    return EMAIL_REQUIRED;
+    return msg1;
   } else if (!RegExp(
-          r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
-          r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
-          r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+      r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)"
+      r"*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+"
+      r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
       .hasMatch(value)) {
-    return VALID_EMAIL;
+    return msg2;
   } else {
     return null;
   }
@@ -291,8 +285,8 @@ Widget getProgress() {
   return Center(child: CircularProgressIndicator());
 }
 
-Widget getNoItem() {
-  return Center(child: Text(noItem));
+Widget getNoItem(BuildContext context) {
+  return Center(child: Text(getTranslated(context, 'noItem')));
 }
 
 Widget shimmer() {
@@ -306,60 +300,60 @@ Widget shimmer() {
         child: Column(
           children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
               .map((_) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 80.0,
-                          height: 80.0,
-                          color: white,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: double.infinity,
-                                height: 18.0,
-                                color: white,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5.0),
-                              ),
-                              Container(
-                                width: double.infinity,
-                                height: 8.0,
-                                color: white,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5.0),
-                              ),
-                              Container(
-                                width: 100.0,
-                                height: 8.0,
-                                color: white,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5.0),
-                              ),
-                              Container(
-                                width: 20.0,
-                                height: 8.0,
-                                color: white,
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ))
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 80.0,
+                  height: 80.0,
+                  color: colors.white,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 18.0,
+                        color: colors.white,
+                      ),
+                      Padding(
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 5.0),
+                      ),
+                      Container(
+                        width: double.infinity,
+                        height: 8.0,
+                        color: colors.white,
+                      ),
+                      Padding(
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 5.0),
+                      ),
+                      Container(
+                        width: 100.0,
+                        height: 8.0,
+                        color: colors.white,
+                      ),
+                      Padding(
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 5.0),
+                      ),
+                      Container(
+                        width: 20.0,
+                        height: 8.0,
+                        color: colors.white,
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ))
               .toList(),
         ),
       ),
@@ -367,14 +361,56 @@ Widget shimmer() {
   );
 }
 
+Future<Locale> setLocale(String languageCode) async {
+  SharedPreferences _prefs = await SharedPreferences.getInstance();
+  await _prefs.setString(LAGUAGE_CODE, languageCode);
+  return _locale(languageCode);
+}
+Future<Locale> getLocale() async {
+  SharedPreferences _prefs = await SharedPreferences.getInstance();
+  String languageCode = _prefs.getString(LAGUAGE_CODE) ?? "en";
+  return _locale(languageCode);
+}
+Locale _locale(String languageCode) {
+  switch (languageCode) {
+    case "en":
+      return Locale("en", 'US');
+    case "zh":
+      return Locale("zh", "CN");
+    case "es":
+      return Locale("es", "ES");
+    case "hi":
+      return Locale("hi", "IN");
+    case "ar":
+      return Locale("ar", "DZ");
+    case "ru":
+      return Locale("ru", "RU");
+    case "ja":
+      return Locale("ja", "JP");
+    case "de":
+      return Locale("de", "DE");
+    default:
+      return Locale("en", 'US');
+  }
+}
+/*String getTranslated( String key) {
+  print("langue****in session**$key");
+  return DemoLocalization.translate(key);
+}*/
+
+String getTranslated(BuildContext context, String key) {
+  return DemoLocalization.of(context).translate(key);
+}
+
+
 String getToken() {
   final claimSet = new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
 
   String token = issueJwtHS256(claimSet, jwtKey);
-print("token***$token");
+
   return token;
 }
 
 Map<String, String> get headers => {
-      "Authorization": 'Bearer ' + getToken(),
-    };
+  "Authorization": 'Bearer ' + getToken(),
+};

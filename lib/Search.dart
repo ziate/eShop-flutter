@@ -96,7 +96,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
 
   _transactionscrollListener() {
     if (notificationcontroller.offset >=
-            notificationcontroller.position.maxScrollExtent &&
+        notificationcontroller.position.maxScrollExtent &&
         !notificationcontroller.position.outOfRange) {
       setState(() {
         getProduct();
@@ -126,7 +126,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -155,7 +155,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        backgroundColor: lightWhite,
+
         appBar: AppBar(
           leading: Builder(builder: (BuildContext context) {
             return Container(
@@ -168,26 +168,26 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                   onTap: () => Navigator.of(context).pop(),
                   child: Padding(
                     padding: const EdgeInsets.only(right: 4.0),
-                    child: Icon(Icons.keyboard_arrow_left, color: primary),
+                    child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
                   ),
                 ),
               ),
             );
           }),
-          backgroundColor: white,
+          backgroundColor: colors.white,
           title: TextField(
             controller: _controller,
             autofocus: true,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
-              prefixIcon: Icon(Icons.search, color: primary, size: 17),
+              prefixIcon: Icon(Icons.search, color: colors.primary, size: 17),
               hintText: 'Search',
-              hintStyle: TextStyle(color: primary.withOpacity(0.5)),
+              hintStyle: TextStyle(color: colors.primary.withOpacity(0.5)),
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: white),
+                borderSide: BorderSide(color: colors.white),
               ),
               focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: white),
+                borderSide: BorderSide(color: colors.white),
               ),
             ),
           ),
@@ -195,11 +195,11 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         ),
         body: _isNetworkAvail
             ? Stack(
-                children: <Widget>[
-                  _showContent(),
-                  showCircularProgress(_isProgress, primary),
-                ],
-              )
+          children: <Widget>[
+            _showContent(),
+            showCircularProgress(_isProgress, colors.primary),
+          ],
+        )
             : noInternet(context));
   }
 
@@ -216,11 +216,11 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               productList[index].availability == "0"
-                  ? Text(OUT_OF_STOCK_LBL,
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(color: Colors.red))
+                  ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle1
+                      .copyWith(color: Colors.red))
                   : Container(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -251,8 +251,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                                   .textTheme
                                   .subtitle2
                                   .copyWith(
-                                      color: lightBlack,
-                                      fontWeight: FontWeight.bold),
+                                  color: colors.lightBlack,
+                                  fontWeight: FontWeight.bold),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -260,7 +260,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                               children: [
                                 Icon(
                                   Icons.star,
-                                  color: Colors.yellow,
+                                  color: colors.primary,
                                   size: 12,
                                 ),
                                 Text(
@@ -276,28 +276,28 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                             Row(
                               children: <Widget>[
                                 Text(
-                                  int.parse(productList[index]
-                                              .prVarientList[0]
-                                              .disPrice) !=
-                                          0
+                                  double.parse(productList[index]
+                                      .prVarientList[0]
+                                      .disPrice) !=
+                                      0
                                       ? CUR_CURRENCY +
-                                          "" +
-                                          productList[index]
-                                              .prVarientList[0]
-                                              .price
+                                      "" +
+                                      productList[index]
+                                          .prVarientList[0]
+                                          .price
                                       : "",
                                   style: Theme.of(context)
                                       .textTheme
                                       .overline
                                       .copyWith(
-                                          decoration:
-                                              TextDecoration.lineThrough,
-                                          letterSpacing: 0),
+                                      decoration:
+                                      TextDecoration.lineThrough,
+                                      letterSpacing: 0),
                                 ),
                                 Text(
                                     " " + CUR_CURRENCY + " " + price.toString(),
                                     style:
-                                        Theme.of(context).textTheme.subtitle1),
+                                    Theme.of(context).textTheme.subtitle1),
                               ],
                             )
                           ],
@@ -307,22 +307,22 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
               ),
             ],
           ),
-          splashColor: primary.withOpacity(0.2),
+          splashColor: colors.primary.withOpacity(0.2),
           onTap: () {
             FocusScope.of(context).requestFocus(new FocusNode());
             Product model = productList[index];
             Navigator.push(
               context,
               PageRouteBuilder(
-                  // transitionDuration: Duration(seconds: 1),
+                // transitionDuration: Duration(seconds: 1),
                   pageBuilder: (_, __, ___) => ProductDetail(
-                        model: model,
-                        updateParent: updateSearch,
-                        updateHome: widget.updateHome,
-                        secPos: 0,
-                        index: index,
-                        list: true,
-                      )),
+                    model: model,
+                    updateParent: updateSearch,
+                    updateHome: widget.updateHome,
+                    secPos: 0,
+                    index: index,
+                    list: true,
+                  )),
             );
           },
         ),
@@ -348,8 +348,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
               .toString(),
         };
         Response response =
-            await post(manageCartApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(manageCartApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -370,7 +370,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         });
 
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           _isProgress = false;
         });
@@ -397,8 +397,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         };
 
         Response response =
-            await post(manageCartApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(manageCartApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -418,7 +418,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
           _isProgress = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           _isProgress = false;
         });
@@ -452,8 +452,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
           if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
           Response response =
-              await post(getProductApi, headers: headers, body: parameter)
-                  .timeout(Duration(seconds: timeOut));
+          await post(getProductApi, headers: headers, body: parameter)
+              .timeout(Duration(seconds: timeOut));
 
           var getdata = json.decode(response.body);
 
@@ -467,34 +467,34 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             if (mounted) {
               new Future.delayed(
                   Duration.zero,
-                  () => setState(() {
-                        List mainlist = getdata['data'];
+                      () => setState(() {
+                    List mainlist = getdata['data'];
 
-                        if (mainlist.length != 0) {
-                          List<Product> items = new List<Product>();
-                          List<Product> allitems = new List<Product>();
+                    if (mainlist.length != 0) {
+                      List<Product> items = new List<Product>();
+                      List<Product> allitems = new List<Product>();
 
-                          items.addAll(mainlist
-                              .map((data) => new Product.fromJson(data))
-                              .toList());
+                      items.addAll(mainlist
+                          .map((data) => new Product.fromJson(data))
+                          .toList());
 
-                          allitems.addAll(items);
+                      allitems.addAll(items);
 
-                          for (Product item in items) {
-                            productList
-                                .where((i) => i.id == item.id)
-                                .map((obj) {
-                              allitems.remove(item);
-                              return obj;
-                            }).toList();
-                          }
-                          productList.addAll(allitems);
-                          notificationisloadmore = true;
-                          notificationoffset = notificationoffset + perPage;
-                        } else {
-                          notificationisloadmore = false;
-                        }
-                      }));
+                      for (Product item in items) {
+                        productList
+                            .where((i) => i.id == item.id)
+                            .map((obj) {
+                          allitems.remove(item);
+                          return obj;
+                        }).toList();
+                      }
+                      productList.addAll(allitems);
+                      notificationisloadmore = true;
+                      notificationoffset = notificationoffset + perPage;
+                    } else {
+                      notificationisloadmore = false;
+                    }
+                  }));
             }
           } else {
             notificationisloadmore = false;
@@ -502,7 +502,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
           }
         }
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           notificationisloadmore = false;
         });
@@ -519,50 +519,50 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
 
   _showContent() {
     return notificationisnodata
-        ? getNoItem()
+        ? getNoItem(context)
         : NotificationListener<ScrollNotification>(
-            onNotification: (scrollNotification) {},
-            child: Column(
-              children: <Widget>[
-                Expanded(
-                  child: ListView.builder(
-                      padding: EdgeInsetsDirectional.only(
-                          bottom: 5, start: 10, end: 10, top: 12),
-                      controller: notificationcontroller,
-                      physics: BouncingScrollPhysics(),
-                      itemCount: productList.length,
-                      itemBuilder: (context, index) {
-                        Product item;
-                        try {
-                          item =
-                              productList.isEmpty ? null : productList[index];
-                          if (notificationisloadmore &&
-                              index == (productList.length - 1) &&
-                              notificationcontroller.position.pixels <= 0) {
-                            getProduct();
-                          }
-                        } on Exception catch (_) {}
+      onNotification: (scrollNotification) {},
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            child: ListView.builder(
+                padding: EdgeInsetsDirectional.only(
+                    bottom: 5, start: 10, end: 10, top: 12),
+                controller: notificationcontroller,
+                physics: BouncingScrollPhysics(),
+                itemCount: productList.length,
+                itemBuilder: (context, index) {
+                  Product item;
+                  try {
+                    item =
+                    productList.isEmpty ? null : productList[index];
+                    if (notificationisloadmore &&
+                        index == (productList.length - 1) &&
+                        notificationcontroller.position.pixels <= 0) {
+                      getProduct();
+                    }
+                  } on Exception catch (_) {}
 
-                        return item == null ? Container() : listItem(index);
-                      }),
-                ),
-                notificationisgettingdata
-                    ? Padding(
-                        padding: EdgeInsets.only(top: 5, bottom: 5),
-                        child: CircularProgressIndicator(),
-                      )
-                    : Container(),
-              ],
-            ),
-          );
+                  return item == null ? Container() : listItem(index);
+                }),
+          ),
+          notificationisgettingdata
+              ? Padding(
+            padding: EdgeInsets.only(top: 5, bottom: 5),
+            child: CircularProgressIndicator(),
+          )
+              : Container(),
+        ],
+      ),
+    );
   }
 }

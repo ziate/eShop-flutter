@@ -1,18 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import 'package:flutter/services.dart';
+import 'dart:typed_data';
+
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Rating_Review.dart';
+import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share/share.dart';
+
+import 'Favorite.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -23,7 +27,6 @@ import 'Login.dart';
 import 'Model/Section_Model.dart';
 import 'Model/User.dart';
 import 'Product_Preview.dart';
-import 'Favorite.dart';
 
 class ProductDetail extends StatefulWidget {
   final Product model;
@@ -77,6 +80,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   List<Product> productList = [];
   bool listType = true;
   var isDarkTheme;
+  ShortDynamicLink shortenedLink;
+  String shareLink;
 
   @override
   void initState() {
@@ -90,6 +95,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         sliderList.add(widget.model.prVarientList[i].images[j]);
       }
     }
+
+    getShare();
 
     getAvailVarient();
     reviewList.clear();
@@ -134,32 +141,25 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  Future<void> createDynamicLink(
-      int index, int secPos, bool list, String id) async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://eshopwrteamin.page.link',
-      link: Uri.parse(
-          'https://eshop.com/?index=$index&secPos=$secPos&list=$list&id=$id'),
-      androidParameters: AndroidParameters(
-        packageName: packageName,
-        minimumVersion: 1,
-      ),
-      iosParameters: IosParameters(
-        bundleId: iosPackage,
-        minimumVersion: '1',
-        appStoreId: appStoreId,
-      ),
-    );
+  Future<void> createDynamicLink() async {
+    var documentDirectory;
 
-    final Uri longDynamicUrl = await parameters.buildUrl();
-    final ShortDynamicLink shortenedLink =
-        await DynamicLinkParameters.shortenUrl(
-      longDynamicUrl,
-      new DynamicLinkParametersOptions(
-          shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
-    );
+    if (Platform.isIOS)
+      documentDirectory = (await getApplicationDocumentsDirectory()).path;
+    else
+      documentDirectory = (await getExternalStorageDirectory()).path;
 
-    Share.share(shortenedLink.shortUrl.toString(), subject: appName);
+    var request = await HttpClient().getUrl(Uri.parse(widget.model.image));
+    var response = await request.close();
+    Uint8List bytes = await consolidateHttpClientResponseBytes(response);
+    await Share.file(
+      widget.model.name,
+      '${widget.model.name}.jpg',
+      bytes,
+      'image/jpg',
+      text:
+          "${widget.model.name}\n${shortenedLink.shortUrl.toString()}\n$shareLink",
+    );
   }
 
   Future<Null> _playAnimation() async {
@@ -176,7 +176,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -211,12 +211,11 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     ));
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: lightWhite,
       body: _isNetworkAvail
           ? Stack(
               children: <Widget>[
                 _showContent(),
-                showCircularProgress(_isProgress, primary),
+                showCircularProgress(_isProgress, colors.primary),
               ],
             )
           : noInternet(context),
@@ -292,10 +291,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     style: Theme.of(context)
                         .textTheme
                         .caption
-                        .copyWith(color: primary),
+                        .copyWith(color: colors.primary),
                   ),
                   decoration: BoxDecoration(
-                      color: lightWhite,
+                      color: colors.lightWhite,
                       borderRadius: BorderRadius.circular(5)),
                   padding: EdgeInsets.symmetric(horizontal: 5),
                 )),
@@ -309,7 +308,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                    color: lightWhite, offset: Offset(0, 0), blurRadius: 30)
+                    color: colors.lightWhite,
+                    offset: Offset(0, 0),
+                    blurRadius: 30)
               ],
             ),
             child: Card(
@@ -319,7 +320,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 onTap: () => Navigator.of(context).pop(),
                 child: Padding(
                   padding: const EdgeInsets.all(4.0),
-                  child: Icon(Icons.keyboard_arrow_left, color: primary),
+                  child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
                 ),
               ),
             ),
@@ -331,7 +332,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 decoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
-                        color: lightWhite, offset: Offset(0, 0), blurRadius: 30)
+                        color: colors.lightWhite,
+                        offset: Offset(0, 0),
+                        blurRadius: 30)
                   ],
                 ),
                 child: Padding(
@@ -351,16 +354,12 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                       padding: const EdgeInsets.all(5.0),
                                       child: Icon(
                                         Icons.share_outlined,
-                                        color: primary,
+                                        color: colors.primary,
                                         size: 20,
                                       ),
                                     ),
                                     onTap: () {
-                                      createDynamicLink(
-                                          widget.index,
-                                          widget.secPos,
-                                          widget.list,
-                                          widget.model.id);
+                                      createDynamicLink();
                                     }),
                               ))),
                       Container(
@@ -388,7 +387,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                               widget.model.isFav == "0"
                                                   ? Icons.favorite_border
                                                   : Icons.favorite,
-                                              color: primary,
+                                              color: colors.primary,
                                               size: 20,
                                             ),
                                           ),
@@ -444,7 +443,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                       child: Container(
                                           decoration: BoxDecoration(
                                               shape: BoxShape.circle,
-                                              color: primary.withOpacity(0.5)),
+                                              color: colors.primary
+                                                  .withOpacity(0.5)),
                                           child: new Center(
                                             child: Padding(
                                               padding: EdgeInsets.all(3),
@@ -537,7 +537,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             rating: double.parse(widget.model.rating),
             itemBuilder: (context, index) => Icon(
               Icons.star,
-              color: Colors.amber,
+              color: colors.primary,
             ),
             itemCount: 5,
             itemSize: 12.0,
@@ -545,11 +545,17 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           ),
           Text(
             " " + widget.model.rating,
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context)
+                .textTheme
+                .caption
+                .copyWith(color: colors.lightBlack),
           ),
           Text(
             " | " + widget.model.noOfRating + " Ratings",
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context)
+                .textTheme
+                .caption
+                .copyWith(color: colors.lightBlack),
           )
         ],
       ),
@@ -571,10 +577,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     double price = double.parse(widget.model.prVarientList[pos].disPrice);
 
     if (price != 0) {
-      double off = (int.parse(widget.model.prVarientList[pos].price) -
-              int.parse(widget.model.prVarientList[pos].disPrice))
+      double off = (double.parse(widget.model.prVarientList[pos].price) -
+              double.parse(widget.model.prVarientList[pos].disPrice))
           .toDouble();
-      off = off * 100 / int.parse(widget.model.prVarientList[pos].price);
+      off = off * 100 / double.parse(widget.model.prVarientList[pos].price);
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -589,7 +595,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 style: Theme.of(context)
                     .textTheme
                     .overline
-                    .copyWith(color: primary, letterSpacing: 0)),
+                    .copyWith(color: colors.primary, letterSpacing: 0)),
           ],
         ),
       );
@@ -603,8 +609,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
       child: Text(
         widget.model.name,
-        style:
-            Theme.of(context).textTheme.subtitle1.copyWith(color: lightBlack),
+        style: Theme.of(context)
+            .textTheme
+            .subtitle1
+            .copyWith(color: colors.lightBlack),
       ),
     );
   }
@@ -659,7 +667,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else
       setState(() {
@@ -672,9 +680,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -698,7 +706,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               dense: true,
               title: Text(
                 widget.model.prVarientList[pos].attr_name,
-                style: TextStyle(color: lightBlack),
+                style: TextStyle(color: colors.lightBlack),
               ),
               trailing: Icon(Icons.keyboard_arrow_right),
             ),
@@ -716,8 +724,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         context: context,
         isScrollControlled: true,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10), topRight: Radius.circular(10))),
         builder: (builder) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
@@ -752,7 +760,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
     //selList--selected list
     //sinList---single attribute list for compare
-
+    _selectedIndex.clear();
     if (widget.model.stockType == "0" || widget.model.stockType == "1") {
       if (widget.model.availability == "1") {
         available = true;
@@ -789,236 +797,261 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
       if (_selectedIndex.length == i) _selectedIndex.insert(i, null);
     }
-    print("selected****${_selectedIndex.toString()}");
+
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10), topRight: Radius.circular(10))),
         builder: (builder) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
-            return ListView(
-              shrinkWrap: true,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Text(
-                    selectVarient,
-                    style: Theme.of(context).textTheme.headline6,
+            return Container(
+              constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.9),
+              child: ListView(
+                shrinkWrap: true,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Text(
+                      getTranslated(context, 'selectVarient'),
+                      style: Theme.of(context).textTheme.headline6,
+                    ),
                   ),
-                ),
-                Divider(),
-                _title(),
-                _price(_oldSelVarient),
-                _offPrice(_oldSelVarient),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: widget.model.attributeList.length,
-                  itemBuilder: (context, index) {
-                    List<Widget> chips = new List();
-                    List<String> att =
-                        widget.model.attributeList[index].value.split(',');
-                    List<String> attId =
-                        widget.model.attributeList[index].id.split(',');
-                    int varSelected;
+                  Divider(),
+                  _title(),
+                  _price(_oldSelVarient),
+                  _offPrice(_oldSelVarient),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: widget.model.attributeList.length,
+                    itemBuilder: (context, index) {
+                      List<Widget> chips = new List();
+                      List<String> att =
+                          widget.model.attributeList[index].value.split(',');
+                      List<String> attId =
+                          widget.model.attributeList[index].id.split(',');
+                      int varSelected;
 
-                    List<String> wholeAtt = widget.model.attrIds.split(',');
+                      List<String> wholeAtt = widget.model.attrIds.split(',');
 
-                    for (int i = 0; i < att.length; i++) {
-                      if (wholeAtt.contains(attId[i])) {
-                        choiceChip = ChoiceChip(
-                          selected: _selectedIndex.length > index
-                              ? _selectedIndex[index] == i
-                              : false,
-                          label: Text(att[i], style: TextStyle(color: white)),
-                          // backgroundColor: fontColor.withOpacity(0.45),
-                          selectedColor: grad2Color,
-                          disabledColor: grad2Color.withOpacity(0.5),
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5))),
-                          onSelected: att.length == 1
-                              ? null
-                              : (bool selected) {
-                                  setState(() {
-                                    available = false;
-                                    _selectedIndex[index] = selected ? i : null;
-                                    List<int> selectedId =
-                                        []; //list where user choosen item id is stored
-                                    List<bool> check = [];
-                                    for (int i = 0;
-                                        i < widget.model.attributeList.length;
-                                        i++) {
-                                      List<String> attId = widget
-                                          .model.attributeList[i].id
-                                          .split(',');
+                      for (int i = 0; i < att.length; i++) {
+                        if (_selectedIndex[index] != null) if (wholeAtt
+                            .contains(attId[i])) {
+                          choiceChip = ChoiceChip(
+                            selected: _selectedIndex.length > index
+                                ? _selectedIndex[index] == i
+                                : false,
+                            label: Text(att[i],
+                                style: TextStyle(color: colors.white)),
+                            // backgroundColor: colors.colors.fontColor.withOpacity(0.45),
+                            selectedColor: colors.grad2Color,
+                            disabledColor: colors.grad2Color.withOpacity(0.5),
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5))),
+                            onSelected: att.length == 1
+                                ? null
+                                : (bool selected) {
+                                    if (selected)
+                                      setState(() {
+                                        available = false;
+                                        _selectedIndex[index] =
+                                            selected ? i : null;
+                                        List<int> selectedId =
+                                            []; //list where user choosen item id is stored
+                                        List<bool> check = [];
+                                        for (int i = 0;
+                                            i <
+                                                widget
+                                                    .model.attributeList.length;
+                                            i++) {
+                                          List<String> attId = widget
+                                              .model.attributeList[i].id
+                                              .split(',');
 
-                                      if (_selectedIndex[i] != null)
-                                        selectedId.add(int.parse(
-                                            attId[_selectedIndex[i]]));
-                                    }
-                                    check.clear();
-                                    List<String> sinId;
-                                    findMatch:
-                                    for (int i = 0;
-                                        i < widget.model.prVarientList.length;
-                                        i++) {
-                                      sinId = widget.model.prVarientList[i]
-                                          .attribute_value_ids
-                                          .split(",");
+                                          if (_selectedIndex[i] != null)
+                                            selectedId.add(int.parse(
+                                                attId[_selectedIndex[i]]));
+                                        }
+                                        check.clear();
+                                        List<String> sinId;
+                                        findMatch:
+                                        for (int i = 0;
+                                            i <
+                                                widget
+                                                    .model.prVarientList.length;
+                                            i++) {
+                                          sinId = widget.model.prVarientList[i]
+                                              .attribute_value_ids
+                                              .split(",");
 
-                                      for (int j = 0;
-                                          j < selectedId.length;
-                                          j++) {
-                                        if (sinId.contains(
-                                            selectedId[j].toString())) {
-                                          check.add(true);
+                                          for (int j = 0;
+                                              j < selectedId.length;
+                                              j++) {
+                                            if (sinId.contains(
+                                                selectedId[j].toString())) {
+                                              check.add(true);
 
-                                          if (selectedId.length ==
-                                                  sinId.length &&
-                                              check.length ==
-                                                  selectedId.length) {
-                                            varSelected = i;
-                                            break findMatch;
+                                              if (selectedId.length ==
+                                                      sinId.length &&
+                                                  check.length ==
+                                                      selectedId.length) {
+                                                varSelected = i;
+                                                break findMatch;
+                                              }
+                                            } else {
+                                              print(
+                                                  'match****not match==braek**$j');
+                                              break;
+                                            }
+                                          }
+                                        }
+
+                                        if (selectedId.length == sinId.length &&
+                                            check.length == selectedId.length) {
+                                          if (widget.model.stockType == "0" ||
+                                              widget.model.stockType == "1") {
+                                            if (widget.model.availability ==
+                                                "1") {
+                                              available = true;
+
+                                              _oldSelVarient = varSelected;
+                                            } else {
+                                              available = false;
+                                            }
+                                          } else if (widget.model.stockType ==
+                                              "null") {
+                                            available = true;
+
+                                            _oldSelVarient = varSelected;
+                                          } else if (widget.model.stockType ==
+                                              "2") {
+                                            if (widget
+                                                    .model
+                                                    .prVarientList[varSelected]
+                                                    .availability ==
+                                                "1") {
+                                              available = true;
+
+                                              _oldSelVarient = varSelected;
+                                            } else {
+                                              available = false;
+                                            }
                                           }
                                         } else {
-                                          print(
-                                              'match****not match==braek**$j');
-                                          break;
-                                        }
-                                      }
-                                    }
-
-                                    if (selectedId.length == sinId.length &&
-                                        check.length == selectedId.length) {
-                                      if (widget.model.stockType == "0" ||
-                                          widget.model.stockType == "1") {
-                                        if (widget.model.availability == "1") {
-                                          available = true;
-
-                                          _oldSelVarient = varSelected;
-                                        } else {
                                           available = false;
                                         }
-                                      } else if (widget.model.stockType ==
-                                          "null") {
-                                        available = true;
-
-                                        _oldSelVarient = varSelected;
-                                      } else if (widget.model.stockType ==
-                                          "2") {
                                         if (widget
                                                 .model
-                                                .prVarientList[varSelected]
-                                                .availability ==
-                                            "1") {
-                                          available = true;
+                                                .prVarientList[_oldSelVarient]
+                                                .images
+                                                .length >
+                                            0) {
+                                          int oldVarTotal = 0;
+                                          if (_oldSelVarient > 0)
+                                            for (int i = 0;
+                                                i < _oldSelVarient;
+                                                i++) {
+                                              oldVarTotal = oldVarTotal +
+                                                  widget.model.prVarientList[i]
+                                                      .images.length;
+                                            }
+                                          int p =
+                                              widget.model.otherImage.length +
+                                                  1 +
+                                                  oldVarTotal;
 
-                                          _oldSelVarient = varSelected;
-                                        } else {
-                                          available = false;
+                                          _pageController.jumpToPage(p);
                                         }
-                                      }
-                                    } else {
-                                      available = false;
-                                    }
-                                    if (widget
-                                            .model
-                                            .prVarientList[_oldSelVarient]
-                                            .images
-                                            .length >
-                                        0) {
-                                      int oldVarTotal = 0;
-                                      if (_oldSelVarient > 0)
-                                        for (int i = 0;
-                                            i < _oldSelVarient;
-                                            i++) {
-                                          oldVarTotal = oldVarTotal +
-                                              widget.model.prVarientList[i]
-                                                  .images.length;
-                                        }
-                                      int p = widget.model.otherImage.length +
-                                          1 +
-                                          oldVarTotal;
 
-                                      _pageController.jumpToPage(p);
-                                    }
-                                  });
-                                },
-                        );
+                                        print(
+                                            "selected list****${selectedId.toString()}");
+                                      });
+                                  },
+                          );
 
-                        chips.add(Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5),
-                            child: choiceChip));
+                          chips.add(Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5),
+                              child: choiceChip));
+                        }
                       }
-                    }
 
-                    String value =
-                        index <= att.length && _selectedIndex[index] != null
-                            ? att[_selectedIndex[index]]
-                            : VAR_SEL;
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          chips.length > 0
-                              ? Text(
-                                  widget.model.attributeList[index].name +
-                                      " : " +
-                                      value,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                )
-                              : Container(),
-                          new Wrap(
-                            children: chips.map<Widget>((Widget chip) {
-                              return Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: chip,
-                              );
-                            }).toList(),
+                      String value = _selectedIndex[index] != null &&
+                              _selectedIndex[index] <= att.length
+                          ? att[_selectedIndex[index]]
+                          : getTranslated(context, 'VAR_SEL').substring(
+                              2, getTranslated(context, 'VAR_SEL').length);
+                      return chips.length > 0
+                          ? Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    widget.model.attributeList[index].name +
+                                        " : " +
+                                        value,
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  new Wrap(
+                                    children: chips.map<Widget>((Widget chip) {
+                                      return Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: chip,
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container();
+                    },
+                  ),
+                  available == false
+                      ? Center(
+                          child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Text(
+                            "This varient doesn't available.",
+                            style: TextStyle(color: Colors.red),
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                available == false
-                    ? Center(
-                        child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Text(
-                          "This varient doesn't available.",
-                          style: TextStyle(color: Colors.red),
+                        ))
+                      : Container(),
+                  CupertinoButton(
+                    padding: EdgeInsets.all(0),
+                    child: Container(
+                        alignment: FractionalOffset.center,
+                        height: 55,
+                        decoration: BoxDecoration(
+                          gradient: available
+                              ? LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                      colors.grad1Color,
+                                      colors.grad2Color
+                                    ],
+                                  stops: [
+                                      0,
+                                      1
+                                    ])
+                              : null,
+                          color: available ? null : colors.disableColor,
                         ),
-                      ))
-                    : Container(),
-                CupertinoButton(
-                  padding: EdgeInsets.all(0),
-                  child: Container(
-                      alignment: FractionalOffset.center,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        gradient: available
-                            ? LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [grad1Color, grad2Color],
-                                stops: [0, 1])
-                            : null,
-                        color: available ? null : disableColor,
-                      ),
-                      child: Text(APPLY,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.button.copyWith(
-                                color: white,
-                              ))),
-                  onPressed: available ? applyVarient : null,
-                )
-              ],
+                        child: Text(getTranslated(context, 'APPLY'),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.button.copyWith(
+                                  color: colors.white,
+                                ))),
+                    onPressed: available ? applyVarient : null,
+                  )
+                ],
+              ),
             );
           });
         });
@@ -1076,7 +1109,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           widget.updateParent();
           widget.updateHome();
         } on TimeoutException catch (_) {
-          setSnackbar(somethingMSg);
+          setSnackbar(getTranslated(context, 'somethingMSg'));
           setState(() {
             _isProgress = false;
           });
@@ -1107,7 +1140,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         Response response =
             await post(getRatingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-        print("review****${response.body.toString()}");
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -1131,7 +1163,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
         setState(() {
           _isLoading = false;
         });
@@ -1173,7 +1205,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           widget.model.isFavLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
       setState(() {
@@ -1213,7 +1245,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           widget.model.isFavLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
       setState(() {
@@ -1250,6 +1282,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       Divider(),
                       _specification(),
                       Divider(),
+//if you want to remove discount and coupon then just double slash below line
                       _discountCoupon(),
                     ],
                   ),
@@ -1268,8 +1301,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                               child: Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: Text(
-                                  VIEW_ALL,
-                                  style: TextStyle(color: primary),
+                                  getTranslated(context, 'VIEW_ALL'),
+                                  style: TextStyle(color: colors.primary),
                                 ),
                               ),
                               onTap: () {
@@ -1289,7 +1322,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     ? Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          MORE_PRODUCT,
+                          getTranslated(context, 'MORE_PRODUCT'),
                           style: Theme.of(context).textTheme.subtitle1,
                         ),
                       )
@@ -1331,8 +1364,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                   Container(
                     height: 55,
                     decoration: BoxDecoration(
-                      color: white,
-                      boxShadow: [BoxShadow(color: black26, blurRadius: 10)],
+                      color: colors.white,
+                      boxShadow: [
+                        BoxShadow(color: colors.black26, blurRadius: 10)
+                      ],
                     ),
                     width: deviceWidth * 0.5,
                     child: InkWell(
@@ -1341,9 +1376,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       },
                       child: Center(
                           child: Text(
-                        ADD_CART,
+                        getTranslated(context, 'ADD_CART'),
                         style: Theme.of(context).textTheme.button.copyWith(
-                            fontWeight: FontWeight.bold, color: primary),
+                            fontWeight: FontWeight.bold, color: colors.primary),
                       )),
                     ),
                   ),
@@ -1353,9 +1388,11 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [grad1Color, grad2Color],
+                          colors: [colors.grad1Color, colors.grad2Color],
                           stops: [0, 1]),
-                      boxShadow: [BoxShadow(color: black26, blurRadius: 10)],
+                      boxShadow: [
+                        BoxShadow(color: colors.black26, blurRadius: 10)
+                      ],
                     ),
                     width: deviceWidth * 0.5,
                     child: InkWell(
@@ -1364,9 +1401,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       },
                       child: Center(
                           child: Text(
-                        BUYNOW,
+                        getTranslated(context, 'BUYNOW'),
                         style: Theme.of(context).textTheme.button.copyWith(
-                            fontWeight: FontWeight.bold, color: white),
+                            fontWeight: FontWeight.bold, color: colors.white),
                       )),
                     ),
                   ),
@@ -1375,12 +1412,12 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             : Container(
                 height: 55,
                 decoration: BoxDecoration(
-                  color: white,
-                  boxShadow: [BoxShadow(color: black26, blurRadius: 10)],
+                  color: colors.white,
+                  boxShadow: [BoxShadow(color: colors.black26, blurRadius: 10)],
                 ),
                 child: Center(
                     child: Text(
-                  OUT_OF_STOCK_LBL,
+                  getTranslated(context, 'OUT_OF_STOCK_LBL'),
                   style: Theme.of(context)
                       .textTheme
                       .button
@@ -1393,7 +1430,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   _madeIn() {
     String madeIn = widget.model.madein;
-    return madeIn != null
+
+
+    return madeIn != null && madeIn.isNotEmpty
         ? Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: ListTile(
@@ -1455,43 +1494,49 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 style: Theme.of(context)
                     .textTheme
                     .caption
-                    .copyWith(color: lightBlack),
+                    .copyWith(color: colors.lightBlack),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             Text(" " + CUR_CURRENCY + " " + price.toString(),
-                style:
-                    TextStyle(color: fontColor, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: colors.fontColor, fontWeight: FontWeight.bold)),
             Padding(
               padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
-              child: int.parse(productList[index].prVarientList[0].disPrice) !=
-                      0
-                  ? Row(
-                      children: <Widget>[
-                        Text(
-                          int.parse(productList[index]
-                                      .prVarientList[0]
-                                      .disPrice) !=
-                                  0
-                              ? CUR_CURRENCY +
-                                  "" +
-                                  productList[index].prVarientList[0].price
-                              : "",
-                          style: Theme.of(context).textTheme.overline.copyWith(
-                              decoration: TextDecoration.lineThrough,
-                              letterSpacing: 0),
+              child:
+                  double.parse(productList[index].prVarientList[0].disPrice) !=
+                          0
+                      ? Row(
+                          children: <Widget>[
+                            Text(
+                              double.parse(productList[index]
+                                          .prVarientList[0]
+                                          .disPrice) !=
+                                      0
+                                  ? CUR_CURRENCY +
+                                      "" +
+                                      productList[index].prVarientList[0].price
+                                  : "",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(
+                                      decoration: TextDecoration.lineThrough,
+                                      letterSpacing: 0),
+                            ),
+                            Text(" | " + "-$offPer%",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .overline
+                                    .copyWith(
+                                        color: colors.primary,
+                                        letterSpacing: 0)),
+                          ],
+                        )
+                      : Container(
+                          height: 5,
                         ),
-                        Text(" | " + "-$offPer%",
-                            style: Theme.of(context)
-                                .textTheme
-                                .overline
-                                .copyWith(color: primary, letterSpacing: 0)),
-                      ],
-                    )
-                  : Container(
-                      height: 5,
-                    ),
             )
           ],
         ),
@@ -1542,7 +1587,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       Spacer(),
                       Text(
                         reviewList[index].date,
-                        style: TextStyle(color: lightBlack, fontSize: 11),
+                        style:
+                            TextStyle(color: colors.lightBlack, fontSize: 11),
                       )
                     ],
                   ),
@@ -1550,7 +1596,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     rating: double.parse(reviewList[index].rating),
                     itemBuilder: (context, index) => Icon(
                       Icons.star,
-                      color: Colors.amber,
+                      color: colors.primary,
                     ),
                     itemCount: 5,
                     itemSize: 12.0,
@@ -1639,7 +1685,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           }
         }
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
         setState(() {
           notificationisloadmore = false;
         });
@@ -1707,8 +1753,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       child: ListTile(
         dense: true,
         title: Text(
-          SPECIFICATION,
-          style: TextStyle(color: lightBlack),
+          getTranslated(context, 'SPECIFICATION'),
+          style: TextStyle(color: colors.lightBlack),
         ),
         trailing: Icon(Icons.keyboard_arrow_right),
       ),
@@ -1721,13 +1767,13 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       child: ListTile(
         dense: true,
         title: Text(
-          DISCOUPON,
-          style: TextStyle(color: lightBlack),
+          getTranslated(context, 'DISCOUPON'),
+          style: TextStyle(color: colors.lightBlack),
         ),
         trailing: Icon(Icons.keyboard_arrow_right),
         subtitle: Text(
-          COMINGSOON,
-          style: TextStyle(color: primary),
+          getTranslated(context, 'COMINGSOON'),
+          style: TextStyle(color: colors.primary),
         ),
       ),
     );
@@ -1739,22 +1785,23 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         child: Row(
           children: [
             Text(
-              CUSTOMER_REVIEW_LBL + " ($total)",
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle2
-                  .copyWith(color: lightBlack, fontWeight: FontWeight.bold),
+              getTranslated(context, 'CUSTOMER_REVIEW_LBL') + " ($total)",
+              style: Theme.of(context).textTheme.subtitle2.copyWith(
+                  color: colors.lightBlack, fontWeight: FontWeight.bold),
             ),
             Spacer(),
             Text(
               widget.model.rating + "/5 ",
-              style: Theme.of(context).textTheme.caption,
+              style: Theme.of(context)
+                  .textTheme
+                  .caption
+                  .copyWith(color: colors.lightBlack2),
             ),
             RatingBarIndicator(
               rating: double.parse(widget.model.rating),
               itemBuilder: (context, index) => Icon(
                 Icons.star,
-                color: Colors.amber,
+                color: colors.primary,
               ),
               itemCount: 5,
               itemSize: 12.0,
@@ -1840,5 +1887,31 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             ),
           )
         : Container();
+  }
+
+  Future<void> getShare() async {
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix: deepLinkUrlPrefix,
+      link: Uri.parse(
+          'https://$deepLinkName/?index=${widget.index}&secPos=${widget.secPos}&list=${widget.list}&id=${widget.model.id}'),
+      androidParameters: AndroidParameters(
+        packageName: packageName,
+        minimumVersion: 1,
+      ),
+      iosParameters: IosParameters(
+        bundleId: iosPackage,
+        minimumVersion: '1',
+        appStoreId: appStoreId,
+      ),
+    );
+
+    final Uri longDynamicUrl = await parameters.buildUrl();
+    shortenedLink = await DynamicLinkParameters.shortenUrl(
+      longDynamicUrl,
+      new DynamicLinkParametersOptions(
+          shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
+    );
+    shareLink =
+        "\n$appName\n${getTranslated(context, 'APPFIND')}$androidLink$packageName\n${getTranslated(context, 'IOSLBL')}\n$iosLink$iosPackage";
   }
 }

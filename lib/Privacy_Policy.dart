@@ -70,7 +70,7 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -97,7 +97,6 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-
     return _isLoading
         ? Scaffold(
             key: _scaffoldKey,
@@ -106,6 +105,7 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
           )
         : privacy != null
             ? WebviewScaffold(
+
                 appBar: getAppBar(widget.title, context),
                 withJavascript: true,
                 appCacheEnabled: true,
@@ -126,11 +126,14 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       try {
         String type;
-        if (widget.title == PRIVACY)
+        if (widget.title == getTranslated(context, 'PRIVACY'))
           type = PRIVACY_POLLICY;
-        else if (widget.title == TERM)
+        else if (widget.title == getTranslated(context, 'TERM'))
           type = TERM_COND;
-        else if (widget.title == ABOUT_LBL) type = CONTACT_US;
+        else if (widget.title == getTranslated(context, 'ABOUT_LBL'))
+          type = ABOUT_US;
+        else if (widget.title == getTranslated(context, 'CONTACT_LBL'))
+          type = CONTACT_US;
 
         var parameter = {TYPE: type};
         Response response =
@@ -150,7 +153,7 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
       setState(() {
@@ -165,9 +168,9 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }

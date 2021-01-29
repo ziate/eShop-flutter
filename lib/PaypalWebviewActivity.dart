@@ -101,12 +101,12 @@ class StatePayPalWebview extends State<PaypalWebview> {
                 ? Container()
                 : Center(
                 child: Container(
-                    color: primary,
+                    color: colors.primary,
                     padding: EdgeInsets.all(5),
                     margin: EdgeInsets.all(5),
                     child: Text(
                       message,
-                      style: TextStyle(color: white),
+                      style: TextStyle(color: colors.white),
                     )))
           ],
         ));

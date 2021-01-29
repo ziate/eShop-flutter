@@ -91,7 +91,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -119,7 +119,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: lightWhite,
+
         key: _scaffoldKey,
         appBar: getAppBar(widget.title, context),
         body: _isNetworkAvail ? _showForm() : noInternet(context));
@@ -131,15 +131,15 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
         child: _isLoading
             ? shimmer()
             : ListView.builder(
-                controller: controller,
-                itemCount: faqs_list.length,
-                physics: BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return (index == faqs_list.length && isLoadingmore)
-                      ? Center(child: CircularProgressIndicator())
-                      : listItem(index);
-                },
-              ));
+          controller: controller,
+          itemCount: faqs_list.length,
+          physics: BouncingScrollPhysics(),
+          itemBuilder: (context, index) {
+            return (index == faqs_list.length && isLoadingmore)
+                ? Center(child: CircularProgressIndicator())
+                : listItem(index);
+          },
+        ));
   }
 
   listItem(int index) {
@@ -165,48 +165,48 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: lightBlack),
+                            .copyWith(color: colors.lightBlack),
                       )),
                   selectedIndex != index || flag
                       ? Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                                child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Text(
-                                      faqs_list[index].answer,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .subtitle2
-                                          .copyWith(
-                                              color: black.withOpacity(0.7)),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ))),
-                            Icon(Icons.keyboard_arrow_down)
-                          ],
-                        )
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                          child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0),
+                              child: Text(
+                                faqs_list[index].answer,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .subtitle2
+                                    .copyWith(
+                                    color: colors.black.withOpacity(0.7)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ))),
+                      Icon(Icons.keyboard_arrow_down)
+                    ],
+                  )
                       : Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                              Expanded(
-                                  child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: Text(
-                                        faqs_list[index].answer,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .subtitle2
-                                            .copyWith(
-                                                color: black.withOpacity(0.7)),
-                                      ))),
-                              Icon(Icons.keyboard_arrow_up)
-                            ]),
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                            child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0),
+                                child: Text(
+                                  faqs_list[index].answer,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(
+                                      color: colors.black.withOpacity(0.7)),
+                                ))),
+                        Icon(Icons.keyboard_arrow_up)
+                      ]),
                 ]),
           ),
         ));
@@ -236,7 +236,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
       setState(() {
@@ -251,9 +251,9 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }

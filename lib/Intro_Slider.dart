@@ -21,10 +21,31 @@ class _GettingStartedScreenState extends State<Intro_Slider>
   final PageController _pageController = PageController(initialPage: 0);
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
+  List slideList = [];
 
   @override
   void initState() {
     super.initState();
+
+    new Future.delayed(Duration.zero,() {
+       slideList = [
+        Slide(
+          imageUrl: 'assets/images/introimage_a.png',
+          title: getTranslated(context, 'TITLE1_LBL'),
+          description: getTranslated(context, 'DISCRIPTION1'),
+        ),
+        Slide(
+          imageUrl: 'assets/images/introimage_b.png',
+          title: getTranslated(context,'TITLE2_LBL'),
+          description: getTranslated(context, 'DISCRIPTION2'),
+        ),
+        Slide(
+          imageUrl: 'assets/images/introimage_c.png',
+          title: getTranslated(context, 'TITLE3_LBL'),
+          description: getTranslated(context, 'DISCRIPTION3'),
+        ),
+      ];
+    });
 
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
@@ -56,23 +77,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
     });
   }
 
-  final slideList = [
-    Slide(
-      imageUrl: 'assets/images/introimage_a.png',
-      title: TITLE1_LBL,
-      description: DISCRIPTION1,
-    ),
-    Slide(
-      imageUrl: 'assets/images/introimage_b.png',
-      title: TITLE2_LBL,
-      description: DISCRIPTION2,
-    ),
-    Slide(
-      imageUrl: 'assets/images/introimage_c.png',
-      title: TITLE3_LBL,
-      description: DISCRIPTION3,
-    ),
-  ];
+
 
   List<T> map<T>(List list, Function handler) {
     List<T> result = [];
@@ -106,13 +111,13 @@ class _GettingStartedScreenState extends State<Intro_Slider>
                     margin: EdgeInsets.only(top: 20),
                     child: Text(slideList[index].title,
                         style: Theme.of(context).textTheme.headline5.copyWith(
-                            color: fontColor, fontWeight: FontWeight.bold))),
+                            color: colors.fontColor, fontWeight: FontWeight.bold))),
                 Container(
                   padding: EdgeInsets.only(top: 30.0, left: 15.0, right: 15.0),
                   child: Text(slideList[index].description,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.subtitle1.copyWith(
-                          color: fontColor, fontWeight: FontWeight.normal)),
+                          color: colors.fontColor, fontWeight: FontWeight.normal)),
                 ),
               ],
             ),
@@ -138,8 +143,8 @@ class _GettingStartedScreenState extends State<Intro_Slider>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _currentPage == index
-                        ? fontColor
-                        : fontColor.withOpacity((0.5)),
+                        ? colors.fontColor
+                        : colors.fontColor.withOpacity((0.5)),
                   ));
             },
           ),
@@ -149,8 +154,8 @@ class _GettingStartedScreenState extends State<Intro_Slider>
               padding: const EdgeInsets.only(bottom:18.0),
               child: AppBtn(
                   title: _currentPage == 0 || _currentPage == 1
-                      ? NEXT_LBL
-                      : GET_STARTED,
+                      ? getTranslated(context, 'NEXT_LBL')
+                      : getTranslated(context, 'GET_STARTED'),
                   btnAnim: buttonSqueezeanimation,
                   btnCntrl: buttonController,
                   onBtnSelected: () {
@@ -188,13 +193,13 @@ class _GettingStartedScreenState extends State<Intro_Slider>
                 );
               },
               child: Row(children: [
-                Text(SKIP,
+                Text(getTranslated(context, 'SKIP'),
                     style: Theme.of(context).textTheme.caption.copyWith(
-                      color: fontColor,
+                      color: colors.fontColor,
                     )),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: fontColor,
+                  color: colors.fontColor,
                   size: 12.0,
                 ),
               ]),
@@ -209,18 +214,21 @@ class _GettingStartedScreenState extends State<Intro_Slider>
 
   @override
   Widget build(BuildContext context) {
+
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
     SystemChrome.setEnabledSystemUIOverlays([]);
 
     return Scaffold(
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            skipBtn(),
-            _slider(),
-            _btn(),
-          ],
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              skipBtn(),
+              _slider(),
+              _btn(),
+            ],
+          ),
         ));
   }
 }

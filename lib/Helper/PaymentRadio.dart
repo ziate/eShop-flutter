@@ -20,21 +20,21 @@ class RadioItem extends StatelessWidget {
             height: 20.0,
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _item.isSelected ? primary : white,
-                border: Border.all(color: grad2Color)),
+                color: _item.isSelected ? colors.primary : colors.white,
+                border: Border.all(color: colors.grad2Color)),
             child: Padding(
               padding: const EdgeInsets.all(2.0),
               child: _item.isSelected
                   ? Icon(
-                      Icons.check,
-                      size: 15.0,
-                      color: white,
-                    )
+                Icons.check,
+                size: 15.0,
+                color: colors.white,
+              )
                   : Icon(
-                      Icons.circle,
-                      size: 15.0,
-                      color: white,
-                    ),
+                Icons.circle,
+                size: 15.0,
+                color: colors.white,
+              ),
             ),
           ),
           Padding(

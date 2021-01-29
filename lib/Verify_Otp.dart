@@ -81,7 +81,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
       if (_isClickable) {
         _onVerifyCode();
       } else {
-        setSnackbar(OTPWR);
+        setSnackbar(getTranslated(context, 'OTPWR'));
       }
     } else {
       setState(() {
@@ -94,11 +94,11 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           if (_isClickable)
             _onVerifyCode();
           else {
-            setSnackbar(OTPWR);
+            setSnackbar(getTranslated(context,'OTPWR'));
           }
         } else {
           await buttonController.reverse();
-          setSnackbar(somethingMSg);
+          setSnackbar( getTranslated(context,'somethingMSg'));
         }
       });
     }
@@ -106,7 +106,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
 
   verifyBtn() {
     return AppBtn(
-        title: VERIFY_AND_PROCEED,
+        title: getTranslated(context, 'VERIFY_AND_PROCEED'),
         btnAnim: buttonSqueezeanimation,
         btnCntrl: buttonController,
         onBtnSelected: () async {
@@ -119,9 +119,9 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: fontColor),
+        style: TextStyle(color: colors.fontColor),
       ),
-      backgroundColor: lightWhite,
+      backgroundColor: colors.lightWhite,
       elevation: 1.0,
     ));
   }
@@ -136,15 +136,15 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           .signInWithCredential(phoneAuthCredential)
           .then((UserCredential value) {
         if (value.user != null) {
-          setSnackbar(OTPMSG);
+          setSnackbar(getTranslated(context, 'OTPMSG'));
           setPrefrence(MOBILE, mobile);
           setPrefrence(COUNTRY_CODE, countrycode);
-          if (widget.title == SEND_OTP_TITLE) {
+          if (widget.title == getTranslated(context, 'SEND_OTP_TITLE')) {
             Future.delayed(Duration(seconds: 2)).then((_) {
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (context) => SignUp()));
             });
-          } else if (widget.title == FORGOT_PASS_TITLE) {
+          } else if (widget.title == getTranslated(context, 'FORGOT_PASS_TITLE')) {
             Future.delayed(Duration(seconds: 2)).then((_) {
               Navigator.pushReplacement(
                   context,
@@ -153,7 +153,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
             });
           }
         } else {
-          setSnackbar(OTPERROR);
+          setSnackbar(getTranslated(context, 'OTPERROR'));
         }
       }).catchError((error) {
         setSnackbar(error.toString());
@@ -206,15 +206,15 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           .then((UserCredential value) async {
         if (value.user != null) {
           await buttonController.reverse();
-          setSnackbar(OTPMSG);
+          setSnackbar(getTranslated(context, 'OTPMSG'));
           setPrefrence(MOBILE, mobile);
           setPrefrence(COUNTRY_CODE, countrycode);
-          if (widget.title == SEND_OTP_TITLE) {
+          if (widget.title == getTranslated(context, 'SEND_OTP_TITLE')) {
             Future.delayed(Duration(seconds: 2)).then((_) {
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (context) => SignUp()));
             });
-          } else if (widget.title == FORGOT_PASS_TITLE) {
+          } else if (widget.title == getTranslated(context,'FORGOT_PASS_TITLE')) {
             Future.delayed(Duration(seconds: 2)).then((_) {
               Navigator.pushReplacement(
                   context,
@@ -223,7 +223,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
             });
           }
         } else {
-          setSnackbar(OTPERROR);
+          setSnackbar(getTranslated(context,'OTPERROR'));
           await buttonController.reverse();
         }
       }).catchError((error) async {
@@ -232,7 +232,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
         await buttonController.reverse();
       });
     } else {
-      setSnackbar(ENTEROTP);
+      setSnackbar(getTranslated(context, 'ENTEROTP'));
     }
   }
 
@@ -263,11 +263,11 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           top: 30.0,
         ),
         child: Center(
-          child: new Text(MOBILE_NUMBER_VARIFICATION,
+          child: new Text(getTranslated(context, 'MOBILE_NUMBER_VARIFICATION'),
               style: Theme.of(context)
                   .textTheme
                   .subtitle1
-                  .copyWith(color: fontColor, fontWeight: FontWeight.bold)),
+                  .copyWith(color: colors.fontColor, fontWeight: FontWeight.bold)),
         ));
   }
 
@@ -275,24 +275,24 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
     return Padding(
         padding: EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
         child: Center(
-          child: new Text(SENT_VERIFY_CODE_TO_NO_LBL,
+          child: new Text(getTranslated(context, 'SENT_VERIFY_CODE_TO_NO_LBL'),
               style: Theme.of(context)
                   .textTheme
                   .subtitle2
-                  .copyWith(color: fontColor, fontWeight: FontWeight.normal)),
+                  .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal)),
         ));
   }
 
   mobText() {
     return Padding(
       padding:
-          EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 10.0),
+      EdgeInsets.only(bottom: 10.0, left: 20.0, right: 20.0, top: 10.0),
       child: Center(
         child: Text("+$countrycode-$mobile",
             style: Theme.of(context)
                 .textTheme
                 .subtitle1
-                .copyWith(color: fontColor, fontWeight: FontWeight.normal)),
+                .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal)),
       ),
     );
   }
@@ -306,8 +306,8 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
         child: Center(
             child: PinFieldAutoFill(
                 decoration: UnderlineDecoration(
-                  textStyle: TextStyle(fontSize: 20, color: fontColor),
-                  colorBuilder: FixedColorBuilder(lightWhite),
+                  textStyle: TextStyle(fontSize: 20, color: colors.fontColor),
+                  colorBuilder: FixedColorBuilder(colors.lightBlack2),
                 ),
                 currentCode: otp,
                 codeLength: 6,
@@ -322,16 +322,16 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   resendText() {
     return Padding(
       padding:
-          EdgeInsets.only(bottom: 30.0, left: 25.0, right: 25.0, top: 10.0),
+      EdgeInsets.only(bottom: 30.0, left: 25.0, right: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            DIDNT_GET_THE_CODE,
+            getTranslated(context, 'DIDNT_GET_THE_CODE'),
             style: Theme.of(context)
                 .textTheme
                 .caption
-                .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+                .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
           ),
           InkWell(
               onTap: () async {
@@ -339,9 +339,9 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
                 checkNetworkOtp();
               },
               child: Text(
-                RESEND_OTP,
+                getTranslated(context, 'RESEND_OTP'),
                 style: Theme.of(context).textTheme.caption.copyWith(
-                    color: fontColor,
+                    color: colors.fontColor,
                     decoration: TextDecoration.underline,
                     fontWeight: FontWeight.normal),
               ))
@@ -360,7 +360,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
           child: Card(
             elevation: 0.5,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             margin: EdgeInsets.only(left: 20.0, right: 20.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -384,7 +384,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
     return Scaffold(
         key: _scaffoldKey,
         body: Container(
-          color: lightWhite,
+          color: colors.lightWhite,
           padding: EdgeInsets.only(
             bottom: 20.0,
           ),

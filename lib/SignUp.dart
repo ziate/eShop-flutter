@@ -105,9 +105,9 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: fontColor),
+        style: TextStyle(color: colors.fontColor),
       ),
-      backgroundColor: lightWhite,
+
       elevation: 1.0,
     ));
   }
@@ -121,7 +121,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -156,17 +156,17 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         COUNTRY_CODE: countrycode
       };
 
-      print("paramter***register***$data");
+
       Response response =
-          await post(getUserSignUpApi, body: data, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(getUserSignUpApi, body: data, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
       bool error = getdata["error"];
       String msg = getdata["message"];
       await buttonController.reverse();
       if (!error) {
-        setSnackbar(REGISTER_SUCCESS_MSG);
+        setSnackbar(getTranslated(context, 'REGISTER_SUCCESS_MSG'));
         var i = getdata["data"][0];
 
         id = i[ID];
@@ -185,7 +185,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       }
       setState(() {});
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar( getTranslated(context,'somethingMSg'));
       await buttonController.reverse();
     }
   }
@@ -203,11 +203,11 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
     return Padding(
         padding: EdgeInsets.only(top: 30.0),
         child: Center(
-          child: new Text(USER_REGISTRATION_DETAILS,
+          child: new Text(getTranslated(context, 'USER_REGISTER_DETAILS'),
               style: Theme.of(context)
                   .textTheme
                   .subtitle1
-                  .copyWith(color: fontColor, fontWeight: FontWeight.bold)),
+                  .copyWith(color: colors.fontColor, fontWeight: FontWeight.bold)),
         ));
   }
 
@@ -220,12 +220,17 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       ),
       child: TextFormField(
         keyboardType: TextInputType.text,
-          textCapitalization: TextCapitalization.words,
+        textCapitalization: TextCapitalization.words,
         controller: nameController,
         focusNode: nameFocus,
         textInputAction: TextInputAction.next,
-        style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
-        validator: validateUserName,
+        style: TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
+        validator: (val) => validateUserName(
+            val,
+            getTranslated(
+                context, 'USER_REQUIRED'),
+            getTranslated(
+                context, 'USER_LENGTH')),
         onSaved: (String value) {
           name = value;
         },
@@ -235,24 +240,24 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         decoration: InputDecoration(
           prefixIcon: Icon(
             Icons.person_outline,
-            color: fontColor,
+            color: colors.fontColor,
             size: 17,
           ),
-          hintText: NAMEHINT_LBL,
+          hintText: getTranslated(context, 'NAMEHINT_LBL'),
           hintStyle: Theme.of(this.context)
               .textTheme
               .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+              .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
           filled: true,
-          fillColor: lightWhite,
+          fillColor: colors.lightWhite,
           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: fontColor),
+            borderSide: BorderSide(color: colors.fontColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: lightWhite),
+            borderSide: BorderSide(color: colors.lightWhite),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -272,8 +277,13 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         focusNode: emailFocus,
         textInputAction: TextInputAction.next,
         controller: emailController,
-        style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
-        validator: validateEmail,
+        style: TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
+        validator: (val) => validateEmail(
+            val,
+            getTranslated(
+                context, 'EMAIL_REQUIRED'),
+            getTranslated(
+                context, 'VALID_EMAIL')),
         onSaved: (String value) {
           email = value;
         },
@@ -283,24 +293,24 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         decoration: InputDecoration(
           prefixIcon: Icon(
             Icons.email_outlined,
-            color: fontColor,
+            color: colors.fontColor,
             size: 17,
           ),
-          hintText: EMAILHINT_LBL,
+          hintText: getTranslated(context,'EMAILHINT_LBL'),
           hintStyle: Theme.of(this.context)
               .textTheme
               .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+              .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
           filled: true,
-          fillColor: lightWhite,
+          fillColor: colors.lightWhite,
           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: fontColor),
+            borderSide: BorderSide(color: colors.fontColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: lightWhite),
+            borderSide: BorderSide(color: colors.lightWhite),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -315,33 +325,33 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
           keyboardType: TextInputType.text,
           obscureText: !this._showPassword,
           focusNode: passFocus,
-          style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
+          style: TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
           controller: passwordController,
-          validator: validatePass,
+          validator:(val)=> validatePass(val,getTranslated(context, 'PWD_REQUIRED'),getTranslated(context, 'PWD_LENGTH')),
           onSaved: (String value) {
             password = value;
           },
           decoration: InputDecoration(
             prefixIcon: Icon(
               Icons.lock_outline,
-              color: fontColor,
+              color: colors.fontColor,
               size: 17,
             ),
-            hintText: PASSHINT_LBL,
+            hintText: getTranslated(context, 'PASSHINT_LBL'),
             hintStyle: Theme.of(this.context)
                 .textTheme
                 .subtitle2
-                .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+                .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
             filled: true,
-            fillColor: lightWhite,
+            fillColor: colors.lightWhite,
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: fontColor),
+              borderSide: BorderSide(color: colors.fontColor),
               borderRadius: BorderRadius.circular(10.0),
             ),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: lightWhite),
+              borderSide: BorderSide(color: colors.lightWhite),
               borderRadius: BorderRadius.circular(10.0),
             ),
           ),
@@ -359,24 +369,24 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
           children: <Widget>[
             Checkbox(
               value: _showPassword,
-              checkColor: fontColor,
-              activeColor: lightWhite,
+              checkColor: colors.fontColor,
+              activeColor: colors.lightWhite,
               onChanged: (bool value) {
                 setState(() {
                   _showPassword = value;
                 });
               },
             ),
-            Text(SHOW_PASSWORD,
+            Text(getTranslated(context, 'SHOW_PASSWORD'),
                 style:
-                    TextStyle(color: fontColor, fontWeight: FontWeight.normal))
+                TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal))
           ],
         ));
   }
 
   verifyBtn() {
     return AppBtn(
-      title: VERIFY_MOBILE_NUMBER,
+      title: getTranslated(context, 'VERIFY_MOBILE_NUMBER'),
       btnAnim: buttonSqueezeanimation,
       btnCntrl: buttonController,
       onBtnSelected: () async {
@@ -388,15 +398,15 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   loginTxt() {
     return Padding(
       padding:
-          EdgeInsets.only(bottom: 30.0, left: 25.0, right: 25.0, top: 10.0),
+      EdgeInsets.only(bottom: 30.0, left: 25.0, right: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(ALREADY_A_CUSTOMER,
+          Text(getTranslated(context, 'ALREADY_A_CUSTOMER'),
               style: Theme.of(context)
                   .textTheme
                   .caption
-                  .copyWith(color: fontColor, fontWeight: FontWeight.normal)),
+                  .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal)),
           InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
@@ -404,9 +414,9 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                 ));
               },
               child: Text(
-                LOG_IN_LBL,
+                getTranslated(context, 'LOG_IN_LBL'),
                 style: Theme.of(context).textTheme.caption.copyWith(
-                    color: fontColor,
+                    color: colors.fontColor,
                     decoration: TextDecoration.underline,
                     fontWeight: FontWeight.normal),
               ))
@@ -418,53 +428,53 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   backBtn() {
     return Platform.isIOS
         ? Container(
-            padding: EdgeInsets.only(top: 20.0, left: 10.0),
-            alignment: Alignment.topLeft,
-            child: Card(
-              elevation: 0,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 4.0),
-                child: InkWell(
-                  child: Icon(Icons.keyboard_arrow_left, color: primary),
-                  onTap: () => Navigator.of(context).pop(),
-                ),
-              ),
-            ))
+        padding: EdgeInsets.only(top: 20.0, left: 10.0),
+        alignment: Alignment.topLeft,
+        child: Card(
+          elevation: 0,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: InkWell(
+              child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ))
         : Container();
   }
 
   expandedBottomView() {
 
     return Expanded(
-      flex: 7,
+        flex: 7,
         child: Container(
-      alignment: Alignment.bottomCenter,
-      child: SingleChildScrollView(
-       // physics: BouncingScrollPhysics(),
+          alignment: Alignment.bottomCenter,
+          child: SingleChildScrollView(
+            // physics: BouncingScrollPhysics(),
 
-        child: Form(
-          key: _formkey,
-          child: Card(
-            elevation: 0.5,
-            shape:
+            child: Form(
+              key: _formkey,
+              child: Card(
+                elevation: 0.5,
+                shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                registerTxt(),
-                setUserName(),
-                setEmail(),
-                setPass(),
-                showPass(),
-                verifyBtn(),
-                loginTxt(),
-              ],
+                margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    registerTxt(),
+                    setUserName(),
+                    setEmail(),
+                    setPass(),
+                    showPass(),
+                    verifyBtn(),
+                    loginTxt(),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-    ));
+        ));
   }
 
   @override
@@ -492,17 +502,17 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         key: _scaffoldKey,
         body: _isNetworkAvail
             ? Container(
-                color: lightWhite,
-                padding: EdgeInsets.only(
-                  bottom: 20.0,
-                ),
-                child: Column(
-                  children: <Widget>[
-                    backBtn(),
-                    subLogo(),
-                    expandedBottomView(),
-                  ],
-                ))
+            color: colors.lightWhite,
+            padding: EdgeInsets.only(
+              bottom: 20.0,
+            ),
+            child: Column(
+              children: <Widget>[
+                backBtn(),
+                subLogo(),
+                expandedBottomView(),
+              ],
+            ))
             : noInternet(context));
   }
 }

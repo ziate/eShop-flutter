@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/All_Category.dart';
@@ -9,18 +9,18 @@ import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/PushNotificationService.dart';
 import 'package:eshop/MyProfile.dart';
-import 'package:flutter/rendering.dart';
 import 'package:eshop/ProductList.dart';
 import 'package:eshop/Product_Detail.dart';
 import 'package:eshop/SectionList.dart';
-
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart';
-
 import 'package:shimmer/shimmer.dart';
+
 import 'Cart.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
@@ -32,7 +32,6 @@ import 'Model/Section_Model.dart';
 import 'NotificationLIst.dart';
 import 'Search.dart';
 import 'SubCat.dart';
-
 import 'main.dart';
 
 class Home extends StatefulWidget {
@@ -59,6 +58,7 @@ class StateHome extends State<Home> {
   String profile;
   int curDrwSel = 0;
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+  var isDarkTheme;
 
   @override
   void initState() {
@@ -86,7 +86,6 @@ class StateHome extends State<Home> {
     return WillPopScope(
         onWillPop: onWillPop,
         child: Scaffold(
-            backgroundColor: lightWhite,
             key: scaffoldKey,
             appBar: curSelected == 3 ? null : _getAppbar(),
             // drawer: _getDrawer(),
@@ -106,7 +105,7 @@ class StateHome extends State<Home> {
     } else if (currentBackPressTime == null ||
         now.difference(currentBackPressTime) > Duration(seconds: 2)) {
       currentBackPressTime = now;
-      setSnackbar(EXIT_WR);
+      setSnackbar(getTranslated(context, 'EXIT_WR'));
 
       return Future.value(false);
     }
@@ -118,15 +117,17 @@ class StateHome extends State<Home> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
 
   _getAppbar() {
-    String title = curSelected == 1 ? FAVORITE : NOTIFICATION;
+    String title = curSelected == 1
+        ? getTranslated(context, 'FAVORITE')
+        : getTranslated(context, 'NOTIFICATION');
 
     return AppBar(
       title: curSelected == 0
@@ -134,10 +135,10 @@ class StateHome extends State<Home> {
           : Text(
               title,
               style: TextStyle(
-                color: fontColor,
+                color: colors.fontColor,
               ),
             ),
-      iconTheme: new IconThemeData(color: primary),
+      iconTheme: new IconThemeData(color: colors.primary),
       // centerTitle:_curSelected == 0? false:true,
       actions: <Widget>[
         Padding(
@@ -174,7 +175,7 @@ class StateHome extends State<Home> {
                           child: Container(
                               decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: primary.withOpacity(0.5)),
+                                  color: colors.primary.withOpacity(0.5)),
                               child: new Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(3),
@@ -194,15 +195,17 @@ class StateHome extends State<Home> {
           ),
         ),
       ],
-      backgroundColor: curSelected == 0 ? Colors.transparent : white,
+      backgroundColor: curSelected == 0 ? Colors.transparent : colors.white,
       elevation: 0,
     );
   }
 
   getBottomBar() {
-    return CurvedNavigationBar(
+    isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+     return CurvedNavigationBar(
         key: bottomNavigationKey,
-        backgroundColor: lightWhite,
+        backgroundColor: isDarkTheme ? colors.darkColor : colors.lightWhite,
+        color: isDarkTheme ? colors.darkColor2 : colors.white,
         height: 65,
         items: <Widget>[
           curSelected == 0
@@ -306,10 +309,23 @@ class StateHome extends State<Home> {
       debugPrint('notification payload: $payload');
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => MyApp()),
-    );
+    List<String> pay=payload.split(",");
+    if (pay[0] == "products") {
+      getProduct(pay[1], 0, 0, true);
+    }
+    else if(pay[0]=="categories")
+      {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AllCategory()),
+        );
+      }
+    else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => MyApp()),
+      );
+    }
   }
 
   void initDynamicLinks() async {
@@ -340,7 +356,7 @@ class StateHome extends State<Home> {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        print("product****${id}");
+
 
         var parameter = {
           ID: id,
@@ -351,15 +367,13 @@ class StateHome extends State<Home> {
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
-        print('response***product*$parameter');
-        print('response***product*${response.body.toString()}');
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
           var data = getdata["data"];
-          print("data****$data");
+
           List<Product> items = new List<Product>();
 
           items =
@@ -380,7 +394,7 @@ class StateHome extends State<Home> {
           if (msg != "Products Not Found !") setSnackbar(msg);
         }
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
       {
@@ -421,6 +435,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   bool menuOpen = false;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
+  var isDarkTheme;
 
   @override
   void initState() {
@@ -468,7 +483,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   Widget _home() {
     return Scaffold(
         key: _scaffoldKey,
-        backgroundColor: lightWhite,
+        //  backgroundColor: colors.lightWhite,
         body: _isNetworkAvail
             ? _isCatLoading
                 ? homeShimmer()
@@ -497,7 +512,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -538,13 +553,13 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               width: double.infinity,
               height: height,
-              color: white,
+              color: colors.white,
             ),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
               width: double.infinity,
               height: 18.0,
-              color: white,
+              color: colors.white,
             ),
             Padding(
               padding:
@@ -557,7 +572,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                               margin: EdgeInsets.symmetric(horizontal: 10),
                               width: 50.0,
                               height: 50.0,
-                              color: white,
+                              color: colors.white,
                             ))
                         .toList()),
               ),
@@ -571,14 +586,14 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                                   horizontal: 20, vertical: 5),
                               width: double.infinity,
                               height: 18.0,
-                              color: white,
+                              color: colors.white,
                             ),
                             Container(
                               margin: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 5),
                               width: double.infinity,
                               height: 8.0,
-                              color: white,
+                              color: colors.white,
                             ),
                             GridView.count(
                                 padding: EdgeInsets.symmetric(
@@ -595,7 +610,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                                     return Container(
                                       width: double.infinity,
                                       height: double.infinity,
-                                      color: white,
+                                      color: colors.white,
                                     );
                                   },
                                 )),
@@ -651,7 +666,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                               vertical: 10.0, horizontal: 2.0),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _curSlider == index ? fontColor : lightBlack,
+                            color: _curSlider == index
+                                ? colors.fontColor
+                                : colors.lightBlack,
                           ));
                     },
                   ),
@@ -702,6 +719,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   _getSearchBar() {
+    isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       child: SizedBox(
         height: 35,
@@ -720,16 +738,16 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
               isDense: true,
-              hintText: searchHint,
+              hintText: getTranslated(context, 'searchHint'),
               hintStyle: Theme.of(context).textTheme.bodyText2.copyWith(
-                    color: fontColor,
+                    color: colors.fontColor,
                   ),
               //prefixIcon: Image.asset('assets/images/search.png'),
               suffixIcon: Image.asset(
                 'assets/images/search.png',
-                color: primary,
+                color: isDarkTheme ? colors.secondary : colors.primary,
               ),
-              fillColor: white,
+              fillColor: colors.white,
               filled: true),
         ),
       ),
@@ -754,18 +772,18 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text(
-            category,
+            getTranslated(context, 'category'),
             style: Theme.of(context).textTheme.subtitle1,
           ),
           InkWell(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                seeAll,
+                getTranslated(context, 'seeAll'),
                 style: Theme.of(context)
                     .textTheme
                     .caption
-                    .copyWith(color: primary),
+                    .copyWith(color: colors.primary),
               ),
             ),
             onTap: () async {
@@ -845,7 +863,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                     child: Text(
                       catList[index].name,
                       style: Theme.of(context).textTheme.caption.copyWith(
-                          color: fontColor,
+                          color: colors.fontColor,
                           fontWeight: FontWeight.w600,
                           fontSize: 10),
                       overflow: TextOverflow.ellipsis,
@@ -902,19 +920,21 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Text(
-            title,
-            style: Theme.of(context).textTheme.subtitle1,
+          Expanded(
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
           ),
           InkWell(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                seeAll,
+                getTranslated(context, 'seeAll'),
                 style: Theme.of(context)
                     .textTheme
                     .caption
-                    .copyWith(color: primary),
+                    .copyWith(color: colors.primary),
               ),
             ),
             onTap: () {
@@ -1172,17 +1192,17 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   style: Theme.of(context)
                       .textTheme
                       .caption
-                      .copyWith(color: lightBlack),
+                      .copyWith(color: colors.lightBlack),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               Text(" " + CUR_CURRENCY + " " + price.toString(),
-                  style:
-                      TextStyle(color: fontColor, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: colors.fontColor, fontWeight: FontWeight.bold)),
               Padding(
                 padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
-                child: int.parse(sectionList[secPos]
+                child: double.parse(sectionList[secPos]
                             .productList[index]
                             .prVarientList[0]
                             .disPrice) !=
@@ -1190,7 +1210,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                     ? Row(
                         children: <Widget>[
                           Text(
-                            int.parse(sectionList[secPos]
+                            double.parse(sectionList[secPos]
                                         .productList[index]
                                         .prVarientList[0]
                                         .disPrice) !=
@@ -1213,7 +1233,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                               style: Theme.of(context)
                                   .textTheme
                                   .overline
-                                  .copyWith(color: primary, letterSpacing: 0)),
+                                  .copyWith(
+                                      color: colors.primary, letterSpacing: 0)),
                         ],
                       )
                     : Container(
@@ -1274,7 +1295,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         });
       }
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
 
@@ -1283,9 +1304,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -1332,7 +1353,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         }
       }
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
     return null;
   }
@@ -1364,7 +1385,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           _isCatLoading = false;
         });
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
       if (mounted)
         setState(() {
           _isCatLoading = false;
@@ -1402,7 +1423,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           });
       });
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
       setState(() {
         _isCatLoading = false;
       });
@@ -1446,7 +1467,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         }
       }
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
 
@@ -1475,7 +1496,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           });
       });
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
       setState(() {
         _isCatLoading = false;
       });

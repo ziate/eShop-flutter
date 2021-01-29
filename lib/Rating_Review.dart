@@ -55,8 +55,8 @@ class StateRate extends State<RatingReview> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: lightWhite,
-      appBar: getAppBar(CUSTOMER_REVIEW_LBL, context),
+
+      appBar: getAppBar(getTranslated(context, 'CUSTOMER_REVIEW_LBL'), context),
       body: _review(),
     );
   }
@@ -73,45 +73,45 @@ class StateRate extends State<RatingReview> {
           return (index == reviewList.length && isLoadingmore)
               ? Center(child: CircularProgressIndicator())
               : Card(
-                  elevation: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              reviewList[index].username,
-                              style: TextStyle(fontWeight: FontWeight.w400),
-                            ),
-                            Spacer(),
-                            Text(
-                              reviewList[index].date,
-                              style: TextStyle(color: lightBlack, fontSize: 11),
-                            )
-                          ],
-                        ),
-                        RatingBarIndicator(
-                          rating: double.parse(reviewList[index].rating),
-                          itemBuilder: (context, index) => Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                          ),
-                          itemCount: 5,
-                          itemSize: 12.0,
-                          direction: Axis.horizontal,
-                        ),
-                        reviewList[index].comment != null
-                            ? Text(reviewList[index].comment ?? '')
-                            : Container(),
-                        reviewImage(index)
-                      ],
-                    ),
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        reviewList[index].username,
+                        style: TextStyle(fontWeight: FontWeight.w400),
+                      ),
+                      Spacer(),
+                      Text(
+                        reviewList[index].date,
+                        style: TextStyle(color: colors.lightBlack, fontSize: 11),
+                      )
+                    ],
                   ),
-                );
+                  RatingBarIndicator(
+                    rating: double.parse(reviewList[index].rating),
+                    itemBuilder: (context, index) => Icon(
+                      Icons.star,
+                      color: colors.primary,
+                    ),
+                    itemCount: 5,
+                    itemSize: 12.0,
+                    direction: Axis.horizontal,
+                  ),
+                  reviewList[index].comment != null
+                      ? Text(reviewList[index].comment ?? '')
+                      : Container(),
+                  reviewImage(index)
+                ],
+              ),
+            ),
+          );
         });
   }
 
@@ -169,8 +169,8 @@ class StateRate extends State<RatingReview> {
         };
 
         Response response =
-            await post(getRatingApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+        await post(getRatingApi, body: parameter, headers: headers)
+            .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -198,7 +198,7 @@ class StateRate extends State<RatingReview> {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           _isLoading = false;
         });
@@ -215,9 +215,9 @@ class StateRate extends State<RatingReview> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }

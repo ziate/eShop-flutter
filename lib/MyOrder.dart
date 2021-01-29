@@ -34,7 +34,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
   bool _isLoading = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+  new GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -98,7 +98,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -125,76 +125,76 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: lightWhite,
-      appBar: getAppBar(MY_ORDERS_LBL, context),
+      backgroundColor: colors.lightWhite,
+      appBar: getAppBar(getTranslated(context, 'MY_ORDERS_LBL'), context),
       body: _isNetworkAvail
           ? _isLoading
-              ? shimmer()
-              : RefreshIndicator(
-                  key: _refreshIndicatorKey,
-                  onRefresh: _refresh,
-                  child: SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                              height: 45,
-                              padding: EdgeInsets.only(left: 5.0, right: 5.0),
-                              child: TextField(
-                                controller: _controller,
-                                onChanged: (value) {
-                                  if (_controller.text.trim().isNotEmpty) {
-                                    searchOperation(_controller.text);
-                                  } else {
-                                    setState(() {});
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: white,
-                                  contentPadding:
-                                      EdgeInsets.fromLTRB(15.0, 9.0, 0, 9.0),
-                                  prefixIcon: Image.asset(
-                                    'assets/images/search.png',
-                                    color: primary,
-                                  ),
-                                  hintText: FIND_ORDER_ITEMS_LBL,
-                                  hintStyle: TextStyle(
-                                      color: fontColor.withOpacity(0.3),
-                                      fontWeight: FontWeight.normal),
-                                  border: new OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      width: 0,
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                ),
-                              )),
-                          searchList.length == 0
-                              ? Center(child: Text(noItem))
-                              : ListView.builder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.only(top: 5.0),
-                                  itemCount: searchList.length,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                      if (searchList[index]!= null &&
-                                        searchList[index].itemList.length > 0) {
-                                      OrderItem orderItem =
-                                          searchList[index].itemList[0];
-                                      return productItem(index, orderItem);
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                ),
-                        ],
-                      ),
-                    ),
-                  ))
+          ? shimmer()
+          : RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: _refresh,
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                      height: 45,
+                      padding: EdgeInsets.only(left: 5.0, right: 5.0),
+                      child: TextField(
+                        controller: _controller,
+                        onChanged: (value) {
+                          if (_controller.text.trim().isNotEmpty) {
+                            searchOperation(_controller.text);
+                          } else {
+                            setState(() {});
+                          }
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: colors.white,
+                          contentPadding:
+                          EdgeInsets.fromLTRB(15.0, 9.0, 0, 9.0),
+                          prefixIcon: Image.asset(
+                            'assets/images/search.png',
+                            color: colors.primary,
+                          ),
+                          hintText: getTranslated(context, 'FIND_ORDER_ITEMS_LBL'),
+                          hintStyle: TextStyle(
+                              color: colors.fontColor.withOpacity(0.3),
+                              fontWeight: FontWeight.normal),
+                          border: new OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 0,
+                              style: BorderStyle.none,
+                            ),
+                          ),
+                        ),
+                      )),
+                  searchList.length == 0
+                      ? Center(child: Text(getTranslated(context, 'noItem')))
+                      : ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.only(top: 5.0),
+                    itemCount: searchList.length,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      if (searchList[index]!= null &&
+                          searchList[index].itemList.length > 0) {
+                        OrderItem orderItem =
+                        searchList[index].itemList[0];
+                        return productItem(index, orderItem);
+                      } else {
+                        return null;
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ))
           : noInternet(context),
     );
   }
@@ -213,11 +213,11 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       try {
         if (CUR_USERID != null) {
-           var parameter = {USER_ID: CUR_USERID};
+          var parameter = {USER_ID: CUR_USERID};
 
           Response response =
-              await post(getOrderApi, body: parameter, headers: headers)
-                  .timeout(Duration(seconds: timeOut));
+          await post(getOrderApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
@@ -251,7 +251,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
           });
         }
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           _isLoading = false;
         });
@@ -288,9 +288,9 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -338,7 +338,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subtitle2
-                                    .copyWith(color: lightBlack),
+                                    .copyWith(color: colors.lightBlack),
                               ),
                               Padding(
                                   padding: const EdgeInsets.only(top: 10.0),
@@ -349,8 +349,8 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                                         .textTheme
                                         .subtitle2
                                         .copyWith(
-                                            color: lightBlack2,
-                                            fontWeight: FontWeight.normal),
+                                        color: colors.lightBlack2,
+                                        fontWeight: FontWeight.normal),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   )),
@@ -358,7 +358,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                 Spacer(),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: primary,
+                  color: colors.primary,
                   size: 15,
                 )
               ]),

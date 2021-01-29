@@ -19,8 +19,8 @@ class StateSuccess extends State<OrderSuccess> {
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: lightWhite,
-      appBar: getAppBar(ORDER_PLACED, context),
+
+      appBar: getAppBar(getTranslated(context,'ORDER_PLACED'), context),
       body: Center(
         child: SingleChildScrollView(
             child: Column(
@@ -30,20 +30,20 @@ class StateSuccess extends State<OrderSuccess> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    ORD_PLC,
+                    getTranslated(context,'ORD_PLC'),
                     style: Theme.of(context).textTheme.subtitle1,
                   ),
                 ),
                 Text(
-                  ORD_PLC_SUCC,
-                  style: TextStyle(color: fontColor),
+                  getTranslated(context,'ORD_PLC_SUCC'),
+                  style: TextStyle(color: colors.fontColor),
                 ),
                 Container(
                   padding: EdgeInsets.all(25),
                   margin: EdgeInsets.symmetric(vertical: 40),
                   child: Image.asset("assets/images/orderplaced.png"),
                   decoration: BoxDecoration(
-                      color: white,
+                      color: colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(20))),
                 ),
                 Padding(
@@ -57,15 +57,15 @@ class StateSuccess extends State<OrderSuccess> {
                           gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [grad1Color, grad2Color],
+                              colors: [colors.grad1Color, colors.grad2Color],
                               stops: [0, 1]),
                           borderRadius:
                           new BorderRadius.all(const Radius.circular(10.0)),
                         ),
-                        child: Text(CONTINUE_SHOPPING,
+                        child: Text(getTranslated(context, 'CONTINUE_SHOPPING'),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.headline6.copyWith(
-                                color: white, fontWeight: FontWeight.normal))),
+                                color: colors.white, fontWeight: FontWeight.normal))),
                     onPressed: () {
                       Navigator.of(context).pushNamedAndRemoveUntil(
                           '/home', (Route<dynamic> route) => false);

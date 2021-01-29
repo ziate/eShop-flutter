@@ -50,7 +50,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       confPassC;
   bool isSelected = false, isArea = true;
   bool _isNetworkAvail = true;
-  bool _showPassword = true;
+  bool _showPassword = false, _scPwd = false, _cPwd = false;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
 
@@ -124,7 +124,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -198,7 +198,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       });
       try {
         var request =
-            http.MultipartRequest("POST", Uri.parse(getUpdateUserApi));
+        http.MultipartRequest("POST", Uri.parse(getUpdateUserApi));
         request.headers.addAll(headers);
         request.fields[USER_ID] = CUR_USERID;
         var pic = await http.MultipartFile.fromPath(IMAGE, _image.path);
@@ -212,13 +212,12 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         bool error = getdata["error"];
         String msg = getdata['message'];
         if (!error) {
-          setSnackbar(PROFILE_UPDATE_MSG);
+          setSnackbar(getTranslated(context, 'PROFILE_UPDATE_MSG'));
           List data = getdata["data"];
           for (var i in data) {
             image = i[IMAGE];
           }
           setPrefrence(IMAGE, image);
-
         } else {
           setSnackbar(msg);
         }
@@ -226,7 +225,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
         setState(() {
           _isLoading = false;
         });
@@ -270,52 +269,42 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         .post(getUpdateUserApi, body: data, headers: headers)
         .timeout(Duration(seconds: timeOut));
     if (response.statusCode == 200) {
-    var getdata = json.decode(response.body);
+      var getdata = json.decode(response.body);
 
-    bool error = getdata["error"];
-    String msg = getdata["message"];
-    await buttonController.reverse();
-    if (!error) {
-      setSnackbar(USER_UPDATE_MSG);
-      var i = getdata["data"][0];
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      await buttonController.reverse();
+      if (!error) {
+        setSnackbar(getTranslated(context, 'USER_UPDATE_MSG'));
+        var i = getdata["data"][0];
 
-      CUR_USERID = i[ID];
-      name = i[USERNAME];
-      email = i[EMAIL];
-      mobile = i[MOBILE];
-      city = i[CITY];
-      area = i[AREA];
-      address = i[ADDRESS];
-      pincode = i[PINCODE];
-      lat = i[LATITUDE];
-      long = i[LONGITUDE];
+        CUR_USERID = i[ID];
+        name = i[USERNAME];
+        email = i[EMAIL];
+        mobile = i[MOBILE];
+        city = i[CITY];
+        area = i[AREA];
+        address = i[ADDRESS];
+        pincode = i[PINCODE];
+        lat = i[LATITUDE];
+        long = i[LONGITUDE];
 
-      saveUserDetail(CUR_USERID, name, email, mobile, city, area, address,
-          pincode, lat, long, image);
-      setPrefrence(CITYNAME, cityName);
-      setPrefrence(AREANAME, areaName);
-    } else {
-      setSnackbar(msg);
+        saveUserDetail(CUR_USERID, name, email, mobile, city, area, address,
+            pincode, lat, long, image);
+        setPrefrence(CITYNAME, cityName);
+        setPrefrence(AREANAME, areaName);
+      } else {
+        setSnackbar(msg);
+      }
     }
-  }}
+  }
 
   _imgFromGallery() async {
-   /* File image = await FilePicker.getFile(type: FileType.image);
-
-    if (image != null) {
-
-      setState(() {
-        _isLoading = true;
-      });
-      setProfilePic(image);
-    }*/
-
-    ///for file picker greater version
-      FilePickerResult result = await FilePicker.platform.pickFiles();
-    if(result != null) {
+    FilePickerResult result = await FilePicker.platform.pickFiles();
+    if (result != null) {
       File image = File(result.files.single.path);
       if (image != null) {
-        print('path**${image.path}');
+
         setState(() {
           _isLoading = true;
         });
@@ -327,7 +316,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   }
 
   Future<void> getCities() async {
-
     try {
       var response = await http
           .post(getCitiesApi, headers: headers)
@@ -345,7 +333,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           if (cityList[i].id == city) {
             setState(() {
               cityName = cityList[i].name;
-
             });
           }
         }
@@ -356,7 +343,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         _isLoading = false;
       });
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
       setState(() {
         _isLoading = false;
       });
@@ -364,7 +351,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   }
 
   Future<void> getArea(StateSetter setState) async {
-
     try {
       var data = {
         ID: city,
@@ -373,7 +359,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       var response = await http
           .post(getAreaByCityApi, body: data, headers: headers)
           .timeout(Duration(seconds: timeOut));
-
 
       var getdata = json.decode(response.body);
 
@@ -393,13 +378,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           areaName = "";
         } else {
           for (int i = 0; i < areaList.length; i++) {
-
             if (areaList[i].id == area) {
               areaName = areaList[i].name;
             }
           }
         }
-
       } else {
         setSnackbar(msg);
       }
@@ -408,7 +391,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         _isLoading = false;
       });
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
       setState(() {
         _isLoading = false;
       });
@@ -420,9 +403,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: primary),
+        style: TextStyle(color: colors.primary),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -439,20 +422,21 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      NAME_LBL,
+                      getTranslated(context, 'NAME_LBL'),
                       style: Theme.of(this.context).textTheme.caption.copyWith(
-                          color: lightBlack2, fontWeight: FontWeight.normal),
+                          color: colors.lightBlack2,
+                          fontWeight: FontWeight.normal),
                     ),
                     name != "" && name != null
                         ? Text(
-                            name,
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(
-                                    color: lightBlack,
-                                    fontWeight: FontWeight.bold),
-                          )
+                      name,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                          color: colors.lightBlack,
+                          fontWeight: FontWeight.bold),
+                    )
                         : Container()
                   ],
                 )),
@@ -461,7 +445,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
               icon: Icon(
                 Icons.edit,
                 size: 20,
-                color: lightBlack,
+                color: colors.lightBlack,
               ),
               onPressed: () {
                 showDialog(
@@ -473,38 +457,43 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                         elevation: 2.0,
                         shape: RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.all(Radius.circular(5.0))),
+                            BorderRadius.all(Radius.circular(5.0))),
                         content: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
                                   padding:
-                                      EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                                  EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
                                   child: Text(
-                                    ADD_NAME_LBL,
+                                    getTranslated(context, 'ADD_NAME_LBL'),
                                     style: Theme.of(this.context)
                                         .textTheme
                                         .subtitle1
-                                        .copyWith(color: fontColor),
+                                        .copyWith(color: colors.fontColor),
                                   )),
-                              Divider(color: lightBlack),
+                              Divider(color: colors.lightBlack),
                               Form(
                                   key: _formKey,
                                   child: Padding(
                                       padding:
-                                          EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
                                       child: TextFormField(
                                         keyboardType: TextInputType.text,
                                         style: Theme.of(this.context)
                                             .textTheme
                                             .subtitle1
                                             .copyWith(
-                                                color: lightBlack,
-                                                fontWeight: FontWeight.normal),
-                                        validator: validateUserName,
+                                            color: colors.lightBlack,
+                                            fontWeight: FontWeight.normal),
+                                        validator: (val) => validateUserName(
+                                            val,
+                                            getTranslated(
+                                                context, 'USER_REQUIRED'),
+                                            getTranslated(
+                                                context, 'USER_LENGTH')),
                                         autovalidateMode:
-                                            AutovalidateMode.onUserInteraction,
+                                        AutovalidateMode.onUserInteraction,
                                         controller: nameC,
                                         onChanged: (v) => setState(() {
                                           name = v;
@@ -513,9 +502,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                             ]),
                         actions: <Widget>[
                           new FlatButton(
-                              child: const Text(CANCEL,
+                              child: Text(getTranslated(context, 'CANCEL'),
                                   style: TextStyle(
-                                      color: lightBlack,
+                                      color: colors.lightBlack,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold)),
                               onPressed: () {
@@ -524,9 +513,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                 });
                               }),
                           new FlatButton(
-                              child: const Text(SAVE_LBL,
+                              child: Text(getTranslated(context, 'SAVE_LBL'),
                                   style: TextStyle(
-                                      color: fontColor,
+                                      color: colors.fontColor,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold)),
                               onPressed: () {
@@ -561,20 +550,21 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      EMAILHINT_LBL,
+                      getTranslated(context, 'EMAILHINT_LBL'),
                       style: Theme.of(this.context).textTheme.caption.copyWith(
-                          color: lightBlack2, fontWeight: FontWeight.normal),
+                          color: colors.lightBlack2,
+                          fontWeight: FontWeight.normal),
                     ),
                     email != null && email != ""
                         ? Text(
-                            email,
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(
-                                    color: lightBlack,
-                                    fontWeight: FontWeight.bold),
-                          )
+                      email,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                          color: colors.lightBlack,
+                          fontWeight: FontWeight.bold),
+                    )
                         : Container()
                   ],
                 )),
@@ -583,7 +573,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
               icon: Icon(
                 Icons.edit,
                 size: 20,
-                color: lightBlack,
+                color: colors.lightBlack,
               ),
               onPressed: () {
                 showDialog(
@@ -595,38 +585,43 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                         elevation: 2.0,
                         shape: RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.all(Radius.circular(5.0))),
+                            BorderRadius.all(Radius.circular(5.0))),
                         content: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
                                   padding:
-                                      EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                                  EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
                                   child: Text(
-                                    ADD_EMAIL_LBL,
+                                    getTranslated(context, 'ADD_EMAIL_LBL'),
                                     style: Theme.of(this.context)
                                         .textTheme
                                         .subtitle1
-                                        .copyWith(color: fontColor),
+                                        .copyWith(color: colors.fontColor),
                                   )),
-                              Divider(color: lightBlack),
+                              Divider(color: colors.lightBlack),
                               Form(
                                   key: _formKey,
                                   child: Padding(
                                       padding:
-                                          EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
                                       child: TextFormField(
                                         keyboardType: TextInputType.text,
                                         style: Theme.of(this.context)
                                             .textTheme
                                             .subtitle1
                                             .copyWith(
-                                                color: lightBlack,
-                                                fontWeight: FontWeight.normal),
-                                        validator: validateEmail,
+                                            color: colors.lightBlack,
+                                            fontWeight: FontWeight.normal),
+                                        validator: (val) => validateEmail(
+                                            val,
+                                            getTranslated(
+                                                context, 'EMAIL_REQUIRED'),
+                                            getTranslated(
+                                                context, 'VALID_EMAIL')),
                                         autovalidateMode:
-                                            AutovalidateMode.onUserInteraction,
+                                        AutovalidateMode.onUserInteraction,
                                         controller: emailC,
                                         onChanged: (v) => setState(() {
                                           email = v;
@@ -635,9 +630,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                             ]),
                         actions: <Widget>[
                           new FlatButton(
-                              child: const Text(CANCEL,
+                              child: Text(getTranslated(context, 'CANCEL'),
                                   style: TextStyle(
-                                      color: lightBlack,
+                                      color: colors.lightBlack,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold)),
                               onPressed: () {
@@ -646,9 +641,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                 });
                               }),
                           new FlatButton(
-                              child: const Text(SAVE_LBL,
+                              child: Text(getTranslated(context, 'SAVE_LBL'),
                                   style: TextStyle(
-                                      color: fontColor,
+                                      color: colors.fontColor,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold)),
                               onPressed: () {
@@ -683,20 +678,21 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      MOBILEHINT_LBL,
+                      getTranslated(context, 'MOBILEHINT_LBL'),
                       style: Theme.of(this.context).textTheme.caption.copyWith(
-                          color: lightBlack2, fontWeight: FontWeight.normal),
+                          color: colors.lightBlack2,
+                          fontWeight: FontWeight.normal),
                     ),
                     mobile != null && mobile != ""
                         ? Text(
-                            mobile,
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(
-                                    color: lightBlack,
-                                    fontWeight: FontWeight.bold),
-                          )
+                      mobile,
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                          color: colors.lightBlack,
+                          fontWeight: FontWeight.bold),
+                    )
                         : Container()
                   ],
                 )),
@@ -718,29 +714,30 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      LOCATION_LBL,
+                      getTranslated(context, 'LOCATION_LBL'),
                       style: Theme.of(this.context).textTheme.caption.copyWith(
-                          color: lightBlack2, fontWeight: FontWeight.normal),
+                          color: colors.lightBlack2,
+                          fontWeight: FontWeight.normal),
                     ),
                     areaName != null && areaName != ""
                         ? Text(
-                            "$cityName,$areaName",
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(
-                                    color: lightBlack,
-                                    fontWeight: FontWeight.bold),
-                          )
+                      "$cityName,$areaName",
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                          color: colors.lightBlack,
+                          fontWeight: FontWeight.bold),
+                    )
                         : Text(
-                            "${cityName ?? ''}",
-                            style: Theme.of(this.context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(
-                                    color: lightBlack,
-                                    fontWeight: FontWeight.bold),
-                          )
+                      "${cityName ?? ''}",
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                          color: colors.lightBlack,
+                          fontWeight: FontWeight.bold),
+                    )
                   ],
                 )),
             Spacer(),
@@ -748,7 +745,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                 icon: Icon(
                   Icons.edit,
                   size: 20,
-                  color: lightBlack,
+                  color: colors.lightBlack,
                 ),
                 onPressed: () {
                   showDialog(
@@ -762,50 +759,50 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                           elevation: 2.0,
                           shape: RoundedRectangleBorder(
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0))),
+                              BorderRadius.all(Radius.circular(5.0))),
                           content: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
                                   padding:
-                                      EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                                  EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
                                   child: Text(
-                                    ADD_LOCATION_LBL,
+                                    getTranslated(context, 'ADD_LOCATION_LBL'),
                                     style: Theme.of(this.context)
                                         .textTheme
                                         .subtitle1
                                         .copyWith(
-                                            color: fontColor,
-                                            fontWeight: FontWeight.bold),
+                                        color: colors.fontColor,
+                                        fontWeight: FontWeight.bold),
                                   )),
-                              Divider(color: lightBlack),
+                              Divider(color: colors.lightBlack),
                               Padding(
                                   padding:
-                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
                                   child: Text(
-                                    CITY_LBL,
+                                    getTranslated(context, 'CITY_LBL'),
                                     style: Theme.of(this.context)
                                         .textTheme
                                         .subtitle1
                                         .copyWith(
-                                            color: lightBlack,
-                                            fontWeight: FontWeight.bold),
+                                        color: colors.lightBlack,
+                                        fontWeight: FontWeight.bold),
                                   )),
                               Padding(
                                   padding:
-                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
                                   child: DropdownButtonFormField(
                                     isDense: true,
-                                    iconEnabledColor: fontColor,
+                                    iconEnabledColor: colors.fontColor,
                                     hint: new Text(
-                                      CITYSELECT_LBL,
+                                      getTranslated(context, 'CITYSELECT_LBL'),
                                       style: Theme.of(this.context)
                                           .textTheme
                                           .subtitle2
                                           .copyWith(
-                                              color: fontColor,
-                                              fontWeight: FontWeight.bold),
+                                          color: colors.fontColor,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     value: city,
                                     onChanged: (newValue) {
@@ -825,13 +822,12 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                               .textTheme
                                               .subtitle2
                                               .copyWith(
-                                                  color: fontColor,
-                                                  fontWeight: FontWeight.bold),
+                                              color: colors.fontColor,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                         onTap: () {
                                           setStater(() {
                                             cityName = user.name;
-
                                           });
                                         },
                                       );
@@ -842,39 +838,38 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                               ),
                               Padding(
                                   padding:
-                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
                                   child: Text(
-                                    AREA_LBL,
+                                    getTranslated(context, 'AREA_LBL'),
                                     style: Theme.of(this.context)
                                         .textTheme
                                         .subtitle1
                                         .copyWith(
-                                            color: lightBlack,
-                                            fontWeight: FontWeight.bold),
+                                        color: colors.lightBlack,
+                                        fontWeight: FontWeight.bold),
                                   )),
                               Padding(
                                   padding:
-                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
                                   child: DropdownButtonFormField(
                                     isDense: true,
-                                    iconEnabledColor: fontColor,
+                                    iconEnabledColor: colors.fontColor,
                                     hint: new Text(
-                                      AREASELECT_LBL,
+                                      getTranslated(context, 'AREASELECT_LBL'),
                                       style: Theme.of(this.context)
                                           .textTheme
                                           .subtitle2
                                           .copyWith(
-                                              color: fontColor,
-                                              fontWeight: FontWeight.bold),
+                                          color: colors.fontColor,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     value: area,
                                     onChanged: isArea
                                         ? (newValue) {
-                                            setState(() {
-                                              area = newValue;
-                                            });
-
-                                          }
+                                      setState(() {
+                                        area = newValue;
+                                      });
+                                    }
                                         : null,
                                     items: areaList.map((User user) {
                                       return DropdownMenuItem<String>(
@@ -885,13 +880,12 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                               .textTheme
                                               .subtitle2
                                               .copyWith(
-                                                  color: fontColor,
-                                                  fontWeight: FontWeight.bold),
+                                              color: colors.fontColor,
+                                              fontWeight: FontWeight.bold),
                                         ),
                                         onTap: () {
                                           setStater(() {
                                             areaName = user.name;
-
                                           });
                                         },
                                       );
@@ -901,9 +895,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                           ),
                           actions: <Widget>[
                             new FlatButton(
-                                child: const Text(CANCEL,
+                                child: Text(getTranslated(context, 'CANCEL'),
                                     style: TextStyle(
-                                        color: lightBlack,
+                                        color: colors.lightBlack,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold)),
                                 onPressed: () {
@@ -912,13 +906,12 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                   });
                                 }),
                             new FlatButton(
-                                child: const Text(SAVE_LBL,
+                                child: Text(getTranslated(context, 'SAVE_LBL'),
                                     style: TextStyle(
-                                        color: fontColor,
+                                        color: colors.fontColor,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold)),
                                 onPressed: () {
-
                                   if (areaName != "" &&
                                       areaName != null &&
                                       cityName != null &&
@@ -951,11 +944,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
               child: Padding(
                 padding: EdgeInsets.only(left: 20.0, top: 15.0, bottom: 15.0),
                 child: Text(
-                  CHANGE_PASS_LBL,
-                  style: Theme.of(this.context)
-                      .textTheme
-                      .subtitle2
-                      .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+                  getTranslated(context, 'CHANGE_PASS_LBL'),
+                  style: Theme.of(this.context).textTheme.subtitle2.copyWith(
+                      color: colors.fontColor, fontWeight: FontWeight.bold),
                 ),
               ),
               onTap: () {
@@ -970,184 +961,198 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater) {
-            return AlertDialog(
-              contentPadding: const EdgeInsets.all(0.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              content: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                            padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                            child: Text(
-                              CHANGE_PASS_LBL,
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: fontColor),
-                            )),
-                        Divider(color: lightBlack),
-                        Form(
-                            key: _formKey,
-                            child: new Column(
-                              children: <Widget>[
-                                Padding(
-                                    padding:
+                return AlertDialog(
+                  contentPadding: const EdgeInsets.all(0.0),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                  content: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                                padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                                child: Text(
+                                  getTranslated(context, 'CHANGE_PASS_LBL'),
+                                  style: Theme.of(this.context)
+                                      .textTheme
+                                      .subtitle1
+                                      .copyWith(color: colors.fontColor),
+                                )),
+                            Divider(color: colors.lightBlack),
+                            Form(
+                                key: _formKey,
+                                child: new Column(
+                                  children: <Widget>[
+                                    Padding(
+                                        padding:
                                         EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.text,
-                                      validator: validatePass,
-                                      autovalidateMode:
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.text,
+                                          validator: (val) => validatePass(
+                                              val,
+                                              getTranslated(
+                                                  context, 'PWD_REQUIRED'),
+                                              getTranslated(context, 'PWD_LENGTH')),
+                                          autovalidateMode:
                                           AutovalidateMode.onUserInteraction,
-                                      decoration: InputDecoration(
-                                          hintText: CUR_PASS_LBL,
-                                          hintStyle: Theme.of(this.context)
-                                              .textTheme
-                                              .subtitle1
-                                              .copyWith(
-                                                  color: lightBlack,
+                                          decoration: InputDecoration(
+                                              hintText: getTranslated(
+                                                  context, 'CUR_PASS_LBL'),
+                                              hintStyle: Theme.of(this.context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                  color: colors.lightBlack,
                                                   fontWeight:
-                                                      FontWeight.normal),
-                                          suffixIcon: IconButton(
-                                            icon: Icon(_showPassword
-                                                ? Icons.visibility
-                                                : Icons.visibility_off),
-                                            iconSize: 20,
-                                            color: lightBlack,
-                                            onPressed: () {
-                                              setStater(() {
-                                                _showPassword = !_showPassword;
-                                              });
-                                            },
-                                          )),
-                                      obscureText: !_showPassword,
-                                      controller: curPassC,
-                                      onChanged: (v) => setState(() {
-                                        curPass = v;
-                                      }),
-                                    )),
-                                Padding(
-                                    padding:
+                                                  FontWeight.normal),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(_cPwd
+                                                    ? Icons.visibility
+                                                    : Icons.visibility_off),
+                                                iconSize: 20,
+                                                color: colors.lightBlack,
+                                                onPressed: () {
+                                                  setStater(() {
+                                                    _cPwd = !_cPwd;
+                                                  });
+                                                },
+                                              )),
+                                          obscureText: !_cPwd,
+                                          controller: curPassC,
+                                          onChanged: (v) => setState(() {
+                                            curPass = v;
+                                          }),
+                                        )),
+                                    Padding(
+                                        padding:
                                         EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.text,
-                                      validator: validatePass,
-                                      autovalidateMode:
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.text,
+                                          validator: (val) => validatePass(
+                                              val,
+                                              getTranslated(
+                                                  context, 'PWD_REQUIRED'),
+                                              getTranslated(context, 'PWD_LENGTH')),
+                                          autovalidateMode:
                                           AutovalidateMode.onUserInteraction,
-                                      decoration: new InputDecoration(
-                                          hintText: NEW_PASS_LBL,
-                                          hintStyle: Theme.of(this.context)
-                                              .textTheme
-                                              .subtitle1
-                                              .copyWith(
-                                                  color: lightBlack,
+                                          decoration: new InputDecoration(
+                                              hintText: getTranslated(
+                                                  context, 'NEW_PASS_LBL'),
+                                              hintStyle: Theme.of(this.context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                  color: colors.lightBlack,
                                                   fontWeight:
-                                                      FontWeight.normal),
-                                          suffixIcon: IconButton(
-                                            icon: Icon(_showPassword
-                                                ? Icons.visibility
-                                                : Icons.visibility_off),
-                                            iconSize: 20,
-                                            color: lightBlack,
-                                            onPressed: () {
-                                              setStater(() {
-                                                _showPassword = !_showPassword;
-                                              });
-                                            },
-                                          )),
-                                      obscureText: !_showPassword,
-                                      controller: newPassC,
-                                      onChanged: (v) => setState(() {
-                                        newPass = v;
-                                      }),
-                                    )),
-                                Padding(
-                                    padding:
+                                                  FontWeight.normal),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(_showPassword
+                                                    ? Icons.visibility
+                                                    : Icons.visibility_off),
+                                                iconSize: 20,
+                                                color: colors.lightBlack,
+                                                onPressed: () {
+                                                  setStater(() {
+                                                    _showPassword = !_showPassword;
+                                                  });
+                                                },
+                                              )),
+                                          obscureText: !_showPassword,
+                                          controller: newPassC,
+                                          onChanged: (v) => setState(() {
+                                            newPass = v;
+                                          }),
+                                        )),
+                                    Padding(
+                                        padding:
                                         EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.text,
-                                      validator: (value) {
-                                        if (value.length == 0)
-                                          return CON_PASS_REQUIRED_MSG;
-                                        if (value != newPass) {
-                                          return CON_PASS_NOT_MATCH_MSG;
-                                        } else {
-                                          return null;
-                                        }
-                                      },
-                                      autovalidateMode:
+                                        child: TextFormField(
+                                          keyboardType: TextInputType.text,
+                                          validator: (value) {
+                                            if (value.length == 0)
+                                              return getTranslated(
+                                                  context, 'CON_PASS_REQUIRED_MSG');
+                                            if (value != newPass) {
+                                              return getTranslated(
+                                                  context, 'CON_PASS_REQUIRED_MSG');
+                                            } else {
+                                              return null;
+                                            }
+                                          },
+                                          autovalidateMode:
                                           AutovalidateMode.onUserInteraction,
-                                      decoration: new InputDecoration(
-                                          hintText: CONFIRMPASSHINT_LBL,
-                                          hintStyle: Theme.of(this.context)
-                                              .textTheme
-                                              .subtitle1
-                                              .copyWith(
-                                                  color: lightBlack,
+                                          decoration: new InputDecoration(
+                                              hintText: getTranslated(
+                                                  context, 'CONFIRMPASSHINT_LBL'),
+                                              hintStyle: Theme.of(this.context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                  color: colors.lightBlack,
                                                   fontWeight:
-                                                      FontWeight.normal),
-                                          suffixIcon: IconButton(
-                                            icon: Icon(_showPassword
-                                                ? Icons.visibility
-                                                : Icons.visibility_off),
-                                            iconSize: 20,
-                                            color: lightBlack,
-                                            onPressed: () {
-                                              setStater(() {
-                                                _showPassword = !_showPassword;
-                                              });
-                                            },
-                                          )),
-                                      obscureText: !_showPassword,
-                                      controller: confPassC,
-                                      onChanged: (v) => setState(() {
-                                        confPass = v;
-                                      }),
-                                    )),
-                              ],
-                            ))
-                      ])),
-              actions: <Widget>[
-                new FlatButton(
-                    child: Text(
-                      CANCEL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: lightBlack, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
-                new FlatButton(
-                    child: Text(
-                      SAVE_LBL,
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: fontColor, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      final form = _formKey.currentState;
-                      if (form.validate()) {
-                        form.save();
-                        setState(() {
+                                                  FontWeight.normal),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(_scPwd
+                                                    ? Icons.visibility
+                                                    : Icons.visibility_off),
+                                                iconSize: 20,
+                                                color: colors.lightBlack,
+                                                onPressed: () {
+                                                  setStater(() {
+                                                    _scPwd = !_scPwd;
+                                                  });
+                                                },
+                                              )),
+                                          obscureText: !_scPwd,
+                                          controller: confPassC,
+                                          onChanged: (v) => setState(() {
+                                            confPass = v;
+                                          }),
+                                        )),
+                                  ],
+                                ))
+                          ])),
+                  actions: <Widget>[
+                    new FlatButton(
+                        child: Text(
+                          getTranslated(context, 'CANCEL'),
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
+                              color: colors.lightBlack,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
                           Navigator.pop(context);
-                        });
-                        checkNetwork();
-                      }
-                    })
-              ],
-            );
-          });
+                        }),
+                    new FlatButton(
+                        child: Text(
+                          getTranslated(context, 'CON_PASS_REQUIRED_MSG'),
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
+                              color: colors.fontColor,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          final form = _formKey.currentState;
+                          if (form.validate()) {
+                            form.save();
+                            setState(() {
+                              Navigator.pop(context);
+                            });
+                            checkNetwork();
+                          }
+                        })
+                  ],
+                );
+              });
         });
   }
-
 
   profileImage() {
     return Container(
@@ -1156,26 +1161,26 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           children: <Widget>[
             image != null && image != ""
                 ? CircleAvatar(
-                    radius: 50,
-                    backgroundColor: primary,
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: Image.network(
-                          image,
-                          fit: BoxFit.fill,
-                          width: 100,
-                          height: 100,
-                        )))
+                radius: 50,
+                backgroundColor: colors.primary,
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: Image.network(
+                      image,
+                      fit: BoxFit.fill,
+                      width: 100,
+                      height: 100,
+                    )))
                 : CircleAvatar(
-                    radius: 50,
-                    backgroundColor: primary,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(50),
-                            border: Border.all(color: primary)),
-                        child: Icon(Icons.person, size: 100)),
-                  ),
+              radius: 50,
+              backgroundColor: colors.primary,
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border.all(color: colors.primary)),
+                  child: Icon(Icons.account_circle, size: 100)),
+            ),
             Positioned(
                 bottom: 3,
                 right: 5,
@@ -1185,7 +1190,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   child: InkWell(
                     child: Icon(
                       Icons.edit,
-                      color: white,
+                      color: colors.white,
                       size: 10,
                     ),
                     onTap: () {
@@ -1196,11 +1201,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                     },
                   ),
                   decoration: BoxDecoration(
-                      color: primary,
+                      color: colors.primary,
                       borderRadius: BorderRadius.all(
                         Radius.circular(20),
                       ),
-                      border: Border.all(color: primary)),
+                      border: Border.all(color: colors.primary)),
                 )),
           ],
         ));
@@ -1208,7 +1213,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
 
   updateBtn() {
     return AppBtn(
-      title: UPDATE_PROFILE_LBL,
+      title: getTranslated(context, 'UPDATE_PROFILE_LBL'),
       btnAnim: buttonSqueezeanimation,
       btnCntrl: buttonController,
       onBtnSelected: () {
@@ -1220,7 +1225,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   _getDivider() {
     return Divider(
       height: 1,
-      color: lightBlack,
+      color: colors.lightBlack,
     );
   }
 
@@ -1230,28 +1235,28 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: _isNetworkAvail
                 ? Column(children: <Widget>[
-                    profileImage(),
-                    Padding(
-                        padding: const EdgeInsets.only(top: 20, bottom: 5.0),
-                        child: Container(
-                            child: Card(
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                        Radius.circular(10.0))),
-                                child: Column(
-                                  children: <Widget>[
-                                    setUser(),
-                                    _getDivider(),
-                                    setEmail(),
-                                    _getDivider(),
-                                    setMobileNo(),
-                                    _getDivider(),
-                                    setLocation(),
-                                  ],
-                                )))),
-                    changePass()
-                  ])
+              profileImage(),
+              Padding(
+                  padding: const EdgeInsets.only(top: 20, bottom: 5.0),
+                  child: Container(
+                      child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                  Radius.circular(10.0))),
+                          child: Column(
+                            children: <Widget>[
+                              setUser(),
+                              _getDivider(),
+                              setEmail(),
+                              _getDivider(),
+                              setMobileNo(),
+                              _getDivider(),
+                              setLocation(),
+                            ],
+                          )))),
+              changePass()
+            ])
                 : noInternet(context)));
   }
 
@@ -1261,12 +1266,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: lightWhite,
-      appBar: getAppBar(EDIT_PROFILE_LBL, context),
+      appBar: getAppBar(getTranslated(context, 'EDIT_PROFILE_LBL'), context),
       body: Stack(
         children: <Widget>[
           _showContent1(),
-          showCircularProgress(_isLoading, primary)
+          showCircularProgress(_isLoading, colors.primary)
         ],
       ),
     );

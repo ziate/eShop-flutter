@@ -1,19 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart';
 
 import 'package:eshop/Model/Section_Model.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart';
 
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
+import 'Helper/Session.dart';
 import 'Helper/SimBtn.dart';
 import 'Helper/String.dart';
-
-import 'Helper/Session.dart';
 import 'ProductList.dart';
 import 'Product_Detail.dart';
 import 'Search.dart';
@@ -56,10 +55,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   AnimationController buttonController;
   String curTabId;
 
-
   _SubCatState({this.subList});
-
-
 
   @override
   void initState() {
@@ -111,7 +107,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -137,13 +133,13 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   }
 
   TabController _makeNewTabController(int pos) => TabController(
-        vsync: this,
-        length: _tabs.length,
-        initialIndex: pos,
-      );
+    vsync: this,
+    length: _tabs.length,
+
+  );
 
   void _addTab(List<Product> subItem, int index) {
-    setState(() {
+     setState(() {
       _tabs.add({
         'text': subItem[index].name,
       });
@@ -159,7 +155,33 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             }
           });
         });
+      _tc.animateTo(_tc.length-1);
     });
+    // -----------
+/*    setState(() {
+      for (int i = 0; i < subList.length; i++) {
+        _tabs.add({
+          'text': subList[i].name,
+        });
+        if (subList[i].subList == null || subList[i].subList.isEmpty) {
+          _isLoading = true;
+          isLoadingmore = true;
+        }
+        _views.add(createTabContent(i, subList));
+      }
+
+      _tc = _makeNewTabController(0)
+        ..addListener(() {
+          setState(() {
+            if (subList[_tc.index].subList == null ||
+                subList[_tc.index].subList.isEmpty) {
+              clearList("0");
+            } else {}
+          });
+
+          selId = null;
+        });
+    });*/
   }
 
   void _addInitailTab() {
@@ -191,18 +213,16 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    deviceHeight = MediaQuery.of(context).size.height;
+     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: lightWhite,
       appBar: AppBar(
         title: Text(
           widget.title,
           style: TextStyle(
-            color: fontColor,
+            color: colors.fontColor,
           ),
         ),
-        backgroundColor: white,
         elevation: 5,
         leading: Builder(builder: (BuildContext context) {
           return Container(
@@ -215,7 +235,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                 onTap: () => Navigator.of(context).pop(),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 4.0),
-                  child: Icon(Icons.keyboard_arrow_left, color: primary),
+                  child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
                 ),
               ),
             ),
@@ -226,8 +246,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           isScrollable: true,
           tabs: _tabs
               .map((tab) => Tab(
-                    text: tab['text'],
-                  ))
+            text: tab['text'],
+          ))
               .toList(),
         ),
         actions: <Widget>[
@@ -252,58 +272,60 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                   padding: const EdgeInsets.all(4.0),
                   child: Icon(
                     Icons.search,
-                    color: primary,
+                    color: colors.primary,
                     size: 22,
                   ),
                 ),
               ),
             ),
           ),
-          subList[_tc.index].isFromProd &&
-                  subList[_tc.index].filterList != null &&
-                  subList[_tc.index].filterList.length > 0
+          subList.length >_tc.index &&
+              subList[_tc.index].filterList != null &&
+              subList[_tc.index].isFromProd &&
+              subList[_tc.index].filterList.length > 0
               ? Container(
-                  margin: EdgeInsets.symmetric(vertical: 10),
-                  decoration: shadow(),
-                  child: Card(
-                      elevation: 0,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(4),
-                        onTap: () {
-                          return filterDialog();
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Icon(
-                            Icons.tune,
-                            color: primary,
-                            size: 22,
-                          ),
-                        ),
-                      )))
+              margin: EdgeInsets.symmetric(vertical: 10),
+              decoration: shadow(),
+              child: Card(
+                  elevation: 0,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: () {
+                      return filterDialog();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                        Icons.tune,
+                        color: colors.primary,
+                        size: 22,
+                      ),
+                    ),
+                  )))
               : Container(),
-          subList[_tc.index].isFromProd &&
-                  subList[_tc.index].subList != null &&
-                  subList[_tc.index].subList.length > 0
+          subList.length > _tc.index &&
+              subList[_tc.index].subList != null &&
+              subList[_tc.index].isFromProd &&
+              subList[_tc.index].subList.length > 0
               ? Container(
-                  margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
-                  decoration: shadow(),
-                  child: Card(
-                      elevation: 0,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(4),
-                        onTap: () {
-                          return sortDialog();
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Icon(
-                            Icons.filter_list,
-                            color: primary,
-                            size: 22,
-                          ),
-                        ),
-                      )))
+              margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+              decoration: shadow(),
+              child: Card(
+                  elevation: 0,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: () {
+                      return sortDialog();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                        Icons.filter_list,
+                        color: colors.primary,
+                        size: 22,
+                      ),
+                    ),
+                  )))
               : Container()
         ],
       ),
@@ -319,68 +341,68 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
 
     return !subList[i].isFromProd && (subItem != null)
         ? SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                FadeInImage(
-                  fadeInDuration: Duration(milliseconds: 150),
-                  image: NetworkImage(subList[i].banner),
-                  height: 150,
-                  width: double.maxFinite,
-                  fit: BoxFit.fill,
-                  placeholder: AssetImage(
-                    "assets/images/sliderph.png",
-                  ),
-                ),
-                GridView.count(
-                    shrinkWrap: true,
-                    crossAxisCount: 3,
-                    childAspectRatio: 1,
-                    physics: NeverScrollableScrollPhysics(),
-                    children: List.generate(
-                      subItem.length,
-                      (index) {
-                        return listItem(index, subItem);
-                      },
-                    ))
-              ],
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          FadeInImage(
+            fadeInDuration: Duration(milliseconds: 150),
+            image: NetworkImage(subList[i].banner),
+            height: 150,
+            width: double.maxFinite,
+            fit: BoxFit.fill,
+            placeholder: AssetImage(
+              "assets/images/sliderph.png",
             ),
-          )
+          ),
+          GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 3,
+              childAspectRatio: 1,
+              physics: NeverScrollableScrollPhysics(),
+              children: List.generate(
+                subItem.length,
+                    (index) {
+                  return listItem(index, subItem);
+                },
+              ))
+        ],
+      ),
+    )
         : SingleChildScrollView(
-            controller: controller,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FadeInImage(
-                  fadeInDuration: Duration(milliseconds: 150),
-                  image: NetworkImage(subList[i].banner),
-                  height: 150,
-                  width: double.maxFinite,
-                  fit: BoxFit.fill,
-                  placeholder: AssetImage(
-                    "assets/images/sliderph.png",
-                  ),
-                ),
-                _isLoading
-                    ? shimmer()
-                    : subItem.length == 0
-                        ? Flexible(flex: 1, child: getNoItem())
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            itemCount:
-                                (subList[i].offset < subList[i].totalItem)
-                                    ? subItem.length + 1
-                                    : subItem.length,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              return (index == subItem.length && isLoadingmore)
-                                  ? Center(child: CircularProgressIndicator())
-                                  : productListItem(index, subItem);
-                            },
-                          )
-              ],
+      controller: controller,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FadeInImage(
+            fadeInDuration: Duration(milliseconds: 150),
+            image: NetworkImage(subList[i].banner),
+            height: 150,
+            width: double.maxFinite,
+            fit: BoxFit.fill,
+            placeholder: AssetImage(
+              "assets/images/sliderph.png",
             ),
-          );
+          ),
+          _isLoading
+              ? shimmer()
+              : subItem.length == 0
+              ? Flexible(flex: 1, child: getNoItem(context))
+              : ListView.builder(
+            shrinkWrap: true,
+            itemCount:
+            (subList[i].offset < subList[i].totalItem)
+                ? subItem.length + 1
+                : subItem.length,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              return (index == subItem.length && isLoadingmore)
+                  ? Center(child: CircularProgressIndicator())
+                  : productListItem(index, subItem);
+            },
+          )
+        ],
+      ),
+    );
   }
 
   Widget productListItem(int index, List<Product> subItem) {
@@ -388,134 +410,134 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
     if (price == 0) price = double.parse(subItem[index].prVarientList[0].price);
     return subItem.length >= index
         ? Card(
-            elevation: 0,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(4),
-              onTap: () {
-                Product model = subItem[index];
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                      // transitionDuration: Duration(seconds: 1),
-                      pageBuilder: (_, __, ___) => ProductDetail(
-                            model: model,
-                            updateParent: updateProductList,
-                            index: index,
-                            secPos: 0,
-                            updateHome: widget.updateHome,
-                            list: true,
-                            //  title: productList[index].name,
-                          )),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      subItem[index].availability == "0"
-                          ? Text(OUT_OF_STOCK_LBL,
+      elevation: 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: () {
+          Product model = subItem[index];
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              // transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
+                  model: model,
+                  updateParent: updateProductList,
+                  index: index,
+                  secPos: 0,
+                  updateHome: widget.updateHome,
+                  list: true,
+                  //  title: productList[index].name,
+                )),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                subItem[index].availability == "0"
+                    ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle1
+                        .copyWith(color: Colors.red))
+                    : Container(),
+                Row(
+                  children: <Widget>[
+                    Hero(
+                      tag: "$index${subItem[index].id}",
+                      child: FadeInImage(
+                        fadeInDuration: Duration(milliseconds: 150),
+                        image: NetworkImage(subItem[index].image),
+                        height: 80.0,
+                        width: 80.0,
+                        placeholder: placeHolder(80),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              subItem[index].name,
                               style: Theme.of(context)
                                   .textTheme
-                                  .subtitle1
-                                  .copyWith(color: Colors.red))
-                          : Container(),
-                      Row(
-                        children: <Widget>[
-                          Hero(
-                            tag: "$index${subItem[index].id}",
-                            child: FadeInImage(
-                              fadeInDuration: Duration(milliseconds: 150),
-                              image: NetworkImage(subItem[index].image),
-                              height: 80.0,
-                              width: 80.0,
-                              placeholder: placeHolder(80),
+                                  .subtitle2
+                                  .copyWith(
+                                  color: colors.lightBlack,
+                                  fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    subItem[index].name,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .subtitle2
-                                        .copyWith(
-                                            color: lightBlack,
-                                            fontWeight: FontWeight.bold),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.star,
-                                        color: Colors.yellow,
-                                        size: 12,
-                                      ),
-                                      Text(
-                                        " " + subItem[index].rating,
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  color: colors.primary,
+                                  size: 12,
+                                ),
+                                Text(
+                                  " " + subItem[index].rating,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .overline,
+                                ),
+                                Text(
+                                  " (" + subItem[index].noOfRating + ")",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .overline,
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Text(
+                                      double.parse(subItem[index]
+                                          .prVarientList[0]
+                                          .disPrice) !=
+                                          0
+                                          ? CUR_CURRENCY +
+                                          "" +
+                                          subItem[index]
+                                              .prVarientList[0]
+                                              .price
+                                          : "",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .overline
+                                          .copyWith(
+                                          decoration: TextDecoration
+                                              .lineThrough,
+                                          letterSpacing: 0),
+                                    ),
+                                    Text(
+                                        " " +
+                                            CUR_CURRENCY +
+                                            " " +
+                                            price.toString(),
                                         style: Theme.of(context)
                                             .textTheme
-                                            .overline,
-                                      ),
-                                      Text(
-                                        " (" + subItem[index].noOfRating + ")",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .overline,
-                                      )
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Row(
-                                        children: <Widget>[
-                                          Text(
-                                            int.parse(subItem[index]
-                                                        .prVarientList[0]
-                                                        .disPrice) !=
-                                                    0
-                                                ? CUR_CURRENCY +
-                                                    "" +
-                                                    subItem[index]
-                                                        .prVarientList[0]
-                                                        .price
-                                                : "",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .overline
-                                                .copyWith(
-                                                    decoration: TextDecoration
-                                                        .lineThrough,
-                                                    letterSpacing: 0),
-                                          ),
-                                          Text(
-                                              " " +
-                                                  CUR_CURRENCY +
-                                                  " " +
-                                                  price.toString(),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .subtitle1),
-                                        ],
-                                      )
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                          )
-                        ],
-                      )
-                    ]),
-              ),
-            ),
-          )
+                                            .subtitle1),
+                                  ],
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                )
+              ]),
+        ),
+      ),
+    )
         : Container();
   }
 
@@ -588,16 +610,16 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                   Padding(
                       padding: EdgeInsets.only(top: 19.0, bottom: 16.0),
                       child: Text(
-                        SORT_BY,
+                        getTranslated(context, 'SORT_BY'),
                         style: Theme.of(context).textTheme.headline6,
                       )),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   TextButton(
-                      child: Text(TOP_RATED,
+                      child: Text(getTranslated(context, 'TOP_RATED'),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
-                              .copyWith(color: lightBlack)),
+                              .copyWith(color: colors.lightBlack)),
                       onPressed: () {
                         sortBy = '';
                         orderBy = 'DESC';
@@ -605,13 +627,13 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         clearList("1");
                         Navigator.pop(context, 'option 1');
                       }),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   TextButton(
-                      child: Text(F_NEWEST,
+                      child: Text(getTranslated(context, 'F_NEWEST'),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
-                              .copyWith(color: lightBlack)),
+                              .copyWith(color: colors.lightBlack)),
                       onPressed: () {
                         sortBy = 'p.date_added';
                         orderBy = 'DESC';
@@ -619,14 +641,14 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         clearList("0");
                         Navigator.pop(context, 'option 1');
                       }),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   TextButton(
                       child: Text(
-                        F_OLDEST,
+                        getTranslated(context, 'F_OLDEST'),
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: lightBlack),
+                            .copyWith(color: colors.lightBlack),
                       ),
                       onPressed: () {
                         sortBy = 'p.date_added';
@@ -634,14 +656,14 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         clearList("0");
                         Navigator.pop(context, 'option 2');
                       }),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   TextButton(
                       child: new Text(
-                        F_LOW,
+                        getTranslated(context, 'F_LOW'),
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: lightBlack),
+                            .copyWith(color: colors.lightBlack),
                       ),
                       onPressed: () {
                         sortBy = 'pv.price';
@@ -649,16 +671,16 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                         clearList("0");
                         Navigator.pop(context, 'option 3');
                       }),
-                  Divider(color: lightBlack),
+                  Divider(color: colors.lightBlack),
                   Padding(
                       padding: EdgeInsets.only(bottom: 5.0),
                       child: TextButton(
                           child: new Text(
-                            F_HIGH,
+                            getTranslated(context, 'F_HIGH'),
                             style: Theme.of(context)
                                 .textTheme
                                 .subtitle1
-                                .copyWith(color: lightBlack),
+                                .copyWith(color: colors.lightBlack),
                           ),
                           onPressed: () {
                             sortBy = 'pv.price';
@@ -682,237 +704,236 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       builder: (builder) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-          return Column(mainAxisSize: MainAxisSize.min, children: [
-            Padding(
-                padding: const EdgeInsets.only(top: 30.0),
-                child: AppBar(
-                  title: Text(
-                    FILTER,
-                    style: TextStyle(
-                      color: fontColor,
-                    ),
-                  ),
-                  backgroundColor: white,
-                  elevation: 5,
-                  leading: Builder(builder: (BuildContext context) {
-                    return Container(
-                      margin: EdgeInsets.all(10),
-                      decoration: shadow(),
-                      child: Card(
-                        elevation: 0,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(4),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 4.0),
-                            child:
-                                Icon(Icons.keyboard_arrow_left, color: primary),
-                          ),
+              return Column(mainAxisSize: MainAxisSize.min, children: [
+                Padding(
+                    padding: const EdgeInsets.only(top: 30.0),
+                    child: AppBar(
+                      title: Text(
+                        getTranslated(context, 'FILTER'),
+                        style: TextStyle(
+                          color: colors.fontColor,
                         ),
                       ),
-                    );
-                  }),
-                  actions: [
-                    Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      alignment: Alignment.center,
-                      child: InkWell(
-                          child: Text(FILTER_CLEAR_LBL,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(
+                      elevation: 5,
+                      leading: Builder(builder: (BuildContext context) {
+                        return Container(
+                          margin: EdgeInsets.all(10),
+                          decoration: shadow(),
+                          child: Card(
+                            elevation: 0,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(4),
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 4.0),
+                                child: Icon(Icons.keyboard_arrow_left,
+                                    color: colors.primary),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                      actions: [
+                        Container(
+                          margin: EdgeInsets.only(right: 10.0),
+                          alignment: Alignment.center,
+                          child: InkWell(
+                              child: Text(getTranslated(context, 'FILTER_CLEAR_LBL'),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(
                                       fontWeight: FontWeight.normal,
-                                      color: fontColor)),
-                          onTap: () {
-                            setState(() {
-                              subList[_tc.index].selectedId.clear();
-                            });
-                          }),
-                    ),
-                  ],
-                )),
-            Expanded(
-                child: Container(
-                    color: lightWhite,
-                    padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
-                    child: Card(
-                        child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                          Expanded(
-                              flex: 2,
-                              child: Container(
-                                  color: lightWhite,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    padding: EdgeInsets.only(top: 10.0),
-                                    itemCount:
-                                        subList[_tc.index].filterList.length,
-                                    itemBuilder: (context, index) {
-                                      attsubList = subList[_tc.index]
-                                          .filterList[index]
-                                          .attributeValues
-                                          .split(',');
-
-                                      attListId = subList[_tc.index]
-                                          .filterList[index]
-                                          .attributeValId
-                                          .split(',');
-
-                                      if (filter == "") {
-                                        filter = subList[_tc.index]
-                                            .filterList[0]
-                                            .name;
-                                      }
-
-                                      return InkWell(
-                                          onTap: () {
-                                            setState(() {
-                                              filter = subList[_tc.index]
-                                                  .filterList[index]
-                                                  .name;
-                                            });
-                                          },
-                                          child: Container(
-                                            padding: EdgeInsets.only(
-                                                left: 20,
-                                                top: 10.0,
-                                                bottom: 10.0),
-                                            decoration: BoxDecoration(
-                                                color: filter ==
-                                                        subList[_tc.index]
-                                                            .filterList[index]
-                                                            .name
-                                                    ? white
-                                                    : lightWhite,
-                                                borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(7),
-                                                    bottomLeft:
-                                                        Radius.circular(7))),
-                                            alignment: Alignment.centerLeft,
-                                            child: new Text(
-                                              subList[_tc.index]
-                                                  .filterList[index]
-                                                  .name,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .subtitle1
-                                                  .copyWith(
-                                                      color: filter ==
-                                                              subList[_tc.index]
-                                                                  .filterList[
-                                                                      index]
-                                                                  .name
-                                                          ? fontColor
-                                                          : lightBlack,
-                                                      fontWeight:
-                                                          FontWeight.normal),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 2,
-                                            ),
-                                          ));
-                                    },
-                                  ))),
-                          Expanded(
-                              flex: 3,
-                              child: ListView.builder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.only(top: 10.0),
-                                  scrollDirection: Axis.vertical,
-                                  itemCount:
-                                      subList[_tc.index].filterList.length,
-                                  itemBuilder: (context, index) {
-
-                                    if (filter ==
-                                        subList[_tc.index]
-                                            .filterList[index]
-                                            .name) {
-                                      attsubList = subList[_tc.index]
-                                          .filterList[index]
-                                          .attributeValues
-                                          .split(',');
-
-                                      attListId = subList[_tc.index]
-                                          .filterList[index]
-                                          .attributeValId
-                                          .split(',');
-                                      return Container(
+                                      color: colors.fontColor)),
+                              onTap: () {
+                                setState(() {
+                                  subList[_tc.index].selectedId.clear();
+                                });
+                              }),
+                        ),
+                      ],
+                    )),
+                Expanded(
+                    child: Container(
+                        color: colors.lightWhite,
+                        padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
+                        child: Card(
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                          color: colors.lightWhite,
                                           child: ListView.builder(
-                                              shrinkWrap: true,
-                                              physics:
-                                                  NeverScrollableScrollPhysics(),
-                                              itemCount: attListId.length,
-                                              itemBuilder: (context, i) {
-                                                return CheckboxListTile(
-                                                  dense: true,
-                                                  title: Text(attsubList[i],
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.vertical,
+                                            padding: EdgeInsets.only(top: 10.0),
+                                            itemCount:
+                                            subList[_tc.index].filterList.length,
+                                            itemBuilder: (context, index) {
+                                              attsubList = subList[_tc.index]
+                                                  .filterList[index]
+                                                  .attributeValues
+                                                  .split(',');
+
+                                              attListId = subList[_tc.index]
+                                                  .filterList[index]
+                                                  .attributeValId
+                                                  .split(',');
+
+                                              if (filter == "") {
+                                                filter = subList[_tc.index]
+                                                    .filterList[0]
+                                                    .name;
+                                              }
+
+                                              return InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      filter = subList[_tc.index]
+                                                          .filterList[index]
+                                                          .name;
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20,
+                                                        top: 10.0,
+                                                        bottom: 10.0),
+                                                    decoration: BoxDecoration(
+                                                        color: filter ==
+                                                            subList[_tc.index]
+                                                                .filterList[index]
+                                                                .name
+                                                            ? colors.white
+                                                            : colors.lightWhite,
+                                                        borderRadius: BorderRadius.only(
+                                                            topLeft: Radius.circular(7),
+                                                            bottomLeft:
+                                                            Radius.circular(7))),
+                                                    alignment: Alignment.centerLeft,
+                                                    child: new Text(
+                                                      subList[_tc.index]
+                                                          .filterList[index]
+                                                          .name,
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .subtitle1
                                                           .copyWith(
-                                                              color: lightBlack,
-                                                              fontWeight:
+                                                          color: filter ==
+                                                              subList[_tc.index]
+                                                                  .filterList[
+                                                              index]
+                                                                  .name
+                                                              ? colors.fontColor
+                                                              : colors.lightBlack,
+                                                          fontWeight:
+                                                          FontWeight.normal),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 2,
+                                                    ),
+                                                  ));
+                                            },
+                                          ))),
+                                  Expanded(
+                                      flex: 3,
+                                      child: ListView.builder(
+                                          shrinkWrap: true,
+                                          padding: EdgeInsets.only(top: 10.0),
+                                          scrollDirection: Axis.vertical,
+                                          itemCount:
+                                          subList[_tc.index].filterList.length,
+                                          itemBuilder: (context, index) {
+                                            if (filter ==
+                                                subList[_tc.index]
+                                                    .filterList[index]
+                                                    .name) {
+                                              attsubList = subList[_tc.index]
+                                                  .filterList[index]
+                                                  .attributeValues
+                                                  .split(',');
+
+                                              attListId = subList[_tc.index]
+                                                  .filterList[index]
+                                                  .attributeValId
+                                                  .split(',');
+                                              return Container(
+                                                  child: ListView.builder(
+                                                      shrinkWrap: true,
+                                                      physics:
+                                                      NeverScrollableScrollPhysics(),
+                                                      itemCount: attListId.length,
+                                                      itemBuilder: (context, i) {
+                                                        return CheckboxListTile(
+                                                          dense: true,
+                                                          title: Text(attsubList[i],
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .subtitle1
+                                                                  .copyWith(
+                                                                  color: colors
+                                                                      .lightBlack,
+                                                                  fontWeight:
                                                                   FontWeight
                                                                       .normal)),
-                                                  value: subList[_tc.index]
-                                                      .selectedId
-                                                      .contains(attListId[i]),
-                                                  activeColor: primary,
-                                                  controlAffinity:
-                                                      ListTileControlAffinity
-                                                          .leading,
-                                                  onChanged: (bool val) {
-                                                    setState(() {
-                                                      if (val == true) {
-                                                        subList[_tc.index]
-                                                            .selectedId
-                                                            .add(attListId[i]);
-                                                      } else {
-                                                        subList[_tc.index]
-                                                            .selectedId
-                                                            .remove(
-                                                                attListId[i]);
-                                                      }
-                                                    });
-                                                  },
-                                                );
-                                              }));
-                                    } else {
-                                      return Container();
-                                    }
-                                  })),
-                        ])))),
-            Container(
-              color: white,
-              child: Row(children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(left: 15.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(subList[_tc.index].totalItem.toString()),
-                        Text(PRODUCTS_FOUND_LBL),
-                      ],
-                    )),
-                Spacer(),
-                SimBtn(
-                  size: 0.4,
-                  title: APPLY,
-                  onBtnSelected: () {
-                    if (subList[_tc.index].selectedId != null) {
-                      selId = subList[_tc.index].selectedId.join(',');
-                      clearList("0");
-                      Navigator.pop(context, 'Product Filter');
-                    }
-                  },
-                ),
-              ]),
-            )
-          ]);
-        });
+                                                          value: subList[_tc.index]
+                                                              .selectedId
+                                                              .contains(attListId[i]),
+                                                          activeColor: colors.primary,
+                                                          controlAffinity:
+                                                          ListTileControlAffinity
+                                                              .leading,
+                                                          onChanged: (bool val) {
+                                                            setState(() {
+                                                              if (val == true) {
+                                                                subList[_tc.index]
+                                                                    .selectedId
+                                                                    .add(attListId[i]);
+                                                              } else {
+                                                                subList[_tc.index]
+                                                                    .selectedId
+                                                                    .remove(
+                                                                    attListId[i]);
+                                                              }
+                                                            });
+                                                          },
+                                                        );
+                                                      }));
+                                            } else {
+                                              return Container();
+                                            }
+                                          })),
+                                ])))),
+                Container(
+                  color: colors.white,
+                  child: Row(children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.only(left: 15.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(subList[_tc.index].totalItem.toString()),
+                            Text(getTranslated(context, 'PRODUCTS_FOUND_LBL')),
+                          ],
+                        )),
+                    Spacer(),
+                    SimBtn(
+                      size: 0.4,
+                      title: getTranslated(context, 'APPLY'),
+                      onBtnSelected: () {
+                        if (subList[_tc.index].selectedId != null) {
+                          selId = subList[_tc.index].selectedId.join(',');
+                          clearList("0");
+                          Navigator.pop(context, 'Product Filter');
+                        }
+                      },
+                    ),
+                  ]),
+                )
+              ]);
+            });
       },
     );
   }
@@ -937,65 +958,60 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
         Response response =
-            await post(getProductApi, headers: headers, body: parameter)
-                .timeout(Duration(seconds: timeOut));
-
-        print("response***${response.body.toString()}");
+        await post(getProductApi, headers: headers, body: parameter)
+            .timeout(Duration(seconds: timeOut));
 
         if (response.statusCode == 200) {
-        var getdata = json.decode(response.body);
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          total = int.parse(getdata["total"]);
-          offset =
-              subList[cur].subList == null ? 0 : subList[cur].subList.length;
+          var getdata = json.decode(response.body);
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            total = int.parse(getdata["total"]);
+            offset =
+            subList[cur].subList == null ? 0 : subList[cur].subList.length;
 
-          if (subList[cur].filterList == null ||
-              subList[cur].filterList.length == 0) {
-            subList[cur].filterList = (getdata["filters"] as List)
-                .map((data) => new Filter.fromJson(data))
-                .toList();
-            subList[cur].selectedId = [];
-          }
+            if (subList[cur].filterList == null ||
+                subList[cur].filterList.length == 0) {
+              subList[cur].filterList = (getdata["filters"] as List)
+                  .map((data) => new Filter.fromJson(data))
+                  .toList();
+              subList[cur].selectedId = [];
+            }
 
-          if (offset < total) {
-            tempList.clear();
+            if (offset < total) {
+              tempList.clear();
 
-            var data = getdata["data"];
-            tempList = (data as List)
-                .map((data) => new Product.fromJson(data))
-                .toList();
+              var data = getdata["data"];
+              tempList = (data as List)
+                  .map((data) => new Product.fromJson(data))
+                  .toList();
+              if (offset == 0) subList[cur].subList = [];
+
+              subList[cur].subList.addAll(tempList);
+              offset = subList[cur].offset + perPage;
+
+              subList[cur].offset = offset;
+              subList[cur].totalItem = total;
+            }
+          } else {
             if (offset == 0) subList[cur].subList = [];
-
-            subList[cur].subList.addAll(tempList);
-            offset = subList[cur].offset + perPage;
-
-            subList[cur].offset = offset;
-            subList[cur].totalItem = total;
+            if (msg != "Products Not Found !") setSnackbar(msg);
+            isLoadingmore = false;
           }
+          if (mounted)
+            setState(() {
+              _isLoading = false;
+            });
+
+          subList[cur].isFromProd = true;
+          _views[cur] = createTabContent(cur, subList);
         } else {
-          if (offset == 0) subList[cur].subList = [];
-          if (msg != "Products Not Found !") setSnackbar(msg);
-          isLoadingmore = false;
-        }
-
-        setState(() {
-          _isLoading = false;
-        });
-
-        subList[cur].isFromProd = true;
-        _views[cur] = createTabContent(cur, subList);
-
-      }else{
           setState(() {
             _isLoading = false;
           });
         }
-
-
-      }on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+      } on TimeoutException catch (_) {
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           _isLoading = false;
         });
@@ -1006,7 +1022,6 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       });
     }
   }
-
 
   clearList(String top) {
     setState(() {
@@ -1028,14 +1043,12 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.black),
+        style: TextStyle(color: colors.black),
       ),
       backgroundColor: Colors.white,
       elevation: 1.0,
     ));
   }
-
-
 
   updateProductList() {
     setState(() {});

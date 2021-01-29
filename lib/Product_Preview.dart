@@ -49,7 +49,7 @@ class StatePreview extends State<ProductPreview> {
                   },
                   itemBuilder: (BuildContext context, int index) {
                     return PhotoView(
-                        backgroundDecoration: BoxDecoration(color: white),
+                        backgroundDecoration: BoxDecoration(color: colors.white),
                         initialScale: PhotoViewComputedScale.contained * 0.9,
                         minScale: PhotoViewComputedScale.contained * 0.9,
                         imageProvider:
@@ -62,7 +62,7 @@ class StatePreview extends State<ProductPreview> {
                   child: new IconButton(
                     icon: new Icon(
                       Icons.arrow_back_ios,
-                      color: primary,
+                      color: colors.primary,
                     ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
@@ -96,7 +96,7 @@ class SelectedPhoto extends StatelessWidget {
           height: 8.0,
           width: 8.0,
           decoration: BoxDecoration(
-              color: primary.withOpacity(0.4),
+              color: colors.primary.withOpacity(0.4),
               borderRadius: BorderRadius.circular(4.0)),
         ),
       ),
@@ -111,7 +111,7 @@ class SelectedPhoto extends StatelessWidget {
           height: 10.0,
           width: 10.0,
           decoration: BoxDecoration(
-              color: primary,
+              color: colors.primary,
               borderRadius: BorderRadius.circular(5.0),
               boxShadow: [
                 BoxShadow(

@@ -47,9 +47,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   String filter = "";
   String selId = "";
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+  new GlobalKey<RefreshIndicatorState>();
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
+  bool listType = true;
 
   @override
   void initState() {
@@ -89,19 +90,19 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: getAppbar(),
-        backgroundColor: lightWhite,
+
         key: _scaffoldKey,
         body: _isNetworkAvail
             ? _isLoading
-                ? shimmer()
-                : productList.length == 0
-                    ? getNoItem()
-                    : Stack(
-                        children: <Widget>[
-                          _showForm(),
-                          showCircularProgress(_isProgress, primary),
-                        ],
-                      )
+            ? shimmer()
+            : productList.length == 0
+            ? getNoItem(context)
+            : Stack(
+          children: <Widget>[
+            _showForm(),
+            showCircularProgress(_isProgress, colors.primary),
+          ],
+        )
             : noInternet(context));
   }
 
@@ -113,7 +114,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -142,28 +143,28 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         padding: EdgeInsets.only(bottom: 10.0, top: 50.0),
         child: Center(
             child: RaisedButton(
-          color: primary,
-          onPressed: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (BuildContext context) => super.widget));
-          },
-          shape:
+              color: colors.primary,
+              onPressed: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => super.widget));
+              },
+              shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-          child: Ink(
-            child: Container(
-              constraints: BoxConstraints(maxWidth: width / 1.2, minHeight: 45),
-              alignment: Alignment.center,
-              child: Text(TRY_AGAIN_INT_LBL,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      .copyWith(color: white, fontWeight: FontWeight.normal)),
-            ),
-          ),
-        )));
+              child: Ink(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: width / 1.2, minHeight: 45),
+                  alignment: Alignment.center,
+                  child: Text(getTranslated(context, 'TRY_AGAIN_INT_LBL'),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline6
+                          .copyWith(color: colors.white, fontWeight: FontWeight.normal)),
+                ),
+              ),
+            )));
   }
 
   Widget listItem(int index) {
@@ -180,16 +181,16 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
             Widget>[
           productList[index].availability == "0"
-              ? Text(OUT_OF_STOCK_LBL,
-                  style: Theme.of(context)
-                      .textTheme
-                      .subtitle1
-                      .copyWith(color: Colors.red))
+              ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+              style: Theme.of(context)
+                  .textTheme
+                  .subtitle1
+                  .copyWith(color: Colors.red))
               : Container(),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
-            children: <Widget>[
+              children: <Widget>[
                 Hero(
                   tag: "$index${productList[index].id}",
                   child: ClipRRect(
@@ -210,7 +211,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         Text(
                           productList[index].name,
                           style: TextStyle(
-                              color: lightBlack, fontWeight: FontWeight.bold),
+                              color: colors.lightBlack, fontWeight: FontWeight.bold),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -218,7 +219,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           children: [
                             Icon(
                               Icons.star,
-                              color: Colors.yellow,
+                              color: colors.primary,
                               size: 12,
                             ),
                             Text(
@@ -234,20 +235,20 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         Row(
                           children: <Widget>[
                             Text(
-                              int.parse(productList[index]
-                                          .prVarientList[0]
-                                          .disPrice) !=
-                                      0
+                              double.parse(productList[index]
+                                  .prVarientList[0]
+                                  .disPrice) !=
+                                  0
                                   ? CUR_CURRENCY +
-                                      "" +
-                                      productList[index].prVarientList[0].price
+                                  "" +
+                                  productList[index].prVarientList[0].price
                                   : "",
                               style: Theme.of(context)
                                   .textTheme
                                   .overline
                                   .copyWith(
-                                      decoration: TextDecoration.lineThrough,
-                                      letterSpacing: 0),
+                                  decoration: TextDecoration.lineThrough,
+                                  letterSpacing: 0),
                             ),
                             Text(" " + CUR_CURRENCY + " " + price.toString(),
                                 style: Theme.of(context).textTheme.subtitle1),
@@ -267,13 +268,13 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             context,
             PageRouteBuilder(
                 pageBuilder: (_, __, ___) => ProductDetail(
-                      model: model,
-                      updateParent: updateProductList,
-                      index: index,
-                      secPos: 0,
-                      updateHome: widget.updateHome,
-                      list: true,
-                    )),
+                  model: model,
+                  updateParent: updateProductList,
+                  index: index,
+                  secPos: 0,
+                  updateHome: widget.updateHome,
+                  list: true,
+                )),
           );
         },
       ),
@@ -302,42 +303,43 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
         Response response =
-            await post(getProductApi, headers: headers, body: parameter)
-                .timeout(Duration(seconds: timeOut));
+        await post(getProductApi, headers: headers, body: parameter)
+            .timeout(Duration(seconds: timeOut));
         if (response.statusCode == 200) {
-        var getdata = json.decode(response.body);
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          total = int.parse(getdata["total"]);
+          var getdata = json.decode(response.body);
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            total = int.parse(getdata["total"]);
 
-          if (_isFirstLoad) {
-            filterList = getdata["filters"];
-            _isFirstLoad = false;
+            if (_isFirstLoad) {
+              filterList = getdata["filters"];
+              _isFirstLoad = false;
+            }
+
+            if ((offset) < total) {
+              tempList.clear();
+
+              var data = getdata["data"];
+              tempList = (data as List)
+                  .map((data) => new Product.fromJson(data))
+                  .toList();
+
+              productList.addAll(tempList);
+
+              offset = offset + perPage;
+            }
+          } else {
+            if (msg != "Products Not Found !") setSnackbar(msg);
+            isLoadingmore = false;
           }
-
-          if ((offset) < total) {
-            tempList.clear();
-
-            var data = getdata["data"];
-            tempList = (data as List)
-                .map((data) => new Product.fromJson(data))
-                .toList();
-
-            productList.addAll(tempList);
-
-            offset = offset + perPage;
-          }
-        } else {
-          if (msg != "Products Not Found !") setSnackbar(msg);
-          isLoadingmore = false;
+          if (mounted)
+            setState(() {
+              _isLoading = false;
+            });
         }
-        if (mounted)
-          setState(() {
-            _isLoading = false;
-          });
-      } }on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+      } on TimeoutException catch (_) {
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           _isLoading = false;
           isLoadingmore = false;
@@ -359,9 +361,9 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -371,10 +373,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
       title: Text(
         widget.name,
         style: TextStyle(
-          color: fontColor,
+          color: colors.fontColor,
         ),
       ),
-      backgroundColor: white,
+
       elevation: 5,
       leading: Builder(builder: (BuildContext context) {
         return Container(
@@ -387,7 +389,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
               onTap: () => Navigator.of(context).pop(),
               child: Padding(
                 padding: const EdgeInsets.only(right: 4.0),
-                child: Icon(Icons.keyboard_arrow_left, color: primary),
+                child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
               ),
             ),
           ),
@@ -413,7 +415,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                 padding: const EdgeInsets.all(4.0),
                 child: Icon(
                   Icons.search,
-                  color: primary,
+                  color: colors.primary,
                   size: 22,
                 ),
               ),
@@ -422,27 +424,27 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         ),
         filterList != null && filterList.length > 0
             ? Container(
-                margin: EdgeInsets.symmetric(vertical: 10),
-                decoration: shadow(),
-                child: Card(
-                    elevation: 0,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(4),
-                      onTap: () {
-                        if (filterList.length != 0) return filterDialog();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Icon(
-                          Icons.tune,
-                          color: primary,
-                          size: 22,
-                        ),
-                      ),
-                    )))
+            margin: EdgeInsets.symmetric(vertical: 10),
+            decoration: shadow(),
+            child: Card(
+                elevation: 0,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(4),
+                  onTap: () {
+                    if (filterList.length != 0) return filterDialog();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Icon(
+                      Icons.tune,
+                      color: colors.primary,
+                      size: 22,
+                    ),
+                  ),
+                )))
             : Container(),
         Container(
-            margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+            margin: EdgeInsets.symmetric(vertical: 10),
             decoration: shadow(),
             child: Card(
                 elevation: 0,
@@ -455,12 +457,171 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     padding: const EdgeInsets.all(4.0),
                     child: Icon(
                       Icons.filter_list,
-                      color: primary,
+                      color: colors.primary,
                       size: 22,
                     ),
                   ),
-                )))
+                ))),
+        Container(
+            margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+            decoration: shadow(),
+            child: Card(
+                elevation: 0,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Icon(
+                          listType ? Icons.grid_view : Icons.list,
+                          color: colors.primary,
+                          size: 22,
+                        ),
+                      ),
+                      onTap: () {
+                        productList.length != 0
+                            ? setState(() {
+                          listType = !listType;
+                        })
+                            : null;
+                      }),
+                ))),
       ],
+    );
+  }
+
+  Widget productItem(int index, bool pad) {
+    String offPer;
+    double price = double.parse(productList[index].prVarientList[0].disPrice);
+    if (price == 0) {
+      price = double.parse(productList[index].prVarientList[0].price);
+    } else {
+      double off =
+          double.parse(productList[index].prVarientList[0].price) - price;
+      print("==========$off");
+      offPer = ((off * 100) /
+          double.parse(productList[index].prVarientList[0].price))
+          .toStringAsFixed(2);
+    }
+
+    double width = deviceWidth * 0.5;
+
+    return Card(
+      elevation: 0.2,
+      margin: EdgeInsets.only(bottom: 5, right: pad ? 5 : 0),
+      child: InkWell(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  ClipRRect(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(5),
+                          topRight: Radius.circular(5)),
+                      child: Hero(
+                        tag: "$index${productList[index].id}",
+                        child: FadeInImage(
+                          fadeInDuration: Duration(milliseconds: 150),
+                          image: NetworkImage(productList[index].image),
+                          height: double.maxFinite,
+                          width: double.maxFinite,
+                          placeholder: placeHolder(width),
+                        ),
+                      )),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(1.5),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.star,
+                            color: colors.primary,
+                            size: 10,
+                          ),
+                          Text(
+                            productList[index].rating,
+                            style: Theme.of(context)
+                                .textTheme
+                                .overline
+                                .copyWith(letterSpacing: 0.2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 5.0, top: 5, bottom: 5),
+              child: Text(
+                productList[index].name,
+                style: Theme.of(context)
+                    .textTheme
+                    .caption
+                    .copyWith(color:colors.lightBlack),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(" " + CUR_CURRENCY + " " + price.toString(),
+                style: TextStyle(
+                    color: colors.fontColor, fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
+              child: double.parse(productList[index].prVarientList[0].disPrice) !=
+                  0
+                  ? Row(
+                children: <Widget>[
+                  Text(
+                    double.parse(productList[index]
+                        .prVarientList[0]
+                        .disPrice) !=
+                        0
+                        ? CUR_CURRENCY +
+                        "" +
+                        productList[index].prVarientList[0].price
+                        : "",
+                    style: Theme.of(context).textTheme.overline.copyWith(
+                        decoration: TextDecoration.lineThrough,
+                        letterSpacing: 0),
+                  ),
+                  Text(" | " + "-$offPer%",
+                      style: Theme.of(context)
+                          .textTheme
+                          .overline
+                          .copyWith(
+                          color: colors.primary, letterSpacing: 0)),
+                ],
+              )
+                  : Container(
+                height: 5,
+              ),
+            )
+          ],
+        ),
+        onTap: () {
+          Product model = productList[index];
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+                pageBuilder: (_, __, ___) => ProductDetail(
+                  model: model,
+                  updateParent: updateProductList,
+                  index: index,
+                  secPos: 0,
+                  updateHome: widget.updateHome,
+                  list: true,
+                )),
+          );
+        },
+      ),
     );
   }
 
@@ -482,16 +643,16 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     Padding(
                         padding: EdgeInsets.only(top: 19.0, bottom: 16.0),
                         child: Text(
-                          SORT_BY,
+                          getTranslated(context, 'SORT_BY'),
                           style: Theme.of(context).textTheme.headline6,
                         )),
-                    Divider(color: lightBlack),
+                    Divider(color: colors.lightBlack),
                     TextButton(
-                        child: Text(TOP_RATED,
+                        child: Text(getTranslated(context, 'TOP_RATED'),
                             style: Theme.of(context)
                                 .textTheme
                                 .subtitle1
-                                .copyWith(color: lightBlack)),
+                                .copyWith(color: colors.lightBlack)),
                         onPressed: () {
                           sortBy = '';
                           orderBy = 'DESC';
@@ -504,13 +665,13 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           getProduct("1");
                           Navigator.pop(context, 'option 1');
                         }),
-                    Divider(color: lightBlack),
+                    Divider(color: colors.lightBlack),
                     TextButton(
-                        child: Text(F_NEWEST,
+                        child: Text(getTranslated(context, 'F_NEWEST'),
                             style: Theme.of(context)
                                 .textTheme
                                 .subtitle1
-                                .copyWith(color: lightBlack)),
+                                .copyWith(color: colors.lightBlack)),
                         onPressed: () {
                           sortBy = 'p.date_added';
                           orderBy = 'DESC';
@@ -523,14 +684,14 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           getProduct("0");
                           Navigator.pop(context, 'option 1');
                         }),
-                    Divider(color: lightBlack),
+                    Divider(color: colors.lightBlack),
                     TextButton(
                         child: Text(
-                          F_OLDEST,
+                          getTranslated(context, 'F_OLDEST'),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
-                              .copyWith(color: lightBlack),
+                              .copyWith(color: colors.lightBlack),
                         ),
                         onPressed: () {
                           sortBy = 'p.date_added';
@@ -544,14 +705,14 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           getProduct("0");
                           Navigator.pop(context, 'option 2');
                         }),
-                    Divider(color: lightBlack),
+                    Divider(color: colors.lightBlack),
                     TextButton(
                         child: new Text(
-                          F_LOW,
+                          getTranslated(context, 'F_LOW'),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
-                              .copyWith(color: lightBlack),
+                              .copyWith(color: colors.lightBlack),
                         ),
                         onPressed: () {
                           sortBy = 'pv.price';
@@ -565,16 +726,16 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           getProduct("0");
                           Navigator.pop(context, 'option 3');
                         }),
-                    Divider(color: lightBlack),
+                    Divider(color: colors.lightBlack),
                     Padding(
                         padding: EdgeInsets.only(bottom: 5.0),
                         child: TextButton(
                             child: new Text(
-                              F_HIGH,
+                              getTranslated(context, 'F_HIGH'),
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle1
-                                  .copyWith(color: lightBlack),
+                                  .copyWith(color: colors.lightBlack),
                             ),
                             onPressed: () {
                               sortBy = 'pv.price';
@@ -619,8 +780,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             .toString(),
       };
       Response response =
-          await post(manageCartApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(manageCartApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -641,7 +802,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
       });
       widget.updateHome();
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar( getTranslated(context,'somethingMSg'));
       setState(() {
         _isProgress = false;
       });
@@ -661,8 +822,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             .toString()
       };
       Response response =
-          await post(manageCartApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(manageCartApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -682,7 +843,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
       widget.updateHome();
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar( getTranslated(context,'somethingMSg'));
       setState(() {
         _isProgress = false;
       });
@@ -704,17 +865,34 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     return RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: _refresh,
-        child: ListView.builder(
+        child: listType
+            ? ListView.builder(
           controller: controller,
-          itemCount:
-              (offset < total) ? productList.length + 1 : productList.length,
+          itemCount: (offset < total)
+              ? productList.length + 1
+              : productList.length,
           physics: AlwaysScrollableScrollPhysics(),
           itemBuilder: (context, index) {
             return (index == productList.length && isLoadingmore)
                 ? Center(child: CircularProgressIndicator())
                 : listItem(index);
           },
-        ));
+        )
+            : GridView.count(
+            padding: EdgeInsets.only(top: 5),
+            crossAxisCount: 2,
+            controller: controller,
+            physics: NeverScrollableScrollPhysics(),
+            children: List.generate(
+              (offset < total)
+                  ? productList.length + 1
+                  : productList.length,
+                  (index) {
+                return (index == productList.length && isLoadingmore)
+                    ? Center(child: CircularProgressIndicator())
+                    : productItem(index, index % 2 == 0 ? true : false);
+              },
+            )));
   }
 
   void filterDialog() {
@@ -728,221 +906,220 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
       builder: (builder) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-          return Column(mainAxisSize: MainAxisSize.min, children: [
-            Padding(
-                padding: const EdgeInsets.only(top: 30.0),
-                child: AppBar(
-                  title: Text(
-                    FILTER,
-                    style: TextStyle(
-                      color: fontColor,
-                    ),
-                  ),
-                  backgroundColor: white,
-                  elevation: 5,
-                  leading: Builder(builder: (BuildContext context) {
-                    return Container(
-                      margin: EdgeInsets.all(10),
-                      decoration: shadow(),
-                      child: Card(
-                        elevation: 0,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(4),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 4.0),
-                            child:
-                                Icon(Icons.keyboard_arrow_left, color: primary),
-                          ),
+              return Column(mainAxisSize: MainAxisSize.min, children: [
+                Padding(
+                    padding: const EdgeInsets.only(top: 30.0),
+                    child: AppBar(
+                      title: Text(
+                        getTranslated(context, 'FILTER'),
+                        style: TextStyle(
+                          color: colors.fontColor,
                         ),
                       ),
-                    );
-                  }),
-                  actions: [
-                    Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      alignment: Alignment.center,
-                      child: InkWell(
-                          child: Text(FILTER_CLEAR_LBL,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(
+                      elevation: 5,
+                      leading: Builder(builder: (BuildContext context) {
+                        return Container(
+                          margin: EdgeInsets.all(10),
+                          decoration: shadow(),
+                          child: Card(
+                            elevation: 0,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(4),
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 4.0),
+                                child:
+                                Icon(Icons.keyboard_arrow_left, color: colors.primary),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                      actions: [
+                        Container(
+                          margin: EdgeInsets.only(right: 10.0),
+                          alignment: Alignment.center,
+                          child: InkWell(
+                              child: Text(getTranslated(context, 'FILTER_CLEAR_LBL'),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(
                                       fontWeight: FontWeight.normal,
-                                      color: fontColor)),
-                          onTap: () {
-                            setState(() {
-                              selectedId.clear();
-                            });
-                          }),
-                    ),
-                  ],
-                )),
-            Expanded(
-                child: Container(
-                    color: lightWhite,
-                    padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
-                    child: Card(
-                        child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                          Expanded(
-                              flex: 2,
-                              child: Container(
-                                  color: lightWhite,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    padding: EdgeInsets.only(top: 10.0),
-                                    itemCount: filterList.length,
-                                    itemBuilder: (context, index) {
-                                      attsubList = filterList[index]
-                                              ['attribute_values']
-                                          .split(',');
-
-                                      attListId = filterList[index]
-                                              ['attribute_values_id']
-                                          .split(',');
-
-                                      if (filter == "") {
-                                        filter = filterList[0]["name"];
-                                      }
-
-                                      return InkWell(
-                                          onTap: () {
-                                            setState(() {
-                                              filter =
-                                                  filterList[index]['name'];
-                                            });
-                                          },
-                                          child: Container(
-                                            padding: EdgeInsets.only(
-                                                left: 20,
-                                                top: 10.0,
-                                                bottom: 10.0),
-                                            decoration: BoxDecoration(
-                                                color: filter ==
-                                                        filterList[index]
-                                                            ['name']
-                                                    ? white
-                                                    : lightWhite,
-                                                borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(7),
-                                                    bottomLeft:
-                                                        Radius.circular(7))),
-                                            alignment: Alignment.centerLeft,
-                                            child: new Text(
-                                              filterList[index]['name'],
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .subtitle1
-                                                  .copyWith(
-                                                      color: filter ==
-                                                              filterList[index]
-                                                                  ['name']
-                                                          ? fontColor
-                                                          : lightBlack,
-                                                      fontWeight:
-                                                          FontWeight.normal),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 2,
-                                            ),
-                                          ));
-                                    },
-                                  ))),
-                          Expanded(
-                              flex: 3,
-                              child: ListView.builder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.only(top: 10.0),
-                                  scrollDirection: Axis.vertical,
-                                  itemCount: filterList.length,
-                                  itemBuilder: (context, index) {
-                                    if (filter == filterList[index]["name"]) {
-                                      attsubList = filterList[index]
-                                              ['attribute_values']
-                                          .split(',');
-
-                                      attListId = filterList[index]
-                                              ['attribute_values_id']
-                                          .split(',');
-                                      return Container(
+                                      color: colors.fontColor)),
+                              onTap: () {
+                                setState(() {
+                                  selectedId.clear();
+                                });
+                              }),
+                        ),
+                      ],
+                    )),
+                Expanded(
+                    child: Container(
+                        color: colors.lightWhite,
+                        padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
+                        child: Card(
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                          color: colors.lightWhite,
                                           child: ListView.builder(
-                                              shrinkWrap: true,
-                                              physics:
-                                                  NeverScrollableScrollPhysics(),
-                                              itemCount: attListId.length,
-                                              itemBuilder: (context, i) {
-                                                return CheckboxListTile(
-                                                  dense: true,
-                                                  title: Text(attsubList[i],
+                                            shrinkWrap: true,
+                                            scrollDirection: Axis.vertical,
+                                            padding: EdgeInsets.only(top: 10.0),
+                                            itemCount: filterList.length,
+                                            itemBuilder: (context, index) {
+                                              attsubList = filterList[index]
+                                              ['attribute_values']
+                                                  .split(',');
+
+                                              attListId = filterList[index]
+                                              ['attribute_values_id']
+                                                  .split(',');
+
+                                              if (filter == "") {
+                                                filter = filterList[0]["name"];
+                                              }
+
+                                              return InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      filter =
+                                                      filterList[index]['name'];
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: EdgeInsets.only(
+                                                        left: 20,
+                                                        top: 10.0,
+                                                        bottom: 10.0),
+                                                    decoration: BoxDecoration(
+                                                        color: filter ==
+                                                            filterList[index]
+                                                            ['name']
+                                                            ? colors.white
+                                                            : colors.lightWhite,
+                                                        borderRadius: BorderRadius.only(
+                                                            topLeft: Radius.circular(7),
+                                                            bottomLeft:
+                                                            Radius.circular(7))),
+                                                    alignment: Alignment.centerLeft,
+                                                    child: new Text(
+                                                      filterList[index]['name'],
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .subtitle1
                                                           .copyWith(
-                                                              color: lightBlack,
-                                                              fontWeight:
+                                                          color: filter ==
+                                                              filterList[index]
+                                                              ['name']
+                                                              ? colors.fontColor
+                                                              : colors.lightBlack,
+                                                          fontWeight:
+                                                          FontWeight.normal),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 2,
+                                                    ),
+                                                  ));
+                                            },
+                                          ))),
+                                  Expanded(
+                                      flex: 3,
+                                      child: ListView.builder(
+                                          shrinkWrap: true,
+                                          padding: EdgeInsets.only(top: 10.0),
+                                          scrollDirection: Axis.vertical,
+                                          itemCount: filterList.length,
+                                          itemBuilder: (context, index) {
+                                            if (filter == filterList[index]["name"]) {
+                                              attsubList = filterList[index]
+                                              ['attribute_values']
+                                                  .split(',');
+
+                                              attListId = filterList[index]
+                                              ['attribute_values_id']
+                                                  .split(',');
+                                              return Container(
+                                                  child: ListView.builder(
+                                                      shrinkWrap: true,
+                                                      physics:
+                                                      NeverScrollableScrollPhysics(),
+                                                      itemCount: attListId.length,
+                                                      itemBuilder: (context, i) {
+                                                        return CheckboxListTile(
+                                                          dense: true,
+                                                          title: Text(attsubList[i],
+                                                              style: Theme.of(context)
+                                                                  .textTheme
+                                                                  .subtitle1
+                                                                  .copyWith(
+                                                                  color: colors.lightBlack,
+                                                                  fontWeight:
                                                                   FontWeight
                                                                       .normal)),
-                                                  value: selectedId
-                                                      .contains(attListId[i]),
-                                                  activeColor: primary,
-                                                  controlAffinity:
-                                                      ListTileControlAffinity
-                                                          .leading,
-                                                  onChanged: (bool val) {
-                                                    setState(() {
-                                                      if (val == true) {
-                                                        selectedId
-                                                            .add(attListId[i]);
-                                                      } else {
-                                                        selectedId.remove(
-                                                            attListId[i]);
-                                                      }
-                                                    });
-                                                  },
-                                                );
-                                              }));
-                                    } else {
-                                      return Container();
-                                    }
-                                  })),
-                        ])))),
-            Container(
-              color: white,
-              child: Row(children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(left: 15.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(total.toString()),
-                        Text(PRODUCTS_FOUND_LBL),
-                      ],
-                    )),
-                Spacer(),
-                SimBtn(
-                    size: 0.4,
-                    title: APPLY,
-                    onBtnSelected: () {
-                      if (selectedId != null) {
-                        selId = selectedId.join(',');
-                      }
+                                                          value: selectedId
+                                                              .contains(attListId[i]),
+                                                          activeColor: colors.primary,
+                                                          controlAffinity:
+                                                          ListTileControlAffinity
+                                                              .leading,
+                                                          onChanged: (bool val) {
+                                                            setState(() {
+                                                              if (val == true) {
+                                                                selectedId
+                                                                    .add(attListId[i]);
+                                                              } else {
+                                                                selectedId.remove(
+                                                                    attListId[i]);
+                                                              }
+                                                            });
+                                                          },
+                                                        );
+                                                      }));
+                                            } else {
+                                              return Container();
+                                            }
+                                          })),
+                                ])))),
+                Container(
+                  color: colors.white,
+                  child: Row(children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.only(left: 15.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(total.toString()),
+                            Text(getTranslated(context,'PRODUCTS_FOUND_LBL')),
+                          ],
+                        )),
+                    Spacer(),
+                    SimBtn(
+                        size: 0.4,
+                        title: getTranslated(context, 'APPLY'),
+                        onBtnSelected: () {
+                          if (selectedId != null) {
+                            selId = selectedId.join(',');
+                          }
 
-                      setState(() {
-                        _isLoading = true;
-                        total = 0;
-                        offset = 0;
-                        productList.clear();
-                      });
-                      getProduct("0");
-                      Navigator.pop(context, 'Product Filter');
-                    }),
-              ]),
-            )
-          ]);
-        });
+                          setState(() {
+                            _isLoading = true;
+                            total = 0;
+                            offset = 0;
+                            productList.clear();
+                          });
+                          getProduct("0");
+                          Navigator.pop(context, 'Product Filter');
+                        }),
+                  ]),
+                )
+              ]);
+            });
       },
     );
   }

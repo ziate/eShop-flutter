@@ -6,9 +6,9 @@ import 'Color.dart';
 class SimBtn extends StatelessWidget {
   final String title;
   final VoidCallback onBtnSelected;
-   double size;
+  double size;
 
-   SimBtn({Key key, this.title, this.onBtnSelected, this.size})
+  SimBtn({Key key, this.title, this.onBtnSelected, this.size})
       : super(key: key);
 
   @override
@@ -28,7 +28,7 @@ class SimBtn extends StatelessWidget {
             gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [grad1Color, grad2Color],
+                colors: [colors.grad1Color, colors.grad2Color],
                 stops: [0, 1]),
             borderRadius: new BorderRadius.all(const Radius.circular(10.0)),
           ),
@@ -37,7 +37,7 @@ class SimBtn extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .subtitle1
-                  .copyWith(color: white, fontWeight: FontWeight.normal))),
+                  .copyWith(color: colors.white, fontWeight: FontWeight.normal))),
       onPressed: () {
         onBtnSelected();
       },

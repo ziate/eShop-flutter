@@ -112,9 +112,9 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: fontColor),
+        style: TextStyle(color: colors.fontColor),
       ),
-      backgroundColor: lightWhite,
+      backgroundColor: colors.lightWhite,
       elevation: 1.0,
     ));
   }
@@ -128,7 +128,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -210,11 +210,11 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         child: Align(
           alignment: Alignment.center,
           child: new Text(
-            SIGNIN_LBL,
+            getTranslated(context, 'SIGNIN_LBL'),
             style: Theme.of(context)
                 .textTheme
                 .subtitle1
-                .copyWith(color: fontColor, fontWeight: FontWeight.bold),
+                .copyWith(color: colors.fontColor, fontWeight: FontWeight.bold),
           ),
         ));
   }
@@ -231,35 +231,35 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         },
         keyboardType: TextInputType.number,
         controller: mobileController,
-        style: TextStyle(color: fontColor, fontWeight: FontWeight.normal),
+        style: TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
         focusNode: monoFocus,
         textInputAction: TextInputAction.next,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        validator: validateMob,
+        validator:(val)=> validateMob(val,getTranslated(context,'MOB_REQUIRED'),getTranslated(context,'VALID_MOB')),
         onSaved: (String value) {
           mobile = value;
         },
         decoration: InputDecoration(
           prefixIcon: Icon(
             Icons.call_outlined,
-            color: fontColor,
+            color: colors.fontColor,
             size: 17,
           ),
-          hintText: MOBILEHINT_LBL,
+          hintText: getTranslated(context, 'MOBILEHINT_LBL'),
           hintStyle: Theme.of(this.context)
               .textTheme
               .subtitle2
-              .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+              .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
           filled: true,
-          fillColor: lightWhite,
+          fillColor: colors.lightWhite,
           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 20),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: fontColor),
+            borderSide: BorderSide(color: colors.fontColor),
             borderRadius: BorderRadius.circular(7.0),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: lightWhite),
+            borderSide: BorderSide(color: colors.lightWhite),
             borderRadius: BorderRadius.circular(7.0),
           ),
         ),
@@ -275,33 +275,33 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
           keyboardType: TextInputType.text,
           obscureText: true,
           focusNode: passFocus,
-          style: TextStyle(color: fontColor),
+          style: TextStyle(color: colors.fontColor),
           controller: passwordController,
-          validator: validatePass,
+          validator:(val)=> validatePass(val,getTranslated(context, 'PWD_REQUIRED'),getTranslated(context, 'PWD_LENGTH')),
           onSaved: (String value) {
             password = value;
           },
           decoration: InputDecoration(
             prefixIcon: Icon(
               Icons.lock_outline,
-              color: fontColor,
+              color: colors.fontColor,
               size: 17,
             ),
-            hintText: PASSHINT_LBL,
+            hintText: getTranslated(context, 'PASSHINT_LBL'),
             hintStyle: Theme.of(this.context)
                 .textTheme
                 .subtitle2
-                .copyWith(color: fontColor, fontWeight: FontWeight.normal),
+                .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
             filled: true,
-            fillColor: lightWhite,
+            fillColor: colors.lightWhite,
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: fontColor),
+              borderSide: BorderSide(color: colors.fontColor),
               borderRadius: BorderRadius.circular(10.0),
             ),
             enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: lightWhite),
+              borderSide: BorderSide(color: colors.lightWhite),
               borderRadius: BorderRadius.circular(10.0),
             ),
           ),
@@ -323,12 +323,12 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
                     context,
                     MaterialPageRoute(
                         builder: (context) => SendOtp(
-                          title: FORGOT_PASS_TITLE,
+                          title: getTranslated(context, 'FORGOT_PASS_TITLE'),
                         )));
               },
-              child: Text(FORGOT_PASSWORD_LBL,
+              child: Text(getTranslated(context, 'FORGOT_PASSWORD_LBL'),
                   style: Theme.of(context).textTheme.subtitle2.copyWith(
-                      color: fontColor, fontWeight: FontWeight.normal)),
+                      color: colors.fontColor, fontWeight: FontWeight.normal)),
             ),
           ],
         ));
@@ -341,23 +341,23 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(DONT_HAVE_AN_ACC,
+          Text(getTranslated(context, 'DONT_HAVE_AN_ACC'),
               style: Theme.of(context)
                   .textTheme
                   .caption
-                  .copyWith(color: fontColor, fontWeight: FontWeight.normal)),
+                  .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal)),
           InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context) => SendOtp(
-                    title: SEND_OTP_TITLE,
+                    title: getTranslated(context, 'SEND_OTP_TITLE'),
                   ),
                 ));
               },
               child: Text(
-                SIGN_UP_LBL,
+                getTranslated(context,'SIGN_UP_LBL'),
                 style: Theme.of(context).textTheme.caption.copyWith(
-                    color: fontColor,
+                    color: colors.fontColor,
                     decoration: TextDecoration.underline,
                     fontWeight: FontWeight.normal),
               ))
@@ -368,7 +368,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   loginBtn() {
     return AppBtn(
-      title: SIGNIN_LBL,
+      title: getTranslated(context, 'SIGNIN_LBL'),
       btnAnim: buttonSqueezeanimation,
       btnCntrl: buttonController,
       onBtnSelected: () async {
@@ -415,7 +415,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         key: _scaffoldKey,
         body: _isNetworkAvail
             ? Container(
-            color: lightWhite,
+            color: colors.lightWhite,
             padding: EdgeInsets.only(
               bottom: 20.0,
             ),

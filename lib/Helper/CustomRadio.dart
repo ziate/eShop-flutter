@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'Constant.dart';
 import 'Color.dart';
-
+import 'Session.dart';
 class RadioItem extends StatelessWidget {
   final RadioModel _item;
 
@@ -21,15 +21,15 @@ class RadioItem extends StatelessWidget {
                 ? Container(
               padding: EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
-                  color: lightWhite,
+                  color: colors.lightWhite,
                   borderRadius: new BorderRadius.only(
                       bottomRight: Radius.circular(10.0))),
               child: Text(
-                DEFAULT_LBL,
+                getTranslated(context,'DEFAULT_LBL'),
                 style: Theme.of(context)
                     .textTheme
                     .caption
-                    .copyWith(color: fontColor),
+                    .copyWith(color: colors.fontColor),
               ),
             )
                 : Container(),
@@ -43,20 +43,20 @@ class RadioItem extends StatelessWidget {
                     height: 20.0,
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: _item.isSelected ? primary : white,
-                        border: Border.all(color: grad2Color)),
+                        color: _item.isSelected ? colors.primary : colors.white,
+                        border: Border.all(color: colors.grad2Color)),
                     child: Padding(
                       padding: const EdgeInsets.all(2.0),
                       child: _item.isSelected
                           ? Icon(
                         Icons.check,
                         size: 15.0,
-                        color: white,
+                        color: colors.white,
                       )
                           : Icon(
                         Icons.circle,
                         size: 15.0,
-                        color: white,
+                        color: colors.white,
                       ),
                     ),
                   )
@@ -75,9 +75,9 @@ class RadioItem extends StatelessWidget {
                               children: [
                                 InkWell(
                                   child: Text(
-                                    EDIT,
+                                    getTranslated(context, 'EDIT'),
                                     style: TextStyle(
-                                        color: fontColor,
+                                        color: colors.fontColor,
                                         fontWeight: FontWeight.bold),
                                   ),
                                   onTap: () {
@@ -86,27 +86,27 @@ class RadioItem extends StatelessWidget {
                                 ),
                                 _item.addItem.isDefault == "0"
                                     ? Padding(
-                                      padding: EdgeInsets.only(left: 20),
-                                      child: InkWell(
-                                        onTap: () {
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: InkWell(
+                                    onTap: () {
                                       _item.onSetDefault();
-                                  },
-                                        child: Container(
+                                    },
+                                    child: Container(
 
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 20, vertical: 2),
                                       decoration: BoxDecoration(
-                                          color: lightWhite,
+                                          color: colors.lightWhite,
                                           borderRadius: new BorderRadius.all(
                                               const Radius.circular(4.0))),
                                       child: Text(
-                                        SET_DEFAULT,
+                                        getTranslated(context, 'SET_DEFAULT'),
                                         style: TextStyle(
-                                            color: fontColor, fontSize: 10),
+                                            color: colors.fontColor, fontSize: 10),
                                       ),
                                     ),
-                                      ),
-                                    )
+                                  ),
+                                )
                                     : Container(),
                               ],
                             ),
@@ -130,7 +130,7 @@ class RadioItem extends StatelessWidget {
               padding: const EdgeInsets.all(5.0),
               child: Icon(
                 Icons.delete,
-                color: black54,
+                color: colors.primary,
                 size: 17,
               ),
             ),

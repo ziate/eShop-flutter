@@ -13,6 +13,9 @@ import 'Constant.dart';
 import 'Session.dart';
 import 'String.dart';
 
+
+bool _isConfigured = false;
+
 class PushNotificationService {
   final FirebaseMessaging _fcm;
 
@@ -30,21 +33,25 @@ class PushNotificationService {
       CUR_USERID = await getPrefrence(ID);
       if (CUR_USERID != null && CUR_USERID != "") _registerToken(token);
     });
-    _fcm.configure(
-      onMessage: (message) async {
-        print('onmessage $message');
-        await myForgroundMessageHandler(message);
-      },
-      onBackgroundMessage: myForgroundMessageHandler,
-      onResume: (message) async {
-        print('onresume $message');
-        await myForgroundMessageHandler(message);
-      },
-      onLaunch: (message) async {
-        print('onlaunch $message');
-        await myForgroundMessageHandler(message);
-      },
-    );
+
+    if (!_isConfigured) {
+      _fcm.configure(
+        onMessage: (message) async {
+          print('onmessage $message');
+          await myForgroundMessageHandler(message);
+        },
+        onBackgroundMessage: myForgroundMessageHandler,
+        onResume: (message) async {
+          print('onresume $message');
+          await myForgroundMessageHandler(message);
+        },
+        onLaunch: (message) async {
+          print('onlaunch $message');
+          await myForgroundMessageHandler(message);
+        },
+      );
+      _isConfigured = true;
+    }
   }
 
   void iOS_Permission() {
@@ -71,6 +78,7 @@ class PushNotificationService {
   static Future<dynamic> myForgroundMessageHandler(
       Map<String, dynamic> message) async {
 
+
     if (message.containsKey('notification')||message.containsKey('data')) {
       var data = message['notification'];
 
@@ -79,11 +87,12 @@ class PushNotificationService {
       var body = data['body'].toString();
       var image = message['data']['image'];
       var type=message['data']['type'];
+      var id=message['data']['type_id'];
 
-      if (image != null) {
-        generateImageNotication(title, body, image,type);
+      if (image != null && image !='null') {
+        generateImageNotication(title, body, image,type,id);
       } else {
-        generateSimpleNotication(title, body,type);
+        generateSimpleNotication(title, body,type,id);
       }
     }
   }
@@ -103,7 +112,7 @@ class PushNotificationService {
   }
 
   static Future<void> generateImageNotication(
-      String title, String msg, String image,String type) async {
+      String title, String msg, String image,String type,String id) async {
 
 
 
@@ -125,10 +134,10 @@ class PushNotificationService {
     var platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-        0, title, msg, platformChannelSpecifics,payload: type);
+        0, title, msg, platformChannelSpecifics,payload: type+","+id);
   }
 
-  static Future<void> generateSimpleNotication(String title, String msg,String type) async {
+  static Future<void> generateSimpleNotication(String title, String msg,String type,String id) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'your channel id', 'your channel name', 'your channel description',
         importance: Importance.max, priority: Priority.high, ticker: 'ticker');
@@ -136,6 +145,6 @@ class PushNotificationService {
     var platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin
-        .show(0, title, msg, platformChannelSpecifics, payload:type );
+        .show(0, title, msg, platformChannelSpecifics, payload:type+","+id );
   }
 }

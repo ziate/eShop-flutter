@@ -29,7 +29,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+  new GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -71,7 +71,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -106,32 +106,31 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: lightWhite,
         key: _scaffoldKey,
         body: _isNetworkAvail
             ? _isLoading
-                ? shimmer()
-                : notiList.length == 0
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: kToolbarHeight),
-                        child: Center(child: Text(noNoti)))
-                    : RefreshIndicator(
-                        key: _refreshIndicatorKey,
-                        onRefresh: _refresh,
-                        child: ListView.builder(
+            ? shimmer()
+            : notiList.length == 0
+            ? Padding(
+            padding: const EdgeInsets.only(top: kToolbarHeight),
+            child: Center(child: Text(getTranslated(context, 'noNoti'))))
+            : RefreshIndicator(
+            key: _refreshIndicatorKey,
+            onRefresh: _refresh,
+            child: ListView.builder(
 
-                         // shrinkWrap: true,
-                          controller: controller,
-                          itemCount: (offset < total)
-                              ? notiList.length + 1
-                              : notiList.length,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return (index == notiList.length && isLoadingmore)
-                                ? Center(child: CircularProgressIndicator())
-                                : listItem(index);
-                          },
-                        ))
+              // shrinkWrap: true,
+              controller: controller,
+              itemCount: (offset < total)
+                  ? notiList.length + 1
+                  : notiList.length,
+              physics: AlwaysScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                return (index == notiList.length && isLoadingmore)
+                    ? Center(child: CircularProgressIndicator())
+                    : listItem(index);
+              },
+            ))
             : noInternet(context));
   }
 
@@ -149,7 +148,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                 children: <Widget>[
                   Text(
                     model.date,
-                    style: TextStyle(color: primary),
+                    style: TextStyle(color: colors.primary),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -164,18 +163,18 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
             ),
             model.img != null && model.img != ''
                 ? Container(
-                    width: 50,
-                    height: 50,
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(3.0),
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(model.img),
-                          radius: 25,
-                        )),
-                  )
+              width: 50,
+              height: 50,
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(3.0),
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(model.img),
+                    radius: 25,
+                  )),
+            )
                 : Container(
-                    height: 0,
-                  ),
+              height: 0,
+            ),
           ],
         ),
       ),
@@ -192,38 +191,38 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
         };
 
         Response response =
-            await post(getNotificationApi, headers: headers, body: parameter)
-                .timeout(Duration(seconds: timeOut));
-if(response.statusCode==200) {
-  var getdata = json.decode(response.body);
-  bool error = getdata["error"];
-  String msg = getdata["message"];
+        await post(getNotificationApi, headers: headers, body: parameter)
+            .timeout(Duration(seconds: timeOut));
+        if(response.statusCode==200) {
+          var getdata = json.decode(response.body);
+          bool error = getdata["error"];
+          String msg = getdata["message"];
 
-  if (!error) {
-    total = int.parse(getdata["total"]);
+          if (!error) {
+            total = int.parse(getdata["total"]);
 
-    if ((offset) < total) {
-      tempList.clear();
-      var data = getdata["data"];
-      tempList = (data as List)
-          .map((data) => new Notification_Model.fromJson(data))
-          .toList();
+            if ((offset) < total) {
+              tempList.clear();
+              var data = getdata["data"];
+              tempList = (data as List)
+                  .map((data) => new Notification_Model.fromJson(data))
+                  .toList();
 
-      notiList.addAll(tempList);
+              notiList.addAll(tempList);
 
-      offset = offset + perPage;
-    }
-  } else {
-    if (msg != "Products Not Found !") setSnackbar(msg);
-    isLoadingmore = false;
-  }
-}
+              offset = offset + perPage;
+            }
+          } else {
+            if (msg != "Products Not Found !") setSnackbar(msg);
+            isLoadingmore = false;
+          }
+        }
         if (mounted)
           setState(() {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar( getTranslated(context,'somethingMSg'));
         setState(() {
           _isLoading = false;
           isLoadingmore = false;
@@ -242,9 +241,9 @@ if(response.statusCode==200) {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }

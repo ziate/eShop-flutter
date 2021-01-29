@@ -1,11 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share/share.dart';
+
+
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -33,7 +39,7 @@ List<Section_Model> favList = [];
 class StateFav extends State<Favorite> with TickerProviderStateMixin {
   ScrollController controller = new ScrollController();
   List<Section_Model> tempList = [];
-  String msg = noFav;
+  String msg;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
@@ -43,11 +49,15 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    new Future.delayed(Duration.zero, () {
+      msg = getTranslated(context, 'noFav');
+    });
 
     offset = 0;
     total = 0;
 
     _getFav();
+
     controller.addListener(_scrollListener);
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
@@ -84,7 +94,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -107,12 +117,11 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: lightWhite,
         body: _isNetworkAvail
             ? Stack(
                 children: <Widget>[
                   _showContent(),
-                  showCircularProgress(_isProgress, primary),
+                  showCircularProgress(_isProgress, colors.primary),
                 ],
               )
             : noInternet(context));
@@ -141,7 +150,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             favList[index].productList[0].availability == "0"
-                ? Text(OUT_OF_STOCK_LBL,
+                ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
                     style: Theme.of(context)
                         .textTheme
                         .subtitle1
@@ -178,7 +187,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                   child: Text(
                                     favList[index].productList[0].name,
                                     style: TextStyle(
-                                        color: lightBlack,
+                                        color: colors.lightBlack,
                                         fontWeight: FontWeight.bold),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
@@ -212,7 +221,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                               Text(
                                 " " + CUR_CURRENCY + " " + price.toString(),
                                 style: TextStyle(
-                                    color: fontColor,
+                                    color: colors.fontColor,
                                     fontWeight: FontWeight.w600),
                               ),
                             ],
@@ -230,28 +239,16 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                     addToCart(index);
                                   }
                                   if (result == 2) {
-                                    var str =
-                                        "${favList[index].productList[0].name}\n\n$appName\n\nYou can find our app from below url\n\nAndroid:\n"
-                                        "$androidLink$packageName\n\n iOS:\n$iosLink$iosPackage";
-
-                                    final response = await get(
-                                        favList[index].productList[0].image);
-
-                                    final Directory temp =
-                                        await getTemporaryDirectory();
-                                    final File imageFile =
-                                        File('${temp.path}/tempImage');
-                                    imageFile
-                                        .writeAsBytesSync(response.bodyBytes);
-                                    Share.shareFiles(
-                                      ['${temp.path}/tempImage'],
-                                      text: str,
-                                    );
+                                    setState(() {
+                                      _isProgress = true;
+                                    });
+                                    createDynamicLink(index, 0, true,
+                                        favList[index].productList[0].id);
                                   }
                                 },
                                 itemBuilder: (BuildContext context) =>
                                     <PopupMenuEntry>[
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 0,
                                     child: ListTile(
                                       dense: true,
@@ -259,31 +256,31 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                           left: 0.0, right: 0.0),
                                       leading: Icon(
                                         Icons.close,
-                                        color: fontColor,
+                                        color: colors.fontColor,
                                         size: 20,
                                       ),
                                       title: Text('Remove'),
                                     ),
                                   ),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 1,
                                     child: ListTile(
                                       dense: true,
                                       contentPadding: EdgeInsets.only(
                                           left: 0.0, right: 0.0),
                                       leading: Icon(Icons.shopping_cart,
-                                          color: fontColor, size: 20),
+                                          color: colors.fontColor, size: 20),
                                       title: Text('Add to Cart'),
                                     ),
                                   ),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 2,
                                     child: ListTile(
                                       dense: true,
                                       contentPadding: EdgeInsets.only(
                                           left: 0.0, right: 0.0),
                                       leading: Icon(Icons.share_outlined,
-                                          color: fontColor, size: 20),
+                                          color: colors.fontColor, size: 20),
                                       title: Text('Share'),
                                     ),
                                   ),
@@ -300,7 +297,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
             ),
           ],
         ),
-        splashColor: primary.withOpacity(0.2),
+        splashColor: colors.primary.withOpacity(0.2),
         onTap: () {
           Product model = favList[index].productList[0];
           Navigator.push(
@@ -336,14 +333,12 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
             OFFSET: offset.toString(),
           };
 
-          print("param***$parameter");
 
 
           Response response =
               await post(getFavApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
 
-          print("response***${response.body.toString()}");
 
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
@@ -375,7 +370,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
         } else {
           setState(() {
             _isFavLoading = false;
-            msg = goToLogin;
+            msg = getTranslated(context, 'goToLogin');
           });
 
           Navigator.push(
@@ -384,7 +379,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           );
         }
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
         setState(() {
           _isFavLoading = false;
           isLoadingmore = false;
@@ -420,27 +415,28 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
             await post(manageCartApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
         if (response.statusCode == 200) {
-        var getdata = json.decode(response.body);
+          var getdata = json.decode(response.body);
 
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
 
-          String qty = data['total_quantity'];
-          CUR_CART_COUNT = data['cart_count'];
-          favList[index].productList[0].prVarientList[0].cartCount =
-              qty.toString();
+            String qty = data['total_quantity'];
+            CUR_CART_COUNT = data['cart_count'];
+            favList[index].productList[0].prVarientList[0].cartCount =
+                qty.toString();
 
-          widget.update();
-        } else {
-          setSnackbar(msg);
+            widget.update();
+          } else {
+            setSnackbar(msg);
+          }
+          setState(() {
+            _isProgress = false;
+          });
         }
-        setState(() {
-          _isProgress = false;
-        });
-      }} on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
         setState(() {
           _isProgress = false;
         });
@@ -457,9 +453,9 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -489,33 +485,34 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
             await post(manageCartApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
         if (response.statusCode == 200) {
-        var getdata = json.decode(response.body);
+          var getdata = json.decode(response.body);
 
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
 
-          String qty = data['total_quantity'];
-          CUR_CART_COUNT = data['cart_count'];
+            String qty = data['total_quantity'];
+            CUR_CART_COUNT = data['cart_count'];
 
-          if (remove)
-            favList.removeWhere(
-                (item) => item.varientId == favList[index].varientId);
-          else {
-            favList[index].productList[0].prVarientList[0].cartCount =
-                qty.toString();
+            if (remove)
+              favList.removeWhere(
+                  (item) => item.varientId == favList[index].varientId);
+            else {
+              favList[index].productList[0].prVarientList[0].cartCount =
+                  qty.toString();
+            }
+
+            widget.update();
+          } else {
+            setSnackbar(msg);
           }
-
-          widget.update();
-        } else {
-          setSnackbar(msg);
+          setState(() {
+            _isProgress = false;
+          });
         }
-        setState(() {
-          _isProgress = false;
-        });
-      }} on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
         setState(() {
           _isProgress = false;
         });
@@ -553,7 +550,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
 
         setState(() {});
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
       setState(() {
@@ -561,33 +558,53 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
       });
     }
   }
-/*  Future<void> createDynamicLink(
+
+  Future<void> createDynamicLink(
       int index, int secPos, bool list, String id) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://eshopwrteamin.page.link',
+      uriPrefix: deepLinkUrlPrefix,
       link: Uri.parse(
-          'https://eshop.com/?index=$index&secPos=$secPos&list=$list&id=$id'),
+          'https://$deepLinkName/?index=$index&secPos=$secPos&list=$list&id=$id'),
       androidParameters: AndroidParameters(
-        packageName: 'com.wrteam.eshop',
+        packageName: packageName,
         minimumVersion: 1,
       ),
       iosParameters: IosParameters(
-        bundleId: 'com.wrteam.eshop ',
+        bundleId: iosPackage,
         minimumVersion: '1',
-        appStoreId: '',
+        appStoreId: appStoreId,
       ),
     );
 
     final Uri longDynamicUrl = await parameters.buildUrl();
     final ShortDynamicLink shortenedLink =
-    await DynamicLinkParameters.shortenUrl(
+        await DynamicLinkParameters.shortenUrl(
       longDynamicUrl,
       new DynamicLinkParametersOptions(
           shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
     );
 
-    Share.share(shortenedLink.shortUrl.toString(), subject: appName);
-  }*/
+    var str =
+        "\n$appName\n${getTranslated(context, 'APPFIND')}$androidLink$packageName\n${getTranslated(context, 'IOSLBL')}\n$iosLink$iosPackage";
+
+    var documentDirectory;
+
+    if (Platform.isIOS)
+      documentDirectory = (await getApplicationDocumentsDirectory()).path;
+    else
+      documentDirectory = (await getExternalStorageDirectory()).path;
+
+
+    var request = await HttpClient().getUrl(Uri.parse(favList[index].productList[0].image));
+    var response = await request.close();
+    Uint8List bytes = await consolidateHttpClientResponseBytes(response);
+    await Share.file(favList[index].productList[0].name, '${favList[index].productList[0].name}.jpg', bytes, 'image/jpg',text:"${favList[index].productList[0].name}\n${shortenedLink.shortUrl.toString()}\n$str", );
+
+    setState(() {
+      _isProgress=false;
+    });
+  }
+
   _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {

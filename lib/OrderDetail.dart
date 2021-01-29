@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:downloads_path_provider/downloads_path_provider.dart';
+
+import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Model/Order_Model.dart';
-
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -96,7 +96,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -130,13 +130,13 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     double height = width / 2;
     return AppBar(
       title: Text(
-        ORDER_DETAIL,
+        getTranslated(context, 'ORDER_DETAIL'),
         style: TextStyle(
-          color: fontColor,
+          color: colors.fontColor,
         ),
       ),
-      iconTheme: new IconThemeData(color: primary),
-      backgroundColor: white,
+      iconTheme: new IconThemeData(color: colors.primary),
+      backgroundColor: colors.white,
       // elevation: 5,
       leading: Builder(builder: (BuildContext context) {
         return Container(
@@ -147,7 +147,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             child: Padding(
               padding: const EdgeInsets.only(right: 4.0),
               child: InkWell(
-                child: Icon(Icons.keyboard_arrow_left, color: primary),
+                child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
                 onTap: () => Navigator.of(context).pop(),
               ),
             ),
@@ -179,7 +179,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           child: Container(
                               decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: primary.withOpacity(0.5)),
+                                  color: colors.primary.withOpacity(0.5)),
                               child: new Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(3),
@@ -266,7 +266,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: lightWhite,
       appBar: _getAppbar(),
       body: _isNetworkAvail
           ? Stack(
@@ -288,11 +287,15 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                       child: Padding(
                                           padding: EdgeInsets.all(12.0),
                                           child: Text(
-                                            ORDER_ID_LBL + " - " + model.id,
+                                            getTranslated(
+                                                    context, 'ORDER_ID_LBL') +
+                                                " - " +
+                                                model.id,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .subtitle2
-                                                .copyWith(color: lightBlack2),
+                                                .copyWith(
+                                                    color: colors.lightBlack2),
                                           )))),
                               ListView.builder(
                                 shrinkWrap: true,
@@ -327,7 +330,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                             : Container(),
                   ],
                 ),
-                showCircularProgress(_isProgress, primary),
+                showCircularProgress(_isProgress, colors.primary),
               ],
             )
           : noInternet(context),
@@ -341,9 +344,9 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [grad1Color, grad2Color],
+            colors: [colors.grad1Color, colors.grad2Color],
             stops: [0, 1]),
-        boxShadow: [BoxShadow(color: black26, blurRadius: 10)],
+        boxShadow: [BoxShadow(color: colors.black26, blurRadius: 10)],
       ),
       width: deviceWidth,
       child: InkWell(
@@ -352,11 +355,11 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         },
         child: Center(
             child: Text(
-          RETURN_ORDER,
+          getTranslated(context, 'RETURN_ORDER'),
           style: Theme.of(context)
               .textTheme
               .button
-              .copyWith(fontWeight: FontWeight.bold, color: white),
+              .copyWith(fontWeight: FontWeight.bold, color: colors.white),
         )),
       ),
     );
@@ -369,9 +372,9 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [grad1Color, grad2Color],
+            colors: [colors.grad1Color, colors.grad2Color],
             stops: [0, 1]),
-        boxShadow: [BoxShadow(color: black26, blurRadius: 10)],
+        boxShadow: [BoxShadow(color: colors.black26, blurRadius: 10)],
       ),
       width: deviceWidth,
       child: InkWell(
@@ -380,11 +383,11 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         },
         child: Center(
             child: Text(
-          CANCEL_ORDER,
+          getTranslated(context, 'CANCEL_ORDER'),
           style: Theme.of(context)
               .textTheme
               .button
-              .copyWith(fontWeight: FontWeight.bold, color: white),
+              .copyWith(fontWeight: FontWeight.bold, color: colors.white),
         )),
       ),
     );
@@ -399,27 +402,28 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Padding(
                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                  child: Text(PRICE_DETAIL,
+                  child: Text(getTranslated(context, 'PRICE_DETAIL'),
                       style: Theme.of(context).textTheme.subtitle2.copyWith(
-                          color: fontColor, fontWeight: FontWeight.bold))),
+                          color: colors.fontColor,
+                          fontWeight: FontWeight.bold))),
               Divider(
-                color: lightBlack,
+                color: colors.lightBlack,
               ),
               Padding(
                 padding: EdgeInsets.only(left: 15.0, right: 15.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(PRICE_LBL + " " + ":",
+                    Text(getTranslated(context, 'PRICE_LBL') + " " + ":",
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2)),
+                            .copyWith(color: colors.lightBlack2)),
                     Text(CUR_CURRENCY + " " + widget.model.subTotal,
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2))
+                            .copyWith(color: colors.lightBlack2))
                   ],
                 ),
               ),
@@ -428,16 +432,16 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(DELIVERY_CHARGE + " " + ":",
+                    Text(getTranslated(context, 'DELIVERY_CHARGE') + " " + ":",
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2)),
+                            .copyWith(color: colors.lightBlack2)),
                     Text("+ " + CUR_CURRENCY + " " + widget.model.delCharge,
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2))
+                            .copyWith(color: colors.lightBlack2))
                   ],
                 ),
               ),
@@ -446,16 +450,22 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(TAXPER + " (" + widget.model.taxPer + ")" + " " + ":",
+                    Text(
+                        getTranslated(context, 'TAXPER') +
+                            " (" +
+                            widget.model.taxPer +
+                            ")" +
+                            " " +
+                            ":",
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2)),
+                            .copyWith(color: colors.lightBlack2)),
                     Text("+ " + CUR_CURRENCY + " " + widget.model.taxAmt,
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2))
+                            .copyWith(color: colors.lightBlack2))
                   ],
                 ),
               ),
@@ -464,16 +474,19 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(PROMO_CODE_DIS_LBL + " " + ":",
+                    Text(
+                        getTranslated(context, 'PROMO_CODE_DIS_LBL') +
+                            " " +
+                            ":",
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2)),
+                            .copyWith(color: colors.lightBlack2)),
                     Text("- " + CUR_CURRENCY + " " + widget.model.promoDis,
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2))
+                            .copyWith(color: colors.lightBlack2))
                   ],
                 ),
               ),
@@ -482,16 +495,16 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(WALLET_BAL + " " + ":",
+                    Text(getTranslated(context, 'WALLET_BAL') + " " + ":",
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2)),
+                            .copyWith(color: colors.lightBlack2)),
                     Text("- " + CUR_CURRENCY + " " + widget.model.walBal,
                         style: Theme.of(context)
                             .textTheme
                             .button
-                            .copyWith(color: lightBlack2))
+                            .copyWith(color: colors.lightBlack2))
                   ],
                 ),
               ),
@@ -500,12 +513,14 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(TOTAL_PRICE + " " + ":",
+                    Text(getTranslated(context, 'TOTAL_PRICE') + " " + ":",
                         style: Theme.of(context).textTheme.button.copyWith(
-                            color: lightBlack, fontWeight: FontWeight.bold)),
+                            color: colors.lightBlack,
+                            fontWeight: FontWeight.bold)),
                     Text(CUR_CURRENCY + " " + widget.model.total,
                         style: Theme.of(context).textTheme.button.copyWith(
-                            color: lightBlack, fontWeight: FontWeight.bold))
+                            color: colors.lightBlack,
+                            fontWeight: FontWeight.bold))
                   ],
                 ),
               ),
@@ -521,11 +536,12 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Padding(
                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                  child: Text(SHIPPING_DETAIL,
+                  child: Text(getTranslated(context, 'SHIPPING_DETAIL'),
                       style: Theme.of(context).textTheme.subtitle2.copyWith(
-                          color: fontColor, fontWeight: FontWeight.bold))),
+                          color: colors.fontColor,
+                          fontWeight: FontWeight.bold))),
               Divider(
-                color: lightBlack,
+                color: colors.lightBlack,
               ),
               Padding(
                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
@@ -535,12 +551,12 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
               Padding(
                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
                   child: Text(widget.model.address,
-                      style: TextStyle(color: lightBlack2))),
+                      style: TextStyle(color: colors.lightBlack2))),
               Padding(
                   padding: EdgeInsets.only(left: 15.0, right: 15.0),
                   child: Text(widget.model.mobile,
                       style: TextStyle(
-                        color: lightBlack2,
+                        color: colors.lightBlack2,
                       ))),
             ])));
   }
@@ -556,11 +572,11 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        WRITE_REVIEW_LBL,
+                        getTranslated(context, 'WRITE_REVIEW_LBL'),
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: fontColor),
+                            .copyWith(color: colors.fontColor),
                       ),
                       _rating(),
                       Padding(
@@ -571,12 +587,14 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                             keyboardType: TextInputType.multiline,
                             maxLines: null,
                             decoration: InputDecoration(
-                              hintText: REVIEW_HINT_LBL,
+                              hintText:
+                                  getTranslated(context, 'REVIEW_HINT_LBL'),
                               hintStyle: Theme.of(context)
                                   .textTheme
                                   .subtitle2
                                   .copyWith(
-                                      color: lightBlack2.withOpacity(0.7)),
+                                      color:
+                                          colors.lightBlack2.withOpacity(0.7)),
                             ),
                           )),
                       Container(
@@ -619,7 +637,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                             IconButton(
                                 icon: Icon(
                                   Icons.add_photo_alternate,
-                                  color: primary,
+                                  color: colors.primary,
                                   size: 25.0,
                                 ),
                                 onPressed: () {
@@ -636,12 +654,13 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                             padding: EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 2),
                             decoration: BoxDecoration(
-                                color: lightWhite,
+                                color: colors.lightWhite,
                                 borderRadius: new BorderRadius.all(
                                     const Radius.circular(4.0))),
                             child: Text(
-                              SUBMIT_LBL,
-                              style: TextStyle(color: fontColor, fontSize: 10),
+                              getTranslated(context, 'SUBMIT_LBL'),
+                              style: TextStyle(
+                                  color: colors.fontColor, fontSize: 10),
                             ),
                           ),
                           onTap: () {
@@ -650,7 +669,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                 (files != null && files.length > 0))
                               setRating(curRating, _commentC.text, files);
                             else
-                              setSnackbar(REVIEW_W);
+                              setSnackbar(getTranslated(context, 'REVIEW_W'));
                           },
                         ),
                       ),
@@ -671,7 +690,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         itemPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
         itemBuilder: (context, _) => Icon(
           Icons.star,
-          color: primary,
+          color: colors.primary,
         ),
         onRatingUpdate: (rating) {
           curRating = rating;
@@ -735,7 +754,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                   .textTheme
                                   .subtitle1
                                   .copyWith(
-                                      color: lightBlack,
+                                      color: colors.lightBlack,
                                       fontWeight: FontWeight.normal),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -754,7 +773,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .subtitle2
-                                                .copyWith(color: lightBlack2),
+                                                .copyWith(
+                                                    color: colors.lightBlack2),
                                           ),
                                         ),
                                         Padding(
@@ -764,7 +784,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .subtitle2
-                                                .copyWith(color: lightBlack),
+                                                .copyWith(
+                                                    color: colors.lightBlack),
                                           ),
                                         )
                                       ]);
@@ -773,11 +794,11 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
 
                             Row(children: [
                               Text(
-                                QUANTITY_LBL + ":",
+                                getTranslated(context, 'QUANTITY_LBL') + ":",
                                 style: Theme.of(context)
                                     .textTheme
                                     .subtitle2
-                                    .copyWith(color: lightBlack2),
+                                    .copyWith(color: colors.lightBlack2),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(left: 5.0),
@@ -786,7 +807,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle2
-                                      .copyWith(color: lightBlack),
+                                      .copyWith(color: colors.lightBlack),
                                 ),
                               )
                             ]),
@@ -795,7 +816,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle1
-                                  .copyWith(color: fontColor),
+                                  .copyWith(color: colors.fontColor),
                             ),
 
                             //  Text(orderItem.status)
@@ -806,7 +827,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                   ],
                 ),
                 Divider(
-                  color: lightBlack,
+                  color: colors.lightBlack,
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -838,7 +859,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 15, vertical: 5),
                                       decoration: BoxDecoration(
-                                          color: lightWhite,
+                                          color: colors.lightWhite,
                                           borderRadius: new BorderRadius.all(
                                               const Radius.circular(4.0))),
                                       child: Text(ITEM_CANCEL,
@@ -847,7 +868,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                               .textTheme
                                               .button
                                               .copyWith(
-                                                color: fontColor,
+                                                color: colors.fontColor,
                                               ))),
                                   onPressed: () {
                                     cancelOrder(CANCLED, updateOrderItemApi,
@@ -871,7 +892,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                           padding: EdgeInsets.symmetric(
                                               horizontal: 15, vertical: 5),
                                           decoration: BoxDecoration(
-                                              color: lightWhite,
+                                              color: colors.lightWhite,
                                               borderRadius: new BorderRadius
                                                       .all(
                                                   const Radius.circular(4.0))),
@@ -881,7 +902,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                                   .textTheme
                                                   .button
                                                   .copyWith(
-                                                    color: fontColor,
+                                                    color: colors.fontColor,
                                                   ))),
                                       onPressed: () {
                                         cancelOrder(RETURNED,
@@ -902,7 +923,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       children: [
         Icon(
           Icons.circle,
-          color: primary,
+          color: colors.primary,
           size: 15,
         ),
         Container(
@@ -911,7 +932,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                ORDER_NPLACED,
+                getTranslated(context, 'ORDER_NPLACED'),
                 style: TextStyle(fontSize: 8),
               ),
               Text(
@@ -936,11 +957,11 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                       height: 30,
                       child: VerticalDivider(
                         thickness: 2,
-                        color: prDate == null ? Colors.grey : primary,
+                        color: prDate == null ? Colors.grey : colors.primary,
                       )),
                   Icon(
                     Icons.circle,
-                    color: prDate == null ? Colors.grey : primary,
+                    color: prDate == null ? Colors.grey : colors.primary,
                     size: 15,
                   ),
                 ],
@@ -951,7 +972,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      ORDER_PROCESSED,
+                      getTranslated(context, 'ORDER_PROCESSED'),
                       style: TextStyle(fontSize: 8),
                     ),
                     Text(
@@ -971,16 +992,16 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     height: 30,
                     child: VerticalDivider(
                       thickness: 2,
-                      color: primary,
+                      color: colors.primary,
                     ),
                   ),
                   Text(
-                    ORDER_PROCESSED,
+                    getTranslated(context, 'ORDER_PROCESSED'),
                     style: TextStyle(fontSize: 8),
                   ),
                   Icon(
                     Icons.circle,
-                    color: primary,
+                    color: colors.primary,
                     size: 15,
                   ),
                 ],
@@ -998,12 +1019,12 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     height: 30,
                     child: VerticalDivider(
                       thickness: 2,
-                      color: sDate == null ? Colors.grey : primary,
+                      color: sDate == null ? Colors.grey : colors.primary,
                     ),
                   ),
                   Icon(
                     Icons.circle,
-                    color: sDate == null ? Colors.grey : primary,
+                    color: sDate == null ? Colors.grey : colors.primary,
                     size: 15,
                   ),
                 ],
@@ -1014,7 +1035,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      ORDER_SHIPPED,
+                      getTranslated(context, 'ORDER_SHIPPED'),
                       style: TextStyle(fontSize: 8),
                       textAlign: TextAlign.center,
                     ),
@@ -1038,13 +1059,13 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     ),
                   ),
                   Text(
-                    ORDER_SHIPPED,
+                    getTranslated(context, 'ORDER_SHIPPED'),
                     style: TextStyle(fontSize: 8),
                     textAlign: TextAlign.center,
                   ),
                   Icon(
                     Icons.circle,
-                    color: primary,
+                    color: colors.primary,
                     size: 15,
                   ),
                 ],
@@ -1062,12 +1083,12 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     height: 30,
                     child: VerticalDivider(
                       thickness: 2,
-                      color: dDate == null ? Colors.grey : primary,
+                      color: dDate == null ? Colors.grey : colors.primary,
                     ),
                   ),
                   Icon(
                     Icons.circle,
-                    color: dDate == null ? Colors.grey : primary,
+                    color: dDate == null ? Colors.grey : colors.primary,
                     size: 15,
                   ),
                 ],
@@ -1078,7 +1099,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      ORDER_DELIVERED,
+                      getTranslated(context, 'ORDER_DELIVERED'),
                       style: TextStyle(fontSize: 8),
                       textAlign: TextAlign.center,
                     ),
@@ -1106,12 +1127,12 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     height: 30,
                     child: VerticalDivider(
                       thickness: 2,
-                      color: primary,
+                      color: colors.primary,
                     ),
                   ),
                   Icon(
                     Icons.cancel_rounded,
-                    color: primary,
+                    color: colors.primary,
                     size: 15,
                   ),
                 ],
@@ -1122,7 +1143,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      ORDER_CANCLED,
+                      getTranslated(context, 'ORDER_CANCLED'),
                       style: TextStyle(fontSize: 8),
                     ),
                     Text(
@@ -1149,12 +1170,12 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     height: 30,
                     child: VerticalDivider(
                       thickness: 2,
-                      color: primary,
+                      color: colors.primary,
                     ),
                   ),
                   Icon(
                     Icons.cancel_rounded,
-                    color: primary,
+                    color: colors.primary,
                     size: 15,
                   ),
                 ],
@@ -1165,7 +1186,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        ORDER_RETURNED,
+                        getTranslated(context, 'ORDER_RETURNED'),
                         style: TextStyle(fontSize: 8),
                       ),
                       Text(
@@ -1206,7 +1227,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           _isProgress = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
       setState(() {
@@ -1216,22 +1237,20 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   _imgFromGallery() async {
-   /* files = await FilePicker.getMultiFile(type: FileType.image);
+    /* files = await FilePicker.getMultiFile(type: FileType.image);
     if (files != null) {
       setState(() {});
     }*/
 
     ///for ios uncomment below code and update file picker library version in pubspec.yaml
-      FilePickerResult result = await FilePicker.platform.pickFiles(allowMultiple: true);
-    if(result != null) {
-      files= result.paths.map((path) => File(path)).toList();
-      setState(() {
-
-      });
+    FilePickerResult result =
+        await FilePicker.platform.pickFiles(allowMultiple: true);
+    if (result != null) {
+      files = result.paths.map((path) => File(path)).toList();
+      setState(() {});
     } else {
       // User canceled the picker
     }
-
   }
 
   Future<void> setRating(
@@ -1275,7 +1294,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           _isProgress = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else
       setState(() {
@@ -1288,9 +1307,9 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -1303,18 +1322,18 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             dense: true,
             trailing: Icon(
               Icons.keyboard_arrow_right,
-              color: primary,
+              color: colors.primary,
             ),
             leading: Icon(
               Icons.receipt,
-              color: primary,
+              color: colors.primary,
             ),
             title: Text(
-              DWNLD_INVOICE,
+              getTranslated(context, 'DWNLD_INVOICE'),
               style: Theme.of(context)
                   .textTheme
                   .subtitle2
-                  .copyWith(color: lightBlack),
+                  .copyWith(color: colors.lightBlack),
             ),
           ),
           onTap: () async {
@@ -1326,33 +1345,35 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
               });
               var targetPath;
 
-             /* if (Platform.isIOS) {
+              if (Platform.isIOS) {
                 Directory target = await getApplicationDocumentsDirectory();
                 targetPath = target.path.toString();
-              } else {*/
-                Directory  downloadsDirectory = await DownloadsPathProvider.downloadsDirectory;
+              } else {
+                Directory downloadsDirectory =
+                    await DownloadsPathProvider.downloadsDirectory;
                 targetPath = downloadsDirectory.path.toString();
-              //}
+               ///storage/emulated/0/Download/
+                          }
               var targetFileName = "Invoice_${widget.model.id}";
-
 
               var generatedPdfFile =
                   await FlutterHtmlToPdf.convertFromHtmlContent(
                       widget.model.invoice, targetPath, targetFileName);
 
-               _scaffoldKey.currentState.showSnackBar(new SnackBar(
+              _scaffoldKey.currentState.showSnackBar(new SnackBar(
                 content: new Text(
-                  "$INVOICE_PATH $targetFileName",
+                  "${getTranslated(context, 'INVOICE_PATH')} $targetFileName",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: black),
+                  style: TextStyle(color: colors.black),
                 ),
-                action: SnackBarAction(label: VIEW, onPressed: () async {
-                final result = await OpenFile.open(generatedPdfFile.path);
-                  setState(() {
-                    //_openResult = "type=${result.type}  message=${result.message}";
-                  });
-                }),
-                backgroundColor: white,
+                action: SnackBarAction(
+                    label: getTranslated(context, 'VIEW'),
+                    onPressed: () async {
+                      final result = await OpenFile.open(generatedPdfFile.path);
+                      setState(() {
+                          });
+                    }),
+                backgroundColor: colors.white,
                 elevation: 1.0,
               ));
               setState(() {

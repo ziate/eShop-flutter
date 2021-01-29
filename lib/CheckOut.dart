@@ -2,29 +2,27 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_paystack/flutter_paystack.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:eshop/Add_Address.dart';
 import 'package:eshop/Helper/Constant.dart';
-import 'package:eshop/Home.dart';
-import 'package:eshop/Model/Model.dart';
 import 'package:eshop/Model/Section_Model.dart';
 import 'package:eshop/Model/User.dart';
 import 'package:eshop/PaypalWebviewActivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
-import 'Helper/AppBtn.dart';
-import 'Helper/SimBtn.dart';
-import 'Payment.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'Cart.dart';
+import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Session.dart';
+import 'Helper/SimBtn.dart';
 import 'Helper/String.dart';
-import 'Order_Success.dart';
+import 'Helper/Stripe_Service.dart';
 import 'Manage_Address.dart';
+import 'Order_Success.dart';
+import 'Payment.dart';
 
 class CheckOut extends StatefulWidget {
   final Function updateHome;
@@ -50,7 +48,13 @@ int selectedTime, selectedDate, selectedMethod;
 
 double promoAmt = 0;
 double remWalBal, usedBal = 0;
-String razorpayId, paystackId;
+String razorpayId,
+    paystackId,
+    stripeId,
+    stripeSecret,
+    stripeMode = "test",
+    stripeCurCode,
+    stripePayId;
 int selectedAddress = 0;
 StateCheckout stateCheck;
 bool isTimeSlot, isPromoValid = false, isUseWallet = false, isPayLayShow = true;
@@ -135,7 +139,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             promoAmt = double.parse(data["final_discount"]);
 
             isPromoValid = true;
-            stateCheck.setSnackbar(PROMO_SUCCESS);
+            stateCheck.setSnackbar(getTranslated(context, 'PROMO_SUCCESS'));
           } else {
             isPromoValid = false;
             stateCheck.setSnackbar(msg);
@@ -156,7 +160,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           });
         }
       } on TimeoutException catch (_) {
-        stateCheck.setSnackbar(somethingMSg);
+        stateCheck.setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
       setState(() {
@@ -179,7 +183,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           noIntText(context),
           noIntDec(context),
           AppBtn(
-            title: TRY_AGAIN_INT_LBL,
+            title: getTranslated(context, 'TRY_AGAIN_INT_LBL'),
             btnAnim: buttonSqueezeanimation,
             btnCntrl: buttonController,
             onBtnSelected: () async {
@@ -210,8 +214,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: lightWhite,
-      appBar: getAppBar(CHECKOUT, context),
+      appBar: getAppBar(getTranslated(context, 'CHECKOUT'), context),
       body: _isNetworkAvail
           ? cartList.length == 0
               ? cartEmpty()
@@ -237,12 +240,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-                              showCircularProgress(_isProgress, primary),
+                              showCircularProgress(_isProgress, colors.primary),
                             ],
                           ),
                         ),
                         Container(
-                          color: white,
+                          color: colors.white,
                           child: Row(children: <Widget>[
                             Padding(
                                 padding: EdgeInsets.only(left: 15.0),
@@ -252,7 +255,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                     Text(
                                       CUR_CURRENCY + " $totalPrice",
                                       style: TextStyle(
-                                          color: fontColor,
+                                          color: colors.fontColor,
                                           fontWeight: FontWeight.bold),
                                     ),
                                     Text(cartList.length.toString() + " Items"),
@@ -261,27 +264,37 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                             Spacer(),
                             SimBtn(
                                 size: 0.4,
-                                title: PLACE_ORDER,
+                                title: getTranslated(context, 'PLACE_ORDER'),
                                 onBtnSelected: () {
                                   if (selAddress == null || selAddress.isEmpty)
-                                    setSnackbar(addressWarning);
+                                    setSnackbar(getTranslated(
+                                        context, 'addressWarning'));
                                   else if (payMethod == null ||
                                       payMethod.isEmpty)
-                                    setSnackbar(payWarning);
+                                    setSnackbar(
+                                        getTranslated(context, 'payWarning'));
                                   else if (isTimeSlot &&
                                       int.parse(allowDay) > 0 &&
                                       (selDate == null || selDate.isEmpty))
-                                    setSnackbar(dateWarning);
+                                    setSnackbar(
+                                        getTranslated(context, 'dateWarning'));
                                   else if (isTimeSlot &&
                                       timeSlotList.length > 0 &&
                                       (selTime == null || selTime.isEmpty))
-                                    setSnackbar(timeWarning);
-                                  else if (payMethod == PAYPAL_LBL)
+                                    setSnackbar(
+                                        getTranslated(context, 'timeWarning'));
+                                  else if (payMethod ==
+                                      getTranslated(context, 'PAYPAL_LBL'))
                                     placeOrder('');
-                                  else if (payMethod == RAZORPAY_LBL)
+                                  else if (payMethod ==
+                                      getTranslated(context, 'RAZORPAY_LBL'))
                                     razorpayPayment();
-                                  else if (payMethod == PAYSTACK_LBL)
+                                  else if (payMethod ==
+                                      getTranslated(context, 'PAYSTACK_LBL'))
                                     paystackPayment(context);
+                                  else if (payMethod ==
+                                      getTranslated(context, 'STRIPE_LBL'))
+                                    stripePayment();
                                   else
                                     placeOrder('');
                                 }),
@@ -315,20 +328,18 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
   noCartText(BuildContext context) {
     return Container(
-        child: Text(NO_CART,
-            style: Theme.of(context)
-                .textTheme
-                .headline5
-                .copyWith(color: primary, fontWeight: FontWeight.normal)));
+        child: Text(getTranslated(context, 'NO_CART'),
+            style: Theme.of(context).textTheme.headline5.copyWith(
+                color: colors.primary, fontWeight: FontWeight.normal)));
   }
 
   noCartDec(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0),
-      child: Text(CART_DESC,
+      child: Text(getTranslated(context, 'CART_DESC'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headline6.copyWith(
-                color: lightBlack2,
+                color: colors.lightBlack2,
                 fontWeight: FontWeight.normal,
               )),
     );
@@ -346,16 +357,14 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
               gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [grad1Color, grad2Color],
+                  colors: [colors.grad1Color, colors.grad2Color],
                   stops: [0, 1]),
               borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
             ),
-            child: Text(SHOP_NOW,
+            child: Text(getTranslated(context, 'SHOP_NOW'),
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .headline6
-                    .copyWith(color: white, fontWeight: FontWeight.normal))),
+                style: Theme.of(context).textTheme.headline6.copyWith(
+                    color: colors.white, fontWeight: FontWeight.normal))),
         onPressed: () {
           Navigator.of(context).pushNamedAndRemoveUntil(
               '/home', (Route<dynamic> route) => false);
@@ -431,7 +440,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle2
-                                      .copyWith(color: lightBlack),
+                                      .copyWith(color: colors.lightBlack),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -444,7 +453,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                 child: Icon(
                                   Icons.close,
                                   size: 13,
-                                  color: fontColor,
+                                  color: colors.fontColor,
                                 ),
                               ),
                               onTap: () {
@@ -456,7 +465,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                         Row(
                           children: <Widget>[
                             Text(
-                              int.parse(cartList[index]
+                              double.parse(cartList[index]
                                           .productList[0]
                                           .prVarientList[selectedPos]
                                           .disPrice) !=
@@ -478,7 +487,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                             Text(
                               " " + CUR_CURRENCY + " " + price.toString(),
                               style: TextStyle(
-                                  color: fontColor,
+                                  color: colors.fontColor,
                                   fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -498,10 +507,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                           child: Icon(
                                             Icons.remove,
                                             size: 12,
-                                            color: fontColor,
+                                            color: colors.fontColor,
                                           ),
                                           decoration: BoxDecoration(
-                                              color: lightWhite,
+                                              color: colors.lightWhite,
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(3))),
                                         ),
@@ -523,10 +532,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                               ),
                                               controller: _controller[index],
                                               decoration: InputDecoration(
+                                                contentPadding:
+                                                    EdgeInsets.all(5.0),
                                                 focusedBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                      color: fontColor,
+                                                      color: colors.fontColor,
                                                       width: 0.5),
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -535,7 +546,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                                 enabledBorder:
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
-                                                      color: fontColor,
+                                                      color: colors.fontColor,
                                                       width: 0.5),
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -574,10 +585,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                           child: Icon(
                                             Icons.add,
                                             size: 12,
-                                            color: fontColor,
+                                            color: colors.fontColor,
                                           ),
                                           decoration: BoxDecoration(
-                                              color: lightWhite,
+                                              color: colors.lightWhite,
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(3))),
                                         ),
@@ -605,46 +616,61 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  SUBTOTAL,
-                  style: Theme.of(context).textTheme.caption,
-                ),
-                Text(
-                  CUR_CURRENCY + " " + price.toString(),
-                  style: Theme.of(context).textTheme.caption,
-                ),
-                Text(
-                  CUR_CURRENCY + " " + cartList[index].perItemTotal,
-                  style: Theme.of(context).textTheme.caption,
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  TAXPER,
-                  style: Theme.of(context).textTheme.caption,
-                ),
-                Text(
-                  cartList[index].productList[0].tax + "%",
-                  style: Theme.of(context).textTheme.caption,
-                ),
-                Text(
-                  CUR_CURRENCY + " " + taxAmt.toStringAsFixed(2),
-                  //+ " "+cartList[index].productList[0].taxrs,
-                  style: Theme.of(context).textTheme.caption,
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  TOTAL_LBL,
+                  getTranslated(context, 'SUBTOTAL'),
                   style: Theme.of(context)
                       .textTheme
                       .caption
-                      .copyWith(fontWeight: FontWeight.bold),
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Text(
+                  CUR_CURRENCY + " " + price.toString(),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Text(
+                  CUR_CURRENCY + " " + cartList[index].perItemTotal,
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                )
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  getTranslated(context, 'TAXPER'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Text(
+                  cartList[index].productList[0].tax + "%",
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Text(
+                  CUR_CURRENCY + " " + taxAmt.toStringAsFixed(2),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                )
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  getTranslated(context, 'TOTAL_LBL'),
+                  style: Theme.of(context).textTheme.caption.copyWith(
+                      fontWeight: FontWeight.bold, color: colors.lightBlack2),
                 ),
                 Text(
                   CUR_CURRENCY +
@@ -653,10 +679,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           .toStringAsFixed(2)
                           .toString(),
                   //+ " "+cartList[index].productList[0].taxrs,
-                  style: Theme.of(context)
-                      .textTheme
-                      .caption
-                      .copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.caption.copyWith(
+                      fontWeight: FontWeight.bold, color: colors.lightBlack2),
                 )
               ],
             )
@@ -718,7 +742,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
             totalPrice = delCharge + oriPrice + taxAmt;
 
-
             if (isPromoValid) {
               validatePromo();
             } else if (isUseWallet) {
@@ -745,7 +768,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           if (widget.updateHome != null) widget.updateHome();
         }
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
         setState(() {
           _isProgress = false;
         });
@@ -827,7 +850,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           widget.updateHome();
         }
       } on TimeoutException catch (_) {
-        setSnackbar(somethingMSg);
+        setSnackbar(getTranslated(context, 'somethingMSg'));
         setState(() {
           _isProgress = false;
         });
@@ -889,13 +912,13 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             if (!ISFLAT_DEL) {
               totalPrice = totalPrice + delCharge;
             }
-             } else {}
+          } else {}
           if (mounted)
             setState(() {
               _isLoading = false;
             });
         } else {
-          setSnackbar(somethingMSg);
+          setSnackbar(getTranslated(context, 'somethingMSg'));
           setState(() {
             _isLoading = false;
           });
@@ -909,10 +932,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
+
     placeOrder(response.paymentId);
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
+
     setSnackbar(response.message);
     setState(() {
       _isProgress = false;
@@ -951,8 +976,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       }
     } else {
       if (email == '')
-        setSnackbar(emailWarning);
-      else if (contact == '') setSnackbar(phoneWarning);
+        setSnackbar(getTranslated(context, 'emailWarning'));
+      else if (contact == '')
+        setSnackbar(getTranslated(context, 'phoneWarning'));
     }
   }
 
@@ -988,6 +1014,35 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     }
   }
 
+  stripePayment() async {
+    setState(() {
+      _isProgress = true;
+    });
+
+    var response = await StripeService.payWithNewCard(
+        amount: (totalPrice.toInt() * 100).toString(), currency: stripeCurCode);
+
+
+
+    if (response.message == "Transaction successful") {
+      placeOrder(response.status);
+    } else if (response.status == 'pending' || response.status == "captured") {
+      placeOrder(response.status);
+    } else {
+      setState(() {
+        _isProgress = false;
+      });
+    }
+    setSnackbar(response.message);
+  }
+
+  void setError(dynamic error) {
+    setSnackbar(error.toString());
+    setState(() {
+      _isProgress = false;
+    });
+  }
+
   String _getReference() {
     String platform;
     if (Platform.isIOS) {
@@ -1006,20 +1061,20 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   confirmOrder() {
     return CupertinoAlertDialog(
         title: Text(
-          CONFIRM_ORDER,
+          getTranslated(context, 'CONFIRM_ORDER'),
           style: Theme.of(context).textTheme.headline6.copyWith(
-                color: lightBlack2,
+                color: colors.lightBlack2,
               ),
           textAlign: TextAlign.center,
         ),
         actions: [
           CupertinoDialogAction(
               child: Text(
-                CANCEL,
+                getTranslated(context, 'CANCEL'),
                 style: Theme.of(context)
                     .textTheme
                     .headline6
-                    .copyWith(color: primary),
+                    .copyWith(color: colors.primary),
                 textAlign: TextAlign.center,
               ),
               onPressed: () {
@@ -1027,11 +1082,11 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
               }),
           CupertinoDialogAction(
               child: Text(
-                CONFIRM,
+                getTranslated(context, 'CONFIRM'),
                 style: Theme.of(context)
                     .textTheme
                     .headline6
-                    .copyWith(color: primary),
+                    .copyWith(color: colors.primary),
                 textAlign: TextAlign.center,
               ),
               onPressed: () {}),
@@ -1043,9 +1098,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -1061,7 +1116,21 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
       }
 
-      if (payMethod == COD_LBL) payMethod = "COD";
+      if (payMethod == getTranslated(context, 'COD_LBL'))
+        payMethod = "COD";
+      else if (payMethod == getTranslated(context, 'PAYPAL_LBL'))
+        payMethod = "PayPal";
+      else if (payMethod == getTranslated(context, 'PAYUMONEY_LBL'))
+        payMethod = "PayUMoney";
+      else if (payMethod == getTranslated(context, 'RAZORPAY_LBL'))
+        payMethod = "RazorPay";
+      else if (payMethod == getTranslated(context, 'PAYSTACK_LBL'))
+        payMethod = "Paystack";
+      else if (payMethod == getTranslated(context, 'FLUTTERWAVE_LBL'))
+        payMethod = "Flutterwave";
+      else if (payMethod == getTranslated(context, 'STRIPE_LBL'))
+        payMethod = "Stripe";
+
       try {
         var parameter = {
           USER_ID: CUR_USERID,
@@ -1088,25 +1157,34 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           parameter[PROMO_DIS] = promoAmt.toString();
         }
 
-        if (payMethod == PAYPAL_LBL) {
+        if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
           parameter[ACTIVE_STATUS] = WAITING;
-        }
+        } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
+          if(tranId=="succeeded")
+            parameter[ACTIVE_STATUS] = SUCCESS;
+          else
+            parameter[ACTIVE_STATUS] = WAITING;
 
+        }
 
 
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
+
+
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
           String msg = getdata["message"];
           if (!error) {
             String orderId = getdata["order_id"].toString();
-            if (payMethod == RAZORPAY_LBL) {
+            if (payMethod == getTranslated(context, 'RAZORPAY_LBL')) {
               AddTransaction(tranId, orderId, SUCCESS, msg);
-            } else if (payMethod == PAYPAL_LBL) {
+            } else if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
               paypalPayment(orderId);
+            } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
+              AddTransaction(stripePayId, orderId,tranId=="succeeded"? SUCCESS:WAITING, msg);
             } else {
               CUR_CART_COUNT = "0";
               promoAmt = 0;
@@ -1173,7 +1251,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         setSnackbar(msg);
       }
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
 
@@ -1199,7 +1277,19 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       String msg1 = getdata["message"];
       if (!error) {
         CUR_CART_COUNT = "0";
-
+        promoAmt = 0;
+        remWalBal = 0;
+        usedBal = 0;
+        payMethod = '';
+        isPromoValid = false;
+        isUseWallet = false;
+        isPayLayShow = true;
+        selectedMethod = 0;
+        totalPrice = 0;
+        oriPrice = 0;
+        taxAmt = 0;
+        taxPer = 0;
+        delCharge = 0;
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -1209,7 +1299,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         setSnackbar(msg1);
       }
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
 
@@ -1248,7 +1338,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                             style: Theme.of(context)
                                 .textTheme
                                 .caption
-                                .copyWith(color: lightBlack),
+                                .copyWith(color: colors.lightBlack),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 5.0),
@@ -1259,7 +1349,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                   style: Theme.of(context)
                                       .textTheme
                                       .caption
-                                      .copyWith(color: lightBlack),
+                                      .copyWith(color: colors.lightBlack),
                                 ),
                                 Spacer(),
                                 InkWell(
@@ -1267,13 +1357,14 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                     padding: EdgeInsets.symmetric(
                                         horizontal: 20, vertical: 2),
                                     decoration: BoxDecoration(
-                                        color: lightWhite,
+                                        color: colors.lightWhite,
                                         borderRadius: new BorderRadius.all(
                                             const Radius.circular(4.0))),
                                     child: Text(
-                                      CHANGE,
+                                      getTranslated(context, 'CHANGE'),
                                       style: TextStyle(
-                                          color: fontColor, fontSize: 10),
+                                          color: colors.fontColor,
+                                          fontSize: 10),
                                     ),
                                   ),
                                   onTap: () {
@@ -1298,9 +1389,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                       padding: const EdgeInsets.only(left: 8.0),
                       child: GestureDetector(
                         child: Text(
-                          ADDADDRESS,
+                          getTranslated(context, 'ADDADDRESS'),
                           style: TextStyle(
-                              color: fontColor, fontWeight: FontWeight.bold),
+                              color: colors.fontColor,
+                              fontWeight: FontWeight.bold),
                         ),
                         onTap: () async {
                           _scaffoldKey.currentState.removeCurrentSnackBar();
@@ -1347,9 +1439,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                   //SELECT_PAYMENT,
                   payMethod != null && payMethod != ''
                       ? payMethod
-                      : SELECT_PAYMENT,
-                  style:
-                      TextStyle(color: fontColor, fontWeight: FontWeight.bold),
+                      : getTranslated(context, 'SELECT_PAYMENT'),
+                  style: TextStyle(
+                      color: colors.fontColor, fontWeight: FontWeight.bold),
                 ),
               )
             ],
@@ -1379,23 +1471,30 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                ORDER_SUMMARY + " (" + cartList.length.toString() + " items)",
-                style: Theme.of(context)
-                    .textTheme
-                    .subtitle2
-                    .copyWith(color: lightBlack, fontWeight: FontWeight.bold),
+                getTranslated(context, 'ORDER_SUMMARY') +
+                    " (" +
+                    cartList.length.toString() +
+                    " items)",
+                style: Theme.of(context).textTheme.subtitle2.copyWith(
+                    color: colors.lightBlack, fontWeight: FontWeight.bold),
               ),
               Divider(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    SUBTOTAL,
-                    style: Theme.of(context).textTheme.caption,
+                    getTranslated(context, 'SUBTOTAL'),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
                   ),
                   Text(
                     CUR_CURRENCY + " " + oriPrice.toString(),
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
                   )
                 ],
               ),
@@ -1403,12 +1502,18 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    TAXPER,
-                    style: Theme.of(context).textTheme.caption,
+                    getTranslated(context, 'TAXPER'),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
                   ),
                   Text(
                     CUR_CURRENCY + " " + taxAmt.toString(),
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
                   )
                 ],
               ),
@@ -1416,12 +1521,18 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    DELIVERY_CHARGE,
-                    style: Theme.of(context).textTheme.caption,
+                    getTranslated(context, 'DELIVERY_CHARGE'),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
                   ),
                   Text(
                     CUR_CURRENCY + " " + delCharge.toString(),
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
                   )
                 ],
               ),
@@ -1430,12 +1541,18 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          PROMO_CODE_DIS_LBL,
-                          style: Theme.of(context).textTheme.caption,
+                          getTranslated(context, 'PROMO_CODE_DIS_LBL'),
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption
+                              .copyWith(color: colors.lightBlack2),
                         ),
                         Text(
                           CUR_CURRENCY + " " + promoAmt.toString(),
-                          style: Theme.of(context).textTheme.caption,
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption
+                              .copyWith(color: colors.lightBlack2),
                         )
                       ],
                     )
@@ -1445,7 +1562,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          WALLET_BAL,
+                          getTranslated(context, 'WALLET_BAL'),
                           style: Theme.of(context).textTheme.caption,
                         ),
                         Text(
@@ -1470,8 +1587,11 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             Row(
               children: [
                 Text(
-                  PROMOCODE_LBL,
-                  style: Theme.of(context).textTheme.caption,
+                  getTranslated(context, 'PROMOCODE_LBL'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
                 ),
                 Spacer(),
                 InkWell(
@@ -1508,10 +1628,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                         ),
                         hintText: 'Promo Code..',
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: fontColor),
+                          borderSide: BorderSide(color: colors.fontColor),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: fontColor),
+                          borderSide: BorderSide(color: colors.fontColor),
                         ),
                       ),
                     ),
@@ -1522,17 +1642,18 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                             EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                         alignment: FractionalOffset.center,
                         decoration: BoxDecoration(
-                            color: lightWhite,
+                            color: colors.lightWhite,
                             borderRadius: new BorderRadius.all(
                                 const Radius.circular(4.0))),
-                        child: Text(APPLY,
+                        child: Text(getTranslated(context, 'APPLY'),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.button.copyWith(
-                                  color: fontColor,
+                                  color: colors.fontColor,
                                 ))),
                     onPressed: () {
                       if (promoC.text.trim().isEmpty)
-                        stateCheck.setSnackbar(ADD_PROMO);
+                        stateCheck
+                            .setSnackbar(getTranslated(context, 'ADD_PROMO'));
                       else if (!isPromoValid) validatePromo();
                     },
                   ),

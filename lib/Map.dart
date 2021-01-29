@@ -70,7 +70,7 @@ class _MapState extends State<Map> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: getAppBar(CHOOSE_LOCATION, context),
+        appBar: getAppBar(getTranslated(context, 'CHOOSE_LOCATION'), context),
         body: SafeArea(
             child: Column(
               children: <Widget>[
@@ -95,7 +95,7 @@ class _MapState extends State<Map> {
                   ]),
                 ),
                 TextField(
-                  cursorColor: black,
+                  cursorColor: colors.black,
                   controller: locationController,
                   readOnly: true,
                   decoration: InputDecoration(
@@ -118,11 +118,11 @@ class _MapState extends State<Map> {
                   onPressed: () {
 
 
-                    if(widget.from==ADDADDRESS)
+                    if(widget.from==getTranslated(context,'ADDADDRESS'))
                     {
                       latitude=latlong.latitude.toString();
                       longitude=latlong.longitude.toString();
-                    }else if(widget.from==EDIT_PROFILE_LBL){
+                    }else if(widget.from==getTranslated(context, 'EDIT_PROFILE_LBL')){
                       lat=latlong.latitude.toString();
                       long=latlong.longitude.toString();
                     }

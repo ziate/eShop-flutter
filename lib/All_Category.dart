@@ -37,6 +37,7 @@ class StateCat extends State<AllCategory> {
   @override
   void initState() {
     super.initState();
+    if(catList.length==0)getCat();
     controller.addListener(_scrollListener);
   }
 
@@ -44,8 +45,8 @@ class StateCat extends State<AllCategory> {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        backgroundColor: lightWhite,
-        appBar: getAppBar(ALL_CAT, context),
+
+        appBar: getAppBar(getTranslated(context, 'ALL_CAT'), context),
         body: GridView.count(
             controller: controller,
             padding: EdgeInsets.all(20),
@@ -54,7 +55,7 @@ class StateCat extends State<AllCategory> {
             childAspectRatio: .8,
             children: List.generate(
               (offset < total) ? catList.length + 1 : catList.length,
-              (index) {
+                  (index) {
                 return (index == catList.length && isLoadingmore)
                     ? Center(child: CircularProgressIndicator())
                     : catItem(index, context);
@@ -70,8 +71,8 @@ class StateCat extends State<AllCategory> {
         OFFSET: offset.toString()
       };
       Response response =
-          await post(getCatApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
+      await post(getCatApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -105,7 +106,7 @@ class StateCat extends State<AllCategory> {
         });
       }
     } on TimeoutException catch (_) {
-      setSnackbar(somethingMSg);
+      setSnackbar( getTranslated(context,'somethingMSg'));
       setState(() {
         _isCatLoading = false;
         isLoadingmore = false;
@@ -118,9 +119,9 @@ class StateCat extends State<AllCategory> {
       content: new Text(
         msg,
         textAlign: TextAlign.center,
-        style: TextStyle(color: black),
+        style: TextStyle(color: colors.black),
       ),
-      backgroundColor: white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }
@@ -149,7 +150,7 @@ class StateCat extends State<AllCategory> {
               style: Theme.of(context)
                   .textTheme
                   .caption
-                  .copyWith(color: fontColor),
+                  .copyWith(color: colors.fontColor),
             ),
           )
         ],

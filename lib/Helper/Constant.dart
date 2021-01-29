@@ -10,6 +10,11 @@ final String iosLink = 'your ios link here';
 final String appStoreId = 'your appp store id here';
 
 
+final String deepLinkUrlPrefix = 'https://eshopwrteamin.page.link';
+final String deepLinkName= 'eshop';
+
+
+
 final String baseUrl = 'http://eshop.wrteam.in/app/v1/api/';
 
 
@@ -19,6 +24,7 @@ final String jwtKey = "68f05dec6014f68e760c5c5fa3e31bcf391a2e10";
 
 //label title and message that shown in app
 
+/*
 final String somethingMSg = 'Something went wrong. Please try again after some time';
 final String profileCom = 'Please complete your profile to place the order';
 
@@ -261,8 +267,7 @@ const String CITY_LBL="City";
 const String AREA_LBL="Area";
 const String ADD_CITY_LBL="Add City";
 const String ADD_AREA_LBL="Add Area";
-const String CITYNAME="cityName";
-const String AREANAME="areaName";
+
 const String FILTER_CLEAR_LBL="Clear Filters";
 const String PRODUCTS_FOUND_LBL="products found";
 const String LOCATION_LBL="Location";
@@ -311,3 +316,4 @@ const String VALID_PIN='Please enter valid pincode';
 const String PIN_REQUIRED='Pincode is Required';
 const String EMAIL_REQUIRED='Email is Required';
 const String VALID_EMAIL='Please enter a valid email Address';
+const String  CHANGE_LANGUAGE_LBL= "Change Language";*/
