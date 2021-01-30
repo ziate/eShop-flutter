@@ -47,7 +47,7 @@ class StateSuccess extends State<OrderSuccess> {
                       borderRadius: BorderRadius.all(Radius.circular(20))),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 28.0),
+                  padding: const EdgeInsetsDirectional.only(top: 28.0),
                   child: CupertinoButton(
                     child: Container(
                         width: deviceWidth * 0.7,

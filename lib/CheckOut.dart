@@ -115,7 +115,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
 
@@ -144,9 +144,9 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             isPromoValid = false;
             stateCheck.setSnackbar(msg);
           }
-          setState(() {
+           if (mounted) setState(() {
             if (isUseWallet) {
-              setState(() {
+               if (mounted) setState(() {
                 remWalBal = 0;
                 payMethod = null;
                 usedBal = 0;
@@ -163,7 +163,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         stateCheck.setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -198,7 +198,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -248,7 +248,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           color: colors.white,
                           child: Row(children: <Widget>[
                             Padding(
-                                padding: EdgeInsets.only(left: 15.0),
+                                padding: EdgeInsetsDirectional.only(start: 15.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -335,7 +335,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
   noCartDec(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0),
+      padding: EdgeInsetsDirectional.only(top: 30.0, start: 30.0, end: 30.0),
       child: Text(getTranslated(context, 'CART_DESC'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headline6.copyWith(
@@ -347,7 +347,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
   shopNow() {
     return Padding(
-      padding: const EdgeInsets.only(top: 28.0),
+      padding: const EdgeInsetsDirectional.only(top: 28.0),
       child: CupertinoButton(
         child: Container(
             width: deviceWidth * 0.7,
@@ -355,8 +355,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             alignment: FractionalOffset.center,
             decoration: new BoxDecoration(
               gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  begin: AlignmentDirectional.topStart,
+                  end: AlignmentDirectional.bottomEnd,
                   colors: [colors.grad1Color, colors.grad2Color],
                   stops: [0, 1]),
               borderRadius: new BorderRadius.all(const Radius.circular(50.0)),
@@ -426,7 +426,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                         ))),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
+                    padding: const EdgeInsetsDirectional.only(start: 8.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
@@ -434,7 +434,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           children: [
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.only(top: 5.0),
+                                padding: const EdgeInsetsDirectional.only(top: 5.0),
                                 child: Text(
                                   cartList[index].productList[0].name,
                                   style: Theme.of(context)
@@ -448,8 +448,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                             ),
                             GestureDetector(
                               child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 8.0, right: 8, bottom: 8),
+                                padding: const EdgeInsetsDirectional.only(
+                                    start: 8.0, end: 8, bottom: 8),
                                 child: Icon(
                                   Icons.close,
                                   size: 13,
@@ -502,8 +502,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                       GestureDetector(
                                         child: Container(
                                           padding: EdgeInsets.all(2),
-                                          margin: EdgeInsets.only(
-                                              right: 8, top: 8, bottom: 8),
+                                          margin: EdgeInsetsDirectional.only(
+                                              end: 8, top: 8, bottom: 8),
                                           child: Icon(
                                             Icons.remove,
                                             size: 12,
@@ -694,7 +694,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
 
@@ -745,7 +745,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             if (isPromoValid) {
               validatePromo();
             } else if (isUseWallet) {
-              setState(() {
+               if (mounted) setState(() {
                 remWalBal = 0;
                 payMethod = null;
                 usedBal = 0;
@@ -754,13 +754,13 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                 _isProgress = false;
               });
             } else {
-              setState(() {
+               if (mounted) setState(() {
                 _isProgress = false;
               });
             }
           } else {
             setSnackbar(msg);
-            setState(() {
+             if (mounted) setState(() {
               _isProgress = false;
             });
           }
@@ -769,12 +769,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         }
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -784,7 +784,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
 
@@ -827,7 +827,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             if (isPromoValid) {
               validatePromo();
             } else if (isUseWallet) {
-              setState(() {
+               if (mounted) setState(() {
                 remWalBal = 0;
                 payMethod = null;
                 usedBal = 0;
@@ -836,13 +836,13 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                 _isProgress = false;
               });
             } else {
-              setState(() {
+               if (mounted) setState(() {
                 _isProgress = false;
               });
             }
           } else {
             setSnackbar(msg);
-            setState(() {
+             if (mounted) setState(() {
               _isProgress = false;
             });
           }
@@ -851,12 +851,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         }
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -914,18 +914,18 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             }
           } else {}
           if (mounted)
-            setState(() {
+             if (mounted) setState(() {
               _isLoading = false;
             });
         } else {
           setSnackbar(getTranslated(context, 'somethingMSg'));
-          setState(() {
+           if (mounted) setState(() {
             _isLoading = false;
           });
         }
       } on TimeoutException catch (_) {}
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -939,7 +939,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   void _handlePaymentError(PaymentFailureResponse response) {
 
     setSnackbar(response.message);
-    setState(() {
+     if (mounted) setState(() {
       _isProgress = false;
     });
   }
@@ -955,7 +955,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     double amt = totalPrice * 100;
 
     if (contact != '' && email != '') {
-      setState(() {
+       if (mounted) setState(() {
         _isProgress = true;
       });
 
@@ -983,7 +983,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   paystackPayment(BuildContext context) async {
-    setState(() {
+     if (mounted) setState(() {
       _isProgress = true;
     });
 
@@ -1004,18 +1004,18 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         placeOrder(response.reference);
       } else {
         setSnackbar(response.message);
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } catch (e) {
-      setState(() => _isProgress = false);
+       if (mounted) setState(() => _isProgress = false);
       rethrow;
     }
   }
 
   stripePayment() async {
-    setState(() {
+     if (mounted) setState(() {
       _isProgress = true;
     });
 
@@ -1029,7 +1029,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     } else if (response.status == 'pending' || response.status == "captured") {
       placeOrder(response.status);
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isProgress = false;
       });
     }
@@ -1038,7 +1038,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
   void setError(dynamic error) {
     setSnackbar(error.toString());
-    setState(() {
+     if (mounted) setState(() {
       _isProgress = false;
     });
   }
@@ -1055,7 +1055,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   updateCheckout() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   confirmOrder() {
@@ -1115,21 +1115,21 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             varientId != null ? varientId + "," + sec.varientId : sec.varientId;
         quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
       }
-
+String payVia;
       if (payMethod == getTranslated(context, 'COD_LBL'))
-        payMethod = "COD";
+        payVia = "COD";
       else if (payMethod == getTranslated(context, 'PAYPAL_LBL'))
-        payMethod = "PayPal";
+        payVia = "PayPal";
       else if (payMethod == getTranslated(context, 'PAYUMONEY_LBL'))
-        payMethod = "PayUMoney";
+        payVia = "PayUMoney";
       else if (payMethod == getTranslated(context, 'RAZORPAY_LBL'))
-        payMethod = "RazorPay";
+        payVia = "RazorPay";
       else if (payMethod == getTranslated(context, 'PAYSTACK_LBL'))
-        payMethod = "Paystack";
+        payVia = "Paystack";
       else if (payMethod == getTranslated(context, 'FLUTTERWAVE_LBL'))
-        payMethod = "Flutterwave";
+        payVia = "Flutterwave";
       else if (payMethod == getTranslated(context, 'STRIPE_LBL'))
-        payMethod = "Stripe";
+        payVia = "Stripe";
 
       try {
         var parameter = {
@@ -1142,7 +1142,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           TAX_AMT: taxAmt.toString(),
           TAX_PER: taxPer.toString(),
           FINAL_TOTAL: totalPrice.toString(),
-          PAYMENT_METHOD: payMethod,
+          PAYMENT_METHOD: payVia,
           ADD_ID: selAddress,
           ISWALLETBALUSED: isUseWallet ? "1" : "0",
           WALLET_BAL_USED: usedBal.toString(),
@@ -1209,17 +1209,17 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           } else {
             setSnackbar(msg);
           }
-          setState(() {
+           if (mounted) setState(() {
             _isProgress = false;
           });
         }
       } on TimeoutException catch (_) {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -1315,12 +1315,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             addressList.length > 0
                 ? Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
+                      padding: const EdgeInsetsDirectional.only(start: 8.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 5.0),
+                            padding: const EdgeInsetsDirectional.only(bottom: 5.0),
                             child: Text(addressList[selectedAddress].name),
                           ),
                           Text(
@@ -1386,7 +1386,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                   )
                 : Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
+                      padding: const EdgeInsetsDirectional.only(start: 8.0),
                       child: GestureDetector(
                         child: Text(
                           getTranslated(context, 'ADDADDRESS'),
@@ -1404,7 +1404,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                       index: addressList.length,
                                     )),
                           );
-                          setState(() {});
+                           if (mounted) setState(() {});
                         },
                       ),
                     ),
@@ -1426,7 +1426,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
               context,
               MaterialPageRoute(
                   builder: (BuildContext context) => Payment(updateCheckout)));
-          setState(() {});
+           if (mounted) setState(() {});
         },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -1434,7 +1434,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             children: [
               Icon(Icons.payment),
               Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+                padding: const EdgeInsetsDirectional.only(start: 8.0),
                 child: Text(
                   //SELECT_PAYMENT,
                   payMethod != null && payMethod != ''
@@ -1601,7 +1601,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                   ),
                   onTap: () {
                     if (promoAmt != 0 && isPromoValid) {
-                      setState(() {
+                       if (mounted) setState(() {
                         totalPrice = totalPrice + promoAmt;
                         promoC.text = '';
                         isPromoValid = false;

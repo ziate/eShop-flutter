@@ -29,7 +29,7 @@ class AppBtn extends StatelessWidget {
       child: Container(
         width: btnAnim.value,
         height: 45,
-        margin: EdgeInsets.only(top:25),
+        margin: EdgeInsetsDirectional.only(top:25),
         alignment: FractionalOffset.center,
         decoration: new BoxDecoration(
           gradient: LinearGradient(

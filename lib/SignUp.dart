@@ -56,7 +56,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   getUserDetails() async {
     mobile = await getPrefrence(MOBILE);
     countrycode = await getPrefrence(COUNTRY_CODE);
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   Future<Null> _playAnimation() async {
@@ -71,7 +71,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       getRegisterUser();
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
-        setState(() {
+         if (mounted) setState(() {
           _isNetworkAvail = false;
         });
         await buttonController.reverse();
@@ -115,7 +115,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   Widget noInternet(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: EdgeInsets.only(top: kToolbarHeight),
+        padding: EdgeInsetsDirectional.only(top: kToolbarHeight),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           noIntImage(),
           noIntText(context),
@@ -136,7 +136,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -183,7 +183,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      setState(() {});
+       if (mounted) setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar( getTranslated(context,'somethingMSg'));
       await buttonController.reverse();
@@ -201,7 +201,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   registerTxt() {
     return Padding(
-        padding: EdgeInsets.only(top: 30.0),
+        padding: EdgeInsetsDirectional.only(top: 30.0),
         child: Center(
           child: new Text(getTranslated(context, 'USER_REGISTER_DETAILS'),
               style: Theme.of(context)
@@ -213,10 +213,10 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   setUserName() {
     return Padding(
-      padding: EdgeInsets.only(
+      padding: EdgeInsetsDirectional.only(
         top: 30.0,
-        left: 25.0,
-        right: 25.0,
+        start: 25.0,
+        end: 25.0,
       ),
       child: TextFormField(
         keyboardType: TextInputType.text,
@@ -267,10 +267,10 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   setEmail() {
     return Padding(
-      padding: EdgeInsets.only(
+      padding: EdgeInsetsDirectional.only(
         top: 10.0,
-        left: 25.0,
-        right: 25.0,
+        start: 25.0,
+        end: 25.0,
       ),
       child: TextFormField(
         keyboardType: TextInputType.text,
@@ -320,7 +320,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   setPass() {
     return Padding(
-        padding: EdgeInsets.only(left: 25.0, right: 25.0, top: 10.0),
+        padding: EdgeInsetsDirectional.only(start: 25.0, end: 25.0, top: 10.0),
         child: TextFormField(
           keyboardType: TextInputType.text,
           obscureText: !this._showPassword,
@@ -360,9 +360,9 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   showPass() {
     return Padding(
-        padding: EdgeInsets.only(
-          left: 30.0,
-          right: 30.0,
+        padding: EdgeInsetsDirectional.only(
+          start: 30.0,
+          end: 30.0,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -372,7 +372,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               checkColor: colors.fontColor,
               activeColor: colors.lightWhite,
               onChanged: (bool value) {
-                setState(() {
+                 if (mounted) setState(() {
                   _showPassword = value;
                 });
               },
@@ -398,7 +398,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   loginTxt() {
     return Padding(
       padding:
-      EdgeInsets.only(bottom: 30.0, left: 25.0, right: 25.0, top: 10.0),
+      EdgeInsetsDirectional.only(bottom: 30.0, start: 25.0, end: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -428,12 +428,12 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   backBtn() {
     return Platform.isIOS
         ? Container(
-        padding: EdgeInsets.only(top: 20.0, left: 10.0),
-        alignment: Alignment.topLeft,
+        padding: EdgeInsetsDirectional.only(top: 20.0, start: 10.0),
+        alignment: AlignmentDirectional.topStart,
         child: Card(
           elevation: 0,
           child: Padding(
-            padding: const EdgeInsets.only(right: 4.0),
+            padding: const EdgeInsetsDirectional.only(end: 4.0),
             child: InkWell(
               child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
               onTap: () => Navigator.of(context).pop(),
@@ -458,7 +458,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                 elevation: 0.5,
                 shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+                margin: EdgeInsetsDirectional.only(start: 20.0, end: 20.0, top: 20.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -503,7 +503,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         body: _isNetworkAvail
             ? Container(
             color: colors.lightWhite,
-            padding: EdgeInsets.only(
+            padding: EdgeInsetsDirectional.only(
               bottom: 20.0,
             ),
             child: Column(

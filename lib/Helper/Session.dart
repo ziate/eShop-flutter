@@ -122,7 +122,7 @@ noIntText(BuildContext context) {
 
 noIntDec(BuildContext context) {
   return Container(
-    padding: EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0),
+    padding: EdgeInsetsDirectional.only(top: 30.0, start: 30.0, end: 30.0),
     child: Text(getTranslated(context,'NO_INTERNET_DISC'),
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.headline6.copyWith(
@@ -300,7 +300,7 @@ Widget shimmer() {
         child: Column(
           children: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
               .map((_) => Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
+            padding: const EdgeInsetsDirectional.only(bottom: 8.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -393,10 +393,7 @@ Locale _locale(String languageCode) {
       return Locale("en", 'US');
   }
 }
-/*String getTranslated( String key) {
-  print("langue****in session**$key");
-  return DemoLocalization.translate(key);
-}*/
+
 
 String getTranslated(BuildContext context, String key) {
   return DemoLocalization.of(context).translate(key);

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
@@ -9,6 +10,7 @@ import 'package:eshop/Setting.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:provider/provider.dart';
@@ -86,7 +88,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     selectLan = langCode.indexOf(getlng ?? "en");
 
     // print("get***$get***$prevTheme***${getTranslated(context, 'SYSTEM_DEFAULT')}");
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   getUserDetails() async {
@@ -94,20 +96,20 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     CUR_USERNAME = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
     profile = await getPrefrence(IMAGE);
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   _getHeader() {
     return Padding(
-        padding: const EdgeInsets.only(bottom: 10.0, top: 10),
+        padding: const EdgeInsetsDirectional.only(bottom: 10.0, top: 10),
         child: Container(
-          padding: EdgeInsets.only(
-            left: 10.0,
+          padding: EdgeInsetsDirectional.only(
+            start: 10.0,
           ),
           child: Row(
             children: [
               Padding(
-                  padding: const EdgeInsets.only(left: 10),
+                  padding: const EdgeInsetsDirectional.only(start: 10),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +134,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                           : Container(),
                       CUR_USERNAME == "" || CUR_USERNAME == null
                           ? Padding(
-                              padding: const EdgeInsets.only(top: 7),
+                              padding: const EdgeInsetsDirectional.only(top: 7),
                               child: InkWell(
                                 child: Text(
                                     getTranslated(
@@ -153,7 +155,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                 },
                               ))
                           : Padding(
-                              padding: const EdgeInsets.only(
+                              padding: const EdgeInsetsDirectional.only(
                                 top: 7,
                               ),
                               child: InkWell(
@@ -188,7 +190,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                   )),
               Spacer(),
               Container(
-                margin: EdgeInsets.only(right: 20),
+                margin: EdgeInsetsDirectional.only(end: 20),
                 height: 64,
                 width: 64,
                 decoration: BoxDecoration(
@@ -230,10 +232,10 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
               index,
               InkWell(
                 onTap: () {
-                  setState(() {
+                   if (mounted) setState(() {
                     selectLan = index;
                     _changeLan(langCode[index]);
-                    print("code***${langCode[index]}");
+
                   });
                 },
                 child: Padding(
@@ -266,8 +268,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                             ),
                           ),
                           Padding(
-                              padding: EdgeInsets.only(
-                                left: 15.0,
+                              padding: EdgeInsetsDirectional.only(
+                                start: 15.0,
                               ),
                               child: Text(
                                 languageList[index],
@@ -280,7 +282,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       ),
                       index == languageList.length - 1
                           ? Container(
-                              margin: EdgeInsets.only(
+                              margin: EdgeInsetsDirectional.only(
                                 bottom: 10,
                               ),
                             )
@@ -409,7 +411,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                           )),
                                       obscureText: !_showNPassword,
                                       controller: newPassC,
-                                      onChanged: (v) => setState(() {
+                                      onChanged: (v) =>   setState(() {
                                         newPass = v;
                                       }),
                                     )),
@@ -455,7 +457,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                           )),
                                       obscureText: !_showCPassword,
                                       controller: confPassC,
-                                      onChanged: (v) => setState(() {
+                                      onChanged: (v) =>  setState(() {
                                         confPass = v;
                                       }),
                                     )),
@@ -490,7 +492,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       final form = _formkey.currentState;
                       if (form.validate()) {
                         form.save();
-                        setState(() {
+                         if (mounted)  if (mounted) setState(() {
                           Navigator.pop(context);
                         });
                         setUpdateUser();
@@ -536,7 +538,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
 
   _getDrawerFirst() {
     return Card(
-      margin: EdgeInsets.only(left: 10.0, right: 10.0),
+      margin: EdgeInsetsDirectional.only(start: 10.0, end: 10.0),
       elevation: 0,
       child: ListView(
         padding: EdgeInsets.zero,
@@ -577,7 +579,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
 
   _getDrawerSecond() {
     return Card(
-      margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 15.0, bottom: 15.0),
+      margin: EdgeInsetsDirectional.only(start: 10.0, end: 10.0, top: 15.0, bottom: 15.0),
       elevation: 0,
       child: ListView(
         padding: EdgeInsets.zero,
@@ -848,8 +850,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                       )),
                           ),
                           Padding(
-                              padding: EdgeInsets.only(
-                                left: 15.0,
+                              padding: EdgeInsetsDirectional.only(
+                                start: 15.0,
                               ),
                               child: Text(
                                 themeList[index],
@@ -862,7 +864,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       ),
                       index == themeList.length - 1
                           ? Container(
-                              margin: EdgeInsets.only(
+                              margin: EdgeInsetsDirectional.only(
                                 bottom: 10,
                               ),
                             )
@@ -889,18 +891,25 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     if (value == getTranslated(context, 'SYSTEM_DEFAULT')) {
       themeNotifier.setThemeMode(ThemeMode.system);
       var brightness = SchedulerBinding.instance.window.platformBrightness;
-      setState(() {
+       if (mounted) setState(() {
+
         isDark = brightness == Brightness.dark;
+        if(isDark)
+          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+        else
+          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
       });
     } else if (value == getTranslated(context, 'LIGHT_THEME')) {
       themeNotifier.setThemeMode(ThemeMode.light);
-      setState(() {
+       if (mounted) setState(() {
         isDark = false;
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
       });
     } else if (value == getTranslated(context, 'DARK_THEME')) {
       themeNotifier.setThemeMode(ThemeMode.dark);
-      setState(() {
+       if (mounted) setState(() {
         isDark = true;
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
       });
     }
     ISDARK = isDark.toString();
@@ -955,6 +964,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                     ),
                     onPressed: () {
                       clearUserSession();
+                      favList.clear();
                       Navigator.of(context).pushNamedAndRemoveUntil(
                           '/home', (Route<dynamic> route) => false);
                     })

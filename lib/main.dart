@@ -70,7 +70,7 @@ class _MyAppState extends State<MyApp> {
 	static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
 	setLocale(Locale locale) {
-		setState(() {
+		 if (mounted)  if (mounted) setState(() {
 			_locale = locale;
 		});
 	}
@@ -78,7 +78,7 @@ class _MyAppState extends State<MyApp> {
 	@override
 	void didChangeDependencies() {
 		getLocale().then((locale) {
-			setState(() {
+			 if (mounted)  if (mounted) setState(() {
 				this._locale = locale;
 			});
 		});

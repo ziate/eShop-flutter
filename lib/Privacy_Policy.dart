@@ -85,7 +85,7 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -149,14 +149,14 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
             setSnackbar(msg);
           }
         }
-        setState(() {
+         if (mounted) setState(() {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isLoading = false;
         _isNetworkAvail = false;
       });

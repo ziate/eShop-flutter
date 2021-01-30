@@ -2,16 +2,24 @@ import 'package:eshop/Helper/Color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
+
+import 'Helper/Session.dart';
 import 'Home.dart';
 
 class ProductPreview extends StatefulWidget {
   final int pos, secPos, index;
   final bool list;
   final String id;
-  final List<String>imgList;
+  final List<String> imgList;
 
   const ProductPreview(
-      {Key key, this.pos, this.secPos, this.index, this.list, this.id, this.imgList})
+      {Key key,
+      this.pos,
+      this.secPos,
+      this.index,
+      this.list,
+      this.id,
+      this.imgList})
       : super(key: key);
 
   @override
@@ -30,55 +38,62 @@ class StatePreview extends State<ProductPreview> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         body: Hero(
-          tag: widget.list
-              ? "${widget.id}"
-              : "${sectionList[widget.secPos].productList[widget.index]
-              .id}${widget.secPos}${widget.index}",
-          child: Stack(
-            children: <Widget>[
-              PageView.builder(
-                  itemCount: widget.imgList.length,
-                  controller: PageController(initialPage: curPos),
-                  onPageChanged: (index) {
-                    setState(() {
-                      curPos = index;
-                    });
-                  },
-                  itemBuilder: (BuildContext context, int index) {
-                    return PhotoView(
-                        backgroundDecoration: BoxDecoration(color: colors.white),
-                        initialScale: PhotoViewComputedScale.contained * 0.9,
-                        minScale: PhotoViewComputedScale.contained * 0.9,
-                        imageProvider:
-                        NetworkImage(widget.imgList[index]));
-                  }),
-              Padding(
-                padding: const EdgeInsets.only(top: 34.0),
-                child: Material(
-                  color: Colors.transparent,
-                  child: new IconButton(
-                    icon: new Icon(
-                      Icons.arrow_back_ios,
-                      color: colors.primary,
+      tag: widget.list
+          ? "${widget.id}"
+          : "${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}",
+      child: Stack(
+        children: <Widget>[
+          PageView.builder(
+              itemCount: widget.imgList.length,
+              controller: PageController(initialPage: curPos),
+              onPageChanged: (index) {
+                 if (mounted) setState(() {
+                  curPos = index;
+                });
+              },
+              itemBuilder: (BuildContext context, int index) {
+                return PhotoView(
+                    backgroundDecoration: BoxDecoration(color: colors.white),
+                    initialScale: PhotoViewComputedScale.contained * 0.9,
+                    minScale: PhotoViewComputedScale.contained * 0.9,
+                    imageProvider: NetworkImage(widget.imgList[index]));
+              }),
+          Positioned(
+            top: 34.0,
+            left: 5.0,
+            child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  margin: EdgeInsets.all(10),
+                  decoration: shadow(),
+                  child: Card(
+                    elevation: 0,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Center(
+                        child: Icon(
+                          Icons.keyboard_arrow_left,
+                          color: colors.primary,
+                        ),
+                      ),
                     ),
-                    onPressed: () => Navigator.of(context).pop(),
                   ),
-                ),
-              ),
-              Positioned(
-                  bottom: 10.0,
-                  left: 25.0,
-                  right: 25.0,
-                  child: SelectedPhoto(
-                    numberOfDots: widget.imgList.length,
-                    photoIndex: curPos,
-                  )),
-            ],
+                )),
           ),
-        ));
+          Positioned(
+              bottom: 10.0,
+              left: 25.0,
+              right: 25.0,
+              child: SelectedPhoto(
+                numberOfDots: widget.imgList.length,
+                photoIndex: curPos,
+              )),
+        ],
+      ),
+    ));
   }
 }
 
@@ -91,7 +106,7 @@ class SelectedPhoto extends StatelessWidget {
   Widget _inactivePhoto() {
     return Container(
       child: Padding(
-        padding: EdgeInsets.only(left: 3.0, right: 3.0),
+        padding: EdgeInsetsDirectional.only(start: 3.0, end: 3.0),
         child: Container(
           height: 8.0,
           width: 8.0,
@@ -106,7 +121,7 @@ class SelectedPhoto extends StatelessWidget {
   Widget _activePhoto() {
     return Container(
       child: Padding(
-        padding: EdgeInsets.only(left: 5.0, right: 5.0),
+        padding: EdgeInsetsDirectional.only(start: 5.0, end: 5.0),
         child: Container(
           height: 10.0,
           width: 10.0,

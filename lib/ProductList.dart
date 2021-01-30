@@ -127,7 +127,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                   getProduct("0");
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -140,7 +140,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   noIntBtn(BuildContext context) {
     double width = deviceWidth;
     return Container(
-        padding: EdgeInsets.only(bottom: 10.0, top: 50.0),
+        padding: EdgeInsetsDirectional.only(bottom: 10.0, top: 50.0),
         child: Center(
             child: RaisedButton(
               color: colors.primary,
@@ -184,8 +184,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
               ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
               style: Theme.of(context)
                   .textTheme
-                  .subtitle1
-                  .copyWith(color: Colors.red))
+                  .subtitle2
+                  .copyWith(color: Colors.red,fontWeight: FontWeight.bold))
               : Container(),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -282,7 +282,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   }
 
   updateProductList() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   Future<Null> getProduct(String top) async {
@@ -334,20 +334,20 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             isLoadingmore = false;
           }
           if (mounted)
-            setState(() {
+             if (mounted) setState(() {
               _isLoading = false;
             });
         }
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isLoading = false;
           isLoadingmore = false;
         });
       }
     } else {
       {
-        setState(() {
+         if (mounted) setState(() {
           _isNetworkAvail = false;
         });
       }
@@ -388,7 +388,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(4),
               onTap: () => Navigator.of(context).pop(),
               child: Padding(
-                padding: const EdgeInsets.only(right: 4.0),
+                padding: const EdgeInsetsDirectional.only(end: 4.0),
                 child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
               ),
             ),
@@ -463,7 +463,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                   ),
                 ))),
         Container(
-            margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+            margin: EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 10),
             decoration: shadow(),
             child: Card(
                 elevation: 0,
@@ -481,7 +481,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                       ),
                       onTap: () {
                         productList.length != 0
-                            ? setState(() {
+                            ?   setState(() {
                           listType = !listType;
                         })
                             : null;
@@ -499,7 +499,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     } else {
       double off =
           double.parse(productList[index].prVarientList[0].price) - price;
-      print("==========$off");
+
       offPer = ((off * 100) /
           double.parse(productList[index].prVarientList[0].price))
           .toStringAsFixed(2);
@@ -509,7 +509,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
     return Card(
       elevation: 0.2,
-      margin: EdgeInsets.only(bottom: 5, right: pad ? 5 : 0),
+      margin: EdgeInsetsDirectional.only(bottom: 5, end: pad ? 5 : 0),
       child: InkWell(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -533,6 +533,17 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           placeholder: placeHolder(width),
                         ),
                       )),
+                  Align(
+                    alignment: AlignmentDirectional.topStart,
+                    child:
+                    productList[index].availability == "0"?
+                        Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle2
+                            .copyWith(color: Colors.red,fontWeight: FontWeight.bold))
+                        : Container(),
+                  ),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(1.5),
@@ -559,7 +570,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 5.0, top: 5, bottom: 5),
+              padding: const EdgeInsetsDirectional.only(start: 5.0, top: 5, bottom: 5),
               child: Text(
                 productList[index].name,
                 style: Theme.of(context)
@@ -574,7 +585,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                 style: TextStyle(
                     color: colors.fontColor, fontWeight: FontWeight.bold)),
             Padding(
-              padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
+              padding: const EdgeInsetsDirectional.only(start: 5.0, bottom: 5, top: 3),
               child: double.parse(productList[index].prVarientList[0].disPrice) !=
                   0
                   ? Row(
@@ -641,7 +652,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                 content: SingleChildScrollView(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Padding(
-                        padding: EdgeInsets.only(top: 19.0, bottom: 16.0),
+                        padding: EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
                         child: Text(
                           getTranslated(context, 'SORT_BY'),
                           style: Theme.of(context).textTheme.headline6,
@@ -656,7 +667,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         onPressed: () {
                           sortBy = '';
                           orderBy = 'DESC';
-                          setState(() {
+                           if (mounted) setState(() {
                             _isLoading = true;
                             total = 0;
                             offset = 0;
@@ -675,7 +686,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         onPressed: () {
                           sortBy = 'p.date_added';
                           orderBy = 'DESC';
-                          setState(() {
+                           if (mounted) setState(() {
                             _isLoading = true;
                             total = 0;
                             offset = 0;
@@ -696,7 +707,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         onPressed: () {
                           sortBy = 'p.date_added';
                           orderBy = 'ASC';
-                          setState(() {
+                           if (mounted) setState(() {
                             _isLoading = true;
                             total = 0;
                             offset = 0;
@@ -717,7 +728,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         onPressed: () {
                           sortBy = 'pv.price';
                           orderBy = 'ASC';
-                          setState(() {
+                           if (mounted) setState(() {
                             _isLoading = true;
                             total = 0;
                             offset = 0;
@@ -728,7 +739,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         }),
                     Divider(color: colors.lightBlack),
                     Padding(
-                        padding: EdgeInsets.only(bottom: 5.0),
+                        padding: EdgeInsetsDirectional.only(bottom: 5.0),
                         child: TextButton(
                             child: new Text(
                               getTranslated(context, 'F_HIGH'),
@@ -740,7 +751,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             onPressed: () {
                               sortBy = 'pv.price';
                               orderBy = 'DESC';
-                              setState(() {
+                               if (mounted) setState(() {
                                 _isLoading = true;
                                 total = 0;
                                 offset = 0;
@@ -759,7 +770,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-        setState(() {
+         if (mounted) setState(() {
           isLoadingmore = true;
 
           if (offset < total) getProduct("0");
@@ -770,7 +781,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
   Future<void> addToCart(int index) async {
     try {
-      setState(() {
+       if (mounted) setState(() {
         _isProgress = true;
       });
       var parameter = {
@@ -797,13 +808,13 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      setState(() {
+       if (mounted) setState(() {
         _isProgress = false;
       });
       widget.updateHome();
     } on TimeoutException catch (_) {
       setSnackbar( getTranslated(context,'somethingMSg'));
-      setState(() {
+       if (mounted) setState(() {
         _isProgress = false;
       });
     }
@@ -811,7 +822,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
   Future<void> removeFromCart(int index) async {
     try {
-      setState(() {
+       if (mounted) setState(() {
         _isProgress = true;
       });
 
@@ -837,21 +848,21 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      setState(() {
+       if (mounted) setState(() {
         _isProgress = false;
       });
 
       widget.updateHome();
     } on TimeoutException catch (_) {
       setSnackbar( getTranslated(context,'somethingMSg'));
-      setState(() {
+       if (mounted) setState(() {
         _isProgress = false;
       });
     }
   }
 
   Future<Null> _refresh() {
-    setState(() {
+     if (mounted) setState(() {
       _isLoading = true;
       isLoadingmore = true;
       offset = 0;
@@ -879,7 +890,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           },
         )
             : GridView.count(
-            padding: EdgeInsets.only(top: 5),
+            padding: EdgeInsetsDirectional.only(top: 5),
             crossAxisCount: 2,
             controller: controller,
             physics: NeverScrollableScrollPhysics(),
@@ -908,7 +919,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             builder: (BuildContext context, StateSetter setState) {
               return Column(mainAxisSize: MainAxisSize.min, children: [
                 Padding(
-                    padding: const EdgeInsets.only(top: 30.0),
+                    padding: const EdgeInsetsDirectional.only(top: 30.0),
                     child: AppBar(
                       title: Text(
                         getTranslated(context, 'FILTER'),
@@ -927,7 +938,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(4),
                               onTap: () => Navigator.of(context).pop(),
                               child: Padding(
-                                padding: const EdgeInsets.only(right: 4.0),
+                                padding: const EdgeInsetsDirectional.only(end: 4.0),
                                 child:
                                 Icon(Icons.keyboard_arrow_left, color: colors.primary),
                               ),
@@ -937,7 +948,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                       }),
                       actions: [
                         Container(
-                          margin: EdgeInsets.only(right: 10.0),
+                          margin: EdgeInsetsDirectional.only(end: 10.0),
                           alignment: Alignment.center,
                           child: InkWell(
                               child: Text(getTranslated(context, 'FILTER_CLEAR_LBL'),
@@ -948,7 +959,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                       fontWeight: FontWeight.normal,
                                       color: colors.fontColor)),
                               onTap: () {
-                                setState(() {
+                                 if (mounted) setState(() {
                                   selectedId.clear();
                                 });
                               }),
@@ -958,7 +969,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                 Expanded(
                     child: Container(
                         color: colors.lightWhite,
-                        padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
+                        padding: EdgeInsetsDirectional.only(start: 7.0, end: 7.0, top: 7.0),
                         child: Card(
                             child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -971,7 +982,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                           child: ListView.builder(
                                             shrinkWrap: true,
                                             scrollDirection: Axis.vertical,
-                                            padding: EdgeInsets.only(top: 10.0),
+                                            padding: EdgeInsetsDirectional.only(top: 10.0),
                                             itemCount: filterList.length,
                                             itemBuilder: (context, index) {
                                               attsubList = filterList[index]
@@ -988,14 +999,14 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
 
                                               return InkWell(
                                                   onTap: () {
-                                                    setState(() {
+                                                     if (mounted) setState(() {
                                                       filter =
                                                       filterList[index]['name'];
                                                     });
                                                   },
                                                   child: Container(
-                                                    padding: EdgeInsets.only(
-                                                        left: 20,
+                                                    padding: EdgeInsetsDirectional.only(
+                                                        start: 20,
                                                         top: 10.0,
                                                         bottom: 10.0),
                                                     decoration: BoxDecoration(
@@ -1032,7 +1043,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                       flex: 3,
                                       child: ListView.builder(
                                           shrinkWrap: true,
-                                          padding: EdgeInsets.only(top: 10.0),
+                                          padding: EdgeInsetsDirectional.only(top: 10.0),
                                           scrollDirection: Axis.vertical,
                                           itemCount: filterList.length,
                                           itemBuilder: (context, index) {
@@ -1069,7 +1080,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                                           ListTileControlAffinity
                                                               .leading,
                                                           onChanged: (bool val) {
-                                                            setState(() {
+                                                             if (mounted) setState(() {
                                                               if (val == true) {
                                                                 selectedId
                                                                     .add(attListId[i]);
@@ -1090,7 +1101,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                   color: colors.white,
                   child: Row(children: <Widget>[
                     Padding(
-                        padding: EdgeInsets.only(left: 15.0),
+                        padding: EdgeInsetsDirectional.only(start: 15.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1107,7 +1118,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             selId = selectedId.join(',');
                           }
 
-                          setState(() {
+                           if (mounted) setState(() {
                             _isLoading = true;
                             total = 0;
                             offset = 0;

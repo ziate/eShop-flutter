@@ -63,7 +63,7 @@ class RadioItem extends StatelessWidget {
                       : Container(),
                   Expanded(
                     child: new Container(
-                      margin: new EdgeInsets.only(left: 10.0),
+                      margin: new EdgeInsetsDirectional.only(start:  10.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -86,7 +86,7 @@ class RadioItem extends StatelessWidget {
                                 ),
                                 _item.addItem.isDefault == "0"
                                     ? Padding(
-                                  padding: EdgeInsets.only(left: 20),
+                                  padding: EdgeInsetsDirectional.only(start: 20),
                                   child: InkWell(
                                     onTap: () {
                                       _item.onSetDefault();

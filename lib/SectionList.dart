@@ -12,9 +12,9 @@ import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/SimBtn.dart';
+import 'Helper/String.dart';
 import 'Login.dart';
 import 'Model/Section_Model.dart';
-import 'Helper/String.dart';
 import 'Product_Detail.dart';
 import 'Search.dart';
 
@@ -40,7 +40,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-  new GlobalKey<RefreshIndicatorState>();
+      new GlobalKey<RefreshIndicatorState>();
   String sortBy = 'p.id', orderBy = "DESC";
   List<String> attnameList;
   List<String> attsubList;
@@ -111,7 +111,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -122,7 +122,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-    setState(() {
+     if (mounted) setState(() {
       _isLoading = true;
       isLoadingmore = true;
       widget.section_model.offset = 0;
@@ -143,7 +143,6 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       key: scaffoldKey,
-
       appBar: AppBar(
         leading: Builder(builder: (BuildContext context) {
           return Container(
@@ -219,7 +218,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                     ),
                   ))),
           Container(
-              margin: EdgeInsets.only(
+              margin: EdgeInsetsDirectional.only(
                 top: 10,
                 bottom: 10,
               ),
@@ -241,7 +240,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                     ),
                   ))),
           Container(
-              margin: EdgeInsets.only(top: 10, bottom: 10, right: 10),
+              margin: EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 10),
               decoration: shadow(),
               child: Card(
                   elevation: 0,
@@ -259,9 +258,9 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         ),
                         onTap: () {
                           widget.section_model.productList.length != 0
-                              ? setState(() {
-                            listType = !listType;
-                          })
+                              ?   setState(() {
+                                  listType = !listType;
+                                })
                               : null;
                         }),
                   ))),
@@ -269,49 +268,50 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       ),
       body: _isNetworkAvail
           ? RefreshIndicator(
-          key: _refreshIndicatorKey,
-          onRefresh: _refresh,
-          child: _isLoading
-              ? shimmer()
-              : listType
-              ? ListView.builder(
-            controller: controller,
-            itemCount: (widget.section_model.offset <
-                widget.section_model.totalItem)
-                ? widget.section_model.productList.length + 1
-                : widget.section_model.productList.length,
-            physics: AlwaysScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return (index ==
-                  widget
-                      .section_model.productList.length &&
-                  isLoadingmore)
-                  ? Center(child: CircularProgressIndicator())
-                  : listItem(index);
-            },
-          )
-              : GridView.count(
-              padding: EdgeInsets.only(top: 5, left: 10, right: 10),
-              crossAxisCount: 2,
-              childAspectRatio: 1,
-              physics: AlwaysScrollableScrollPhysics(),
-              mainAxisSpacing: 2,
-              crossAxisSpacing: 2,
-              controller: controller,
-              children: List.generate(
-                (widget.section_model.offset <
-                    widget.section_model.totalItem)
-                    ? widget.section_model.productList.length + 1
-                    : widget.section_model.productList.length,
-                    (index) {
-                  return (index ==
-                      widget.section_model.productList
-                          .length &&
-                      isLoadingmore)
-                      ? Center(child: CircularProgressIndicator())
-                      : productItem(index);
-                },
-              )))
+              key: _refreshIndicatorKey,
+              onRefresh: _refresh,
+              child: _isLoading
+                  ? shimmer()
+                  : listType
+                      ? ListView.builder(
+                          controller: controller,
+                          itemCount: (widget.section_model.offset <
+                                  widget.section_model.totalItem)
+                              ? widget.section_model.productList.length + 1
+                              : widget.section_model.productList.length,
+                          physics: AlwaysScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return (index ==
+                                        widget
+                                            .section_model.productList.length &&
+                                    isLoadingmore)
+                                ? Center(child: CircularProgressIndicator())
+                                : listItem(index);
+                          },
+                        )
+                      : GridView.count(
+                          padding: EdgeInsetsDirectional.only(
+                              top: 5, start: 10, end: 10),
+                          crossAxisCount: 2,
+                          childAspectRatio: 1,
+                          physics: AlwaysScrollableScrollPhysics(),
+                          mainAxisSpacing: 2,
+                          crossAxisSpacing: 2,
+                          controller: controller,
+                          children: List.generate(
+                            (widget.section_model.offset <
+                                    widget.section_model.totalItem)
+                                ? widget.section_model.productList.length + 1
+                                : widget.section_model.productList.length,
+                            (index) {
+                              return (index ==
+                                          widget.section_model.productList
+                                              .length &&
+                                      isLoadingmore)
+                                  ? Center(child: CircularProgressIndicator())
+                                  : productItem(index);
+                            },
+                          )))
           : noInternet(context),
     );
   }
@@ -331,10 +331,10 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
             Widget>[
           widget.section_model.productList[index].availability == "0"
               ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle1
-                  .copyWith(color: Colors.red))
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle2
+                      .copyWith(color: Colors.red, fontWeight: FontWeight.bold))
               : Container(),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -391,63 +391,66 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         Row(
                           children: <Widget>[
                             Text(
-                              double.parse(widget.section_model.productList[index]
-                                  .prVarientList[0].disPrice) !=
-                                  0
+                              double.parse(widget
+                                          .section_model
+                                          .productList[index]
+                                          .prVarientList[0]
+                                          .disPrice) !=
+                                      0
                                   ? CUR_CURRENCY +
-                                  "" +
-                                  widget.section_model.productList[index]
-                                      .prVarientList[0].price
+                                      "" +
+                                      widget.section_model.productList[index]
+                                          .prVarientList[0].price
                                   : "",
                               style: Theme.of(context)
                                   .textTheme
                                   .overline
                                   .copyWith(
-                                  decoration: TextDecoration.lineThrough,
-                                  letterSpacing: 0),
+                                      decoration: TextDecoration.lineThrough,
+                                      letterSpacing: 0),
                             ),
                             Text(" " + CUR_CURRENCY + " " + price.toString(),
                                 style: Theme.of(context).textTheme.subtitle1),
                             Spacer(),
                             widget.section_model.productList[index].isFavLoading
                                 ? Container(
-                                height: 15,
-                                width: 15,
-                                margin: const EdgeInsets.symmetric(
-                                    horizontal: 8.0, vertical: 3),
-                                padding: const EdgeInsets.all(3),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 0.7,
-                                ))
+                                    height: 15,
+                                    width: 15,
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 8.0, vertical: 3),
+                                    padding: const EdgeInsets.all(3),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 0.7,
+                                    ))
                                 : InkWell(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 3),
-                                  child: Icon(
-                                    widget.section_model.productList[index]
-                                        .isFav ==
-                                        "0"
-                                        ? Icons.favorite_border
-                                        : Icons.favorite,
-                                    size: 15,
-                                    color: colors.primary,
-                                  ),
-                                ),
-                                onTap: () {
-                                  if (CUR_USERID != null) {
-                                    widget.section_model.productList[index]
-                                        .isFav ==
-                                        "0"
-                                        ? _setFav(index)
-                                        : _removeFav(index);
-                                  } else {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => Login()),
-                                    );
-                                  }
-                                })
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0, vertical: 3),
+                                      child: Icon(
+                                        widget.section_model.productList[index]
+                                                    .isFav ==
+                                                "0"
+                                            ? Icons.favorite_border
+                                            : Icons.favorite,
+                                        size: 15,
+                                        color: colors.primary,
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      if (CUR_USERID != null) {
+                                        widget.section_model.productList[index]
+                                                    .isFav ==
+                                                "0"
+                                            ? _setFav(index)
+                                            : _removeFav(index);
+                                      } else {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => Login()),
+                                        );
+                                      }
+                                    })
                           ],
                         )
                       ],
@@ -463,15 +466,15 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           Navigator.push(
             context,
             PageRouteBuilder(
-              // transitionDuration: Duration(seconds: 1),
+                // transitionDuration: Duration(seconds: 1),
                 pageBuilder: (_, __, ___) => ProductDetail(
-                  model: model,
-                  updateParent: updateSectionList,
-                  updateHome: widget.updateHome,
-                  secPos: widget.index,
-                  index: index,
-                  list: false,
-                )),
+                      model: model,
+                      updateParent: updateSectionList,
+                      updateHome: widget.updateHome,
+                      secPos: widget.index,
+                      index: index,
+                      list: false,
+                    )),
           );
         },
       ),
@@ -493,14 +496,15 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                 contentPadding: const EdgeInsets.all(0.0),
                 content: Column(mainAxisSize: MainAxisSize.min, children: [
                   Padding(
-                      padding: EdgeInsets.only(top: 19.0, bottom: 16.0),
+                      padding:
+                          EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
                       child: Text(
                         getTranslated(context, 'SORT_BY'),
                         style: Theme.of(context).textTheme.headline6,
                       )),
                   Divider(color: colors.lightBlack),
                   TextButton(
-                      child: Text(getTranslated(context,'TOP_RATED'),
+                      child: Text(getTranslated(context, 'TOP_RATED'),
                           style: Theme.of(context)
                               .textTheme
                               .subtitle1
@@ -560,7 +564,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                       }),
                   Divider(color: colors.lightBlack),
                   Padding(
-                      padding: EdgeInsets.only(bottom: 5.0),
+                      padding: EdgeInsetsDirectional.only(bottom: 5.0),
                       child: TextButton(
                           child: new Text(
                             getTranslated(context, 'F_HIGH'),
@@ -592,230 +596,234 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       builder: (builder) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              return Column(mainAxisSize: MainAxisSize.min, children: [
-                Padding(
-                    padding: const EdgeInsets.only(top: 30.0),
-                    child: AppBar(
-                      title: Text(
-                        getTranslated(context, 'FILTER'),
-                        style: TextStyle(
-                          color: colors.fontColor,
+          return Column(mainAxisSize: MainAxisSize.min, children: [
+            Padding(
+                padding: const EdgeInsetsDirectional.only(top: 30.0),
+                child: AppBar(
+                  title: Text(
+                    getTranslated(context, 'FILTER'),
+                    style: TextStyle(
+                      color: colors.fontColor,
+                    ),
+                  ),
+                  elevation: 5,
+                  leading: Builder(builder: (BuildContext context) {
+                    return Container(
+                      margin: EdgeInsets.all(10),
+                      decoration: shadow(),
+                      child: Card(
+                        elevation: 0,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(4),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.only(end: 4.0),
+                            child: Icon(Icons.keyboard_arrow_left,
+                                color: colors.primary),
+                          ),
                         ),
                       ),
-                      elevation: 5,
-                      leading: Builder(builder: (BuildContext context) {
-                        return Container(
-                          margin: EdgeInsets.all(10),
-                          decoration: shadow(),
-                          child: Card(
-                            elevation: 0,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(4),
-                              onTap: () => Navigator.of(context).pop(),
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 4.0),
-                                child: Icon(Icons.keyboard_arrow_left,
-                                    color: colors.primary),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                      actions: [
-                        Container(
-                          margin: EdgeInsets.only(right: 10.0),
-                          alignment: Alignment.center,
-                          child: InkWell(
-                              child: Text(getTranslated(context, 'FILTER_CLEAR_LBL'),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
-                                      .copyWith(
+                    );
+                  }),
+                  actions: [
+                    Container(
+                      margin: EdgeInsetsDirectional.only(end: 10.0),
+                      alignment: Alignment.center,
+                      child: InkWell(
+                          child: Text(
+                              getTranslated(context, 'FILTER_CLEAR_LBL'),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
                                       fontWeight: FontWeight.normal,
                                       color: colors.fontColor)),
-                              onTap: () {
-                                setState(() {
-                                  widget.section_model.selectedId.clear();
-                                });
-                              }),
-                        ),
-                      ],
-                    )),
-                Expanded(
-                    child: Container(
-                        color: colors.lightWhite,
-                        padding: EdgeInsets.only(left: 7.0, right: 7.0, top: 7.0),
-                        child: Card(
-                            child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Expanded(
-                                      flex: 2,
-                                      child: Container(
-                                          color: colors.lightWhite,
+                          onTap: () {
+                             if (mounted) setState(() {
+                              widget.section_model.selectedId.clear();
+                            });
+                          }),
+                    ),
+                  ],
+                )),
+            Expanded(
+                child: Container(
+                    color: colors.lightWhite,
+                    padding: EdgeInsetsDirectional.only(
+                        start: 7.0, end: 7.0, top: 7.0),
+                    child: Card(
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                          Expanded(
+                              flex: 2,
+                              child: Container(
+                                  color: colors.lightWhite,
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.vertical,
+                                    padding:
+                                        EdgeInsetsDirectional.only(top: 10.0),
+                                    itemCount:
+                                        widget.section_model.filterList.length,
+                                    itemBuilder: (context, index) {
+                                      attsubList = widget.section_model
+                                          .filterList[index].attributeValues
+                                          .split(',');
+
+                                      attListId = widget.section_model
+                                          .filterList[index].attributeValId
+                                          .split(',');
+
+                                      if (filter == "") {
+                                        filter = widget
+                                            .section_model.filterList[0].name;
+                                      }
+
+                                      return InkWell(
+                                          onTap: () {
+                                             if (mounted) setState(() {
+                                              filter = widget.section_model
+                                                  .filterList[index].name;
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsetsDirectional.only(
+                                                start: 20,
+                                                top: 10.0,
+                                                bottom: 10.0),
+                                            decoration: BoxDecoration(
+                                                color: filter ==
+                                                        widget
+                                                            .section_model
+                                                            .filterList[index]
+                                                            .name
+                                                    ? colors.white
+                                                    : colors.lightWhite,
+                                                borderRadius: BorderRadius.only(
+                                                    topLeft: Radius.circular(7),
+                                                    bottomLeft:
+                                                        Radius.circular(7))),
+                                            alignment: Alignment.centerLeft,
+                                            child: new Text(
+                                              widget.section_model
+                                                  .filterList[index].name,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                      color: filter ==
+                                                              widget
+                                                                  .section_model
+                                                                  .filterList[
+                                                                      index]
+                                                                  .name
+                                                          ? colors.fontColor
+                                                          : colors.lightBlack,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                            ),
+                                          ));
+                                    },
+                                  ))),
+                          Expanded(
+                              flex: 3,
+                              child: ListView.builder(
+                                  shrinkWrap: true,
+                                  padding:
+                                      EdgeInsetsDirectional.only(top: 10.0),
+                                  scrollDirection: Axis.vertical,
+                                  itemCount:
+                                      widget.section_model.filterList.length,
+                                  itemBuilder: (context, index) {
+                                    if (filter ==
+                                        widget.section_model.filterList[index]
+                                            .name) {
+                                      attsubList = widget.section_model
+                                          .filterList[index].attributeValues
+                                          .split(',');
+
+                                      attListId = widget.section_model
+                                          .filterList[index].attributeValId
+                                          .split(',');
+                                      return Container(
                                           child: ListView.builder(
-                                            shrinkWrap: true,
-                                            scrollDirection: Axis.vertical,
-                                            padding: EdgeInsets.only(top: 10.0),
-                                            itemCount:
-                                            widget.section_model.filterList.length,
-                                            itemBuilder: (context, index) {
-                                              attsubList = widget.section_model
-                                                  .filterList[index].attributeValues
-                                                  .split(',');
-
-                                              attListId = widget.section_model
-                                                  .filterList[index].attributeValId
-                                                  .split(',');
-
-                                              if (filter == "") {
-                                                filter = widget
-                                                    .section_model.filterList[0].name;
-                                              }
-
-                                              return InkWell(
-                                                  onTap: () {
-                                                    setState(() {
-                                                      filter = widget.section_model
-                                                          .filterList[index].name;
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    padding: EdgeInsets.only(
-                                                        left: 20,
-                                                        top: 10.0,
-                                                        bottom: 10.0),
-                                                    decoration: BoxDecoration(
-                                                        color: filter ==
-                                                            widget
-                                                                .section_model
-                                                                .filterList[index]
-                                                                .name
-                                                            ? colors.white
-                                                            : colors.lightWhite,
-                                                        borderRadius: BorderRadius.only(
-                                                            topLeft: Radius.circular(7),
-                                                            bottomLeft:
-                                                            Radius.circular(7))),
-                                                    alignment: Alignment.centerLeft,
-                                                    child: new Text(
-                                                      widget.section_model
-                                                          .filterList[index].name,
+                                              shrinkWrap: true,
+                                              physics:
+                                                  NeverScrollableScrollPhysics(),
+                                              itemCount: attListId.length,
+                                              itemBuilder: (context, i) {
+                                                return CheckboxListTile(
+                                                  dense: true,
+                                                  title: Text(attsubList[i],
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .subtitle1
                                                           .copyWith(
-                                                          color: filter ==
-                                                              widget
-                                                                  .section_model
-                                                                  .filterList[
-                                                              index]
-                                                                  .name
-                                                              ? colors.fontColor
-                                                              : colors.lightBlack,
-                                                          fontWeight:
-                                                          FontWeight.normal),
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 2,
-                                                    ),
-                                                  ));
-                                            },
-                                          ))),
-                                  Expanded(
-                                      flex: 3,
-                                      child: ListView.builder(
-                                          shrinkWrap: true,
-                                          padding: EdgeInsets.only(top: 10.0),
-                                          scrollDirection: Axis.vertical,
-                                          itemCount:
-                                          widget.section_model.filterList.length,
-                                          itemBuilder: (context, index) {
-                                            if (filter ==
-                                                widget.section_model.filterList[index]
-                                                    .name) {
-                                              attsubList = widget.section_model
-                                                  .filterList[index].attributeValues
-                                                  .split(',');
-
-                                              attListId = widget.section_model
-                                                  .filterList[index].attributeValId
-                                                  .split(',');
-                                              return Container(
-                                                  child: ListView.builder(
-                                                      shrinkWrap: true,
-                                                      physics:
-                                                      NeverScrollableScrollPhysics(),
-                                                      itemCount: attListId.length,
-                                                      itemBuilder: (context, i) {
-                                                        return CheckboxListTile(
-                                                          dense: true,
-                                                          title: Text(attsubList[i],
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .subtitle1
-                                                                  .copyWith(
-                                                                  color: colors
-                                                                      .lightBlack,
-                                                                  fontWeight:
+                                                              color: colors
+                                                                  .lightBlack,
+                                                              fontWeight:
                                                                   FontWeight
                                                                       .normal)),
-                                                          value: widget
-                                                              .section_model.selectedId
-                                                              .contains(attListId[i]),
-                                                          activeColor: colors.primary,
-                                                          controlAffinity:
-                                                          ListTileControlAffinity
-                                                              .leading,
-                                                          onChanged: (bool val) {
-                                                            setState(() {
-                                                              if (val == true) {
-                                                                widget.section_model
-                                                                    .selectedId
-                                                                    .add(attListId[i]);
-                                                              } else {
-                                                                widget.section_model
-                                                                    .selectedId
-                                                                    .remove(
-                                                                    attListId[i]);
-                                                              }
-                                                            });
-                                                          },
-                                                        );
-                                                      }));
-                                            } else {
-                                              return Container();
-                                            }
-                                          })),
-                                ])))),
-                Container(
-                  color: colors.white,
-                  child: Row(children: <Widget>[
-                    Padding(
-                        padding: EdgeInsets.only(left: 15.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(widget.section_model.totalItem.toString()),
-                            Text(getTranslated(context, 'PRODUCTS_FOUND_LBL')),
-                          ],
-                        )),
-                    Spacer(),
-                    SimBtn(
-                      size: 0.4,
-                      title: getTranslated(context,'APPLY'),
-                      onBtnSelected: () {
-                        if (widget.section_model.selectedId != null) {
-                          selId = widget.section_model.selectedId.join(',');
-                          clearList("0");
-                          Navigator.pop(context, 'Product Filter');
-                        }
-                      },
-                    ),
-                  ]),
-                )
-              ]);
-            });
+                                                  value: widget
+                                                      .section_model.selectedId
+                                                      .contains(attListId[i]),
+                                                  activeColor: colors.primary,
+                                                  controlAffinity:
+                                                      ListTileControlAffinity
+                                                          .leading,
+                                                  onChanged: (bool val) {
+                                                     if (mounted) setState(() {
+                                                      if (val == true) {
+                                                        widget.section_model
+                                                            .selectedId
+                                                            .add(attListId[i]);
+                                                      } else {
+                                                        widget.section_model
+                                                            .selectedId
+                                                            .remove(
+                                                                attListId[i]);
+                                                      }
+                                                    });
+                                                  },
+                                                );
+                                              }));
+                                    } else {
+                                      return Container();
+                                    }
+                                  })),
+                        ])))),
+            Container(
+              color: colors.white,
+              child: Row(children: <Widget>[
+                Padding(
+                    padding: EdgeInsetsDirectional.only(start: 15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.section_model.totalItem.toString()),
+                        Text(getTranslated(context, 'PRODUCTS_FOUND_LBL')),
+                      ],
+                    )),
+                Spacer(),
+                SimBtn(
+                  size: 0.4,
+                  title: getTranslated(context, 'APPLY'),
+                  onBtnSelected: () {
+                    if (widget.section_model.selectedId != null) {
+                      selId = widget.section_model.selectedId.join(',');
+                      clearList("0");
+                      Navigator.pop(context, 'Product Filter');
+                    }
+                  },
+                ),
+              ]),
+            )
+          ]);
+        });
       },
     );
   }
@@ -824,7 +832,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-        setState(() {
+         if (mounted) setState(() {
           isLoadingmore = true;
 
           if (widget.section_model.offset < widget.section_model.totalItem)
@@ -835,7 +843,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   }
 
   clearList(String top) {
-    setState(() {
+     if (mounted) setState(() {
       _isLoading = true;
       total = 0;
       offset = 0;
@@ -862,49 +870,58 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           children: <Widget>[
             Expanded(
                 child: Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Hero(
-                      tag:
+              alignment: Alignment.topRight,
+              children: [
+                Hero(
+                  tag:
                       "${sectionList[widget.index].productList[index].id}${widget.index}${index}",
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(5),
-                            topRight: Radius.circular(5)),
-                        child: FadeInImage(
-                          image: NetworkImage(
-                              widget.section_model.productList[index].image),
-                          height: double.maxFinite,
-                          width: double.maxFinite,
-                          //errorWidget:(context, url,e) => placeHolder(width) ,
-                          placeholder: placeHolder(width),
-                        ),
-                      ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(5),
+                        topRight: Radius.circular(5)),
+                    child: FadeInImage(
+                      image: NetworkImage(
+                          widget.section_model.productList[index].image),
+                      height: double.maxFinite,
+                      width: double.maxFinite,
+                      //errorWidget:(context, url,e) => placeHolder(width) ,
+                      placeholder: placeHolder(width),
                     ),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(1.5),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: colors.primary,
-                              size: 10,
-                            ),
-                            Text(
-                              widget.section_model.productList[index].rating,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .overline
-                                  .copyWith(letterSpacing: 0.2),
-                            ),
-                          ],
+                  ),
+                ),
+                Align(
+                  alignment: AlignmentDirectional.topStart,
+                  child: widget.section_model.productList[index].availability ==
+                          "0"
+                      ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+                          style: Theme.of(context).textTheme.subtitle2.copyWith(
+                              color: Colors.red, fontWeight: FontWeight.bold))
+                      : Container(),
+                ),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(1.5),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.star,
+                          color: colors.primary,
+                          size: 10,
                         ),
-                      ),
+                        Text(
+                          widget.section_model.productList[index].rating,
+                          style: Theme.of(context)
+                              .textTheme
+                              .overline
+                              .copyWith(letterSpacing: 0.2),
+                        ),
+                      ],
                     ),
-                  ],
-                )),
+                  ),
+                ),
+              ],
+            )),
             Padding(
               padding: const EdgeInsets.all(5.0),
               child: Row(
@@ -923,57 +940,57 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
 
                   widget.section_model.productList[index].isFavLoading
                       ? Container(
-                      height: 15,
-                      width: 15,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 3),
-                      padding: const EdgeInsets.all(3),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 0.7,
-                      ))
+                          height: 15,
+                          width: 15,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 8.0, vertical: 3),
+                          padding: const EdgeInsets.all(3),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 0.7,
+                          ))
                       : InkWell(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 3),
-                        child: Icon(
-                          widget.section_model.productList[index].isFav ==
-                              "0"
-                              ? Icons.favorite_border
-                              : Icons.favorite,
-                          size: 15,
-                          color: colors.primary,
-                        ),
-                      ),
-                      onTap: () {
-                        if (CUR_USERID != null) {
-                          widget.section_model.productList[index].isFav ==
-                              "0"
-                              ? _setFav(index)
-                              : _removeFav(index);
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Login()),
-                          );
-                        }
-                      })
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 3),
+                            child: Icon(
+                              widget.section_model.productList[index].isFav ==
+                                      "0"
+                                  ? Icons.favorite_border
+                                  : Icons.favorite,
+                              size: 15,
+                              color: colors.primary,
+                            ),
+                          ),
+                          onTap: () {
+                            if (CUR_USERID != null) {
+                              widget.section_model.productList[index].isFav ==
+                                      "0"
+                                  ? _setFav(index)
+                                  : _removeFav(index);
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Login()),
+                              );
+                            }
+                          })
                   // IconButton(icon: Icon(Icons.favorite_border,),iconSize: 10, onPressed: null)
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 5.0, bottom: 5),
+              padding: const EdgeInsetsDirectional.only(start: 5.0, bottom: 5),
               child: Row(
                 children: <Widget>[
                   Text(
                     double.parse(widget.section_model.productList[index]
-                        .prVarientList[0].disPrice) !=
-                        0
+                                .prVarientList[0].disPrice) !=
+                            0
                         ? CUR_CURRENCY +
-                        "" +
-                        widget.section_model.productList[index]
-                            .prVarientList[0].price
+                            "" +
+                            widget.section_model.productList[index]
+                                .prVarientList[0].price
                         : "",
                     style: Theme.of(context).textTheme.overline.copyWith(
                         decoration: TextDecoration.lineThrough,
@@ -991,15 +1008,15 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           Navigator.push(
             context,
             PageRouteBuilder(
-              // transitionDuration: Duration(seconds: 1),
+                // transitionDuration: Duration(seconds: 1),
                 pageBuilder: (_, __, ___) => ProductDetail(
-                  model: model,
-                  updateParent: updateSectionList,
-                  updateHome: widget.updateHome,
-                  secPos: widget.index,
-                  index: index,
-                  list: false,
-                )),
+                      model: model,
+                      updateParent: updateSectionList,
+                      updateHome: widget.updateHome,
+                      secPos: widget.index,
+                      index: index,
+                      list: false,
+                    )),
           );
         },
       ),
@@ -1007,7 +1024,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   }
 
   updateSectionList() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   Future<Null> getSection(String top) async {
@@ -1028,8 +1045,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
         }
 
         Response response =
-        await post(getSectionApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(getSectionApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -1060,17 +1077,17 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-        setState(() {
+         if (mounted) setState(() {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+         if (mounted) setState(() {
           _isLoading = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -1082,7 +1099,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           widget.section_model.productList[index].isFavLoading = true;
         });
 
@@ -1091,8 +1108,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           PRODUCT_ID: widget.section_model.productList[index].id
         };
         Response response =
-        await post(setFavoriteApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(setFavoriteApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -1104,14 +1121,14 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-        setState(() {
+         if (mounted) setState(() {
           widget.section_model.productList[index].isFavLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -1133,7 +1150,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           widget.section_model.productList[index].isFavLoading = true;
         });
 
@@ -1142,8 +1159,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           PRODUCT_ID: widget.section_model.productList[index].id
         };
         Response response =
-        await post(removeFavApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(removeFavApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -1152,7 +1169,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           widget.section_model.productList[index].isFav = "0";
 
           favList.removeWhere((item) =>
-          item.productList[0].prVarientList[0].id ==
+              item.productList[0].prVarientList[0].id ==
               widget.section_model.productList[index].prVarientList[0].id);
 
           widget.updateHome();
@@ -1160,14 +1177,14 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-        setState(() {
+         if (mounted) setState(() {
           widget.section_model.productList[index].isFavLoading = false;
         });
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }

@@ -111,7 +111,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -122,7 +122,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   updateDetail() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   _getAppbar() {
@@ -145,7 +145,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           child: Card(
             elevation: 0,
             child: Padding(
-              padding: const EdgeInsets.only(right: 4.0),
+              padding: const EdgeInsetsDirectional.only(end: 4.0),
               child: InkWell(
                 child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
                 onTap: () => Navigator.of(context).pop(),
@@ -157,7 +157,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       actions: <Widget>[
         InkWell(
           child: Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+            padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 10),
             child: Container(
               decoration: shadow(),
               child: Card(
@@ -342,8 +342,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       height: 55,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
             colors: [colors.grad1Color, colors.grad2Color],
             stops: [0, 1]),
         boxShadow: [BoxShadow(color: colors.black26, blurRadius: 10)],
@@ -370,8 +370,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       height: 55,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
             colors: [colors.grad1Color, colors.grad2Color],
             stops: [0, 1]),
         boxShadow: [BoxShadow(color: colors.black26, blurRadius: 10)],
@@ -401,7 +401,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Padding(
-                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                  padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                   child: Text(getTranslated(context, 'PRICE_DETAIL'),
                       style: Theme.of(context).textTheme.subtitle2.copyWith(
                           color: colors.fontColor,
@@ -410,7 +410,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 color: colors.lightBlack,
               ),
               Padding(
-                padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -428,7 +428,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -446,7 +446,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -470,7 +470,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -491,7 +491,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -509,7 +509,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(left: 15.0, right: 15.0, top: 5.0),
+                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0, top: 5.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -535,7 +535,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Padding(
-                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                  padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                   child: Text(getTranslated(context, 'SHIPPING_DETAIL'),
                       style: Theme.of(context).textTheme.subtitle2.copyWith(
                           color: colors.fontColor,
@@ -544,16 +544,16 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 color: colors.lightBlack,
               ),
               Padding(
-                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                  padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                   child: Text(
                     widget.model.name + ",",
                   )),
               Padding(
-                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                  padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                   child: Text(widget.model.address,
                       style: TextStyle(color: colors.lightBlack2))),
               Padding(
-                  padding: EdgeInsets.only(left: 15.0, right: 15.0),
+                  padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
                   child: Text(widget.model.mobile,
                       style: TextStyle(
                         color: colors.lightBlack2,
@@ -580,7 +580,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                       ),
                       _rating(),
                       Padding(
-                          padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                          padding: EdgeInsetsDirectional.only(start: 20.0, end: 20.0),
                           child: TextField(
                             controller: _commentC,
                             style: Theme.of(context).textTheme.subtitle2,
@@ -599,7 +599,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           )),
                       Container(
                         padding:
-                            EdgeInsets.only(left: 20.0, right: 20.0, top: 5),
+                            EdgeInsetsDirectional.only(start: 20.0, end: 20.0, top: 5),
                         height: files != null && files.length > 0 ? 80 : 50,
                         child: Row(
                           children: [
@@ -611,7 +611,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                               itemBuilder: (context, i) {
                                 return InkWell(
                                   child: Stack(
-                                    alignment: Alignment.topRight,
+                                    alignment: AlignmentDirectional.topEnd,
                                     children: [
                                       Image.file(
                                         files[i],
@@ -627,7 +627,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   onTap: () {
-                                    setState(() {
+                                     if (mounted) setState(() {
                                       files.removeAt(i);
                                     });
                                   },
@@ -647,10 +647,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                         ),
                       ),
                       Align(
-                        alignment: Alignment.bottomRight,
+                        alignment: AlignmentDirectional.bottomEnd,
                         child: GestureDetector(
                           child: Container(
-                            margin: EdgeInsets.only(left: 8, right: 20),
+                            margin: EdgeInsetsDirectional.only(start: 8, end: 20),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 2),
                             decoration: BoxDecoration(
@@ -679,7 +679,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
 
   _rating() {
     return Padding(
-      padding: EdgeInsets.only(top: 7.0, bottom: 7.0),
+      padding: EdgeInsetsDirectional.only(top: 7.0, bottom: 7.0),
       child: RatingBar.builder(
         initialRating: 0,
         minRating: 1,
@@ -778,7 +778,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                           ),
                                         ),
                                         Padding(
-                                          padding: EdgeInsets.only(left: 5.0),
+                                          padding: EdgeInsetsDirectional.only(start: 5.0),
                                           child: Text(
                                             val[index],
                                             style: Theme.of(context)
@@ -801,7 +801,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                     .copyWith(color: colors.lightBlack2),
                               ),
                               Padding(
-                                padding: EdgeInsets.only(left: 5.0),
+                                padding: EdgeInsetsDirectional.only(start: 5.0),
                                 child: Text(
                                   orderItem.qty,
                                   style: Theme.of(context)
@@ -852,7 +852,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                             children: [
                               Divider(),
                               Align(
-                                alignment: Alignment.bottomRight,
+                                alignment: AlignmentDirectional.bottomEnd,
                                 child: CupertinoButton(
                                   padding: EdgeInsets.zero,
                                   child: Container(
@@ -885,7 +885,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                 children: [
                                   Divider(),
                                   Align(
-                                    alignment: Alignment.bottomRight,
+                                    alignment: AlignmentDirectional.bottomEnd,
                                     child: CupertinoButton(
                                       padding: EdgeInsets.zero,
                                       child: Container(
@@ -927,7 +927,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           size: 15,
         ),
         Container(
-          margin: const EdgeInsets.only(left: 10),
+          margin: const EdgeInsetsDirectional.only(start: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -967,7 +967,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ],
               ),
               Container(
-                margin: const EdgeInsets.only(left: 10),
+                margin: const EdgeInsetsDirectional.only(start: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1030,7 +1030,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ],
               ),
               Container(
-                margin: const EdgeInsets.only(left: 10),
+                margin: const EdgeInsetsDirectional.only(start: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1094,7 +1094,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ],
               ),
               Container(
-                margin: const EdgeInsets.only(left: 10),
+                margin: const EdgeInsetsDirectional.only(start: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1138,7 +1138,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ],
               ),
               Container(
-                margin: const EdgeInsets.only(left: 10),
+                margin: const EdgeInsetsDirectional.only(start: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1181,7 +1181,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ],
               ),
               Container(
-                  margin: const EdgeInsets.only(left: 10),
+                  margin: const EdgeInsetsDirectional.only(start: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1205,7 +1205,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
 
@@ -1223,14 +1223,14 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           });
         } else {}
 
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -1239,7 +1239,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   _imgFromGallery() async {
     /* files = await FilePicker.getMultiFile(type: FileType.image);
     if (files != null) {
-      setState(() {});
+       if (mounted) setState(() {});
     }*/
 
     ///for ios uncomment below code and update file picker library version in pubspec.yaml
@@ -1247,7 +1247,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         await FilePicker.platform.pickFiles(allowMultiple: true);
     if (result != null) {
       files = result.paths.map((path) => File(path)).toList();
-      setState(() {});
+       if (mounted) setState(() {});
     } else {
       // User canceled the picker
     }
@@ -1258,7 +1258,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
         var request = http.MultipartRequest("POST", Uri.parse(setRatingApi));
@@ -1290,14 +1290,14 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
 
         _commentC.text = "";
         files.clear();
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
   }
@@ -1340,7 +1340,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             final status = await Permission.storage.request();
 
             if (status == PermissionStatus.granted) {
-              setState(() {
+               if (mounted) setState(() {
                 _isProgress = true;
               });
               var targetPath;
@@ -1352,8 +1352,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 Directory downloadsDirectory =
                     await DownloadsPathProvider.downloadsDirectory;
                 targetPath = downloadsDirectory.path.toString();
-               ///storage/emulated/0/Download/
-                          }
+                         }
               var targetFileName = "Invoice_${widget.model.id}";
 
               var generatedPdfFile =
@@ -1370,13 +1369,13 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     label: getTranslated(context, 'VIEW'),
                     onPressed: () async {
                       final result = await OpenFile.open(generatedPdfFile.path);
-                      setState(() {
+                       if (mounted) setState(() {
                           });
                     }),
                 backgroundColor: colors.white,
                 elevation: 1.0,
               ));
-              setState(() {
+               if (mounted) setState(() {
                 _isProgress = false;
               });
             }

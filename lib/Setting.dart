@@ -8,13 +8,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart';
-import 'package:provider/provider.dart';
 
 import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
 import 'Helper/String.dart';
-import 'Helper/Theme.dart';
-import 'main.dart';
 
 class Setting extends StatefulWidget {
   @override
@@ -37,7 +34,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
 
@@ -53,8 +49,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     ));
   }
 
-
-
   Future<Null> _playAnimation() async {
     try {
       await buttonController.forward();
@@ -66,8 +60,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
     buttonController.dispose();
     super.dispose();
   }
-
-
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
@@ -104,7 +96,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
   Widget noInternet(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: EdgeInsets.only(top: kToolbarHeight),
+        padding: EdgeInsetsDirectional.only(top: kToolbarHeight),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           noIntImage(),
           noIntText(context),
@@ -125,7 +117,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -137,7 +129,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
 
   changePass() {
     return Container(
-        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
+        margin: EdgeInsetsDirectional.only(start: 10.0, end: 10.0, top: 10.0),
         child: Card(
             elevation: 0,
             shadowColor: colors.lightWhite,
@@ -159,7 +151,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                       )),
                   Spacer(),
                   Padding(
-                      padding: EdgeInsets.only(right: 15.0),
+                      padding: EdgeInsetsDirectional.only(end: 15.0),
                       child: Icon(
                         Icons.keyboard_arrow_right,
                         color: colors.primary,
@@ -174,7 +166,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
 
   changeLangauge() {
     return Container(
-        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
+        margin: EdgeInsetsDirectional.only(start: 10.0, end: 10.0, top: 3.0),
         child: Card(
             elevation: 0,
             shadowColor: colors.lightWhite,
@@ -196,7 +188,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                         )),
                     Spacer(),
                     Padding(
-                        padding: EdgeInsets.only(right: 15.0),
+                        padding: EdgeInsetsDirectional.only(end: 15.0),
                         child: Icon(
                           Icons.keyboard_arrow_right,
                           color: colors.primary,
@@ -204,13 +196,13 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                   ],
                 ),
                 onTap: () {
-               //   languageDialog();
+                  //   languageDialog();
                 })));
   }
 
   changeTheme() {
     return Container(
-        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
+        margin: EdgeInsetsDirectional.only(start: 10.0, end: 10.0, top: 3.0),
         child: Card(
             elevation: 0,
             shadowColor: colors.lightWhite,
@@ -232,7 +224,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                         )),
                     Spacer(),
                     Padding(
-                        padding: EdgeInsets.only(right: 15.0),
+                        padding: EdgeInsetsDirectional.only(end: 15.0),
                         child: Icon(
                           Icons.keyboard_arrow_right,
                           color: colors.primary,
@@ -240,14 +232,13 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                   ],
                 ),
                 onTap: () {
-
-                //  themeDialog();
+                  //  themeDialog();
                 })));
   }
 
   privacyPolicy() {
     return Container(
-        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
+        margin: EdgeInsetsDirectional.only(start: 10.0, end: 10.0, top: 3.0),
         child: Card(
             elevation: 0,
             shadowColor: colors.lightWhite,
@@ -267,7 +258,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                   fontWeight: FontWeight.bold))),
                   Spacer(),
                   Padding(
-                      padding: EdgeInsets.only(right: 15.0),
+                      padding: EdgeInsetsDirectional.only(end: 15.0),
                       child: Icon(
                         Icons.keyboard_arrow_right,
                         color: colors.primary,
@@ -288,7 +279,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
 
   termCondition() {
     return Container(
-        margin: EdgeInsets.only(left: 10.0, right: 10.0, top: 3.0),
+        margin: EdgeInsetsDirectional.only(start: 10.0, end: 10.0, top: 3.0),
         child: Card(
             elevation: 0,
             shadowColor: colors.lightWhite,
@@ -308,7 +299,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                   fontWeight: FontWeight.bold))),
                   Spacer(),
                   Padding(
-                      padding: EdgeInsets.only(right: 15.0),
+                      padding: EdgeInsetsDirectional.only(end: 15.0),
                       child: Icon(
                         Icons.keyboard_arrow_right,
                         color: colors.primary,
@@ -326,15 +317,6 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
               },
             )));
   }
-
-
-
-
-
-
-
-
-
 
   _showDialog() async {
     await showDialog(
@@ -402,7 +384,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                           )),
                                       obscureText: !_showPassword,
                                       controller: curPassC,
-                                      onChanged: (v) => setState(() {
+                                      onChanged: (v) =>   setState(() {
                                         curPass = v;
                                       }),
                                     )),
@@ -442,7 +424,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                           )),
                                       obscureText: !_showPassword,
                                       controller: newPassC,
-                                      onChanged: (v) => setState(() {
+                                      onChanged: (v) =>   setState(() {
                                         newPass = v;
                                       }),
                                     )),
@@ -523,10 +505,10 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                       final form = _formkey.currentState;
                       if (form.validate()) {
                         form.save();
-                        setState(() {
+                         if (mounted) setState(() {
                           Navigator.pop(context);
                         });
-                       // checkNetwork();
+                        // checkNetwork();
                       }
                     })
               ],

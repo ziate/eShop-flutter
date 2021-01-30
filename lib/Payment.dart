@@ -120,7 +120,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                   _getdateTime();
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -159,7 +159,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                     contentPadding: EdgeInsets.all(0),
                                     value: isUseWallet,
                                     onChanged: (bool value) {
-                                      setState(() {
+                                       if (mounted) setState(() {
                                         isUseWallet = value;
                                         if (value) {
                                           if (totalPrice <=
@@ -366,7 +366,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       onTap: () {
         DateTime date = today.add(Duration(days: index));
 
-        setState(() {
+         if (mounted) setState(() {
           selectedDate = index;
           selDate = DateFormat('yyyy-MM-dd').format(date);
         });
@@ -449,14 +449,14 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             // setSnackbar(msg);
           }
         }
-        setState(() {
+         if (mounted) setState(() {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
         //setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -465,7 +465,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   Widget timeSlotItem(int index) {
     return new InkWell(
       onTap: () {
-        setState(() {
+         if (mounted) setState(() {
           selectedTime = index;
           selTime = timeSlotList[selectedTime].name;
           timeModel.forEach((element) => element.isSelected = false);
@@ -479,7 +479,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   Widget paymentItem(int index) {
     return new InkWell(
       onTap: () {
-        setState(() {
+         if (mounted) setState(() {
           selectedMethod = index;
           payMethod = paymentMethodList[selectedMethod];
           payIcon = paymentIconList[selectedMethod];

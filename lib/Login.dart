@@ -91,7 +91,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
         await buttonController.reverse();
-        setState(() {
+         if (mounted) setState(() {
           _isNetworkAvail = false;
         });
       });
@@ -122,7 +122,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   Widget noInternet(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: EdgeInsets.only(top: kToolbarHeight),
+        padding: EdgeInsetsDirectional.only(top: kToolbarHeight),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           noIntImage(),
           noIntText(context),
@@ -143,7 +143,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -204,7 +204,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   signInTxt() {
     return Padding(
-        padding: EdgeInsets.only(
+        padding: EdgeInsetsDirectional.only(
           top: 30.0,
         ),
         child: Align(
@@ -222,7 +222,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   setMobileNo() {
     return Container(
       width: deviceWidth * 0.7,
-      padding: EdgeInsets.only(
+      padding: EdgeInsetsDirectional.only(
         top: 30.0,
       ),
       child: TextFormField(
@@ -270,7 +270,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   setPass() {
     return Container(
         width: deviceWidth * 0.7,
-        padding: EdgeInsets.only(top: 20.0),
+        padding: EdgeInsetsDirectional.only(top: 20.0),
         child: TextFormField(
           keyboardType: TextInputType.text,
           obscureText: true,
@@ -310,7 +310,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   forgetPass() {
     return Padding(
-        padding: EdgeInsets.only(left: 25.0, right: 25.0, top: 10.0),
+        padding: EdgeInsetsDirectional.only(start: 25.0, end: 25.0, top: 10.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
@@ -337,7 +337,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   termAndPolicyTxt() {
     return Padding(
       padding:
-      EdgeInsets.only(bottom: 20.0, left: 25.0, right: 25.0, top: 10.0),
+      EdgeInsetsDirectional.only(bottom: 20.0, start: 25.0, end: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -390,7 +390,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
               elevation: 0.5,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
-              margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0),
+              margin: EdgeInsetsDirectional.only(start: 20.0, end: 20.0, top: 20.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -416,7 +416,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         body: _isNetworkAvail
             ? Container(
             color: colors.lightWhite,
-            padding: EdgeInsets.only(
+            padding: EdgeInsetsDirectional.only(
               bottom: 20.0,
             ),
             child: Column(

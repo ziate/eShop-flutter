@@ -76,7 +76,7 @@ class StateHome extends State<Home> {
   }
 
   updateHome() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   @override
@@ -142,7 +142,7 @@ class StateHome extends State<Home> {
       // centerTitle:_curSelected == 0? false:true,
       actions: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(top: 10.0, bottom: 10, right: 10),
+          padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 10, end: 10),
           child: Container(
             decoration: shadow(),
             child: Card(
@@ -242,7 +242,7 @@ class StateHome extends State<Home> {
                 )
         ],
         onTap: (int index) {
-          setState(() {
+           if (mounted) setState(() {
             curSelected = index;
           });
         });
@@ -398,7 +398,7 @@ class StateHome extends State<Home> {
       }
     } else {
       {
-        setState(() {
+         if (mounted) setState(() {
           _isNetworkAvail = false;
         });
       }
@@ -406,7 +406,7 @@ class StateHome extends State<Home> {
   }
 
   updateParent() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 }
 
@@ -470,7 +470,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   updateHomePage() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   @override
@@ -528,7 +528,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   getOfferImages();
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -632,14 +632,14 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               Container(
                 height: height,
                 width: double.infinity,
-                margin: EdgeInsets.only(top: 10),
+                margin: EdgeInsetsDirectional.only(top: 10),
                 child: PageView.builder(
                   itemCount: homeSliderList.length,
                   scrollDirection: Axis.horizontal,
                   controller: _controller,
                   physics: AlwaysScrollableScrollPhysics(),
                   onPageChanged: (index) {
-                    setState(() {
+                     if (mounted) setState(() {
                       _curSlider = index;
                     });
                   },
@@ -677,7 +677,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             ],
           )
         : Padding(
-            padding: const EdgeInsets.only(top: 10.0, bottom: 27),
+            padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 27),
             child: ClipRRect(
               borderRadius: BorderRadius.all(Radius.circular(10.0)),
               child: Image.asset(
@@ -760,7 +760,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                 menuopen: menuOpen,
               ),
             ));
-        setState(() {});
+         if (mounted) setState(() {});
       },
     );
   }
@@ -794,7 +794,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                           updateHome: widget.updateHome,
                         )),
               );
-              setState(() {});
+               if (mounted) setState(() {});
             },
           ),
         ],
@@ -812,7 +812,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         physics: AlwaysScrollableScrollPhysics(),
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsetsDirectional.only(end: 10),
             child: GestureDetector(
               onTap: () async {
                 if (catList[index].subList == null ||
@@ -825,7 +825,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                             id: catList[index].id,
                             updateHome: widget.updateHome),
                       ));
-                  setState(() {});
+                   if (mounted) setState(() {});
                 } else {
                   await Navigator.push(
                       context,
@@ -835,7 +835,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                             subList: catList[index].subList,
                             updateHome: widget.updateHome),
                       ));
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               },
               child: Column(
@@ -843,7 +843,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 5.0),
+                    padding: const EdgeInsetsDirectional.only(bottom: 5.0),
                     child: new ClipRRect(
                       borderRadius: BorderRadius.circular(25.0),
                       child: new FadeInImage(
@@ -895,7 +895,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-    setState(() {
+     if (mounted) setState(() {
       _isCatLoading = true;
     });
     return callApi();
@@ -916,7 +916,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   _getHeading(String title, int index) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 10),
+      padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
@@ -971,7 +971,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
     return sectionList[i].style == DEFAULT
         ? GridView.count(
-            padding: EdgeInsets.only(top: 5),
+            padding: EdgeInsetsDirectional.only(top: 5),
             crossAxisCount: 2,
             shrinkWrap: true,
             childAspectRatio: 0.8,
@@ -1117,7 +1117,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                             ],
                           )
                         : GridView.count(
-                            padding: EdgeInsets.only(top: 5),
+                            padding: EdgeInsetsDirectional.only(top: 5),
                             crossAxisCount: 2,
                             shrinkWrap: true,
                             childAspectRatio: 1.0,
@@ -1159,7 +1159,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
       return Card(
         elevation: 0.2,
-        margin: EdgeInsets.only(bottom: 5, right: pad ? 5 : 0),
+        margin:   EdgeInsetsDirectional.only(bottom: 5, end: pad ? 5 : 0),
         child: InkWell(
           borderRadius: BorderRadius.circular(4),
           child: Column(
@@ -1186,7 +1186,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                     )),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 5.0, top: 5, bottom: 5),
+                padding: const EdgeInsetsDirectional.only(start: 5.0, top: 5, bottom: 5),
                 child: Text(
                   sectionList[secPos].productList[index].name,
                   style: Theme.of(context)
@@ -1201,7 +1201,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   style: TextStyle(
                       color: colors.fontColor, fontWeight: FontWeight.bold)),
               Padding(
-                padding: const EdgeInsets.only(left: 5.0, bottom: 5, top: 3),
+                padding: const EdgeInsetsDirectional.only(start: 5.0, bottom: 5, top: 3),
                 child: double.parse(sectionList[secPos]
                             .productList[index]
                             .prVarientList[0]
@@ -1268,7 +1268,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   _setFav(int secPos, int index) async {
     try {
-      setState(() {
+       if (mounted) setState(() {
         sectionList[secPos].productList[index].isFavLoading = true;
       });
 
@@ -1290,7 +1290,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-        setState(() {
+         if (mounted) setState(() {
           sectionList[secPos].productList[index].isFavLoading = false;
         });
       }
@@ -1320,11 +1320,11 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       getSetting();
       getOfferImages();
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
       if (mounted)
-        setState(() {
+         if (mounted) setState(() {
           _isCatLoading = false;
         });
     }
@@ -1381,13 +1381,13 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         }
       }
       if (mounted)
-        setState(() {
+         if (mounted) setState(() {
           _isCatLoading = false;
         });
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
       if (mounted)
-        setState(() {
+         if (mounted) setState(() {
           _isCatLoading = false;
         });
     }
@@ -1418,13 +1418,13 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       }
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted)
-          setState(() {
+           if (mounted) setState(() {
             _isCatLoading = false;
           });
       });
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
-      setState(() {
+       if (mounted) setState(() {
         _isCatLoading = false;
       });
     }
@@ -1491,13 +1491,13 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       }
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted)
-          setState(() {
+           if (mounted) setState(() {
             _isCatLoading = false;
           });
       });
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
-      setState(() {
+       if (mounted) setState(() {
         _isCatLoading = false;
       });
     }

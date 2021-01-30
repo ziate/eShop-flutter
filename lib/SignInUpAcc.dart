@@ -16,7 +16,7 @@ class SignInUpAcc extends StatefulWidget {
 class _SignInUpAccState extends State<SignInUpAcc> {
   _subLogo() {
     return Padding(
-        padding: EdgeInsets.only(top: 30.0),
+        padding: EdgeInsetsDirectional.only(top: 30.0),
         child: Image.asset(
           'assets/images/homelogo.png',
         ));
@@ -24,7 +24,7 @@ class _SignInUpAccState extends State<SignInUpAcc> {
 
   welcomeEshopTxt() {
     return Padding(
-      padding: EdgeInsets.only(top: 30.0),
+      padding: EdgeInsetsDirectional.only(top: 30.0),
       child: new Text(
         getTranslated(context, 'WELCOME_ESHOP'),
         style: Theme.of(context)
@@ -37,7 +37,7 @@ class _SignInUpAccState extends State<SignInUpAcc> {
 
   eCommerceforBusinessTxt() {
     return Padding(
-      padding: EdgeInsets.only(
+      padding: EdgeInsetsDirectional.only(
         top: 5.0,
       ),
       child: new Text(
@@ -52,7 +52,7 @@ class _SignInUpAccState extends State<SignInUpAcc> {
 
   signInyourAccTxt() {
     return Padding(
-      padding: EdgeInsets.only(top: 80.0, bottom: 40),
+      padding: EdgeInsetsDirectional.only(top: 80.0, bottom: 40),
       child: new Text(
         getTranslated(context, 'SIGNIN_ACC_LBL'),
         style: Theme.of(context)

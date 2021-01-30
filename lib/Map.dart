@@ -35,7 +35,7 @@ class _MapState extends State<Map> {
 
     List<Placemark> placemark = await placemarkFromCoordinates(widget.latitude, widget.longitude);
 
-    setState(() {
+     if (mounted) setState(() {
       latlong = new LatLng(widget.latitude, widget.longitude);
 
       _cameraPosition = CameraPosition(target: latlong, zoom: 15.0, bearing: 0);
@@ -86,7 +86,7 @@ class _MapState extends State<Map> {
                         },
                         markers: this.myMarker(),
                         onTap: (latLng) {
-                          setState(() {
+                           if (mounted) setState(() {
                             latlong = latLng;
                           });
                         })
@@ -100,7 +100,7 @@ class _MapState extends State<Map> {
                   readOnly: true,
                   decoration: InputDecoration(
                     icon: Container(
-                      margin: EdgeInsets.only(left: 20, top: 0),
+                      margin: EdgeInsetsDirectional.only(start: 20, top: 0),
                       width: 10,
                       height: 10,
                       child: Icon(
@@ -110,7 +110,7 @@ class _MapState extends State<Map> {
                     ),
                     hintText: "pick up",
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(left: 15.0, top: 12.0),
+                    contentPadding: EdgeInsetsDirectional.only(start: 15.0, top: 12.0),
                   ),
                 ),
                 RaisedButton(
@@ -161,6 +161,6 @@ class _MapState extends State<Map> {
     address = address + "," + placemark[0].country;
     address = address + "," + placemark[0].postalCode;
     locationController.text = address;
-    setState(() {});
+     if (mounted) setState(() {});
   }
 }

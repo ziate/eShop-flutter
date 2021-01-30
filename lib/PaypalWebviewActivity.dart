@@ -43,7 +43,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
               ].toSet(),
               navigationDelegate: (NavigationRequest request) async {
                 if (request.url.startsWith(PAYPAL_RESPONSE_URL)) {
-                  setState(() {
+                   if (mounted) setState(() {
                     isloading = true;
                   });
 
@@ -51,7 +51,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
 
                   if (responseurl.contains("Failed") ||
                       responseurl.contains("failed")) {
-                    setState(() {
+                     if (mounted) setState(() {
                       isloading = false;
                       message = "Transaction Failed";
                     });
@@ -60,8 +60,8 @@ class StatePayPalWebview extends State<PaypalWebview> {
                     });
                   } else if (responseurl.contains("Completed") ||
                       responseurl.contains("completed")) {
-                    setState(() {
-                      setState(() {
+                     if (mounted) setState(() {
+                       if (mounted) setState(() {
                         message = "Transaction Successfull";
                       });
                     });
@@ -123,7 +123,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
   }
 
   void FinishPage(String finishmessage) {
-    setState(() {
+     if (mounted) setState(() {
       message = finishmessage;
     });
     Timer(Duration(seconds: 1), () {

@@ -69,7 +69,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-        setState(() {
+         if (mounted) setState(() {
           isLoadingmore = true;
           getFaqs();
         });
@@ -106,7 +106,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -148,7 +148,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
         child: InkWell(
           borderRadius: BorderRadius.circular(4),
           onTap: () {
-            setState(() {
+             if (mounted) setState(() {
               selectedIndex = index;
               flag = !flag;
             });
@@ -232,14 +232,14 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
             setSnackbar(msg);
           }
         }
-        setState(() {
+         if (mounted) setState(() {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isLoading = false;
         _isNetworkAvail = false;
       });

@@ -101,13 +101,13 @@ class StateCat extends State<AllCategory> {
           isLoadingmore = false;
           setSnackbar(msg);
         }
-        setState(() {
+         if (mounted) setState(() {
           _isCatLoading = false;
         });
       }
     } on TimeoutException catch (_) {
       setSnackbar( getTranslated(context,'somethingMSg'));
-      setState(() {
+       if (mounted) setState(() {
         _isCatLoading = false;
         isLoadingmore = false;
       });
@@ -141,7 +141,7 @@ class StateCat extends State<AllCategory> {
                 placeholder: placeHolder(50),
               )),
           Padding(
-            padding: const EdgeInsets.only(top: 10.0),
+            padding: const EdgeInsetsDirectional.only(top: 10.0),
             child: Text(
               catList[index].name,
               textAlign: TextAlign.center,
@@ -185,7 +185,7 @@ class StateCat extends State<AllCategory> {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-        setState(() {
+         if (mounted) setState(() {
           isLoadingmore = true;
 
           if (offset < total) getCat();

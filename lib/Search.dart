@@ -55,12 +55,12 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
 
     _controller.addListener(() {
       if (_controller.text.isEmpty) {
-        setState(() {
+         if (mounted) setState(() {
           _isSearching = false;
           _searchText = "";
         });
       } else {
-        setState(() {
+         if (mounted) setState(() {
           _isSearching = true;
           _searchText = _controller.text;
         });
@@ -98,7 +98,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     if (notificationcontroller.offset >=
         notificationcontroller.position.maxScrollExtent &&
         !notificationcontroller.position.outOfRange) {
-      setState(() {
+       if (mounted) setState(() {
         getProduct();
       });
     }
@@ -141,7 +141,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -167,7 +167,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(4),
                   onTap: () => Navigator.of(context).pop(),
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 4.0),
+                    padding: const EdgeInsetsDirectional.only(end: 4.0),
                     child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
                   ),
                 ),
@@ -331,14 +331,14 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   }
 
   updateSearch() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   Future<void> addToCart(int index) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
         var parameter = {
@@ -365,18 +365,18 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         } else {
           setSnackbar(msg);
         }
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
 
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -386,7 +386,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
         var parameter = {
@@ -414,17 +414,17 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         } else {
           setSnackbar(msg);
         }
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -435,7 +435,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       try {
         if (notificationisloadmore) {
-          setState(() {
+           if (mounted) setState(() {
             notificationisloadmore = false;
             notificationisgettingdata = true;
             if (notificationoffset == 0) {
@@ -467,7 +467,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             if (mounted) {
               new Future.delayed(
                   Duration.zero,
-                      () => setState(() {
+                      () =>  setState(() {
                     List mainlist = getdata['data'];
 
                     if (mainlist.length != 0) {
@@ -498,17 +498,17 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             }
           } else {
             notificationisloadmore = false;
-            setState(() {});
+             if (mounted) setState(() {});
           }
         }
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           notificationisloadmore = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -557,7 +557,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
           ),
           notificationisgettingdata
               ? Padding(
-            padding: EdgeInsets.only(top: 5, bottom: 5),
+            padding: EdgeInsetsDirectional.only(top: 5, bottom: 5),
             child: CircularProgressIndicator(),
           )
               : Container(),

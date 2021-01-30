@@ -71,7 +71,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-    setState(() {
+     if (mounted) setState(() {
       _isCartLoad = true;
       _isSaveLoad = true;
     });
@@ -120,7 +120,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -195,7 +195,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                     ))),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+                padding: const EdgeInsetsDirectional.only(start: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -203,7 +203,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 5.0),
+                            padding: const EdgeInsetsDirectional.only(top: 5.0),
                             child: Text(
                               cartList[index].productList[0].name,
                               style: Theme.of(context)
@@ -217,8 +217,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                         ),
                         GestureDetector(
                           child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 8.0, right: 8, bottom: 8),
+                            padding: const EdgeInsetsDirectional.only(
+                                start: 8.0, end: 8, bottom: 8),
                             child: Icon(
                               Icons.close,
                               size: 13,
@@ -267,8 +267,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                             GestureDetector(
                               child: Container(
                                 padding: EdgeInsets.all(2),
-                                margin: EdgeInsets.only(
-                                    right: 8, top: 8, bottom: 8),
+                                margin: EdgeInsetsDirectional.only(
+                                    end: 8, top: 8, bottom: 8),
                                 child: Icon(
                                   Icons.remove,
                                   size: 12,
@@ -369,7 +369,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                         ),
                         GestureDetector(
                           child: Container(
-                            margin: EdgeInsets.only(left: 8),
+                            margin: EdgeInsetsDirectional.only(start: 8),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 2),
                             decoration: BoxDecoration(
@@ -446,7 +446,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                     ))),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+                padding: const EdgeInsetsDirectional.only(start: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -454,7 +454,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 5.0),
+                            padding: const EdgeInsetsDirectional.only(top: 5.0),
                             child: Text(
                               saveLaterList[index].productList[0].name,
                               style: Theme.of(context)
@@ -468,8 +468,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                         ),
                         GestureDetector(
                           child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 8.0, right: 8, bottom: 8),
+                            padding: const EdgeInsetsDirectional.only(
+                                start: 8.0, end: 8, bottom: 8),
                             child: Icon(
                               Icons.close,
                               size: 13,
@@ -553,7 +553,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   updateCart() {
-    setState(() {});
+     if (mounted) setState(() {});
   }
 
   Future<void> _getCart(String save) async {
@@ -586,15 +586,15 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         } else {
           if (msg != 'Cart Is Empty !') setSnackbar(msg);
         }
-        setState(() {
+         if (mounted) setState(() {
           _isCartLoad = false;
         });
-        setState(() {});
+         if (mounted) setState(() {});
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -624,15 +624,15 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         } else {
           if (msg != 'Cart Is Empty !') setSnackbar(msg);
         }
-        setState(() {
+         if (mounted) setState(() {
           _isSaveLoad = false;
         });
-        setState(() {});
+         if (mounted) setState(() {});
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -644,7 +644,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
 
@@ -679,19 +679,19 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
 
         widget.updateHome();
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -702,7 +702,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
 
@@ -745,19 +745,19 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         } else {
           setSnackbar(msg);
         }
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
         if (widget.updateHome != null) widget.updateHome();
         if (widget.updateParent != null) widget.updateParent();
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -767,7 +767,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = true;
         });
 
@@ -807,19 +807,19 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         } else {
           setSnackbar(msg);
         }
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
         if (widget.updateHome != null) widget.updateHome();
         if (widget.updateParent != null) widget.updateParent();
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isProgress = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -891,7 +891,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           color: colors.white,
           child: Row(children: <Widget>[
             Padding(
-                padding: EdgeInsets.only(left: 15.0),
+                padding: EdgeInsetsDirectional.only(start: 15.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -917,7 +917,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                             CheckOut(widget.updateHome),
                       ),
                     );
-                    setState(() {});
+                     if (mounted) setState(() {});
                   } else
                     setSnackbar(getTranslated(context, 'ADD_ITEM'));
                 }),
@@ -956,7 +956,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
   noCartDec(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 30.0, left: 30.0, right: 30.0),
+      padding: EdgeInsetsDirectional.only(top: 30.0, start: 30.0, end: 30.0),
       child: Text(getTranslated(context, 'CART_DESC'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headline6.copyWith(
@@ -968,7 +968,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
   shopNow() {
     return Padding(
-      padding: const EdgeInsets.only(top: 28.0),
+      padding: const EdgeInsetsDirectional.only(top: 28.0),
       child: CupertinoButton(
         child: Container(
             width: deviceWidth * 0.7,

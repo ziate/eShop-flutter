@@ -42,7 +42,7 @@ class StateRate extends State<RatingReview> {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-        setState(() {
+         if (mounted) setState(() {
           isLoadingmore = true;
 
           if (offset < total) getReview();
@@ -70,6 +70,8 @@ class StateRate extends State<RatingReview> {
         // physics: BouncingScrollPhysics(),
         separatorBuilder: (BuildContext context, int index) => Divider(),
         itemBuilder: (context, index) {
+
+
           return (index == reviewList.length && isLoadingmore)
               ? Center(child: CircularProgressIndicator())
               : Card(
@@ -104,7 +106,7 @@ class StateRate extends State<RatingReview> {
                     itemSize: 12.0,
                     direction: Axis.horizontal,
                   ),
-                  reviewList[index].comment != null
+                  reviewList[index].comment != null && reviewList[index].comment.isNotEmpty
                       ? Text(reviewList[index].comment ?? '')
                       : Container(),
                   reviewImage(index)
@@ -124,7 +126,7 @@ class StateRate extends State<RatingReview> {
         shrinkWrap: true,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(right: 10, bottom: 5.0, top: 5),
+            padding: const EdgeInsetsDirectional.only(end: 10, bottom: 5.0, top: 5),
             child: InkWell(
               onTap: () {
                 Navigator.push(
@@ -194,17 +196,17 @@ class StateRate extends State<RatingReview> {
           isLoadingmore = false;
         }
         if (mounted)
-          setState(() {
+           if (mounted) setState(() {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isLoading = false;
         });
       }
     } else {
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }

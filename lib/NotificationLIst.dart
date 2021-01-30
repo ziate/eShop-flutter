@@ -83,7 +83,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                   getNotification();
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -94,7 +94,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-    setState(() {
+     if (mounted) setState(() {
       _isLoading = true;
     });
     offset = 0;
@@ -112,7 +112,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
             ? shimmer()
             : notiList.length == 0
             ? Padding(
-            padding: const EdgeInsets.only(top: kToolbarHeight),
+            padding: const EdgeInsetsDirectional.only(top: kToolbarHeight),
             child: Center(child: Text(getTranslated(context, 'noNoti'))))
             : RefreshIndicator(
             key: _refreshIndicatorKey,
@@ -218,18 +218,18 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
           }
         }
         if (mounted)
-          setState(() {
+           if (mounted) setState(() {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
-        setState(() {
+         if (mounted) setState(() {
           _isLoading = false;
           isLoadingmore = false;
         });
       }
     } else
-      setState(() {
+       if (mounted) setState(() {
         _isNetworkAvail = false;
       });
 
@@ -252,7 +252,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-        setState(() {
+         if (mounted) setState(() {
           isLoadingmore = true;
 
           if (offset < total) getNotification();

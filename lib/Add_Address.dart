@@ -163,7 +163,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                  setState(() {});
+                   if (mounted) setState(() {});
                 }
               });
             },
@@ -213,7 +213,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       addNewAddress();
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
-        setState(() {
+         if (mounted) setState(() {
           _isNetworkAvail = false;
         });
         await buttonController.reverse();
@@ -306,7 +306,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       value: city,
       style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
       onChanged: (String newValue) {
-        setState(() {
+         if (mounted) setState(() {
           city = newValue;
           isArea = false;
         });
@@ -340,7 +340,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         value: area,
         onChanged: isArea
             ? (newValue) {
-          setState(() {
+           if (mounted) setState(() {
             area = newValue;
           });
         }
@@ -389,7 +389,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(left: 5),
+          margin: EdgeInsetsDirectional.only(start: 5),
           width: 40,
           child: IconButton(
             icon: new Icon(
@@ -413,14 +413,14 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                             : double.parse(longitude),
                         from: getTranslated(context, 'ADDADDRESS'),
                       )));
-              setState(() {});
+               if (mounted) setState(() {});
               List<Placemark> placemark = await placemarkFromCoordinates(
                   double.parse(latitude), double.parse(longitude));
 
               state = placemark[0].administrativeArea;
               country = placemark[0].country;
               pincode = placemark[0].postalCode;
-              setState(() {
+               if (mounted) setState(() {
                 countryC.text = country;
                 stateC.text = state;
                 pincodeC.text = pincode;
@@ -458,7 +458,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       }
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
-        setState(() {
+         if (mounted) setState(() {
           _isNetworkAvail = false;
         });
       });
@@ -481,7 +481,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      if (mounted) setState(() {});
+      if (mounted)  if (mounted) setState(() {});
     } on TimeoutException catch (_) {
       setSnackbar( getTranslated(context,'somethingMSg'));
     }
@@ -512,7 +512,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         setSnackbar(msg);
       }
       if (mounted)
-        setState(() {
+         if (mounted) setState(() {
           isArea = true;
         });
     } on TimeoutException catch (_) {
@@ -557,7 +557,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
 
       //validator: validateField,
-      onChanged: (v) => setState(() {
+      onChanged: (v) =>   setState(() {
         state = v;
       }),
       onSaved: (String value) {
@@ -590,7 +590,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   }
 
   Future<void> addNewAddress() async {
-    setState(() {
+     if (mounted) setState(() {
       _isProgress = true;
     });
 
@@ -701,7 +701,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
             }
           }
 
-          setState(() {
+           if (mounted) setState(() {
             _isProgress = false;
           });
           Navigator.of(context).pop();
@@ -750,7 +750,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   value: 1,
                   onChanged: (val) {
 
-                    setState(() {
+                     if (mounted) setState(() {
                       selectedType = val;
                       type = HOME;
                     });
@@ -760,7 +760,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               ],
             ),
             onTap: () {
-              setState(() {
+               if (mounted) setState(() {
                 selectedType = 1;
                 type = HOME;
               });
@@ -778,7 +778,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   activeColor: colors.fontColor,
                   value: 2,
                   onChanged: (val) {
-                    setState(() {
+                     if (mounted) setState(() {
                       selectedType = val;
                       type = OFFICE;
                     });
@@ -788,7 +788,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               ],
             ),
             onTap: () {
-              setState(() {
+               if (mounted) setState(() {
                 selectedType = 2;
                 type = OFFICE;
               });
@@ -806,7 +806,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   activeColor: colors.fontColor,
                   value: 3,
                   onChanged: (val) {
-                    setState(() {
+                     if (mounted) setState(() {
                       selectedType = val;
                       type = OTHER;
                     });
@@ -816,7 +816,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               ],
             ),
             onTap: () {
-              setState(() {
+               if (mounted) setState(() {
                 selectedType = 3;
                 type = OTHER;
               });
@@ -839,7 +839,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           activeColor: Theme.of(context).accentColor,
           dense: true,
           onChanged: (newValue) {
-            setState(() {
+             if (mounted) setState(() {
               checkedDefault = newValue;
             });
           },
@@ -935,7 +935,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     state = placemark[0].administrativeArea;
     country = placemark[0].country;
     pincode = placemark[0].postalCode;
-    setState(() {
+     if (mounted) setState(() {
       countryC.text = country;
       stateC.text = state;
       pincodeC.text = pincode;

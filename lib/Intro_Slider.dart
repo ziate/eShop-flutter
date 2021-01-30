@@ -72,7 +72,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
   }
 
   _onPageChanged(int index) {
-    setState(() {
+     if (mounted) setState(() {
       _currentPage = index;
     });
   }
@@ -108,12 +108,12 @@ class _GettingStartedScreenState extends State<Intro_Slider>
                   ),
                 ),
                 Container(
-                    margin: EdgeInsets.only(top: 20),
+                    margin: EdgeInsetsDirectional.only(top: 20),
                     child: Text(slideList[index].title,
                         style: Theme.of(context).textTheme.headline5.copyWith(
                             color: colors.fontColor, fontWeight: FontWeight.bold))),
                 Container(
-                  padding: EdgeInsets.only(top: 30.0, left: 15.0, right: 15.0),
+                  padding: EdgeInsetsDirectional.only(top: 30.0, start: 15.0, end: 15.0),
                   child: Text(slideList[index].description,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.subtitle1.copyWith(
@@ -151,7 +151,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
         ),
         Center(
             child: Padding(
-              padding: const EdgeInsets.only(bottom:18.0),
+              padding: const EdgeInsetsDirectional.only(bottom:18.0),
               child: AppBtn(
                   title: _currentPage == 0 || _currentPage == 1
                       ? getTranslated(context, 'NEXT_LBL')
@@ -180,7 +180,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
   skipBtn() {
     return _currentPage == 0 || _currentPage == 1
         ? Padding(
-        padding: EdgeInsets.only(top: 20.0, right: 10.0),
+        padding: EdgeInsetsDirectional.only(top: 20.0, end: 10.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
@@ -207,7 +207,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
           ],
         ))
         : Container(
-      margin: EdgeInsets.only(top: 50.0),
+      margin: EdgeInsetsDirectional.only(top: 50.0),
       height: 15,
     );
   }

@@ -10,12 +10,12 @@ class Model {
 
   Model(
       {this.id,
-      this.type,
-      this.typeId,
-      this.image,
-      this.name,
-      this.banner,
-      this.list});
+        this.type,
+        this.typeId,
+        this.image,
+        this.name,
+        this.banner,
+        this.list});
 
   factory Model.fromSlider(Map<String, dynamic> parsedJson) {
     var listContent = parsedJson["data"];
