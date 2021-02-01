@@ -256,10 +256,11 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
           });
         }
       } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
+
          if (mounted) setState(() {
           _isLoading = false;
         });
+         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
       if (mounted)

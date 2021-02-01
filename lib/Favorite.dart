@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 
-
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -183,7 +182,8 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                             children: [
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsetsDirectional.only(top: 5.0),
+                                  padding: const EdgeInsetsDirectional.only(
+                                      top: 5.0),
                                   child: Text(
                                     favList[index].productList[0].name,
                                     style: TextStyle(
@@ -239,9 +239,10 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                     addToCart(index);
                                   }
                                   if (result == 2) {
-                                     if (mounted) setState(() {
-                                      _isProgress = true;
-                                    });
+                                    if (mounted)
+                                      setState(() {
+                                        _isProgress = true;
+                                      });
                                     createDynamicLink(index, 0, true,
                                         favList[index].productList[0].id);
                                   }
@@ -252,8 +253,9 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                     value: 0,
                                     child: ListTile(
                                       dense: true,
-                                      contentPadding: EdgeInsetsDirectional.only(
-                                          start: 0.0, end: 0.0),
+                                      contentPadding:
+                                          EdgeInsetsDirectional.only(
+                                              start: 0.0, end: 0.0),
                                       leading: Icon(
                                         Icons.close,
                                         color: colors.fontColor,
@@ -266,8 +268,9 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                     value: 1,
                                     child: ListTile(
                                       dense: true,
-                                      contentPadding: EdgeInsetsDirectional.only(
-                                          start: 0.0, end: 0.0),
+                                      contentPadding:
+                                          EdgeInsetsDirectional.only(
+                                              start: 0.0, end: 0.0),
                                       leading: Icon(Icons.shopping_cart,
                                           color: colors.fontColor, size: 20),
                                       title: Text('Add to Cart'),
@@ -277,8 +280,9 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                     value: 2,
                                     child: ListTile(
                                       dense: true,
-                                      contentPadding: EdgeInsetsDirectional.only(
-                                          start: 0.0, end: 0.0),
+                                      contentPadding:
+                                          EdgeInsetsDirectional.only(
+                                              start: 0.0, end: 0.0),
                                       leading: Icon(Icons.share_outlined,
                                           color: colors.fontColor, size: 20),
                                       title: Text('Share'),
@@ -319,7 +323,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
   }
 
   updateFav() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<Null> _getFav() async {
@@ -333,12 +337,9 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
             OFFSET: offset.toString(),
           };
 
-
-
           Response response =
               await post(getFavApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
-
 
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
@@ -361,17 +362,21 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           } else {
             if (msg != 'No Favourite(s) Product Are Added') setSnackbar(msg);
             isLoadingmore = false;
+            msg = getTranslated(context, 'noFav');
           }
 
-          if (mounted)
-             if (mounted) setState(() {
+          if (mounted) if (mounted)
+            setState(() {
               _isFavLoading = false;
             });
         } else {
-           if (mounted) setState(() {
-            _isFavLoading = false;
-            msg = getTranslated(context, 'goToLogin');
-          });
+          if (mounted)
+            setState(() {
+              new Future.delayed(Duration.zero, () {
+                msg = getTranslated(context, 'goToLogin');
+                _isFavLoading = false;
+              });
+            });
 
           Navigator.push(
             context,
@@ -380,15 +385,17 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
         }
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          _isFavLoading = false;
-          isLoadingmore = false;
-        });
+        if (mounted)
+          setState(() {
+            _isFavLoading = false;
+            isLoadingmore = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
     return null;
   }
@@ -397,9 +404,10 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
         var parameter = {
           PRODUCT_VARIENT_ID: favList[index].productList[0].prVarientList[0].id,
           USER_ID: CUR_USERID,
@@ -431,20 +439,23 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           } else {
             setSnackbar(msg);
           }
-           if (mounted) setState(() {
-            _isProgress = false;
-          });
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
         }
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -464,9 +475,10 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
 
         var parameter = {
           USER_ID: CUR_USERID,
@@ -507,20 +519,23 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           } else {
             setSnackbar(msg);
           }
-           if (mounted) setState(() {
-            _isProgress = false;
-          });
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
         }
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -548,14 +563,15 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-         if (mounted) setState(() {});
+        if (mounted) setState(() {});
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -594,34 +610,44 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
     else
       documentDirectory = (await getExternalStorageDirectory()).path;
 
-
-    var request = await HttpClient().getUrl(Uri.parse(favList[index].productList[0].image));
+    var request = await HttpClient()
+        .getUrl(Uri.parse(favList[index].productList[0].image));
     var response = await request.close();
     Uint8List bytes = await consolidateHttpClientResponseBytes(response);
-    await Share.file(favList[index].productList[0].name, '${favList[index].productList[0].name}.jpg', bytes, 'image/jpg',text:"${favList[index].productList[0].name}\n${shortenedLink.shortUrl.toString()}\n$str", );
+    await Share.file(
+      favList[index].productList[0].name,
+      '${favList[index].productList[0].name}.jpg',
+      bytes,
+      'image/jpg',
+      text:
+          "${favList[index].productList[0].name}\n${shortenedLink.shortUrl.toString()}\n$str",
+    );
 
-     if (mounted) setState(() {
-      _isProgress=false;
-    });
+    if (mounted)
+      setState(() {
+        _isProgress = false;
+      });
   }
 
   _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-         if (mounted) setState(() {
-          isLoadingmore = true;
+        if (mounted)
+          setState(() {
+            isLoadingmore = true;
 
-          if (offset < total) _getFav();
-        });
+            if (offset < total) _getFav();
+          });
       }
     }
   }
 
   Future<Null> _refresh() {
-     if (mounted) setState(() {
-      _isFavLoading = true;
-    });
+    if (mounted)
+      setState(() {
+        _isFavLoading = true;
+      });
     offset = 0;
     total = 0;
     return _getFav();
@@ -631,7 +657,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
     return _isFavLoading
         ? shimmer()
         : favList.length == 0
-            ? Center(child: Text(msg))
+            ? Center(child: Text(msg ?? getTranslated(context, 'noFav')))
             : RefreshIndicator(
                 key: _refreshIndicatorKey,
                 onRefresh: _refresh,

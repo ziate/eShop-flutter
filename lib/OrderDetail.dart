@@ -2,31 +2,27 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-
 import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Model/Order_Model.dart';
-
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-
+import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:open_file/open_file.dart';
-
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/String.dart';
 import 'Model/User.dart';
-
-import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
-import 'package:path_provider/path_provider.dart';
 
 class OrderDetail extends StatefulWidget {
   final Order_Model model;
@@ -111,7 +107,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -122,7 +118,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   updateDetail() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   _getAppbar() {
@@ -509,7 +505,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0, top: 5.0),
+                padding: EdgeInsetsDirectional.only(
+                    start: 15.0, end: 15.0, top: 5.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -580,7 +577,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                       ),
                       _rating(),
                       Padding(
-                          padding: EdgeInsetsDirectional.only(start: 20.0, end: 20.0),
+                          padding: EdgeInsetsDirectional.only(
+                              start: 20.0, end: 20.0),
                           child: TextField(
                             controller: _commentC,
                             style: Theme.of(context).textTheme.subtitle2,
@@ -598,8 +596,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                             ),
                           )),
                       Container(
-                        padding:
-                            EdgeInsetsDirectional.only(start: 20.0, end: 20.0, top: 5),
+                        padding: EdgeInsetsDirectional.only(
+                            start: 20.0, end: 20.0, top: 5),
                         height: files != null && files.length > 0 ? 80 : 50,
                         child: Row(
                           children: [
@@ -627,9 +625,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   onTap: () {
-                                     if (mounted) setState(() {
-                                      files.removeAt(i);
-                                    });
+                                    if (mounted)
+                                      setState(() {
+                                        files.removeAt(i);
+                                      });
                                   },
                                 );
                               },
@@ -650,7 +649,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                         alignment: AlignmentDirectional.bottomEnd,
                         child: GestureDetector(
                           child: Container(
-                            margin: EdgeInsetsDirectional.only(start: 8, end: 20),
+                            margin:
+                                EdgeInsetsDirectional.only(start: 8, end: 20),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 2),
                             decoration: BoxDecoration(
@@ -778,7 +778,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                           ),
                                         ),
                                         Padding(
-                                          padding: EdgeInsetsDirectional.only(start: 5.0),
+                                          padding: EdgeInsetsDirectional.only(
+                                              start: 5.0),
                                           child: Text(
                                             val[index],
                                             style: Theme.of(context)
@@ -1205,9 +1206,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
 
         var parameter = {ORDERID: id, STATUS: status};
         Response response = await post(api, body: parameter, headers: headers)
@@ -1223,16 +1225,18 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           });
         } else {}
 
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -1247,7 +1251,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         await FilePicker.platform.pickFiles(allowMultiple: true);
     if (result != null) {
       files = result.paths.map((path) => File(path)).toList();
-       if (mounted) setState(() {});
+      if (mounted) setState(() {});
     } else {
       // User canceled the picker
     }
@@ -1258,9 +1262,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
         var request = http.MultipartRequest("POST", Uri.parse(setRatingApi));
         request.headers.addAll(headers);
         request.fields[USER_ID] = CUR_USERID;
@@ -1290,14 +1295,15 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
 
         _commentC.text = "";
         files.clear();
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
-    } else
-       if (mounted) setState(() {
+    } else if (mounted)
+      setState(() {
         _isNetworkAvail = false;
       });
   }
@@ -1340,9 +1346,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             final status = await Permission.storage.request();
 
             if (status == PermissionStatus.granted) {
-               if (mounted) setState(() {
-                _isProgress = true;
-              });
+              if (mounted)
+                setState(() {
+                  _isProgress = true;
+                });
               var targetPath;
 
               if (Platform.isIOS) {
@@ -1352,13 +1359,19 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 Directory downloadsDirectory =
                     await DownloadsPathProvider.downloadsDirectory;
                 targetPath = downloadsDirectory.path.toString();
-                         }
+              }
+
               var targetFileName = "Invoice_${widget.model.id}";
+              var generatedPdfFile ;
 
-              var generatedPdfFile =
-                  await FlutterHtmlToPdf.convertFromHtmlContent(
-                      widget.model.invoice, targetPath, targetFileName);
+                 generatedPdfFile =
+                    await FlutterHtmlToPdf.convertFromHtmlContent(
+                        widget.model.invoice, targetPath, targetFileName);
 
+              if (mounted)
+                setState(() {
+                  _isProgress = false;
+                });
               _scaffoldKey.currentState.showSnackBar(new SnackBar(
                 content: new Text(
                   "${getTranslated(context, 'INVOICE_PATH')} $targetFileName",
@@ -1369,15 +1382,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     label: getTranslated(context, 'VIEW'),
                     onPressed: () async {
                       final result = await OpenFile.open(generatedPdfFile.path);
-                       if (mounted) setState(() {
-                          });
                     }),
                 backgroundColor: colors.white,
                 elevation: 1.0,
               ));
-               if (mounted) setState(() {
-                _isProgress = false;
-              });
             }
           }),
     );

@@ -1455,12 +1455,12 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             ISFLAT_DEL = true;
           else
             ISFLAT_DEL = false;
+          if (CUR_USERID != null) {
+            CUR_CART_COUNT =
+                getdata["data"]["user_data"][0]["cart_total_items"].toString();
 
-          CUR_CART_COUNT =
-              getdata["data"]["user_data"][0]["cart_total_items"].toString();
-
-          CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
-
+            CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
+          }
           widget.updateHome();
         } else {
           setSnackbar(msg);

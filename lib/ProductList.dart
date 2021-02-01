@@ -893,7 +893,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             padding: EdgeInsetsDirectional.only(top: 5),
             crossAxisCount: 2,
             controller: controller,
-            physics: NeverScrollableScrollPhysics(),
+            physics: AlwaysScrollableScrollPhysics(),
             children: List.generate(
               (offset < total)
                   ? productList.length + 1

@@ -10,10 +10,9 @@ import 'package:http/http.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Home.dart';
+import 'Model/Section_Model.dart';
 import 'ProductList.dart';
 import 'SubCat.dart';
-import 'Model/Model.dart';
-import 'Model/Section_Model.dart';
 
 class AllCategory extends StatefulWidget {
   final Function updateHome;
@@ -37,7 +36,7 @@ class StateCat extends State<AllCategory> {
   @override
   void initState() {
     super.initState();
-    if(catList.length==0)getCat();
+    if (catList.length == 0) getCat();
     controller.addListener(_scrollListener);
   }
 
@@ -45,7 +44,6 @@ class StateCat extends State<AllCategory> {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-
         appBar: getAppBar(getTranslated(context, 'ALL_CAT'), context),
         body: GridView.count(
             controller: controller,
@@ -55,7 +53,7 @@ class StateCat extends State<AllCategory> {
             childAspectRatio: .8,
             children: List.generate(
               (offset < total) ? catList.length + 1 : catList.length,
-                  (index) {
+              (index) {
                 return (index == catList.length && isLoadingmore)
                     ? Center(child: CircularProgressIndicator())
                     : catItem(index, context);
@@ -71,8 +69,8 @@ class StateCat extends State<AllCategory> {
         OFFSET: offset.toString()
       };
       Response response =
-      await post(getCatApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(getCatApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -101,16 +99,18 @@ class StateCat extends State<AllCategory> {
           isLoadingmore = false;
           setSnackbar(msg);
         }
-         if (mounted) setState(() {
-          _isCatLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isCatLoading = false;
+          });
       }
     } on TimeoutException catch (_) {
-      setSnackbar( getTranslated(context,'somethingMSg'));
-       if (mounted) setState(() {
-        _isCatLoading = false;
-        isLoadingmore = false;
-      });
+      setSnackbar(getTranslated(context, 'somethingMSg'));
+      if (mounted)
+        setState(() {
+          _isCatLoading = false;
+          isLoadingmore = false;
+        });
     }
   }
 
@@ -130,28 +130,31 @@ class StateCat extends State<AllCategory> {
     return GestureDetector(
       child: Column(
         children: <Widget>[
-          ClipRRect(
-              borderRadius: BorderRadius.circular(25.0),
-              child: FadeInImage(
-                image: NetworkImage(catList[index].image),
-                fadeInDuration: Duration(milliseconds: 150),
-                height: 50,
-                width: 50,
-                fit: BoxFit.fill,
-                placeholder: placeHolder(50),
-              )),
-          Padding(
-            padding: const EdgeInsetsDirectional.only(top: 10.0),
-            child: Text(
-              catList[index].name,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .caption
-                  .copyWith(color: colors.fontColor),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(25.0),
+                  child: FadeInImage(
+                    image: NetworkImage(catList[index].image),
+                    fadeInDuration: Duration(milliseconds: 150),
+                    //height: 50,
+                    //width: 50,
+                    fit: BoxFit.fill,
+                    placeholder: placeHolder(50),
+                  )),
             ),
+          ),
+          Text(
+            catList[index].name+"\n",
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+
+            style: Theme.of(context)
+                .textTheme
+                .caption
+                .copyWith(color: colors.fontColor),
           )
         ],
       ),
@@ -185,11 +188,12 @@ class StateCat extends State<AllCategory> {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-         if (mounted) setState(() {
-          isLoadingmore = true;
+        if (mounted)
+          setState(() {
+            isLoadingmore = true;
 
-          if (offset < total) getCat();
-        });
+            if (offset < total) getCat();
+          });
       }
     }
   }
