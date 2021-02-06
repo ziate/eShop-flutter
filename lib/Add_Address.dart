@@ -441,7 +441,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       onSaved: (String value) {
         pincode = value;
       },
-      validator:(val)=> validatePincode(val,getTranslated(context,'PIN_REQUIRED'),getTranslated(context, 'VALID_PIN')),
+     // validator:(val)=> validatePincode(val,getTranslated(context,'PIN_REQUIRED'),getTranslated(context, 'VALID_PIN')),
       decoration: InputDecoration(
         hintText: getTranslated(context, 'PINCODEHINT_LBL'),
         isDense: true,

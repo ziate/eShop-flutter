@@ -404,7 +404,7 @@ String getToken() {
   final claimSet = new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
 
   String token = issueJwtHS256(claimSet, jwtKey);
-
+print("token***$token");
   return token;
 }
 

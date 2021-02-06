@@ -1132,7 +1132,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                     }),
                 new FlatButton(
                     child: Text(
-                      getTranslated(context, 'CON_PASS_REQUIRED_MSG'),
+                      getTranslated(context, 'SAVE_LBL'),
                       style: Theme.of(this.context)
                           .textTheme
                           .subtitle2

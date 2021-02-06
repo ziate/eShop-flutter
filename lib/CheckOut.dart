@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
+import 'package:rave_flutter/rave_flutter.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'Cart.dart';
@@ -54,7 +55,9 @@ String razorpayId,
     stripeSecret,
     stripeMode = "test",
     stripeCurCode,
-    stripePayId;
+    stripePayId,
+    flutterwaveId = 'FLWPUBK_TEST-1ffbaed6ee3788cd2bcbb898d3b90c59-X',
+    flutterwaveSec = 'FLWSECK_TEST25c36edcfcaa';
 int selectedAddress = 0;
 StateCheckout stateCheck;
 bool isTimeSlot, isPromoValid = false, isUseWallet = false, isPayLayShow = true;
@@ -69,6 +72,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   var items;
   TextEditingController promoC = new TextEditingController();
   bool _isLoading = true;
+  String msg;
 
   @override
   void initState() {
@@ -115,9 +119,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
 
         var parameter = {
           USER_ID: CUR_USERID,
@@ -144,28 +149,31 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             isPromoValid = false;
             stateCheck.setSnackbar(msg);
           }
-           if (mounted) setState(() {
-            if (isUseWallet) {
-               if (mounted) setState(() {
-                remWalBal = 0;
-                payMethod = null;
-                usedBal = 0;
-                isUseWallet = false;
-                isPayLayShow = true;
-                _isProgress = false;
-              });
-            }
+          if (mounted)
+            setState(() {
+              if (isUseWallet) {
+                if (mounted)
+                  setState(() {
+                    remWalBal = 0;
+                    payMethod = null;
+                    usedBal = 0;
+                    isUseWallet = false;
+                    isPayLayShow = true;
+                    _isProgress = false;
+                  });
+              }
 
-            _isProgress = false;
-          });
+              _isProgress = false;
+            });
         }
       } on TimeoutException catch (_) {
         stateCheck.setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -198,7 +206,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -248,7 +256,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           color: colors.white,
                           child: Row(children: <Widget>[
                             Padding(
-                                padding: EdgeInsetsDirectional.only(start: 15.0),
+                                padding:
+                                    EdgeInsetsDirectional.only(start: 15.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -266,24 +275,47 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                 size: 0.4,
                                 title: getTranslated(context, 'PLACE_ORDER'),
                                 onBtnSelected: () {
-                                  if (selAddress == null || selAddress.isEmpty)
-                                    setSnackbar(getTranslated(
-                                        context, 'addressWarning'));
-                                  else if (payMethod == null ||
-                                      payMethod.isEmpty)
-                                    setSnackbar(
-                                        getTranslated(context, 'payWarning'));
-                                  else if (isTimeSlot &&
+                                  if (selAddress == null ||
+                                      selAddress.isEmpty) {
+                                    msg = getTranslated(
+                                        context, 'addressWarning');
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              ManageAddress(
+                                            home: false,
+                                          ),
+                                        ));
+                                  } else if (payMethod == null ||
+                                      payMethod.isEmpty) {
+
+                                    msg=getTranslated(context, 'payWarning');
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                Payment(updateCheckout,msg)));
+                                  } else if (isTimeSlot &&
                                       int.parse(allowDay) > 0 &&
-                                      (selDate == null || selDate.isEmpty))
-                                    setSnackbar(
-                                        getTranslated(context, 'dateWarning'));
-                                  else if (isTimeSlot &&
+                                      (selDate == null || selDate.isEmpty)) {
+
+                                    msg=getTranslated(context, 'dateWarning');
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                Payment(updateCheckout,msg)));
+                                  } else if (isTimeSlot &&
                                       timeSlotList.length > 0 &&
-                                      (selTime == null || selTime.isEmpty))
-                                    setSnackbar(
-                                        getTranslated(context, 'timeWarning'));
-                                  else if (payMethod ==
+                                      (selTime == null || selTime.isEmpty)) {
+                                    msg = getTranslated(context, 'timeWarning');
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                Payment(updateCheckout, msg)));
+                                  } else if (payMethod ==
                                       getTranslated(context, 'PAYPAL_LBL'))
                                     placeOrder('');
                                   else if (payMethod ==
@@ -292,6 +324,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                   else if (payMethod ==
                                       getTranslated(context, 'PAYSTACK_LBL'))
                                     paystackPayment(context);
+                                  else if (payMethod ==
+                                      getTranslated(context, 'FLUTTERWAVE_LBL'))
+                                    startFlutterwavePayment(
+                                        totalPrice, 'ke', 'kes');
                                   else if (payMethod ==
                                       getTranslated(context, 'STRIPE_LBL'))
                                     stripePayment();
@@ -317,6 +353,54 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         ]),
       ),
     );
+  }
+
+  void startFlutterwavePayment(double amt, String cntry, String cur) async {
+    bool acceptCardPayment = true;
+    bool acceptAccountPayment = true;
+    bool acceptMpesaPayment = true;
+    bool shouldDisplayFee = true;
+    bool acceptAchPayments = false;
+    bool acceptGhMMPayments = false;
+    bool acceptUgMMPayments = false;
+    bool acceptMMFrancophonePayments = false;
+    bool live = false;
+    bool preAuthCharge = false;
+
+    String email = await getPrefrence(EMAIL);
+    var initializer = RavePayInitializer(
+        amount: amt,
+        publicKey: flutterwaveId,
+        encryptionKey: flutterwaveSec,
+        subAccounts: null)
+      ..country = country = cntry != null && cntry.isNotEmpty ? cntry : "NG"
+      ..currency = cur != null && cur.isNotEmpty ? cur : "NGN"
+      ..email = email
+      ..fName = CUR_USERNAME
+      ..lName = ''
+      ..narration = ''
+      ..txRef = "rave_flutter-${DateTime.now().toString()}"
+      ..orderRef = "rave_flutter-${DateTime.now().toString()}"
+      ..acceptMpesaPayments = acceptMpesaPayment
+      ..acceptAccountPayments = acceptAccountPayment
+      ..acceptCardPayments = acceptCardPayment
+      ..acceptAchPayments = acceptAchPayments
+      ..acceptGHMobileMoneyPayments = acceptGhMMPayments
+      ..acceptUgMobileMoneyPayments = acceptUgMMPayments
+      ..acceptMobileMoneyFrancophoneAfricaPayments = acceptMMFrancophonePayments
+      ..displayEmail = false
+      ..displayAmount = false
+      ..staging = !live
+      ..isPreAuth = preAuthCharge
+      ..displayFee = shouldDisplayFee;
+
+    var response = await RavePayManager()
+        .prompt(context: context, initializer: initializer);
+    print(response);
+    setSnackbar(response?.message);
+    if (response.status == RaveStatus.success) {
+      placeOrder(response.rawResponse["data"]["id"].toString());
+    }
   }
 
   noCartImage(BuildContext context) {
@@ -434,7 +518,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                           children: [
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsetsDirectional.only(top: 5.0),
+                                padding:
+                                    const EdgeInsetsDirectional.only(top: 5.0),
                                 child: Text(
                                   cartList[index].productList[0].name,
                                   style: Theme.of(context)
@@ -694,9 +779,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
 
         var parameter = {
           PRODUCT_VARIENT_ID: cartList[index].varientId,
@@ -745,38 +831,43 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             if (isPromoValid) {
               validatePromo();
             } else if (isUseWallet) {
-               if (mounted) setState(() {
-                remWalBal = 0;
-                payMethod = null;
-                usedBal = 0;
-                isPayLayShow = true;
-                isUseWallet = false;
-                _isProgress = false;
-              });
+              if (mounted)
+                setState(() {
+                  remWalBal = 0;
+                  payMethod = null;
+                  usedBal = 0;
+                  isPayLayShow = true;
+                  isUseWallet = false;
+                  _isProgress = false;
+                });
             } else {
-               if (mounted) setState(() {
-                _isProgress = false;
-              });
+              if (mounted)
+                setState(() {
+                  _isProgress = false;
+                });
             }
           } else {
             setSnackbar(msg);
-             if (mounted) setState(() {
-              _isProgress = false;
-            });
+            if (mounted)
+              setState(() {
+                _isProgress = false;
+              });
           }
 
           if (widget.updateHome != null) widget.updateHome();
         }
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -784,9 +875,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
 
         var parameter = {
           PRODUCT_VARIENT_ID: cartList[index].varientId,
@@ -827,38 +919,43 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             if (isPromoValid) {
               validatePromo();
             } else if (isUseWallet) {
-               if (mounted) setState(() {
-                remWalBal = 0;
-                payMethod = null;
-                usedBal = 0;
-                isUseWallet = false;
-                isPayLayShow = true;
-                _isProgress = false;
-              });
+              if (mounted)
+                setState(() {
+                  remWalBal = 0;
+                  payMethod = null;
+                  usedBal = 0;
+                  isUseWallet = false;
+                  isPayLayShow = true;
+                  _isProgress = false;
+                });
             } else {
-               if (mounted) setState(() {
-                _isProgress = false;
-              });
+              if (mounted)
+                setState(() {
+                  _isProgress = false;
+                });
             }
           } else {
             setSnackbar(msg);
-             if (mounted) setState(() {
-              _isProgress = false;
-            });
+            if (mounted)
+              setState(() {
+                _isProgress = false;
+              });
           }
 
           widget.updateHome();
         }
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -913,35 +1010,36 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
               totalPrice = totalPrice + delCharge;
             }
           } else {}
-          if (mounted)
-             if (mounted) setState(() {
+          if (mounted) if (mounted)
+            setState(() {
               _isLoading = false;
             });
         } else {
           setSnackbar(getTranslated(context, 'somethingMSg'));
-           if (mounted) setState(() {
-            _isLoading = false;
-          });
+          if (mounted)
+            setState(() {
+              _isLoading = false;
+            });
         }
       } on TimeoutException catch (_) {}
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
-
     placeOrder(response.paymentId);
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-
     setSnackbar(response.message);
-     if (mounted) setState(() {
-      _isProgress = false;
-    });
+    if (mounted)
+      setState(() {
+        _isProgress = false;
+      });
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
@@ -955,9 +1053,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     double amt = totalPrice * 100;
 
     if (contact != '' && email != '') {
-       if (mounted) setState(() {
-        _isProgress = true;
-      });
+      if (mounted)
+        setState(() {
+          _isProgress = true;
+        });
 
       var options = {
         KEY: razorpayId,
@@ -983,9 +1082,10 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   paystackPayment(BuildContext context) async {
-     if (mounted) setState(() {
-      _isProgress = true;
-    });
+    if (mounted)
+      setState(() {
+        _isProgress = true;
+      });
 
     String email = await getPrefrence(EMAIL);
 
@@ -1004,43 +1104,45 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         placeOrder(response.reference);
       } else {
         setSnackbar(response.message);
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } catch (e) {
-       if (mounted) setState(() => _isProgress = false);
+      if (mounted) setState(() => _isProgress = false);
       rethrow;
     }
   }
 
   stripePayment() async {
-     if (mounted) setState(() {
-      _isProgress = true;
-    });
+    if (mounted)
+      setState(() {
+        _isProgress = true;
+      });
 
     var response = await StripeService.payWithNewCard(
         amount: (totalPrice.toInt() * 100).toString(), currency: stripeCurCode);
-
-
 
     if (response.message == "Transaction successful") {
       placeOrder(response.status);
     } else if (response.status == 'pending' || response.status == "captured") {
       placeOrder(response.status);
     } else {
-       if (mounted) setState(() {
-        _isProgress = false;
-      });
+      if (mounted)
+        setState(() {
+          _isProgress = false;
+        });
     }
     setSnackbar(response.message);
   }
 
   void setError(dynamic error) {
     setSnackbar(error.toString());
-     if (mounted) setState(() {
-      _isProgress = false;
-    });
+    if (mounted)
+      setState(() {
+        _isProgress = false;
+      });
   }
 
   String _getReference() {
@@ -1055,7 +1157,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   updateCheckout() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   confirmOrder() {
@@ -1115,7 +1217,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             varientId != null ? varientId + "," + sec.varientId : sec.varientId;
         quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
       }
-String payVia;
+      String payVia;
       if (payMethod == getTranslated(context, 'COD_LBL'))
         payVia = "COD";
       else if (payMethod == getTranslated(context, 'PAYPAL_LBL'))
@@ -1160,18 +1262,15 @@ String payVia;
         if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
           parameter[ACTIVE_STATUS] = WAITING;
         } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
-          if(tranId=="succeeded")
+          if (tranId == "succeeded")
             parameter[ACTIVE_STATUS] = SUCCESS;
           else
             parameter[ACTIVE_STATUS] = WAITING;
-
         }
-
 
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
 
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
@@ -1184,7 +1283,8 @@ String payVia;
             } else if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
               paypalPayment(orderId);
             } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
-              AddTransaction(stripePayId, orderId,tranId=="succeeded"? SUCCESS:WAITING, msg);
+              AddTransaction(stripePayId, orderId,
+                  tranId == "succeeded" ? SUCCESS : WAITING, msg);
             } else {
               CUR_CART_COUNT = "0";
               promoAmt = 0;
@@ -1209,19 +1309,22 @@ String payVia;
           } else {
             setSnackbar(msg);
           }
-           if (mounted) setState(() {
-            _isProgress = false;
-          });
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
         }
       } on TimeoutException catch (_) {
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -1320,7 +1423,8 @@ String payVia;
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsetsDirectional.only(bottom: 5.0),
+                            padding:
+                                const EdgeInsetsDirectional.only(bottom: 5.0),
                             child: Text(addressList[selectedAddress].name),
                           ),
                           Text(
@@ -1404,7 +1508,7 @@ String payVia;
                                       index: addressList.length,
                                     )),
                           );
-                           if (mounted) setState(() {});
+                          if (mounted) setState(() {});
                         },
                       ),
                     ),
@@ -1422,11 +1526,12 @@ String payVia;
         borderRadius: BorderRadius.circular(4),
         onTap: () async {
           _scaffoldKey.currentState.removeCurrentSnackBar();
+          msg='';
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (BuildContext context) => Payment(updateCheckout)));
-           if (mounted) setState(() {});
+                  builder: (BuildContext context) => Payment(updateCheckout,msg)));
+          if (mounted) setState(() {});
         },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -1601,13 +1706,14 @@ String payVia;
                   ),
                   onTap: () {
                     if (promoAmt != 0 && isPromoValid) {
-                       if (mounted) setState(() {
-                        totalPrice = totalPrice + promoAmt;
-                        promoC.text = '';
-                        isPromoValid = false;
-                        promoAmt = 0;
-                        promocode = '';
-                      });
+                      if (mounted)
+                        setState(() {
+                          totalPrice = totalPrice + promoAmt;
+                          promoC.text = '';
+                          isPromoValid = false;
+                          promoAmt = 0;
+                          promocode = '';
+                        });
                     }
                   },
                 )

@@ -40,7 +40,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   List<TextEditingController> _controller = [];
   var items;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-  new GlobalKey<RefreshIndicatorState>();
+      new GlobalKey<RefreshIndicatorState>();
   List<Section_Model> saveLaterList = [];
 
   @override
@@ -71,10 +71,11 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-     if (mounted) setState(() {
-      _isCartLoad = true;
-      _isSaveLoad = true;
-    });
+    if (mounted)
+      setState(() {
+        _isCartLoad = true;
+        _isSaveLoad = true;
+      });
     totalPrice = 0;
     oriPrice = 0;
     taxAmt = 0;
@@ -88,6 +89,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   @override
   void dispose() {
     buttonController.dispose();
+    for(int i=0;i<_controller.length;i++)
+      _controller[i].dispose();
     super.dispose();
   }
 
@@ -120,7 +123,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -139,19 +142,19 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         appBar: getAppBar(getTranslated(context, 'CART'), context),
         body: _isNetworkAvail
             ? Stack(
-          children: <Widget>[
-            _showContent(),
-            showCircularProgress(_isProgress, colors.primary),
-          ],
-        )
+                children: <Widget>[
+                  _showContent(),
+                  showCircularProgress(_isProgress, colors.primary),
+                ],
+              )
             : noInternet(context));
   }
 
   Widget listItem(int index) {
     int selectedPos = 0;
     for (int i = 0;
-    i < cartList[index].productList[0].prVarientList.length;
-    i++) {
+        i < cartList[index].productList[0].prVarientList.length;
+        i++) {
       if (cartList[index].varientId ==
           cartList[index].productList[0].prVarientList[i].id) selectedPos = i;
     }
@@ -175,7 +178,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         cartList[index].productList[0].totalAllow != null
             ? int.parse(cartList[index].productList[0].totalAllow)
             : 10,
-            (i) => (i + 1).toString());
+        (i) => (i + 1).toString());
 
     return Card(
       elevation: 0.1,
@@ -221,12 +224,13 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                 start: 8.0, end: 8, bottom: 8),
                             child: Icon(
                               Icons.close,
-                              size: 13,
+                              size: 15,
                               color: colors.fontColor,
                             ),
                           ),
                           onTap: () {
-                            removeFromCart(index, true, cartList);
+                            if (_isProgress == false)
+                              removeFromCart(index, true, cartList, false);
                           },
                         )
                       ],
@@ -235,16 +239,16 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       children: <Widget>[
                         Text(
                           double.parse(cartList[index]
-                              .productList[0]
-                              .prVarientList[selectedPos]
-                              .disPrice) !=
-                              0
+                                      .productList[0]
+                                      .prVarientList[selectedPos]
+                                      .disPrice) !=
+                                  0
                               ? CUR_CURRENCY +
-                              "" +
-                              cartList[index]
-                                  .productList[0]
-                                  .prVarientList[selectedPos]
-                                  .price
+                                  "" +
+                                  cartList[index]
+                                      .productList[0]
+                                      .prVarientList[selectedPos]
+                                      .price
                               : "",
                           style: Theme.of(context).textTheme.overline.copyWith(
                               decoration: TextDecoration.lineThrough,
@@ -259,141 +263,137 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       ],
                     ),
                     cartList[index].productList[0].availability == "1" ||
-                        cartList[index].productList[0].stockType == "null"
+                            cartList[index].productList[0].stockType == "null"
                         ? Row(
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            GestureDetector(
-                              child: Container(
-                                padding: EdgeInsets.all(2),
-                                margin: EdgeInsetsDirectional.only(
-                                    end: 8, top: 8, bottom: 8),
-                                child: Icon(
-                                  Icons.remove,
-                                  size: 12,
-                                  color: colors.fontColor,
-                                ),
-                                decoration: BoxDecoration(
-                                    color: colors.lightWhite,
-                                    borderRadius: BorderRadius.all(
-                                        Radius.circular(3))),
-                              ),
-                              onTap: () {
-                                removeFromCart(index, false, cartList);
-                              },
-                            ),
-                            Container(
-                              width: 40,
-                              height: 20,
-                              child: Stack(
-                                children: [
-                                  TextField(
-                                    textAlign: TextAlign.center,
-                                    readOnly: true,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                    ),
-                                    controller:
-                                    _controller[index],
-                                    decoration: InputDecoration(
-                                      contentPadding:
-                                      EdgeInsets.all(5.0),
-                                      focusedBorder:
-                                      OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color:
-                                            colors.fontColor,
-                                            width: 0.5),
-                                        borderRadius:
-                                        BorderRadius.circular(
-                                            5.0),
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  GestureDetector(
+                                    child: Container(
+                                      padding: EdgeInsets.all(2),
+                                      margin: EdgeInsetsDirectional.only(
+                                          end: 8, top: 8, bottom: 8),
+                                      child: Icon(
+                                        Icons.remove,
+                                        size: 14,
+                                        color: colors.fontColor,
                                       ),
-                                      enabledBorder:
-                                      OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color:
-                                            colors.fontColor,
-                                            width: 0.5),
-                                        borderRadius:
-                                        BorderRadius.circular(
-                                            5.0),
-                                      ),
+                                      decoration: BoxDecoration(
+                                          color: colors.lightWhite,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(3))),
                                     ),
-                                  ),
-                                  PopupMenuButton<String>(
-                                    tooltip: '',
-                                    icon: const Icon(
-                                      Icons.arrow_drop_down,
-                                      size: 1,
-                                    ),
-                                    onSelected: (String value) {
-                                      addToCart(index, value);
-                                    },
-                                    itemBuilder: (BuildContext context) {
-                                      return items
-                                          .map<PopupMenuItem<String>>(
-                                              (String value) {
-                                            return new PopupMenuItem(
-                                                child: new Text(value),
-                                                value: value);
-                                          }).toList();
+                                    onTap: () {
+                                      if (_isProgress == false)
+                                        removeFromCart(
+                                            index, false, cartList, false);
                                     },
                                   ),
+                                  Container(
+                                    width: 40,
+                                    height: 20,
+                                    child: Stack(
+                                      children: [
+                                        TextField(
+                                          textAlign: TextAlign.center,
+                                          readOnly: true,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                          ),
+                                          controller: _controller[index],
+                                          decoration: InputDecoration(
+                                            contentPadding: EdgeInsets.all(5.0),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: colors.fontColor,
+                                                  width: 0.5),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: colors.fontColor,
+                                                  width: 0.5),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0),
+                                            ),
+                                          ),
+                                        ),
+                                        PopupMenuButton<String>(
+                                          tooltip: '',
+                                          icon: const Icon(
+                                            Icons.arrow_drop_down,
+                                            size: 1,
+                                          ),
+                                          onSelected: (String value) {
+                                            if (_isProgress == false)
+                                            addToCart(index, value);
+                                          },
+                                          itemBuilder: (BuildContext context) {
+                                            return items
+                                                .map<PopupMenuItem<String>>(
+                                                    (String value) {
+                                              return new PopupMenuItem(
+                                                  child: new Text(value),
+                                                  value: value);
+                                            }).toList();
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ), // ),
+
+                                  GestureDetector(
+                                    child: Container(
+                                      padding: EdgeInsets.all(2),
+                                      margin: EdgeInsets.all(8),
+                                      child: Icon(
+                                        Icons.add,
+                                        size: 14,
+                                        color: colors.fontColor,
+                                      ),
+                                      decoration: BoxDecoration(
+                                          color: colors.lightWhite,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(3))),
+                                    ),
+                                    onTap: () {
+                                      if (_isProgress == false)
+                                      addToCart(
+                                          index,
+                                          (int.parse(cartList[index].qty) + 1)
+                                              .toString());
+                                    },
+                                  )
                                 ],
                               ),
-                            ), // ),
-
-                            GestureDetector(
-                              child: Container(
-                                padding: EdgeInsets.all(2),
-                                margin: EdgeInsets.all(8),
-                                child: Icon(
-                                  Icons.add,
-                                  size: 12,
-                                  color: colors.fontColor,
+                              GestureDetector(
+                                child: Container(
+                                  margin: EdgeInsetsDirectional.only(start: 8),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 2),
+                                  decoration: BoxDecoration(
+                                      color: colors.lightWhite,
+                                      borderRadius: new BorderRadius.all(
+                                          const Radius.circular(4.0))),
+                                  child: Text(
+                                    getTranslated(context, 'SAVEFORLATER_BTN'),
+                                    style: TextStyle(
+                                        color: colors.fontColor, fontSize: 11),
+                                  ),
                                 ),
-                                decoration: BoxDecoration(
-                                    color: colors.lightWhite,
-                                    borderRadius: BorderRadius.all(
-                                        Radius.circular(3))),
+                                onTap: () {
+                                  saveForLater(
+                                      cartList[index].varientId,
+                                      "1",
+                                      cartList[index].qty,
+                                      double.parse(
+                                          cartList[index].perItemTotal),
+                                      cartList[index]);
+                                },
                               ),
-                              onTap: () {
-                                addToCart(
-                                    index,
-                                    (int.parse(cartList[index].qty) + 1)
-                                        .toString());
-                              },
-                            )
-                          ],
-                        ),
-                        GestureDetector(
-                          child: Container(
-                            margin: EdgeInsetsDirectional.only(start: 8),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 2),
-                            decoration: BoxDecoration(
-                                color: colors.lightWhite,
-                                borderRadius: new BorderRadius.all(
-                                    const Radius.circular(4.0))),
-                            child: Text(
-                              getTranslated(context, 'SAVEFORLATER_BTN'),
-                              style: TextStyle(
-                                  color: colors.fontColor, fontSize: 10),
-                            ),
-                          ),
-                          onTap: () {
-                            saveForLater(
-                                cartList[index].varientId,
-                                "1",
-                                cartList[index].qty,
-                                double.parse(
-                                    cartList[index].perItemTotal),
-                                cartList[index]);
-                          },
-                        ),
-                      ],
-                    )
+                            ],
+                          )
                         : Container(),
                   ],
                 ),
@@ -408,8 +408,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   Widget saveLaterItem(int index) {
     int selectedPos = 0;
     for (int i = 0;
-    i < saveLaterList[index].productList[0].prVarientList.length;
-    i++) {
+        i < saveLaterList[index].productList[0].prVarientList.length;
+        i++) {
       if (saveLaterList[index].varientId ==
           saveLaterList[index].productList[0].prVarientList[i].id)
         selectedPos = i;
@@ -472,12 +472,13 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                 start: 8.0, end: 8, bottom: 8),
                             child: Icon(
                               Icons.close,
-                              size: 13,
+                              size: 15,
                               color: colors.fontColor,
                             ),
                           ),
                           onTap: () {
-                            removeFromCart(index, true, saveLaterList);
+                            if (_isProgress == false)
+                              removeFromCart(index, true, saveLaterList, true);
                           },
                         )
                       ],
@@ -486,16 +487,16 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       children: <Widget>[
                         Text(
                           double.parse(saveLaterList[index]
-                              .productList[0]
-                              .prVarientList[selectedPos]
-                              .disPrice) !=
-                              0
+                                      .productList[0]
+                                      .prVarientList[selectedPos]
+                                      .disPrice) !=
+                                  0
                               ? CUR_CURRENCY +
-                              "" +
-                              saveLaterList[index]
-                                  .productList[0]
-                                  .prVarientList[selectedPos]
-                                  .price
+                                  "" +
+                                  saveLaterList[index]
+                                      .productList[0]
+                                      .prVarientList[selectedPos]
+                                      .price
                               : "",
                           style: Theme.of(context).textTheme.overline.copyWith(
                               decoration: TextDecoration.lineThrough,
@@ -510,37 +511,37 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       ],
                     ),
                     saveLaterList[index].productList[0].availability == "1" ||
-                        saveLaterList[index].productList[0].stockType ==
-                            "null"
+                            saveLaterList[index].productList[0].stockType ==
+                                "null"
                         ? Row(
-                      children: <Widget>[
-                        GestureDetector(
-                          child: Container(
-                            margin: EdgeInsets.symmetric(vertical: 8),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 2),
-                            decoration: BoxDecoration(
-                                color: colors.lightWhite,
-                                borderRadius: new BorderRadius.all(
-                                    const Radius.circular(4.0))),
-                            child: Text(
-                              getTranslated(context, 'MOVE_TO_CART'),
-                              style: TextStyle(
-                                  color: colors.fontColor, fontSize: 10),
-                            ),
-                          ),
-                          onTap: () {
-                            saveForLater(
-                                saveLaterList[index].varientId,
-                                "0",
-                                saveLaterList[index].qty,
-                                double.parse(
-                                    saveLaterList[index].perItemTotal),
-                                saveLaterList[index]);
-                          },
-                        ),
-                      ],
-                    )
+                            children: <Widget>[
+                              GestureDetector(
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 8),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 2),
+                                  decoration: BoxDecoration(
+                                      color: colors.lightWhite,
+                                      borderRadius: new BorderRadius.all(
+                                          const Radius.circular(4.0))),
+                                  child: Text(
+                                    getTranslated(context, 'MOVE_TO_CART'),
+                                    style: TextStyle(
+                                        color: colors.fontColor, fontSize: 11),
+                                  ),
+                                ),
+                                onTap: () {
+                                  saveForLater(
+                                      saveLaterList[index].varientId,
+                                      "0",
+                                      saveLaterList[index].qty,
+                                      double.parse(
+                                          saveLaterList[index].perItemTotal),
+                                      saveLaterList[index]);
+                                },
+                              ),
+                            ],
+                          )
                         : Container(),
                   ],
                 ),
@@ -553,7 +554,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   updateCart() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _getCart(String save) async {
@@ -562,8 +563,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
       try {
         var parameter = {USER_ID: CUR_USERID, SAVE_LATER: save};
         Response response =
-        await post(getCartApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(getCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -586,17 +587,19 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         } else {
           if (msg != 'Cart Is Empty !') setSnackbar(msg);
         }
-         if (mounted) setState(() {
-          _isCartLoad = false;
-        });
-         if (mounted) setState(() {});
+        if (mounted)
+          setState(() {
+            _isCartLoad = false;
+          });
+        if (mounted) setState(() {});
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -606,8 +609,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
       try {
         var parameter = {USER_ID: CUR_USERID, SAVE_LATER: save};
         Response response =
-        await post(getCartApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(getCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -624,17 +627,19 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         } else {
           if (msg != 'Cart Is Empty !') setSnackbar(msg);
         }
-         if (mounted) setState(() {
-          _isSaveLoad = false;
-        });
-         if (mounted) setState(() {});
+        if (mounted)
+          setState(() {
+            _isSaveLoad = false;
+          });
+        if (mounted) setState(() {});
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
 
     return null;
@@ -644,20 +649,21 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
 
         var parameter = {
           PRODUCT_VARIENT_ID: cartList[index].varientId,
           USER_ID: CUR_USERID,
           QTY: qty,
         };
-
+        print("cart add***$parameter");
         Response response =
-        await post(manageCartApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
-
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+        print("cart add***res***${response.body.toString()}");
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -679,21 +685,24 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
 
         widget.updateHome();
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -702,9 +711,10 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
 
         var parameter = {
           PRODUCT_VARIENT_ID: id,
@@ -714,8 +724,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         };
 
         Response response =
-        await post(manageCartApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -745,42 +755,48 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         } else {
           setSnackbar(msg);
         }
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
         if (widget.updateHome != null) widget.updateHome();
         if (widget.updateParent != null) widget.updateParent();
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
-  removeFromCart(int index, bool remove, List<Section_Model> cartList) async {
+  removeFromCart(
+      int index, bool remove, List<Section_Model> cartList, bool move) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          _isProgress = true;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
 
         var parameter = {
           PRODUCT_VARIENT_ID: cartList[index].varientId,
           USER_ID: CUR_USERID,
           QTY: remove ? "0" : (int.parse(cartList[index].qty) - 1).toString()
         };
+        print("remove****$parameter");
 
         Response response =
-        await post(manageCartApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
-
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+        print("remove****${response.body.toString()}");
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -790,38 +806,50 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
           String qty = data['total_quantity'];
           CUR_CART_COUNT = data['cart_count'];
-          if (qty == "0") remove = true;
+          if (move == false) {
+            if (qty == "0") remove = true;
 
-          if (remove) {
-            oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
+            if (remove) {
+              oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
 
-            cartList.removeWhere(
-                    (item) => item.varientId == cartList[index].varientId);
+              cartList.removeWhere(
+                  (item) => item.varientId == cartList[index].varientId);
+            } else {
+              oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
+              cartList[index].qty = qty.toString();
+            }
+            taxAmt = double.parse(data[TAX_AMT]);
+            totalPrice = 0;
+            totalPrice = oriPrice + taxAmt;
           } else {
-            oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
-            cartList[index].qty = qty.toString();
+            if (qty == "0") remove = true;
+
+            if (remove) {
+              cartList.removeWhere(
+                  (item) => item.varientId == cartList[index].varientId);
+            }
           }
-          taxAmt = double.parse(data[TAX_AMT]);
-          totalPrice = 0;
-          totalPrice = oriPrice + taxAmt;
         } else {
           setSnackbar(msg);
         }
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
         if (widget.updateHome != null) widget.updateHome();
         if (widget.updateParent != null) widget.updateParent();
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
-         if (mounted) setState(() {
-          _isProgress = false;
-        });
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -841,90 +869,91 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     return _isCartLoad
         ? shimmer()
         : cartList.length == 0 && saveLaterList.length == 0
-        ? cartEmpty()
-        : Column(
-      children: <Widget>[
-        Expanded(
-          child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: RefreshIndicator(
-                  key: _refreshIndicatorKey,
-                  onRefresh: _refresh,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: cartList.length,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return listItem(index);
-                          },
-                        ),
-                        saveLaterList.length > 0
-                            ? Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            getTranslated(context, 'SAVEFORLATER_BTN'),
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle1,
-                          ),
-                        )
-                            : Container(),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: saveLaterList.length,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return saveLaterItem(index);
-                          },
-                        ),
-                      ],
-                    ),
-                  ))),
-        ),
-        Container(
-          color: colors.white,
-          child: Row(children: <Widget>[
-            Padding(
-                padding: EdgeInsetsDirectional.only(start: 15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      CUR_CURRENCY + " $oriPrice",
-                      style: TextStyle(
-                          color: colors.fontColor,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Text(cartList.length.toString() + " Items"),
-                  ],
-                )),
-            Spacer(),
-            SimBtn(
-                size: 0.4,
-                title: getTranslated(context,'PROCEED_CHECKOUT'),
-                onBtnSelected: () async {
-                  if (oriPrice > 0) {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            CheckOut(widget.updateHome),
-                      ),
-                    );
-                     if (mounted) setState(() {});
-                  } else
-                    setSnackbar(getTranslated(context, 'ADD_ITEM'));
-                }),
-          ]),
-        ),
-      ],
-    );
+            ? cartEmpty()
+            : Column(
+                children: <Widget>[
+                  Expanded(
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: RefreshIndicator(
+                            key: _refreshIndicatorKey,
+                            onRefresh: _refresh,
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: cartList.length,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      return listItem(index);
+                                    },
+                                  ),
+                                  saveLaterList.length > 0
+                                      ? Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            getTranslated(
+                                                context, 'SAVEFORLATER_BTN'),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .subtitle1,
+                                          ),
+                                        )
+                                      : Container(),
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: saveLaterList.length,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      return saveLaterItem(index);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ))),
+                  ),
+                  Container(
+                    color: colors.white,
+                    child: Row(children: <Widget>[
+                      Padding(
+                          padding: EdgeInsetsDirectional.only(start: 15.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                CUR_CURRENCY + " $oriPrice",
+                                style: TextStyle(
+                                    color: colors.fontColor,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(cartList.length.toString() + " Items"),
+                            ],
+                          )),
+                      Spacer(),
+                      SimBtn(
+                          size: 0.4,
+                          title: getTranslated(context, 'PROCEED_CHECKOUT'),
+                          onBtnSelected: () async {
+                            if (oriPrice > 0) {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      CheckOut(widget.updateHome),
+                                ),
+                              );
+                              if (mounted) setState(() {});
+                            } else
+                              setSnackbar(getTranslated(context, 'ADD_ITEM'));
+                          }),
+                    ]),
+                  ),
+                ],
+              );
   }
 
   cartEmpty() {
@@ -960,9 +989,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
       child: Text(getTranslated(context, 'CART_DESC'),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headline6.copyWith(
-            color: colors.lightBlack2,
-            fontWeight: FontWeight.normal,
-          )),
+                color: colors.lightBlack2,
+                fontWeight: FontWeight.normal,
+              )),
     );
   }
 

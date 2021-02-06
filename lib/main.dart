@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:io';
 import 'Helper/Demo_Localization.dart';
 import 'Helper/PushNotificationService.dart';
 import 'Helper/Session.dart';
@@ -24,6 +24,7 @@ void main() async {
 	SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
 		statusBarColor: Colors.transparent, // status bar color
 	));
+
 	Future<SharedPreferences> prefs = SharedPreferences.getInstance();
 	prefs.then((value) {
 		runApp(
@@ -85,41 +86,6 @@ class _MyAppState extends State<MyApp> {
 		super.didChangeDependencies();
 	}
 
-/*
-  @override
-  Widget build(BuildContext context) {
-    final pushNotificationService = PushNotificationService(_firebaseMessaging);
-    pushNotificationService.initialise();
-    return MaterialApp(
-      supportedLocales: [
-        Locale('en'),
-        Locale('it'),
-        Locale('fr'),
-        Locale('es'),
-      ],
-      localizationsDelegates: [
-        CountryLocalizations.delegate,
-      ],
-      title: appName,
-      theme: ThemeData(
-          primarySwatch: primary_app,
-          cursorColor: primary,
-          fontFamily: 'opensans',
-          textTheme: TextTheme(
-              headline6: TextStyle(
-                color: colors.colors.fontColor,
-                fontWeight: FontWeight.w600,
-              ),
-              subtitle1:
-                  TextStyle(color: colors.colors.fontColor, fontWeight: FontWeight.bold))),
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => Splash(),
-        '/home': (context) => Home(),
-      },
-    );
-  }*/
 
 	@override
 	Widget build(BuildContext context) {
@@ -218,3 +184,4 @@ class _MyAppState extends State<MyApp> {
 		}
 	}
 }
+

@@ -64,13 +64,11 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   int _selVarient = 0, _oldSelVarient = 0;
   bool _isProgress = false, _isLoading = true;
 
-  bool _isCommentEnable = false, _showComment = false;
-  TextEditingController _commentC = new TextEditingController();
-  double initialRate = 0;
+
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
-  String availVariant = '';
+
 
   int notificationoffset = 0;
   ScrollController notificationcontroller;
@@ -78,7 +76,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       notificationisgettingdata = false,
       notificationisnodata = false;
   List<Product> productList = [];
-  bool listType = true;
+
   var isDarkTheme;
   ShortDynamicLink shortenedLink;
   String shareLink;
@@ -128,9 +126,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     if (notificationcontroller.offset >=
             notificationcontroller.position.maxScrollExtent &&
         !notificationcontroller.position.outOfRange) {
-       if (mounted) setState(() {
-        getProduct();
-      });
+      if (mounted)
+        setState(() {
+          getProduct();
+        });
     }
   }
 
@@ -191,7 +190,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -265,9 +264,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                   controller: _pageController,
                   reverse: false,
                   onPageChanged: (index) {
-                     if (mounted) setState(() {
-                      _curSlider = index;
-                    });
+                    if (mounted)
+                      setState(() {
+                        _curSlider = index;
+                      });
                   },
                   itemBuilder: (BuildContext context, int index) {
                     return FadeInImage(
@@ -338,8 +338,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                   ],
                 ),
                 child: Padding(
-                  padding:
-                      const EdgeInsetsDirectional.only(top: 10.0, bottom: 10, end: 10),
+                  padding: const EdgeInsetsDirectional.only(
+                      top: 10.0, bottom: 10, end: 10),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -488,44 +488,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   }
 
   updateDetail() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
-  _smallImage() {
-    double width = deviceWidth * .15;
-
-    return Container(
-      alignment: Alignment.topLeft,
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      height: width,
-      child: ListView.builder(
-        shrinkWrap: true,
-        scrollDirection: Axis.horizontal,
-        itemCount: widget.model.prVarientList[_selVarient].images.length,
-        itemBuilder: (context, index) {
-          return InkWell(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4.0),
-                  child: FadeInImage(
-                    image: NetworkImage(
-                        widget.model.prVarientList[_selVarient].images[index]),
-                    placeholder: AssetImage(
-                      "assets/images/placeholder.png",
-                    ),
-                    height: width,
-                    width: width,
-                  )),
-            ),
-            onTap: () {
-              _pageController.jumpToPage(index);
-            },
-          );
-        },
-      ),
-    );
-  }
 
   _rate() {
     return Padding(
@@ -626,54 +591,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         : Container();
   }
 
-  Future<void> setRating(double rating, String comment) async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      try {
-         if (mounted) setState(() {
-          _isLoading = true;
-        });
-        var parameter = {
-          USER_ID: CUR_USERID,
-          PRODUCT_ID: widget.model.id,
-          COMMENT: comment,
-        };
 
-        if (rating != 0) parameter[RATING] = rating.toString();
-        Response response =
-            await post(setRatingApi, headers: headers, body: parameter)
-                .timeout(Duration(seconds: timeOut));
-
-        var getdata = json.decode(response.body);
-        bool error = getdata["error"];
-        if (!error) {
-          _showComment = true;
-          reviewList.clear();
-          offset = 0;
-
-          var data = getdata["data"]["product_rating"];
-          widget.model.noOfRating = getdata["data"]["no_of_rating"];
-
-          reviewList =
-              (data as List).map((data) => new User.forReview(data)).toList();
-
-          offset = offset + perPage;
-        } else {
-          initialRate = 0;
-        }
-        _isCommentEnable = false;
-        _commentC.text = "";
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
-      } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
-      }
-    } else
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
-  }
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
@@ -856,8 +774,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                             onSelected: att.length == 1
                                 ? null
                                 : (bool selected) {
-                                    if (selected)
-                                       if (mounted) setState(() {
+                                    if (selected) if (mounted)
+                                      setState(() {
                                         available = false;
                                         _selectedIndex[index] =
                                             selected ? i : null;
@@ -1059,9 +977,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   applyVarient() {
     Navigator.of(context).pop();
-     if (mounted)  if (mounted) setState(() {
-      _selVarient = _oldSelVarient;
-    });
+    if (mounted)
+      setState(() {
+        _selVarient = _oldSelVarient;
+      });
   }
 
   Future<void> addToCart(bool intent) async {
@@ -1069,9 +988,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       if (CUR_USERID != null) {
         try {
-           if (mounted)  if (mounted) setState(() {
-            _isProgress = true;
-          });
+          if (mounted) if (mounted)
+            setState(() {
+              _isProgress = true;
+            });
 
           var parameter = {
             USER_ID: CUR_USERID,
@@ -1102,17 +1022,19 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           } else {
             setSnackbar(msg);
           }
-           if (mounted) setState(() {
-            _isProgress = false;
-          });
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
 
           widget.updateParent();
           widget.updateHome();
         } on TimeoutException catch (_) {
           setSnackbar(getTranslated(context, 'somethingMSg'));
-           if (mounted) setState(() {
-            _isProgress = false;
-          });
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
         }
       } else {
         Navigator.push(
@@ -1121,9 +1043,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         );
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -1158,20 +1081,22 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           if (msg != "No ratings found !") setSnackbar(msg);
           isLoadingmore = false;
         }
-        if (mounted)
-           if (mounted) setState(() {
+        if (mounted) if (mounted)
+          setState(() {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -1179,9 +1104,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          widget.model.isFavLoading = true;
-        });
+        if (mounted)
+          setState(() {
+            widget.model.isFavLoading = true;
+          });
 
         var parameter = {USER_ID: CUR_USERID, PRODUCT_ID: widget.model.id};
         Response response =
@@ -1201,16 +1127,18 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-         if (mounted) setState(() {
-          widget.model.isFavLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            widget.model.isFavLoading = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -1218,9 +1146,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          widget.model.isFavLoading = true;
-        });
+        if (mounted)
+          setState(() {
+            widget.model.isFavLoading = true;
+          });
 
         var parameter = {USER_ID: CUR_USERID, PRODUCT_ID: widget.model.id};
         Response response =
@@ -1241,16 +1170,18 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-         if (mounted) setState(() {
-          widget.model.isFavLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            widget.model.isFavLoading = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -1431,7 +1362,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   _madeIn() {
     String madeIn = widget.model.madein;
 
-
     return madeIn != null && madeIn.isNotEmpty
         ? Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
@@ -1488,7 +1418,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                   )),
             ),
             Padding(
-              padding: const EdgeInsetsDirectional.only(start: 5.0, top: 5, bottom: 5),
+              padding: const EdgeInsetsDirectional.only(
+                  start: 5.0, top: 5, bottom: 5),
               child: Text(
                 productList[index].name,
                 style: Theme.of(context)
@@ -1503,7 +1434,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                 style: TextStyle(
                     color: colors.fontColor, fontWeight: FontWeight.bold)),
             Padding(
-              padding: const EdgeInsetsDirectional.only(start: 5.0, bottom: 5, top: 3),
+              padding: const EdgeInsetsDirectional.only(
+                  start: 5.0, bottom: 5, top: 3),
               child:
                   double.parse(productList[index].prVarientList[0].disPrice) !=
                           0
@@ -1570,7 +1502,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             shrinkWrap: true,
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
             itemCount: reviewList.length >= 2 ? 2 : reviewList.length,
-            //physics: BouncingScrollPhysics(),
+            physics: NeverScrollableScrollPhysics(),
             separatorBuilder: (BuildContext context, int index) => Divider(),
             itemBuilder: (context, index) {
               return Column(
@@ -1602,8 +1534,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     itemSize: 12.0,
                     direction: Axis.horizontal,
                   ),
-                  reviewList[index].comment != null && reviewList[index].comment.isNotEmpty
-
+                  reviewList[index].comment != null &&
+                          reviewList[index].comment.isNotEmpty
                       ? Text(reviewList[index].comment ?? '')
                       : Container(),
                   reviewImage(index),
@@ -1617,13 +1549,14 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       try {
         if (notificationisloadmore) {
-           if (mounted) setState(() {
-            notificationisloadmore = false;
-            notificationisgettingdata = true;
-            if (notificationoffset == 0) {
-              productList = new List<Product>();
-            }
-          });
+          if (mounted)
+            setState(() {
+              notificationisloadmore = false;
+              notificationisgettingdata = true;
+              if (notificationoffset == 0) {
+                productList = new List<Product>();
+              }
+            });
 
           var parameter = {
             CATID: widget.model.categoryId,
@@ -1651,7 +1584,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             if (mounted) {
               new Future.delayed(
                   Duration.zero,
-                  () =>  setState(() {
+                  () => setState(() {
                         List mainlist = getdata['data'];
 
                         if (mainlist.length != 0) {
@@ -1682,19 +1615,21 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             }
           } else {
             notificationisloadmore = false;
-            if (mounted)  if (mounted) setState(() {});
+            if (mounted) if (mounted) setState(() {});
           }
         }
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          notificationisloadmore = false;
-        });
+        if (mounted)
+          setState(() {
+            notificationisloadmore = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -1745,7 +1680,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           break;
         }
       }
-       if (mounted) setState(() {});
+      if (mounted) setState(() {});
     }
   }
 
@@ -1821,7 +1756,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         shrinkWrap: true,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsetsDirectional.only(end: 10, bottom: 5.0, top: 5),
+            padding:
+                const EdgeInsetsDirectional.only(end: 10, bottom: 5.0, top: 5),
             child: InkWell(
               onTap: () {
                 Navigator.push(
@@ -1891,7 +1827,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   }
 
   Future<void> getShare() async {
-
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: deepLinkUrlPrefix,
       link: Uri.parse(
@@ -1913,12 +1848,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       new DynamicLinkParametersOptions(
           shortDynamicLinkPathLength: ShortDynamicLinkPathLength.unguessable),
     );
-    new Future.delayed(Duration.zero, ()
-    {
+    new Future.delayed(Duration.zero, () {
       shareLink =
-      "\n$appName\n${getTranslated(
-          context, 'APPFIND')}$androidLink$packageName\n${getTranslated(
-          context, 'IOSLBL')}\n$iosLink$iosPackage";
+          "\n$appName\n${getTranslated(context, 'APPFIND')}$androidLink$packageName\n${getTranslated(context, 'IOSLBL')}\n$iosLink$iosPackage";
     });
   }
 }

@@ -276,7 +276,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           child: Column(
                             children: [
                               Container(
-                                  height: 50,
                                   width: deviceWidth,
                                   child: Card(
                                       elevation: 0,
@@ -293,6 +292,25 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                                 .copyWith(
                                                     color: colors.lightBlack2),
                                           )))),
+                              model.otp != null && model.otp.isNotEmpty && model.otp!="0"
+                                  ? Container(
+                                      width: deviceWidth,
+                                      child: Card(
+                                          elevation: 0,
+                                          child: Padding(
+                                              padding: EdgeInsets.all(12.0),
+                                              child: Text(
+                                                getTranslated(context, 'OTP') +
+                                                    " - " +
+                                                    model.otp,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .subtitle2
+                                                    .copyWith(
+                                                        color:
+                                                            colors.lightBlack2),
+                                              ))))
+                                  : Container(),
                               ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: model.itemList.length,
@@ -1362,11 +1380,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
               }
 
               var targetFileName = "Invoice_${widget.model.id}";
-              var generatedPdfFile ;
+              var generatedPdfFile;
 
-                 generatedPdfFile =
-                    await FlutterHtmlToPdf.convertFromHtmlContent(
-                        widget.model.invoice, targetPath, targetFileName);
+              generatedPdfFile = await FlutterHtmlToPdf.convertFromHtmlContent(
+                  widget.model.invoice, targetPath, targetFileName);
 
               if (mounted)
                 setState(() {

@@ -483,7 +483,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   Widget _home() {
     return Scaffold(
         key: _scaffoldKey,
-        //  backgroundColor: colors.lightWhite,
         body: _isNetworkAvail
             ? _isCatLoading
                 ? homeShimmer()

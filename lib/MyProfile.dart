@@ -562,7 +562,11 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'CHANGE_LANGUAGE_LBL'),
               'assets/images/pro_language.png'),
-          _getDivider(),
+          CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
+          CUR_USERID == "" || CUR_USERID == null
+              ? Container()
+              :
+
           _getDrawerItem(getTranslated(context, 'CHANGE_PASS_LBL'),
               'assets/images/pro_pass.png'),
         ],

@@ -6,7 +6,6 @@ import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 
-
 import 'Cart.dart';
 import 'CheckOut.dart';
 import 'Helper/AppBtn.dart';
@@ -18,11 +17,11 @@ import 'Helper/String.dart';
 import 'Helper/Stripe_Service.dart';
 import 'Model/Model.dart';
 
-
 class Payment extends StatefulWidget {
-  Function update;
+  final Function update;
+  final String msg;
 
-  Payment(this.update);
+  Payment(this.update, this.msg);
 
   @override
   State<StatefulWidget> createState() {
@@ -37,7 +36,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   bool _isLoading = true;
   String startingDate;
 
-  bool cod, paypal, razorpay, paumoney, paystack, flutterwave, stripe;
+  bool cod, paypal, razorpay, paumoney, paystack, flutterwave = true, stripe;
   List<RadioModel> timeModel = new List<RadioModel>();
   List<RadioModel> payModel = new List<RadioModel>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -74,6 +73,10 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         getTranslated(context, 'STRIPE_LBL'),
       ];
     });
+    if (widget.msg != '')
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) =>
+    setSnackbar(widget.msg));
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
     buttonSqueezeanimation = new Tween(
@@ -120,7 +123,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                   _getdateTime();
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -159,35 +162,38 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                     contentPadding: EdgeInsets.all(0),
                                     value: isUseWallet,
                                     onChanged: (bool value) {
-                                       if (mounted) setState(() {
-                                        isUseWallet = value;
-                                        if (value) {
-                                          if (totalPrice <=
-                                              double.parse(CUR_BALANCE)) {
-                                            remWalBal =
-                                                double.parse(CUR_BALANCE) -
-                                                    totalPrice;
-                                            usedBal = totalPrice;
-                                            payMethod = "Wallet";
+                                      if (mounted)
+                                        setState(() {
+                                          isUseWallet = value;
+                                          if (value) {
+                                            if (totalPrice <=
+                                                double.parse(CUR_BALANCE)) {
+                                              remWalBal =
+                                                  double.parse(CUR_BALANCE) -
+                                                      totalPrice;
+                                              usedBal = totalPrice;
+                                              payMethod = "Wallet";
 
-                                            isPayLayShow = false;
+                                              isPayLayShow = false;
+                                            } else {
+                                              remWalBal = 0;
+                                              usedBal =
+                                                  double.parse(CUR_BALANCE);
+                                              isPayLayShow = true;
+                                            }
+
+                                            totalPrice = totalPrice - usedBal;
                                           } else {
-                                            remWalBal = 0;
-                                            usedBal = double.parse(CUR_BALANCE);
+                                            totalPrice = totalPrice + usedBal;
+                                            remWalBal =
+                                                double.parse(CUR_BALANCE);
+                                            payMethod = null;
+                                            usedBal = 0;
                                             isPayLayShow = true;
                                           }
 
-                                          totalPrice = totalPrice - usedBal;
-                                        } else {
-                                          totalPrice = totalPrice + usedBal;
-                                          remWalBal = double.parse(CUR_BALANCE);
-                                          payMethod = null;
-                                          usedBal = 0;
-                                          isPayLayShow = true;
-                                        }
-
-                                        widget.update();
-                                      });
+                                          widget.update();
+                                        });
                                     },
                                     title: Text(
                                       getTranslated(context, 'USE_WALLET'),
@@ -366,10 +372,11 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       onTap: () {
         DateTime date = today.add(Duration(days: index));
 
-         if (mounted) setState(() {
-          selectedDate = index;
-          selDate = DateFormat('yyyy-MM-dd').format(date);
-        });
+        if (mounted)
+          setState(() {
+            selectedDate = index;
+            selDate = DateFormat('yyyy-MM-dd').format(date);
+          });
       },
     );
   }
@@ -385,7 +392,6 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         Response response =
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
 
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
@@ -418,8 +424,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             paypal = payment["paypal_payment_method"] == "1" ? true : false;
             paumoney =
                 payment["payumoney_payment_method"] == "1" ? true : false;
-            flutterwave =
-                payment["flutterwave_payment_method"] == "1" ? true : false;
+            //   flutterwave = payment["flutterwave_payment_method"] == "1" ? true : false;
             razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
             paystack = payment["paystack_payment_method"] == "1" ? true : false;
             stripe = payment["stripe_payment_method"] == "1" ? true : false;
@@ -435,9 +440,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
               stripeSecret = payment['stripe_secret_key'];
               stripeCurCode = payment['stripe_currency_code'];
               stripeMode = payment['stripe_mode'] ?? 'test';
-              StripeService.secret=stripeSecret;
+              StripeService.secret = stripeSecret;
               StripeService.init();
-
             }
             for (int i = 0; i < paymentMethodList.length; i++) {
               payModel.add(RadioModel(
@@ -449,28 +453,31 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             // setSnackbar(msg);
           }
         }
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
       } on TimeoutException catch (_) {
         //setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
   Widget timeSlotItem(int index) {
     return new InkWell(
       onTap: () {
-         if (mounted) setState(() {
-          selectedTime = index;
-          selTime = timeSlotList[selectedTime].name;
-          timeModel.forEach((element) => element.isSelected = false);
-          timeModel[index].isSelected = true;
-        });
+        if (mounted)
+          setState(() {
+            selectedTime = index;
+            selTime = timeSlotList[selectedTime].name;
+            timeModel.forEach((element) => element.isSelected = false);
+            timeModel[index].isSelected = true;
+          });
       },
       child: new RadioItem(timeModel[index]),
     );
@@ -479,13 +486,14 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   Widget paymentItem(int index) {
     return new InkWell(
       onTap: () {
-         if (mounted) setState(() {
-          selectedMethod = index;
-          payMethod = paymentMethodList[selectedMethod];
-          payIcon = paymentIconList[selectedMethod];
-          payModel.forEach((element) => element.isSelected = false);
-          payModel[index].isSelected = true;
-        });
+        if (mounted)
+          setState(() {
+            selectedMethod = index;
+            payMethod = paymentMethodList[selectedMethod];
+            payIcon = paymentIconList[selectedMethod];
+            payModel.forEach((element) => element.isSelected = false);
+            payModel[index].isSelected = true;
+          });
       },
       child: new RadioItem(payModel[index]),
     );

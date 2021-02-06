@@ -4,6 +4,8 @@ import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'Order_Success.dart';
+import 'Helper/Session.dart';
+import 'Helper/Constant.dart';
 
 class PaypalWebview extends StatefulWidget {
   final String url;
@@ -28,7 +30,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: BlankBar(),
+        appBar:  getAppBar(appName, context),
         body:
         Stack(
           children: <Widget>[
@@ -92,6 +94,9 @@ class StatePayPalWebview extends State<PaypalWebview> {
                 // print('Page finished loading: $url');
               },
             ),
+
+
+
             isloading
                 ? Center(
               child: new CircularProgressIndicator(),
