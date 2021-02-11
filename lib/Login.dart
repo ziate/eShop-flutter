@@ -91,7 +91,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
         await buttonController.reverse();
-         if (mounted) setState(() {
+        if (mounted) setState(() {
           _isNetworkAvail = false;
         });
       });
@@ -143,7 +143,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },

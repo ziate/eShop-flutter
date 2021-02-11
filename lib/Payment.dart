@@ -287,7 +287,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                     ListView.builder(
                                         shrinkWrap: true,
                                         physics: NeverScrollableScrollPhysics(),
-                                        itemCount: 7,
+                                        itemCount:  paymentMethodList.length,
                                         itemBuilder: (context, index) {
                                           if (index == 0 && cod)
                                             return paymentItem(index);

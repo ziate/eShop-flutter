@@ -16,6 +16,9 @@ import 'Helper/String.dart';
 import 'ProductList.dart';
 import 'Product_Detail.dart';
 import 'Search.dart';
+import 'Login.dart';
+import 'Cart.dart';
+
 
 class SubCat extends StatefulWidget {
   String title;
@@ -54,8 +57,11 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   String curTabId;
+  List<TextEditingController> _controller = [];
 
   _SubCatState({this.subList});
+
+  var items;
 
   @override
   void initState() {
@@ -90,6 +96,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   void dispose() {
     buttonController.dispose();
     controller.removeListener(() {});
+    for (int i = 0; i < _controller.length; i++) _controller[i].dispose();
     super.dispose();
   }
 
@@ -122,7 +129,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted)  if (mounted) setState(() {});
+                  if (mounted) if (mounted) setState(() {});
                 }
               });
             },
@@ -133,30 +140,31 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   }
 
   TabController _makeNewTabController(int pos) => TabController(
-    vsync: this,
-    length: _tabs.length,
-
-  );
+        vsync: this,
+        length: _tabs.length,
+      );
 
   void _addTab(List<Product> subItem, int index) {
-      if (mounted)  if (mounted) setState(() {
-      _tabs.add({
-        'text': subItem[index].name,
-      });
-      _views.add(createTabContent(index, subItem));
-      _tc = _makeNewTabController(_tabs.length - 1)
-        ..addListener(() {
-          curTabId = subList[_tc.index].id;
-          selId = null;
-           if (mounted) setState(() {
-            if (subList[_tc.index].subList == null ||
-                subList[_tc.index].subList.isEmpty) {
-              clearList("0");
-            }
-          });
+    if (mounted) if (mounted)
+      setState(() {
+        _tabs.add({
+          'text': subItem[index].name,
         });
-      _tc.animateTo(_tc.length-1);
-    });
+        _views.add(createTabContent(index, subItem));
+        _tc = _makeNewTabController(_tabs.length - 1)
+          ..addListener(() {
+            curTabId = subList[_tc.index].id;
+            selId = null;
+            if (mounted)
+              setState(() {
+                if (subList[_tc.index].subList == null ||
+                    subList[_tc.index].subList.isEmpty) {
+                  clearList("0");
+                }
+              });
+          });
+        _tc.animateTo(_tc.length - 1);
+      });
     // -----------
 /*     if (mounted) setState(() {
       for (int i = 0; i < subList.length; i++) {
@@ -185,38 +193,42 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   }
 
   void _addInitailTab() {
-     if (mounted) setState(() {
-      for (int i = 0; i < subList.length; i++) {
-        _tabs.add({
-          'text': subList[i].name,
-        });
-        if (subList[i].subList == null || subList[i].subList.isEmpty) {
-          _isLoading = true;
-          isLoadingmore = true;
-        }
-        _views.add(createTabContent(i, subList));
-      }
-
-      _tc = _makeNewTabController(0)
-        ..addListener(() {
-           if (mounted) setState(() {
-            if (subList[_tc.index].subList == null ||
-                subList[_tc.index].subList.isEmpty) {
-              clearList("0");
-            } else {}
+    if (mounted)
+      setState(() {
+        for (int i = 0; i < subList.length; i++) {
+          _tabs.add({
+            'text': subList[i].name,
           });
+          if (subList[i].subList == null || subList[i].subList.isEmpty) {
+            _isLoading = true;
+            isLoadingmore = true;
+          }
+          _views.add(createTabContent(i, subList));
+        }
 
-          selId = null;
-        });
-    });
+        _tc = _makeNewTabController(0)
+          ..addListener(() {
+            if (mounted)
+              setState(() {
+                if (subList[_tc.index].subList == null ||
+                    subList[_tc.index].subList.isEmpty) {
+                  clearList("0");
+                } else {}
+              });
+
+            selId = null;
+          });
+      });
   }
 
   @override
   Widget build(BuildContext context) {
-     deviceHeight = MediaQuery.of(context).size.height;
+    deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
+        titleSpacing: 0,
         title: Text(
           widget.title,
           style: TextStyle(
@@ -246,8 +258,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           isScrollable: true,
           tabs: _tabs
               .map((tab) => Tab(
-            text: tab['text'],
-          ))
+                    text: tab['text'],
+                  ))
               .toList(),
         ),
         actions: <Widget>[
@@ -264,7 +276,6 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                       MaterialPageRoute(
                         builder: (context) => Search(
                           updateHome: widget.updateHome,
-                          menuopen: false,
                         ),
                       ));
                 },
@@ -279,54 +290,110 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
               ),
             ),
           ),
-          subList.length >_tc.index &&
-              subList[_tc.index].filterList != null &&
-              subList[_tc.index].isFromProd &&
-              subList[_tc.index].filterList.length > 0
+          subList.length > _tc.index &&
+                  subList[_tc.index].filterList != null &&
+                  subList[_tc.index].isFromProd &&
+                  subList[_tc.index].filterList.length > 0
               ? Container(
-              margin: EdgeInsets.symmetric(vertical: 10),
-              decoration: shadow(),
-              child: Card(
-                  elevation: 0,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(4),
-                    onTap: () {
-                      return filterDialog();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Icon(
-                        Icons.tune,
-                        color: colors.primary,
-                        size: 22,
-                      ),
-                    ),
-                  )))
+                  margin: EdgeInsets.symmetric(vertical: 10),
+                  decoration: shadow(),
+                  child: Card(
+                      elevation: 0,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(4),
+                        onTap: () {
+                          return filterDialog();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.tune,
+                            color: colors.primary,
+                            size: 22,
+                          ),
+                        ),
+                      )))
               : Container(),
           subList.length > _tc.index &&
-              subList[_tc.index].subList != null &&
-              subList[_tc.index].isFromProd &&
-              subList[_tc.index].subList.length > 0
+                  subList[_tc.index].subList != null &&
+                  subList[_tc.index].isFromProd &&
+                  subList[_tc.index].subList.length > 0
               ? Container(
-              margin: EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 10),
-              decoration: shadow(),
-              child: Card(
-                  elevation: 0,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(4),
-                    onTap: () {
-                      return sortDialog();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Icon(
-                        Icons.filter_list,
-                        color: colors.primary,
-                        size: 22,
-                      ),
+                  margin:
+                      EdgeInsetsDirectional.only(top: 10, bottom: 10),
+                  decoration: shadow(),
+                  child: Card(
+                      elevation: 0,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(4),
+                        onTap: () {
+                          return sortDialog();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.filter_list,
+                            color: colors.primary,
+                            size: 22,
+                          ),
+                        ),
+                      )))
+              : Container(),
+          Container(
+            margin:
+            EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 5),
+            decoration: shadow(),
+            child: Card(
+              elevation: 0,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () {
+                  CUR_USERID == null
+                      ? Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Login(),
+                      ))
+                      : Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Cart(widget.updateHome, null),
+                      )).then((val) => widget.updateHome);
+                },
+                child: new Stack(children: <Widget>[
+                  Center(
+                    child: Image.asset(
+                      'assets/images/noti_cart.png',
+                      width: 30,
                     ),
-                  )))
-              : Container()
+                  ),
+                  (CUR_CART_COUNT != null &&
+                      CUR_CART_COUNT.isNotEmpty &&
+                      CUR_CART_COUNT != "0")
+                      ? new Positioned(
+                    top: 0.0,
+                    right: 5.0,
+                    bottom: 10,
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colors.primary.withOpacity(0.5)),
+                        child: new Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(3),
+                            child: new Text(
+                              CUR_CART_COUNT,
+                              style: TextStyle(
+                                  fontSize: 7, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        )),
+                  )
+                      : Container()
+                ]),
+              ),
+            ),
+          ),
         ],
       ),
       body: TabBarView(
@@ -341,204 +408,522 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
 
     return !subList[i].isFromProd && (subItem != null)
         ? SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          FadeInImage(
-            fadeInDuration: Duration(milliseconds: 150),
-            image: NetworkImage(subList[i].banner),
-            height: 150,
-            width: double.maxFinite,
-            fit: BoxFit.fill,
-            placeholder: AssetImage(
-              "assets/images/sliderph.png",
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                FadeInImage(
+                  fadeInDuration: Duration(milliseconds: 150),
+                  image: NetworkImage(subList[i].banner),
+                  height: 150,
+                  width: double.maxFinite,
+                  fit: BoxFit.fill,
+                  placeholder: AssetImage(
+                    "assets/images/sliderph.png",
+                  ),
+                ),
+                GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 3,
+                    childAspectRatio: 1,
+                    physics: NeverScrollableScrollPhysics(),
+                    children: List.generate(
+                      subItem.length,
+                      (index) {
+                        return listItem(index, subItem);
+                      },
+                    ))
+              ],
             ),
-          ),
-          GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 3,
-              childAspectRatio: 1,
-              physics: NeverScrollableScrollPhysics(),
-              children: List.generate(
-                subItem.length,
-                    (index) {
-                  return listItem(index, subItem);
-                },
-              ))
-        ],
-      ),
-    )
-        : SingleChildScrollView(
-      controller: controller,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FadeInImage(
-            fadeInDuration: Duration(milliseconds: 150),
-            image: NetworkImage(subList[i].banner),
-            height: 150,
-            width: double.maxFinite,
-            fit: BoxFit.fill,
-            placeholder: AssetImage(
-              "assets/images/sliderph.png",
-            ),
-          ),
-          _isLoading
-              ? shimmer()
-              : subItem.length == 0
-              ? Flexible(flex: 1, child: getNoItem(context))
-              : ListView.builder(
-            shrinkWrap: true,
-            itemCount:
-            (subList[i].offset < subList[i].totalItem)
-                ? subItem.length + 1
-                : subItem.length,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return (index == subItem.length && isLoadingmore)
-                  ? Center(child: CircularProgressIndicator())
-                  : productListItem(index, subItem);
-            },
           )
-        ],
-      ),
-    );
+        : Stack(
+            children: <Widget>[
+              SingleChildScrollView(
+                controller: controller,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FadeInImage(
+                      fadeInDuration: Duration(milliseconds: 150),
+                      image: NetworkImage(subList[i].banner),
+                      height: 150,
+                      width: double.maxFinite,
+                      fit: BoxFit.fill,
+                      placeholder: AssetImage(
+                        "assets/images/sliderph.png",
+                      ),
+                    ),
+                    _isLoading
+                        ? shimmer()
+                        : subItem.length == 0
+                            ? Flexible(flex: 1, child: getNoItem(context))
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                itemCount:
+                                    (subList[i].offset < subList[i].totalItem)
+                                        ? subItem.length + 1
+                                        : subItem.length,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return (index == subItem.length &&
+                                          isLoadingmore)
+                                      ? Center(
+                                          child: CircularProgressIndicator())
+                                      : productListItem(index, subItem);
+                                },
+                              )
+                  ],
+                ),
+              ),
+              showCircularProgress(_isProgress, colors.primary),
+            ],
+          );
   }
 
   Widget productListItem(int index, List<Product> subItem) {
+    Product model = subItem[index];
+
     double price = double.parse(subItem[index].prVarientList[0].disPrice);
     if (price == 0) price = double.parse(subItem[index].prVarientList[0].price);
+
+    List att, val;
+    if (model.prVarientList[model.selVarient].attr_name != null) {
+      att = model.prVarientList[model.selVarient].attr_name.split(',');
+      val = model.prVarientList[model.selVarient].varient_value.split(',');
+    }
+    if (_controller.length < index + 1)
+      _controller.add(new TextEditingController());
+
+    _controller[index].text = model.prVarientList[model.selVarient].cartCount;
+    items = new List<String>.generate(
+        model.totalAllow != null ? int.parse(model.totalAllow) : 10,
+        (i) => (i + 1).toString());
     return subItem.length >= index
         ? Card(
-      elevation: 0,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(4),
-        onTap: () {
-          Product model = subItem[index];
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              // transitionDuration: Duration(seconds: 1),
-                pageBuilder: (_, __, ___) => ProductDetail(
-                  model: model,
-                  updateParent: updateProductList,
-                  index: index,
-                  secPos: 0,
-                  updateHome: widget.updateHome,
-                  list: true,
-                  //  title: productList[index].name,
-                )),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                subItem[index].availability == "0"
-                    ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle1
-                        .copyWith(color: Colors.red))
-                    : Container(),
-                Row(
-                  children: <Widget>[
-                    Hero(
-                      tag: "$index${subItem[index].id}",
-                      child: FadeInImage(
-                        fadeInDuration: Duration(milliseconds: 150),
-                        image: NetworkImage(subItem[index].image),
-                        height: 80.0,
-                        width: 80.0,
-                        placeholder: placeHolder(80),
+            elevation: 0,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(4),
+              onTap: () {
+                Product model = subItem[index];
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => ProductDetail(
+                            model: model,
+                            updateParent: updateProductList,
+                            index: index,
+                            secPos: 0,
+                            updateHome: widget.updateHome,
+                            list: true,
+                          )),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Stack(children: <Widget>[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Hero(
+                        tag: "$index${subItem[index].id}",
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(7.0),
+                            child: FadeInImage(
+                              fadeInDuration: Duration(milliseconds: 150),
+                              image: NetworkImage(subItem[index].image),
+                              height: 80.0,
+                              width: 80.0,
+                              fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                              placeholder: placeHolder(80),
+                            )),
                       ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              subItem[index].name,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(
-                                  color: colors.lightBlack,
-                                  fontWeight: FontWeight.bold),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color: colors.primary,
-                                  size: 12,
-                                ),
-                                Text(
-                                  " " + subItem[index].rating,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .overline,
-                                ),
-                                Text(
-                                  " (" + subItem[index].noOfRating + ")",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .overline,
-                                )
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                Row(
-                                  children: <Widget>[
-                                    Text(
-                                      double.parse(subItem[index]
-                                          .prVarientList[0]
-                                          .disPrice) !=
-                                          0
-                                          ? CUR_CURRENCY +
-                                          "" +
-                                          subItem[index]
-                                              .prVarientList[0]
-                                              .price
-                                          : "",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .overline
-                                          .copyWith(
-                                          decoration: TextDecoration
-                                              .lineThrough,
-                                          letterSpacing: 0),
-                                    ),
-                                    Text(
-                                        " " +
-                                            CUR_CURRENCY +
-                                            " " +
-                                            price.toString(),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                subItem[index].name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .subtitle2
+                                    .copyWith(color: colors.lightBlack),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                          CUR_CURRENCY +
+                                              " " +
+                                              price.toString() +
+                                              " ",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .subtitle1),
+                                      Text(
+                                        double.parse(subItem[index]
+                                                    .prVarientList[0]
+                                                    .disPrice) !=
+                                                0
+                                            ? CUR_CURRENCY +
+                                                "" +
+                                                subItem[index]
+                                                    .prVarientList[0]
+                                                    .price
+                                            : "",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .subtitle1),
-                                  ],
-                                )
-                              ],
-                            )
-                          ],
+                                            .overline
+                                            .copyWith(
+                                                decoration:
+                                                    TextDecoration.lineThrough,
+                                                letterSpacing: 0),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                              model.prVarientList[model.selVarient].attr_name !=
+                                          null &&
+                                      model.prVarientList[model.selVarient]
+                                          .attr_name.isNotEmpty
+                                  ? ListView.builder(
+                                      physics: NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: att.length,
+                                      itemBuilder: (context, index) {
+                                        return Row(children: [
+                                          Flexible(
+                                            child: Text(
+                                              att[index].trim() + ":",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle2
+                                                  .copyWith(
+                                                      color: colors.lightBlack),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsetsDirectional.only(
+                                                start: 5.0),
+                                            child: Text(
+                                              val[index],
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle2
+                                                  .copyWith(
+                                                      color: colors.lightBlack,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                            ),
+                                          )
+                                        ]);
+                                      })
+                                  : Container(),
+                              Row(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.star,
+                                        color: colors.primary,
+                                        size: 12,
+                                      ),
+                                      Text(
+                                        " " + subItem[index].rating,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .overline,
+                                      ),
+                                      Text(
+                                        " (" + subItem[index].noOfRating + ")",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .overline,
+                                      )
+                                    ],
+                                  ),
+                                  Spacer(),
+                                  model.availability == "0"
+                                      ? Container()
+                                      : Row(
+                                          children: <Widget>[
+                                            Row(
+                                              children: <Widget>[
+                                                GestureDetector(
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(2),
+                                                    margin:
+                                                        EdgeInsetsDirectional
+                                                            .only(end: 8),
+                                                    child: Icon(
+                                                      Icons.remove,
+                                                      size: 14,
+                                                      color: colors.fontColor,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                        color:
+                                                            colors.lightWhite,
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    3))),
+                                                  ),
+                                                  onTap: () {
+                                                    if (_isProgress == false &&
+                                                        (int.parse(model
+                                                                .prVarientList[model
+                                                                    .selVarient]
+                                                                .cartCount)) >
+                                                            0)
+                                                      removeFromCart(
+                                                          index, model);
+                                                  },
+                                                ),
+                                                Container(
+                                                  width: 40,
+                                                  height: 20,
+                                                  child: Stack(
+                                                    children: [
+                                                      TextField(
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        readOnly: true,
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                        ),
+                                                        controller:
+                                                            _controller[index],
+                                                        decoration:
+                                                            InputDecoration(
+                                                          contentPadding:
+                                                              EdgeInsets.all(
+                                                                  5.0),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                                color: colors
+                                                                    .fontColor,
+                                                                width: 0.5),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5.0),
+                                                          ),
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide: BorderSide(
+                                                                color: colors
+                                                                    .fontColor,
+                                                                width: 0.5),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5.0),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      PopupMenuButton<String>(
+                                                        tooltip: '',
+                                                        icon: const Icon(
+                                                          Icons.arrow_drop_down,
+                                                          size: 1,
+                                                        ),
+                                                        onSelected:
+                                                            (String value) {
+                                                          if (_isProgress ==
+                                                              false)
+                                                            addToCart(index,
+                                                                value, model);
+                                                        },
+                                                        itemBuilder:
+                                                            (BuildContext
+                                                                context) {
+                                                          return items.map<
+                                                                  PopupMenuItem<
+                                                                      String>>(
+                                                              (String value) {
+                                                            return new PopupMenuItem(
+                                                                child: new Text(
+                                                                    value),
+                                                                value: value);
+                                                          }).toList();
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ), // ),
+
+                                                GestureDetector(
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(2),
+                                                    margin: EdgeInsets.only(
+                                                        left: 8),
+                                                    child: Icon(
+                                                      Icons.add,
+                                                      size: 14,
+                                                      color: colors.fontColor,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                        color:
+                                                            colors.lightWhite,
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    3))),
+                                                  ),
+                                                  onTap: () {
+                                                    if (_isProgress == false)
+                                                      addToCart(
+                                                          index,
+                                                          (int.parse(model
+                                                                      .prVarientList[
+                                                                          model
+                                                                              .selVarient]
+                                                                      .cartCount) +
+                                                                  1)
+                                                              .toString(),
+                                                          model);
+                                                  },
+                                                )
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    )
-                  ],
-                )
-              ]),
-        ),
-      ),
-    )
+                      )
+                    ],
+                  ),
+                  subItem[index].availability == "0"
+                      ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+                          style: Theme.of(context).textTheme.subtitle2.copyWith(
+                              color: Colors.red, fontWeight: FontWeight.bold))
+                      : Container(),
+                ]),
+              ),
+            ),
+          )
         : Container();
+  }
+
+  Future<void> addToCart(int index, String qty, Product model) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+            _views[_tc.index] = createTabContent(_tc.index, subList);
+          });
+        var parameter = {
+          USER_ID: CUR_USERID,
+          PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
+          QTY: qty
+        };
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+
+          String qty = data['total_quantity'];
+          CUR_CART_COUNT = data['cart_count'];
+
+          model.prVarientList[model.selVarient].cartCount = qty.toString();
+        } else {
+          setSnackbar(msg);
+        }
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+            _views[_tc.index] = createTabContent(_tc.index, subList);
+          });
+
+        widget.updateHome();
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+      }
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  removeFromCart(int index, Product model) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+            _views[_tc.index] = createTabContent(_tc.index, subList);
+          });
+
+        var parameter = {
+          PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
+          USER_ID: CUR_USERID,
+          QTY: (int.parse(model.prVarientList[model.selVarient].cartCount) - 1)
+              .toString()
+        };
+        print("remove****$parameter");
+
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+        print("remove****${response.body.toString()}");
+        var getdata = json.decode(response.body);
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+
+          String qty = data['total_quantity'];
+          CUR_CART_COUNT = data['cart_count'];
+
+          model.prVarientList[model.selVarient].cartCount = qty.toString();
+
+        } else {
+          setSnackbar(msg);
+        }
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+            _views[_tc.index] = createTabContent(_tc.index, subList);
+          });
+        if (widget.updateHome != null) widget.updateHome();
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+      }
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
   }
 
   Widget listItem(int index, List<Product> subItem) {
@@ -608,7 +993,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                 contentPadding: const EdgeInsets.all(0.0),
                 content: Column(mainAxisSize: MainAxisSize.min, children: [
                   Padding(
-                      padding: EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
+                      padding:
+                          EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
                       child: Text(
                         getTranslated(context, 'SORT_BY'),
                         style: Theme.of(context).textTheme.headline6,
@@ -704,236 +1090,245 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       builder: (builder) {
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              return Column(mainAxisSize: MainAxisSize.min, children: [
-                Padding(
-                    padding: const EdgeInsetsDirectional.only(top: 30.0),
-                    child: AppBar(
-                      title: Text(
-                        getTranslated(context, 'FILTER'),
-                        style: TextStyle(
-                          color: colors.fontColor,
+          return Column(mainAxisSize: MainAxisSize.min, children: [
+            Padding(
+                padding: const EdgeInsetsDirectional.only(top: 30.0),
+                child: AppBar(
+                  title: Text(
+                    getTranslated(context, 'FILTER'),
+                    style: TextStyle(
+                      color: colors.fontColor,
+                    ),
+                  ),
+                  elevation: 5,
+                  leading: Builder(builder: (BuildContext context) {
+                    return Container(
+                      margin: EdgeInsets.all(10),
+                      decoration: shadow(),
+                      child: Card(
+                        elevation: 0,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(4),
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.only(end: 4.0),
+                            child: Icon(Icons.keyboard_arrow_left,
+                                color: colors.primary),
+                          ),
                         ),
                       ),
-                      elevation: 5,
-                      leading: Builder(builder: (BuildContext context) {
-                        return Container(
-                          margin: EdgeInsets.all(10),
-                          decoration: shadow(),
-                          child: Card(
-                            elevation: 0,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(4),
-                              onTap: () => Navigator.of(context).pop(),
-                              child: Padding(
-                                padding: const EdgeInsetsDirectional.only(end: 4.0),
-                                child: Icon(Icons.keyboard_arrow_left,
-                                    color: colors.primary),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                      actions: [
-                        Container(
-                          margin: EdgeInsetsDirectional.only(end: 10.0),
-                          alignment: Alignment.center,
-                          child: InkWell(
-                              child: Text(getTranslated(context, 'FILTER_CLEAR_LBL'),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
-                                      .copyWith(
+                    );
+                  }),
+                  actions: [
+                    Container(
+                      margin: EdgeInsetsDirectional.only(end: 10.0),
+                      alignment: Alignment.center,
+                      child: InkWell(
+                          child: Text(
+                              getTranslated(context, 'FILTER_CLEAR_LBL'),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
                                       fontWeight: FontWeight.normal,
                                       color: colors.fontColor)),
-                              onTap: () {
-                                 if (mounted) setState(() {
-                                  subList[_tc.index].selectedId.clear();
-                                });
-                              }),
-                        ),
-                      ],
-                    )),
-                Expanded(
-                    child: Container(
-                        color: colors.lightWhite,
-                        padding: EdgeInsetsDirectional.only(start: 7.0, end: 7.0, top: 7.0),
-                        child: Card(
-                            child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Expanded(
-                                      flex: 2,
-                                      child: Container(
-                                          color: colors.lightWhite,
-                                          child: ListView.builder(
-                                            shrinkWrap: true,
-                                            scrollDirection: Axis.vertical,
-                                            padding: EdgeInsetsDirectional.only(top: 10.0),
-                                            itemCount:
-                                            subList[_tc.index].filterList.length,
-                                            itemBuilder: (context, index) {
-                                              attsubList = subList[_tc.index]
-                                                  .filterList[index]
-                                                  .attributeValues
-                                                  .split(',');
+                          onTap: () {
+                            if (mounted)
+                              setState(() {
+                                subList[_tc.index].selectedId.clear();
+                              });
+                          }),
+                    ),
+                  ],
+                )),
+            Expanded(
+                child: Container(
+                    color: colors.lightWhite,
+                    padding: EdgeInsetsDirectional.only(
+                        start: 7.0, end: 7.0, top: 7.0),
+                    child: Card(
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                          Expanded(
+                              flex: 2,
+                              child: Container(
+                                  color: colors.lightWhite,
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.vertical,
+                                    padding:
+                                        EdgeInsetsDirectional.only(top: 10.0),
+                                    itemCount:
+                                        subList[_tc.index].filterList.length,
+                                    itemBuilder: (context, index) {
+                                      attsubList = subList[_tc.index]
+                                          .filterList[index]
+                                          .attributeValues
+                                          .split(',');
 
-                                              attListId = subList[_tc.index]
-                                                  .filterList[index]
-                                                  .attributeValId
-                                                  .split(',');
+                                      attListId = subList[_tc.index]
+                                          .filterList[index]
+                                          .attributeValId
+                                          .split(',');
 
-                                              if (filter == "") {
+                                      if (filter == "") {
+                                        filter = subList[_tc.index]
+                                            .filterList[0]
+                                            .name;
+                                      }
+
+                                      return InkWell(
+                                          onTap: () {
+                                            if (mounted)
+                                              setState(() {
                                                 filter = subList[_tc.index]
-                                                    .filterList[0]
+                                                    .filterList[index]
                                                     .name;
-                                              }
+                                              });
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsetsDirectional.only(
+                                                start: 20,
+                                                top: 10.0,
+                                                bottom: 10.0),
+                                            decoration: BoxDecoration(
+                                                color: filter ==
+                                                        subList[_tc.index]
+                                                            .filterList[index]
+                                                            .name
+                                                    ? colors.white
+                                                    : colors.lightWhite,
+                                                borderRadius: BorderRadius.only(
+                                                    topLeft: Radius.circular(7),
+                                                    bottomLeft:
+                                                        Radius.circular(7))),
+                                            alignment: AlignmentDirectional
+                                                .centerStart,
+                                            child: new Text(
+                                              subList[_tc.index]
+                                                  .filterList[index]
+                                                  .name,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subtitle1
+                                                  .copyWith(
+                                                      color: filter ==
+                                                              subList[_tc.index]
+                                                                  .filterList[
+                                                                      index]
+                                                                  .name
+                                                          ? colors.fontColor
+                                                          : colors.lightBlack,
+                                                      fontWeight:
+                                                          FontWeight.normal),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                            ),
+                                          ));
+                                    },
+                                  ))),
+                          Expanded(
+                              flex: 3,
+                              child: ListView.builder(
+                                  shrinkWrap: true,
+                                  padding:
+                                      EdgeInsetsDirectional.only(top: 10.0),
+                                  scrollDirection: Axis.vertical,
+                                  itemCount:
+                                      subList[_tc.index].filterList.length,
+                                  itemBuilder: (context, index) {
+                                    if (filter ==
+                                        subList[_tc.index]
+                                            .filterList[index]
+                                            .name) {
+                                      attsubList = subList[_tc.index]
+                                          .filterList[index]
+                                          .attributeValues
+                                          .split(',');
 
-                                              return InkWell(
-                                                  onTap: () {
-                                                     if (mounted) setState(() {
-                                                      filter = subList[_tc.index]
-                                                          .filterList[index]
-                                                          .name;
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    padding: EdgeInsetsDirectional.only(
-                                                        start: 20,
-                                                        top: 10.0,
-                                                        bottom: 10.0),
-                                                    decoration: BoxDecoration(
-                                                        color: filter ==
-                                                            subList[_tc.index]
-                                                                .filterList[index]
-                                                                .name
-                                                            ? colors.white
-                                                            : colors.lightWhite,
-                                                        borderRadius: BorderRadius.only(
-                                                            topLeft: Radius.circular(7),
-                                                            bottomLeft:
-                                                            Radius.circular(7))),
-                                                    alignment: AlignmentDirectional.centerStart,
-                                                    child: new Text(
-                                                      subList[_tc.index]
-                                                          .filterList[index]
-                                                          .name,
+                                      attListId = subList[_tc.index]
+                                          .filterList[index]
+                                          .attributeValId
+                                          .split(',');
+                                      return Container(
+                                          child: ListView.builder(
+                                              shrinkWrap: true,
+                                              physics:
+                                                  NeverScrollableScrollPhysics(),
+                                              itemCount: attListId.length,
+                                              itemBuilder: (context, i) {
+                                                return CheckboxListTile(
+                                                  dense: true,
+                                                  title: Text(attsubList[i],
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .subtitle1
                                                           .copyWith(
-                                                          color: filter ==
-                                                              subList[_tc.index]
-                                                                  .filterList[
-                                                              index]
-                                                                  .name
-                                                              ? colors.fontColor
-                                                              : colors.lightBlack,
-                                                          fontWeight:
-                                                          FontWeight.normal),
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 2,
-                                                    ),
-                                                  ));
-                                            },
-                                          ))),
-                                  Expanded(
-                                      flex: 3,
-                                      child: ListView.builder(
-                                          shrinkWrap: true,
-                                          padding: EdgeInsetsDirectional.only(top: 10.0),
-                                          scrollDirection: Axis.vertical,
-                                          itemCount:
-                                          subList[_tc.index].filterList.length,
-                                          itemBuilder: (context, index) {
-                                            if (filter ==
-                                                subList[_tc.index]
-                                                    .filterList[index]
-                                                    .name) {
-                                              attsubList = subList[_tc.index]
-                                                  .filterList[index]
-                                                  .attributeValues
-                                                  .split(',');
-
-                                              attListId = subList[_tc.index]
-                                                  .filterList[index]
-                                                  .attributeValId
-                                                  .split(',');
-                                              return Container(
-                                                  child: ListView.builder(
-                                                      shrinkWrap: true,
-                                                      physics:
-                                                      NeverScrollableScrollPhysics(),
-                                                      itemCount: attListId.length,
-                                                      itemBuilder: (context, i) {
-                                                        return CheckboxListTile(
-                                                          dense: true,
-                                                          title: Text(attsubList[i],
-                                                              style: Theme.of(context)
-                                                                  .textTheme
-                                                                  .subtitle1
-                                                                  .copyWith(
-                                                                  color: colors
-                                                                      .lightBlack,
-                                                                  fontWeight:
+                                                              color: colors
+                                                                  .lightBlack,
+                                                              fontWeight:
                                                                   FontWeight
                                                                       .normal)),
-                                                          value: subList[_tc.index]
+                                                  value: subList[_tc.index]
+                                                      .selectedId
+                                                      .contains(attListId[i]),
+                                                  activeColor: colors.primary,
+                                                  controlAffinity:
+                                                      ListTileControlAffinity
+                                                          .leading,
+                                                  onChanged: (bool val) {
+                                                    if (mounted)
+                                                      setState(() {
+                                                        if (val == true) {
+                                                          subList[_tc.index]
                                                               .selectedId
-                                                              .contains(attListId[i]),
-                                                          activeColor: colors.primary,
-                                                          controlAffinity:
-                                                          ListTileControlAffinity
-                                                              .leading,
-                                                          onChanged: (bool val) {
-                                                             if (mounted) setState(() {
-                                                              if (val == true) {
-                                                                subList[_tc.index]
-                                                                    .selectedId
-                                                                    .add(attListId[i]);
-                                                              } else {
-                                                                subList[_tc.index]
-                                                                    .selectedId
-                                                                    .remove(
-                                                                    attListId[i]);
-                                                              }
-                                                            });
-                                                          },
-                                                        );
-                                                      }));
-                                            } else {
-                                              return Container();
-                                            }
-                                          })),
-                                ])))),
-                Container(
-                  color: colors.white,
-                  child: Row(children: <Widget>[
-                    Padding(
-                        padding: EdgeInsetsDirectional.only(start: 15.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(subList[_tc.index].totalItem.toString()),
-                            Text(getTranslated(context, 'PRODUCTS_FOUND_LBL')),
-                          ],
-                        )),
-                    Spacer(),
-                    SimBtn(
-                      size: 0.4,
-                      title: getTranslated(context, 'APPLY'),
-                      onBtnSelected: () {
-                        if (subList[_tc.index].selectedId != null) {
-                          selId = subList[_tc.index].selectedId.join(',');
-                          clearList("0");
-                          Navigator.pop(context, 'Product Filter');
-                        }
-                      },
-                    ),
-                  ]),
-                )
-              ]);
-            });
+                                                              .add(
+                                                                  attListId[i]);
+                                                        } else {
+                                                          subList[_tc.index]
+                                                              .selectedId
+                                                              .remove(
+                                                                  attListId[i]);
+                                                        }
+                                                      });
+                                                  },
+                                                );
+                                              }));
+                                    } else {
+                                      return Container();
+                                    }
+                                  })),
+                        ])))),
+            Container(
+              color: colors.white,
+              child: Row(children: <Widget>[
+                Padding(
+                    padding: EdgeInsetsDirectional.only(start: 15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(subList[_tc.index].totalItem.toString()),
+                        Text(getTranslated(context, 'PRODUCTS_FOUND_LBL')),
+                      ],
+                    )),
+                Spacer(),
+                SimBtn(
+                  size: 0.4,
+                  title: getTranslated(context, 'APPLY'),
+                  onBtnSelected: () {
+                    if (subList[_tc.index].selectedId != null) {
+                      selId = subList[_tc.index].selectedId.join(',');
+                      clearList("0");
+                      Navigator.pop(context, 'Product Filter');
+                    }
+                  },
+                ),
+              ]),
+            )
+          ]);
+        });
       },
     );
   }
@@ -958,8 +1353,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
         Response response =
-        await post(getProductApi, headers: headers, body: parameter)
-            .timeout(Duration(seconds: timeOut));
+            await post(getProductApi, headers: headers, body: parameter)
+                .timeout(Duration(seconds: timeOut));
 
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
@@ -968,7 +1363,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
           if (!error) {
             total = int.parse(getdata["total"]);
             offset =
-            subList[cur].subList == null ? 0 : subList[cur].subList.length;
+                subList[cur].subList == null ? 0 : subList[cur].subList.length;
 
             if (subList[cur].filterList == null ||
                 subList[cur].filterList.length == 0) {
@@ -998,44 +1393,48 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             if (msg != "Products Not Found !") setSnackbar(msg);
             isLoadingmore = false;
           }
-          if (mounted)
-             if (mounted) setState(() {
+       if (mounted)
+            setState(() {
               _isLoading = false;
             });
 
           subList[cur].isFromProd = true;
           _views[cur] = createTabContent(cur, subList);
         } else {
-           if (mounted) setState(() {
-            _isLoading = false;
-          });
+          if (mounted)
+            setState(() {
+              _isLoading = false;
+            });
         }
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
   clearList(String top) {
-     if (mounted) setState(() {
-      _isLoading = true;
-      _views[_tc.index] = createTabContent(_tc.index, subList);
-      total = 0;
-      offset = 0;
-      subList[_tc.index].totalItem = 0;
-      subList[_tc.index].offset = 0;
-      subList[_tc.index].subList = [];
-      curTabId = subList[_tc.index].id;
+    if (mounted)
+      setState(() {
+        _isLoading = true;
+        _views[_tc.index] = createTabContent(_tc.index, subList);
+        total = 0;
+        offset = 0;
+        subList[_tc.index].totalItem = 0;
+        subList[_tc.index].offset = 0;
+        subList[_tc.index].subList = [];
+        curTabId = subList[_tc.index].id;
 
-      getProduct(curTabId, _tc.index, top);
-    });
+        getProduct(curTabId, _tc.index, top);
+      });
   }
 
   setSnackbar(String msg) {
@@ -1051,7 +1450,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   }
 
   updateProductList() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   _scrollListener() {

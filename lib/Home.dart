@@ -76,7 +76,7 @@ class StateHome extends State<Home> {
   }
 
   updateHome() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   @override
@@ -142,7 +142,8 @@ class StateHome extends State<Home> {
       // centerTitle:_curSelected == 0? false:true,
       actions: <Widget>[
         Padding(
-          padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 10, end: 10),
+          padding:
+              const EdgeInsetsDirectional.only(top: 10.0, bottom: 10, end: 10),
           child: Container(
             decoration: shadow(),
             child: Card(
@@ -202,7 +203,7 @@ class StateHome extends State<Home> {
 
   getBottomBar() {
     isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-     return CurvedNavigationBar(
+    return CurvedNavigationBar(
         key: bottomNavigationKey,
         backgroundColor: isDarkTheme ? colors.darkColor : colors.lightWhite,
         color: isDarkTheme ? colors.darkColor2 : colors.white,
@@ -242,9 +243,10 @@ class StateHome extends State<Home> {
                 )
         ],
         onTap: (int index) {
-           if (mounted) setState(() {
-            curSelected = index;
-          });
+          if (mounted)
+            setState(() {
+              curSelected = index;
+            });
         });
   }
 
@@ -309,18 +311,15 @@ class StateHome extends State<Home> {
       debugPrint('notification payload: $payload');
     }
 
-    List<String> pay=payload.split(",");
+    List<String> pay = payload.split(",");
     if (pay[0] == "products") {
       getProduct(pay[1], 0, 0, true);
-    }
-    else if(pay[0]=="categories")
-      {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AllCategory()),
-        );
-      }
-    else {
+    } else if (pay[0] == "categories") {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AllCategory()),
+      );
+    } else {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => MyApp()),
@@ -356,8 +355,6 @@ class StateHome extends State<Home> {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-
-
         var parameter = {
           ID: id,
         };
@@ -366,7 +363,6 @@ class StateHome extends State<Home> {
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -398,15 +394,16 @@ class StateHome extends State<Home> {
       }
     } else {
       {
-         if (mounted) setState(() {
-          _isNetworkAvail = false;
-        });
+        if (mounted)
+          setState(() {
+            _isNetworkAvail = false;
+          });
       }
     }
   }
 
   updateParent() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 }
 
@@ -470,7 +467,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   updateHomePage() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   @override
@@ -527,7 +524,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   getOfferImages();
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -638,9 +635,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   controller: _controller,
                   physics: AlwaysScrollableScrollPhysics(),
                   onPageChanged: (index) {
-                     if (mounted) setState(() {
-                      _curSlider = index;
-                    });
+                    if (mounted)
+                      setState(() {
+                        _curSlider = index;
+                      });
                   },
                   itemBuilder: (BuildContext context, int index) {
                     return pages[index];
@@ -741,7 +739,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               hintStyle: Theme.of(context).textTheme.bodyText2.copyWith(
                     color: colors.fontColor,
                   ),
-              //prefixIcon: Image.asset('assets/images/search.png'),
               suffixIcon: Image.asset(
                 'assets/images/search.png',
                 color: isDarkTheme ? colors.secondary : colors.primary,
@@ -756,10 +753,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             MaterialPageRoute(
               builder: (context) => Search(
                 updateHome: widget.updateHome,
-                menuopen: menuOpen,
               ),
             ));
-         if (mounted) setState(() {});
+        if (mounted) setState(() {});
       },
     );
   }
@@ -793,7 +789,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                           updateHome: widget.updateHome,
                         )),
               );
-               if (mounted) setState(() {});
+              if (mounted) setState(() {});
             },
           ),
         ],
@@ -824,7 +820,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                             id: catList[index].id,
                             updateHome: widget.updateHome),
                       ));
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 } else {
                   await Navigator.push(
                       context,
@@ -834,7 +830,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                             subList: catList[index].subList,
                             updateHome: widget.updateHome),
                       ));
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               },
               child: Column(
@@ -894,9 +890,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-     if (mounted) setState(() {
-      _isCatLoading = true;
-    });
+    if (mounted)
+      setState(() {
+        _isCatLoading = true;
+      });
     return callApi();
   }
 
@@ -1158,7 +1155,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
       return Card(
         elevation: 0.2,
-        margin:   EdgeInsetsDirectional.only(bottom: 5, end: pad ? 5 : 0),
+        margin: EdgeInsetsDirectional.only(bottom: 5, end: pad ? 5 : 0),
         child: InkWell(
           borderRadius: BorderRadius.circular(4),
           child: Column(
@@ -1179,13 +1176,15 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                             sectionList[secPos].productList[index].image),
                         height: double.maxFinite,
                         width: double.maxFinite,
+                        fit: extendImg ? BoxFit.fill : BoxFit.contain,
                         // errorWidget: (context, url, e) => placeHolder(width),
                         placeholder: placeHolder(width),
                       ),
                     )),
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.only(start: 5.0, top: 5, bottom: 5),
+                padding: const EdgeInsetsDirectional.only(
+                    start: 5.0, top: 5, bottom: 5),
                 child: Text(
                   sectionList[secPos].productList[index].name,
                   style: Theme.of(context)
@@ -1200,7 +1199,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   style: TextStyle(
                       color: colors.fontColor, fontWeight: FontWeight.bold)),
               Padding(
-                padding: const EdgeInsetsDirectional.only(start: 5.0, bottom: 5, top: 3),
+                padding: const EdgeInsetsDirectional.only(
+                    start: 5.0, bottom: 5, top: 3),
                 child: double.parse(sectionList[secPos]
                             .productList[index]
                             .prVarientList[0]
@@ -1228,12 +1228,17 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                                     decoration: TextDecoration.lineThrough,
                                     letterSpacing: 0),
                           ),
-                          Text(" | " + "-$offPer%",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .overline
-                                  .copyWith(
-                                      color: colors.primary, letterSpacing: 0)),
+                          Flexible(
+                            child: Text(" | " + "-$offPer%",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .overline
+                                    .copyWith(
+                                        color: colors.primary,
+                                        letterSpacing: 0)),
+                          ),
                         ],
                       )
                     : Container(
@@ -1267,9 +1272,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   _setFav(int secPos, int index) async {
     try {
-       if (mounted) setState(() {
-        sectionList[secPos].productList[index].isFavLoading = true;
-      });
+      if (mounted)
+        setState(() {
+          sectionList[secPos].productList[index].isFavLoading = true;
+        });
 
       var parameter = {
         USER_ID: CUR_USERID,
@@ -1289,9 +1295,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-         if (mounted) setState(() {
-          sectionList[secPos].productList[index].isFavLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            sectionList[secPos].productList[index].isFavLoading = false;
+          });
       }
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
@@ -1319,11 +1326,12 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       getSetting();
       getOfferImages();
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
       if (mounted)
-         if (mounted) setState(() {
+        setState(() {
+          _isNetworkAvail = false;
+        });
+      if (mounted) if (mounted)
+        setState(() {
           _isCatLoading = false;
         });
     }
@@ -1379,14 +1387,14 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
       }
-      if (mounted)
-         if (mounted) setState(() {
+      if (mounted) if (mounted)
+        setState(() {
           _isCatLoading = false;
         });
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
-      if (mounted)
-         if (mounted) setState(() {
+      if (mounted) if (mounted)
+        setState(() {
           _isCatLoading = false;
         });
     }
@@ -1416,16 +1424,17 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         }
       }
       Future.delayed(const Duration(seconds: 1), () {
-        if (mounted)
-           if (mounted) setState(() {
+        if (mounted) if (mounted)
+          setState(() {
             _isCatLoading = false;
           });
       });
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
-       if (mounted) setState(() {
-        _isCatLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _isCatLoading = false;
+        });
     }
   }
 
@@ -1489,16 +1498,17 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         }
       }
       Future.delayed(const Duration(seconds: 1), () {
-        if (mounted)
-           if (mounted) setState(() {
+        if (mounted) if (mounted)
+          setState(() {
             _isCatLoading = false;
           });
       });
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
-       if (mounted) setState(() {
-        _isCatLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _isCatLoading = false;
+        });
     }
     return null;
   }

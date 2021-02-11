@@ -77,10 +77,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    promoAmt = 0;
     remWalBal = 0;
     usedBal = 0;
-    isPromoValid = false;
     isUseWallet = false;
     isPayLayShow = true;
     _getAddress();
@@ -132,6 +130,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         Response response =
             await post(validatePromoApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
+
+        print("response****${response.body.toString()}");
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
@@ -142,7 +142,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
 
             totalPrice = double.parse(data["final_total"]);
             promoAmt = double.parse(data["final_discount"]);
-
+            promocode = data["promo_code"];
             isPromoValid = true;
             stateCheck.setSnackbar(getTranslated(context, 'PROMO_SUCCESS'));
           } else {
@@ -503,10 +503,11 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                         child: FadeInImage(
                           image: NetworkImage(
                               cartList[index].productList[0].image),
-                          height: 60.0,
-                          width: 60.0,
+                          height: 80.0,
+                          width: 80.0,
+                          fit: extendImg?BoxFit.fill:BoxFit.contain,
                           // errorWidget: (context, url, e) => placeHolder(60),
-                          placeholder: placeHolder(60),
+                          placeholder: placeHolder(80),
                         ))),
                 Expanded(
                   child: Padding(
@@ -1268,6 +1269,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
             parameter[ACTIVE_STATUS] = WAITING;
         }
 
+        print("param****$parameter");
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));

@@ -138,8 +138,6 @@ class StateCat extends State<AllCategory> {
                   child: FadeInImage(
                     image: NetworkImage(catList[index].image),
                     fadeInDuration: Duration(milliseconds: 150),
-                    //height: 50,
-                    //width: 50,
                     fit: BoxFit.fill,
                     placeholder: placeHolder(50),
                   )),
@@ -150,7 +148,6 @@ class StateCat extends State<AllCategory> {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-
             style: Theme.of(context)
                 .textTheme
                 .caption
@@ -167,6 +164,7 @@ class StateCat extends State<AllCategory> {
                 builder: (context) => ProductList(
                   name: catList[index].name,
                   id: catList[index].id,
+                  updateHome: widget.updateHome,
                 ),
               ));
         } else {

@@ -76,6 +76,7 @@ errorWidget(double size) {
 
 getAppBar(String title, BuildContext context) {
   return AppBar(
+    titleSpacing: 0,
     leading: Builder(builder: (BuildContext context) {
       return Container(
         margin: EdgeInsets.all(10),
@@ -404,7 +405,7 @@ String getToken() {
   final claimSet = new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
 
   String token = issueJwtHS256(claimSet, jwtKey);
-print("token***$token");
+  print("token***$token");
   return token;
 }
 

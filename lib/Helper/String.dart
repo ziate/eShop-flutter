@@ -36,6 +36,8 @@ final String getJwtKeyApi = baseUrl + 'get_jwt_key';
 final String getOfferImageApi = baseUrl + 'get_offer_images';
 final String getFaqsApi = baseUrl + 'get_faqs';
 final String updateFcmApi = baseUrl + 'update_fcm';
+final String getWalTranApi = baseUrl + 'transactions';
+
 
 
 
@@ -105,6 +107,8 @@ const String USERDATA = 'user_data';
 const String DATE_ADDED = 'date_added';
 const String ORDER_ITEMS = 'order_items';
 const String TOP_RETAED = 'top_rated_product';
+const String WALLET='wallet';
+const String CREDIT='credit';
 
 
 const String USER_NAME = 'user_name';
@@ -207,7 +211,7 @@ const String TXNID = 'txn_id';
 const String SUCCESS = 'Success';
 const String ACTIVE_STATUS = 'active_status';
 const String WAITING = 'awaiting';
-
+const String TRANS_TYPE='transaction_type';
 const String QUESTION="question";
 const String ANSWER="answer";
 const String INVOICE="invoice_html";
@@ -233,7 +237,7 @@ String CUR_BALANCE = '';
 String RETURN_DAYS='';
 String MAX_ITEMS='';
 bool ISFLAT_DEL=true;
-
+bool extendImg=true;
 
 double deviceHeight;
 double deviceWidth;

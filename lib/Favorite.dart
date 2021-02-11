@@ -145,8 +145,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
       elevation: 0.1,
       child: InkWell(
         borderRadius: BorderRadius.circular(4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
             favList[index].productList[0].availability == "0"
                 ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
@@ -169,6 +168,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                 favList[index].productList[0].image),
                             height: 80.0,
                             width: 80.0,
+                            fit: extendImg ? BoxFit.fill : BoxFit.contain,
                             // errorWidget: (context, url, e) => placeHolder(80),
                             placeholder: placeHolder(80),
                           ))),
@@ -199,6 +199,12 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                           Row(
                             children: <Widget>[
                               Text(
+                                CUR_CURRENCY + " " + price.toString() + " ",
+                                style: TextStyle(
+                                    color: colors.fontColor,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              Text(
                                 int.parse(favList[index]
                                             .productList[0]
                                             .prVarientList[selectedPos]
@@ -218,77 +224,74 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                         decoration: TextDecoration.lineThrough,
                                         letterSpacing: 0.7),
                               ),
-                              Text(
-                                " " + CUR_CURRENCY + " " + price.toString(),
-                                style: TextStyle(
-                                    color: colors.fontColor,
-                                    fontWeight: FontWeight.w600),
-                              ),
                             ],
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              PopupMenuButton(
-                                padding: EdgeInsets.zero,
-                                onSelected: (result) async {
-                                  if (result == 0) {
-                                    _removeFav(index);
-                                  }
-                                  if (result == 1) {
-                                    addToCart(index);
-                                  }
-                                  if (result == 2) {
-                                    if (mounted)
-                                      setState(() {
-                                        _isProgress = true;
-                                      });
-                                    createDynamicLink(index, 0, true,
-                                        favList[index].productList[0].id);
-                                  }
-                                },
-                                itemBuilder: (BuildContext context) =>
-                                    <PopupMenuEntry>[
-                                  PopupMenuItem(
-                                    value: 0,
-                                    child: ListTile(
-                                      dense: true,
-                                      contentPadding:
-                                          EdgeInsetsDirectional.only(
-                                              start: 0.0, end: 0.0),
-                                      leading: Icon(
-                                        Icons.close,
-                                        color: colors.fontColor,
-                                        size: 20,
+                              Container(
+                                height: 20,
+                                child: PopupMenuButton(
+                                  padding: EdgeInsets.zero,
+                                  onSelected: (result) async {
+                                    if (result == 0) {
+                                      _removeFav(index);
+                                    }
+                                    if (result == 1) {
+                                      addToCart(index);
+                                    }
+                                    if (result == 2) {
+                                      if (mounted)
+                                        setState(() {
+                                          _isProgress = true;
+                                        });
+                                      createDynamicLink(index, 0, true,
+                                          favList[index].productList[0].id);
+                                    }
+                                  },
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry>[
+                                    PopupMenuItem(
+                                      value: 0,
+                                      child: ListTile(
+                                        dense: true,
+                                        contentPadding:
+                                            EdgeInsetsDirectional.only(
+                                                start: 0.0, end: 0.0),
+                                        leading: Icon(
+                                          Icons.close,
+                                          color: colors.fontColor,
+                                          size: 20,
+                                        ),
+                                        title: Text('Remove'),
                                       ),
-                                      title: Text('Remove'),
                                     ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 1,
-                                    child: ListTile(
-                                      dense: true,
-                                      contentPadding:
-                                          EdgeInsetsDirectional.only(
-                                              start: 0.0, end: 0.0),
-                                      leading: Icon(Icons.shopping_cart,
-                                          color: colors.fontColor, size: 20),
-                                      title: Text('Add to Cart'),
+                                    PopupMenuItem(
+                                      value: 1,
+                                      child: ListTile(
+                                        dense: true,
+                                        contentPadding:
+                                            EdgeInsetsDirectional.only(
+                                                start: 0.0, end: 0.0),
+                                        leading: Icon(Icons.shopping_cart,
+                                            color: colors.fontColor, size: 20),
+                                        title: Text('Add to Cart'),
+                                      ),
                                     ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 2,
-                                    child: ListTile(
-                                      dense: true,
-                                      contentPadding:
-                                          EdgeInsetsDirectional.only(
-                                              start: 0.0, end: 0.0),
-                                      leading: Icon(Icons.share_outlined,
-                                          color: colors.fontColor, size: 20),
-                                      title: Text('Share'),
+                                    PopupMenuItem(
+                                      value: 2,
+                                      child: ListTile(
+                                        dense: true,
+                                        contentPadding:
+                                            EdgeInsetsDirectional.only(
+                                                start: 0.0, end: 0.0),
+                                        leading: Icon(Icons.share_outlined,
+                                            color: colors.fontColor, size: 20),
+                                        title: Text('Share'),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ],
                           )

@@ -61,7 +61,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   List<int> _selectedIndex = [];
   ChoiceChip choiceChip;
-  int _selVarient = 0, _oldSelVarient = 0;
+  int _oldSelVarient = 0;
   bool _isProgress = false, _isLoading = true;
 
 
@@ -96,7 +96,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
     getShare();
 
-    getAvailVarient();
+    _oldSelVarient=widget.model.selVarient;
+
     reviewList.clear();
     offset = 0;
     total = 0;
@@ -277,6 +278,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       ),
                       height: height,
                       width: double.maxFinite,
+                      fit: extendImg?BoxFit.fill:BoxFit.contain,
                     );
                   },
                 ),
@@ -662,7 +664,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                         ? Divider()
                         : Container(),
                     _madeIn(),
-                    _otherDetail(_selVarient),
+                    _otherDetail(widget.model.selVarient),
                     _cancleable(),
                   ],
                 )
@@ -683,26 +685,26 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       if (widget.model.availability == "1") {
         available = true;
 
-        _oldSelVarient = _selVarient;
+        _oldSelVarient = widget.model.selVarient;
       } else {
         available = false;
       }
     } else if (widget.model.stockType == "null") {
       available = true;
 
-      _oldSelVarient = _selVarient;
+      _oldSelVarient = widget.model.selVarient;
     } else if (widget.model.stockType == "2") {
-      if (widget.model.prVarientList[_selVarient].availability == "1") {
+      if (widget.model.prVarientList[widget.model.selVarient].availability == "1") {
         available = true;
 
-        _oldSelVarient = _selVarient;
+        _oldSelVarient = widget.model.selVarient;
       } else {
         available = false;
       }
     }
 
     List<String> selList =
-        widget.model.prVarientList[_selVarient].attribute_value_ids.split(",");
+        widget.model.prVarientList[widget.model.selVarient].attribute_value_ids.split(",");
 
     for (int i = 0; i < widget.model.attributeList.length; i++) {
       List<String> sinList = widget.model.attributeList[i].id.split(',');
@@ -979,7 +981,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     Navigator.of(context).pop();
     if (mounted)
       setState(() {
-        _selVarient = _oldSelVarient;
+        widget.model.selVarient = _oldSelVarient;
       });
   }
 
@@ -995,8 +997,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
           var parameter = {
             USER_ID: CUR_USERID,
-            PRODUCT_VARIENT_ID: widget.model.prVarientList[_selVarient].id,
-            QTY: (int.parse(widget.model.prVarientList[_selVarient].cartCount) +
+            PRODUCT_VARIENT_ID: widget.model.prVarientList[widget.model.selVarient].id,
+            QTY: (int.parse(widget.model.prVarientList[widget.model.selVarient].cartCount) +
                     1)
                 .toString(),
           };
@@ -1203,13 +1205,13 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       _slider(),
                       _title(),
                       _rate(),
-                      _price(_selVarient),
-                      _offPrice(_selVarient),
+                      _price(widget.model.selVarient),
+                      _offPrice(widget.model.selVarient),
                       _shortDesc(),
                       widget.model.type == "variable_product"
                           ? Divider()
                           : Container(),
-                      _getVarient(_selVarient),
+                      _getVarient(widget.model.selVarient),
                       Divider(),
                       _specification(),
                       Divider(),
@@ -1412,6 +1414,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       image: NetworkImage(productList[index].image),
                       height: double.maxFinite,
                       width: double.maxFinite,
+                      fit: extendImg?BoxFit.fill:BoxFit.contain,
                       //errorWidget: (context, url, e) => placeHolder(width),
                       placeholder: placeHolder(width),
                     ),
@@ -1671,18 +1674,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     );
   }
 
-  void getAvailVarient() {
-    if (widget.model.stockType == "2") {
-      for (int i = 0; i < widget.model.prVarientList.length; i++) {
-        if (widget.model.prVarientList[i].availability == "1") {
-          _selVarient = i;
-          _oldSelVarient = i;
-          break;
-        }
-      }
-      if (mounted) setState(() {});
-    }
-  }
 
   _specification() {
     return GestureDetector(

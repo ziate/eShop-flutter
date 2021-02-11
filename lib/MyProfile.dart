@@ -7,6 +7,7 @@ import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Home.dart';
 import 'package:eshop/Setting.dart';
+import 'package:eshop/Transaction_History.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -24,6 +25,7 @@ import 'MyOrder.dart';
 import 'Privacy_Policy.dart';
 import 'Profile.dart';
 import 'main.dart';
+import 'My_Wallet.dart';
 
 class MyProfile extends StatefulWidget {
   Function update;
@@ -132,6 +134,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                   .copyWith(color: colors.fontColor),
                             )
                           : Container(),
+
+                          CUR_BALANCE!=null && CUR_BALANCE != "" && CUR_BALANCE!="0" && CUR_BALANCE.isNotEmpty
+                            ?  Text(CUR_CURRENCY+" "+CUR_BALANCE,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle2
+                            .copyWith(color: colors.fontColor)):Container(),
+
                       CUR_USERNAME == "" || CUR_USERNAME == null
                           ? Padding(
                               padding: const EdgeInsetsDirectional.only(top: 7),
@@ -551,10 +561,10 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           _getDrawerItem(getTranslated(context, 'MANAGE_ADD_LBL'),
               'assets/images/pro_address.png'),
           _getDivider(),
-          _getDrawerItem(getTranslated(context, 'FAVORITE'),
+          _getDrawerItem(getTranslated(context, 'MYWALLET'),
               'assets/images/pro_favourite.png'),
           _getDivider(),
-          _getDrawerItem(getTranslated(context, 'NOTIFICATION'),
+          _getDrawerItem(getTranslated(context, 'MYTRANSACTION'),
               'assets/images/pro_notification.png'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'CHANGE_THEME_LBL'),
@@ -636,22 +646,28 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         style: TextStyle(color: colors.lightBlack2, fontSize: 15),
       ),
       onTap: () {
+
+        print("title***$title***${getTranslated(context, 'MyWallet')}");
         if (title == getTranslated(context, 'MY_ORDERS_LBL')) {
           Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => MyOrder(),
               ));
-        } else if (title == getTranslated(context, 'NOTIFICATION')) {
-          curSelected = 2;
-          final CurvedNavigationBarState navBarState =
-              bottomNavigationKey.currentState;
-          navBarState.setPage(2);
-        } else if (title == getTranslated(context, 'FAVORITE')) {
-          curSelected = 1;
-          final CurvedNavigationBarState navBarState =
-              bottomNavigationKey.currentState;
-          navBarState.setPage(1);
+        } else if (title == getTranslated(context, 'MYTRANSACTION')) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TransactionHistory(),
+              ));
+
+        } else if (title == getTranslated(context, 'MYWALLET')) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MyWallet(),
+              ));
+
         } else if (title == getTranslated(context, 'SETTING')) {
           CUR_USERID == null
               ? Navigator.push(

@@ -17,6 +17,7 @@ import 'Login.dart';
 import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
 import 'Search.dart';
+import 'Cart.dart';
 
 class SectionList extends StatefulWidget {
   final int index;
@@ -32,24 +33,21 @@ class SectionList extends StatefulWidget {
 
 class StateSection extends State<SectionList> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
-
-  bool isLoadingmore = true;
-  bool _isLoading = true;
+  bool isLoadingmore = true, _isLoading = true, _isNetworkAvail = true;
   ScrollController controller = new ScrollController();
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
-  bool _isNetworkAvail = true;
+
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
   String sortBy = 'p.id', orderBy = "DESC";
-  List<String> attnameList;
+  var items;
   List<String> attsubList;
   List<String> attListId;
-  String filter = "";
-  String selId = "";
-  int offset;
-  bool listType = false;
-  int total = 0;
+  String filter = "", selId = "";
+  bool listType = false, _isProgress = false;
+  int total = 0, offset;
+  List<TextEditingController> _controller = [];
 
   @override
   void initState() {
@@ -79,6 +77,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   @override
   void dispose() {
     buttonController.dispose();
+    for (int i = 0; i < _controller.length; i++) _controller[i].dispose();
     super.dispose();
   }
 
@@ -86,6 +85,21 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     try {
       await buttonController.forward();
     } on TickerCanceled {}
+  }
+
+  void getAvailVarient(List<Product> productList) {
+    for (int j = 0; j < productList.length; j++) {
+      if (productList[j].stockType == "2") {
+        for (int i = 0; i < productList[j].prVarientList.length; i++) {
+          if (productList[j].prVarientList[i].availability == "1") {
+            productList[j].selVarient = i;
+
+            break;
+          }
+        }
+      }
+    }
+    sectionList[widget.index].productList.addAll(productList);
   }
 
   Widget noInternet(BuildContext context) {
@@ -111,7 +125,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -122,14 +136,15 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-     if (mounted) setState(() {
-      _isLoading = true;
-      isLoadingmore = true;
-      widget.section_model.offset = 0;
-      widget.section_model.totalItem = 0;
-      widget.section_model.selectedId = [];
-      selId = '';
-    });
+    if (mounted)
+      setState(() {
+        _isLoading = true;
+        isLoadingmore = true;
+        widget.section_model.offset = 0;
+        widget.section_model.totalItem = 0;
+        widget.section_model.selectedId = [];
+        selId = '';
+      });
 
     total = 0;
     offset = 0;
@@ -144,6 +159,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
+        titleSpacing: 0,
+        iconTheme: IconThemeData(color: colors.primary),
         leading: Builder(builder: (BuildContext context) {
           return Container(
             margin: EdgeInsets.all(10),
@@ -183,7 +200,6 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                       MaterialPageRoute(
                         builder: (context) => Search(
                           updateHome: widget.updateHome,
-                          menuopen: false,
                         ),
                       ));
                 },
@@ -198,7 +214,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
               ),
             ),
           ),
-          Container(
+          /* Container(
               margin: EdgeInsets.symmetric(vertical: 10),
               decoration: shadow(),
               child: Card(
@@ -238,9 +254,12 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         size: 22,
                       ),
                     ),
-                  ))),
+                  ))),*/
           Container(
-              margin: EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 10),
+              margin: EdgeInsetsDirectional.only(
+                top: 10,
+                bottom: 10,
+              ),
               decoration: shadow(),
               child: Card(
                   elevation: 0,
@@ -258,12 +277,118 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         ),
                         onTap: () {
                           widget.section_model.productList.length != 0
-                              ?   setState(() {
+                              ? setState(() {
                                   listType = !listType;
                                 })
                               : null;
                         }),
                   ))),
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 10),
+            decoration: shadow(),
+            child: Card(
+              elevation: 0,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () {
+                  CUR_USERID == null
+                      ? Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Login(),
+                      ))
+                      : Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Cart(widget.updateHome, null),
+                      )).then((val) => widget.updateHome);
+                },
+                child: new Stack(children: <Widget>[
+                  Center(
+                    child: Image.asset(
+                      'assets/images/noti_cart.png',
+                      width: 30,
+                    ),
+                  ),
+                  (CUR_CART_COUNT != null &&
+                      CUR_CART_COUNT.isNotEmpty &&
+                      CUR_CART_COUNT != "0")
+                      ? new Positioned(
+                    top: 0.0,
+                    right: 5.0,
+                    bottom: 10,
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colors.primary.withOpacity(0.5)),
+                        child: new Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(3),
+                            child: new Text(
+                              CUR_CART_COUNT,
+                              style: TextStyle(
+                                  fontSize: 7, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        )),
+                  )
+                      : Container()
+                ]),
+              ),
+            ),
+          ),
+          Container(
+            width: 40,
+              margin: EdgeInsetsDirectional.only(
+                top: 10,
+                bottom: 10,
+                end: 5
+              ),
+              decoration: shadow(),
+              child: Card(
+                  elevation: 0,
+                  child: Material(
+                      color: Colors.transparent,
+                      child: PopupMenuButton(
+                        padding: EdgeInsets.zero,
+                        onSelected: (value) {
+                          switch (value) {
+                            case 0:
+                              return filterDialog();
+                              break;
+                            case 1:
+                              return sortDialog();
+                              break;
+                          }
+                        },
+                        itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+                          PopupMenuItem(
+                            value: 0,
+                            child: ListTile(
+                              dense: true,
+                              contentPadding: EdgeInsetsDirectional.only(
+                                  start: 0.0, end: 0.0),
+                              leading: Icon(
+                                Icons.tune,
+                                color: colors.fontColor,
+                                size: 20,
+                              ),
+                              title: Text('Filter'),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 1,
+                            child: ListTile(
+                              dense: true,
+                              contentPadding: EdgeInsetsDirectional.only(
+                                  start: 0.0, end: 0.0),
+                              leading: Icon(Icons.sort,
+                                  color: colors.fontColor, size: 20),
+                              title: Text('Sort'),
+                            ),
+                          ),
+                        ],
+                      )))),
         ],
       ),
       body: _isNetworkAvail
@@ -272,63 +397,85 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
               onRefresh: _refresh,
               child: _isLoading
                   ? shimmer()
-                  : listType
-                      ? ListView.builder(
-                          controller: controller,
-                          itemCount: (widget.section_model.offset <
-                                  widget.section_model.totalItem)
-                              ? widget.section_model.productList.length + 1
-                              : widget.section_model.productList.length,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return (index ==
-                                        widget
-                                            .section_model.productList.length &&
-                                    isLoadingmore)
-                                ? Center(child: CircularProgressIndicator())
-                                : listItem(index);
-                          },
-                        )
-                      : GridView.count(
-                          padding: EdgeInsetsDirectional.only(
-                              top: 5, start: 10, end: 10),
-                          crossAxisCount: 2,
-                          childAspectRatio: 1,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          mainAxisSpacing: 2,
-                          crossAxisSpacing: 2,
-                          controller: controller,
-                          children: List.generate(
-                            (widget.section_model.offset <
-                                    widget.section_model.totalItem)
-                                ? widget.section_model.productList.length + 1
-                                : widget.section_model.productList.length,
-                            (index) {
-                              return (index ==
-                                          widget.section_model.productList
-                                              .length &&
-                                      isLoadingmore)
-                                  ? Center(child: CircularProgressIndicator())
-                                  : productItem(index);
-                            },
-                          )))
+                  : Stack(
+                      children: <Widget>[
+                        listType
+                            ? ListView.builder(
+                                controller: controller,
+                                itemCount: (widget.section_model.offset <
+                                        widget.section_model.totalItem)
+                                    ? widget.section_model.productList.length +
+                                        1
+                                    : widget.section_model.productList.length,
+                                physics: AlwaysScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return (index ==
+                                              widget.section_model.productList
+                                                  .length &&
+                                          isLoadingmore)
+                                      ? Center(
+                                          child: CircularProgressIndicator())
+                                      : listItem(index);
+                                },
+                              )
+                            : GridView.count(
+                                padding: EdgeInsetsDirectional.only(
+                                  top: 5,
+                                ),
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.8,
+                                physics: AlwaysScrollableScrollPhysics(),
+                                controller: controller,
+                                children: List.generate(
+                                  (widget.section_model.offset <
+                                          widget.section_model.totalItem)
+                                      ? widget.section_model.productList
+                                              .length +
+                                          1
+                                      : widget.section_model.productList.length,
+                                  (index) {
+                                    return (index ==
+                                                widget.section_model.productList
+                                                    .length &&
+                                            isLoadingmore)
+                                        ? Center(
+                                            child: CircularProgressIndicator())
+                                        : productItem(index);
+                                  },
+                                )),
+                        showCircularProgress(_isProgress, colors.primary),
+                      ],
+                    ))
           : noInternet(context),
     );
   }
 
   Widget listItem(int index) {
-    double price = double.parse(
-        widget.section_model.productList[index].prVarientList[0].disPrice);
+    Product model = widget.section_model.productList[index];
+
+    double price = double.parse(widget.section_model.productList[index]
+        .prVarientList[model.selVarient].disPrice);
     if (price == 0)
-      price = double.parse(
-          widget.section_model.productList[index].prVarientList[0].price);
+      price = double.parse(widget.section_model.productList[index]
+          .prVarientList[model.selVarient].price);
+    List att, val;
+    if (model.prVarientList[model.selVarient].attr_name != null) {
+      att = model.prVarientList[model.selVarient].attr_name.split(',');
+      val = model.prVarientList[model.selVarient].varient_value.split(',');
+    }
+    if (_controller.length < index + 1)
+      _controller.add(new TextEditingController());
+
+    _controller[index].text = model.prVarientList[model.selVarient].cartCount;
+    items = new List<String>.generate(
+        model.totalAllow != null ? int.parse(model.totalAllow) : 10,
+        (i) => (i + 1).toString());
 
     return Card(
       elevation: 0,
       child: InkWell(
         borderRadius: BorderRadius.circular(4),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-            Widget>[
+        child: Stack(children: <Widget>[
           widget.section_model.productList[index].availability == "0"
               ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
                   style: Theme.of(context)
@@ -358,60 +505,19 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(
-                          widget.section_model.productList[index].name,
-                          style: TextStyle(
-                              color: colors.lightBlack,
-                              fontWeight: FontWeight.bold),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
                         Row(
                           children: [
-                            Icon(
-                              Icons.star,
-                              color: colors.primary,
-                              size: 12,
+                            Expanded(
+                              child: Text(
+                                widget.section_model.productList[index].name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .subtitle2
+                                    .copyWith(color: colors.lightBlack),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            Text(
-                              " " +
-                                  widget
-                                      .section_model.productList[index].rating,
-                              style: Theme.of(context).textTheme.overline,
-                            ),
-                            Text(
-                              " (" +
-                                  widget.section_model.productList[index]
-                                      .noOfRating +
-                                  ")",
-                              style: Theme.of(context).textTheme.overline,
-                            )
-                          ],
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Text(
-                              double.parse(widget
-                                          .section_model
-                                          .productList[index]
-                                          .prVarientList[0]
-                                          .disPrice) !=
-                                      0
-                                  ? CUR_CURRENCY +
-                                      "" +
-                                      widget.section_model.productList[index]
-                                          .prVarientList[0].price
-                                  : "",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .overline
-                                  .copyWith(
-                                      decoration: TextDecoration.lineThrough,
-                                      letterSpacing: 0),
-                            ),
-                            Text(" " + CUR_CURRENCY + " " + price.toString(),
-                                style: Theme.of(context).textTheme.subtitle1),
-                            Spacer(),
                             widget.section_model.productList[index].isFavLoading
                                 ? Container(
                                     height: 15,
@@ -452,7 +558,223 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                                       }
                                     })
                           ],
-                        )
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(CUR_CURRENCY + " " + price.toString() + " ",
+                                style: Theme.of(context).textTheme.subtitle1),
+                            Text(
+                              double.parse(widget
+                                          .section_model
+                                          .productList[index]
+                                          .prVarientList[model.selVarient]
+                                          .disPrice) !=
+                                      0
+                                  ? CUR_CURRENCY +
+                                      "" +
+                                      widget.section_model.productList[index]
+                                          .prVarientList[model.selVarient].price
+                                  : "",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(
+                                      decoration: TextDecoration.lineThrough,
+                                      letterSpacing: 0),
+                            ),
+                          ],
+                        ),
+                        model.prVarientList[model.selVarient].attr_name !=
+                                    null &&
+                                model.prVarientList[model.selVarient].attr_name
+                                    .isNotEmpty
+                            ? ListView.builder(
+                                physics: NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: att.length,
+                                itemBuilder: (context, index) {
+                                  return Row(children: [
+                                    Flexible(
+                                      child: Text(
+                                        att[index].trim() + ":",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle2
+                                            .copyWith(color: colors.lightBlack),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.only(
+                                          start: 5.0),
+                                      child: Text(
+                                        val[index],
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle2
+                                            .copyWith(
+                                                color: colors.lightBlack,
+                                                fontWeight: FontWeight.bold),
+                                      ),
+                                    )
+                                  ]);
+                                })
+                            : Container(),
+                        Row(
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  color: colors.primary,
+                                  size: 12,
+                                ),
+                                Text(
+                                  " " +
+                                      widget.section_model.productList[index]
+                                          .rating,
+                                  style: Theme.of(context).textTheme.overline,
+                                ),
+                                Text(
+                                  " (" +
+                                      widget.section_model.productList[index]
+                                          .noOfRating +
+                                      ")",
+                                  style: Theme.of(context).textTheme.overline,
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            model.availability == "0"
+                                ? Container()
+                                : Row(
+                                    children: <Widget>[
+                                      Row(
+                                        children: <Widget>[
+                                          GestureDetector(
+                                            child: Container(
+                                              padding: EdgeInsets.all(2),
+                                              margin:
+                                                  EdgeInsetsDirectional.only(
+                                                      end: 8),
+                                              child: Icon(
+                                                Icons.remove,
+                                                size: 14,
+                                                color: colors.fontColor,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                  color: colors.lightWhite,
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(3))),
+                                            ),
+                                            onTap: () {
+                                              if (_isProgress == false &&
+                                                  (int.parse(model
+                                                          .prVarientList[
+                                                              model.selVarient]
+                                                          .cartCount)) >
+                                                      0) removeFromCart(index);
+                                            },
+                                          ),
+                                          Container(
+                                            width: 40,
+                                            height: 20,
+                                            child: Stack(
+                                              children: [
+                                                TextField(
+                                                  textAlign: TextAlign.center,
+                                                  readOnly: true,
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                  ),
+                                                  controller:
+                                                      _controller[index],
+                                                  decoration: InputDecoration(
+                                                    contentPadding:
+                                                        EdgeInsets.all(5.0),
+                                                    focusedBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color:
+                                                              colors.fontColor,
+                                                          width: 0.5),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5.0),
+                                                    ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                          color:
+                                                              colors.fontColor,
+                                                          width: 0.5),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5.0),
+                                                    ),
+                                                  ),
+                                                ),
+                                                PopupMenuButton<String>(
+                                                  tooltip: '',
+                                                  icon: const Icon(
+                                                    Icons.arrow_drop_down,
+                                                    size: 1,
+                                                  ),
+                                                  onSelected: (String value) {
+                                                    if (_isProgress == false)
+                                                      addToCart(index, value);
+                                                  },
+                                                  itemBuilder:
+                                                      (BuildContext context) {
+                                                    return items.map<
+                                                            PopupMenuItem<
+                                                                String>>(
+                                                        (String value) {
+                                                      return new PopupMenuItem(
+                                                          child:
+                                                              new Text(value),
+                                                          value: value);
+                                                    }).toList();
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ), // ),
+
+                                          GestureDetector(
+                                            child: Container(
+                                              padding: EdgeInsets.all(2),
+                                              margin: EdgeInsets.only(left: 8),
+                                              child: Icon(
+                                                Icons.add,
+                                                size: 14,
+                                                color: colors.fontColor,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                  color: colors.lightWhite,
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(3))),
+                                            ),
+                                            onTap: () {
+                                              if (_isProgress == false)
+                                                addToCart(
+                                                    index,
+                                                    (int.parse(model
+                                                                .prVarientList[model
+                                                                    .selVarient]
+                                                                .cartCount) +
+                                                            1)
+                                                        .toString());
+                                            },
+                                          )
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -479,6 +801,114 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
         },
       ),
     );
+  }
+
+  Future<void> addToCart(int index, String qty) async {
+    Product model = widget.section_model.productList[index];
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
+        var parameter = {
+          USER_ID: CUR_USERID,
+          PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
+          QTY: qty
+        };
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        var getdata = json.decode(response.body);
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+
+          String qty = data['total_quantity'];
+          CUR_CART_COUNT = data['cart_count'];
+
+          model.prVarientList[model.selVarient].cartCount = qty.toString();
+        } else {
+          setSnackbar(msg);
+        }
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+        widget.updateHome();
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+      }
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  removeFromCart(int index) async {
+    Product model = widget.section_model.productList[index];
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
+
+        var parameter = {
+          PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
+          USER_ID: CUR_USERID,
+          QTY: (int.parse(model.prVarientList[model.selVarient].cartCount) - 1)
+              .toString()
+        };
+        print("remove****$parameter");
+
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+        print("remove****${response.body.toString()}");
+        var getdata = json.decode(response.body);
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          var data = getdata["data"];
+
+          String qty = data['total_quantity'];
+          CUR_CART_COUNT = data['cart_count'];
+
+          model.prVarientList[model.selVarient].cartCount = qty.toString();
+        } else {
+          setSnackbar(msg);
+        }
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+        if (widget.updateHome != null) widget.updateHome();
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+      }
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
   }
 
   void sortDialog() {
@@ -639,9 +1069,10 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                                       fontWeight: FontWeight.normal,
                                       color: colors.fontColor)),
                           onTap: () {
-                             if (mounted) setState(() {
-                              widget.section_model.selectedId.clear();
-                            });
+                            if (mounted)
+                              setState(() {
+                                widget.section_model.selectedId.clear();
+                              });
                           }),
                     ),
                   ],
@@ -683,10 +1114,11 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
 
                                       return InkWell(
                                           onTap: () {
-                                             if (mounted) setState(() {
-                                              filter = widget.section_model
-                                                  .filterList[index].name;
-                                            });
+                                            if (mounted)
+                                              setState(() {
+                                                filter = widget.section_model
+                                                    .filterList[index].name;
+                                              });
                                           },
                                           child: Container(
                                             padding: EdgeInsetsDirectional.only(
@@ -776,18 +1208,20 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                                                       ListTileControlAffinity
                                                           .leading,
                                                   onChanged: (bool val) {
-                                                     if (mounted) setState(() {
-                                                      if (val == true) {
-                                                        widget.section_model
-                                                            .selectedId
-                                                            .add(attListId[i]);
-                                                      } else {
-                                                        widget.section_model
-                                                            .selectedId
-                                                            .remove(
-                                                                attListId[i]);
-                                                      }
-                                                    });
+                                                    if (mounted)
+                                                      setState(() {
+                                                        if (val == true) {
+                                                          widget.section_model
+                                                              .selectedId
+                                                              .add(
+                                                                  attListId[i]);
+                                                        } else {
+                                                          widget.section_model
+                                                              .selectedId
+                                                              .remove(
+                                                                  attListId[i]);
+                                                        }
+                                                      });
                                                   },
                                                 );
                                               }));
@@ -832,36 +1266,51 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-         if (mounted) setState(() {
-          isLoadingmore = true;
+        if (mounted)
+          setState(() {
+            isLoadingmore = true;
 
-          if (widget.section_model.offset < widget.section_model.totalItem)
-            getSection("0");
-        });
+            if (widget.section_model.offset < widget.section_model.totalItem)
+              getSection("0");
+          });
       }
     }
   }
 
   clearList(String top) {
-     if (mounted) setState(() {
-      _isLoading = true;
-      total = 0;
-      offset = 0;
-      widget.section_model.totalItem = 0;
-      widget.section_model.offset = 0;
-      widget.section_model.productList = [];
+    if (mounted)
+      setState(() {
+        _isLoading = true;
+        total = 0;
+        offset = 0;
+        widget.section_model.totalItem = 0;
+        widget.section_model.offset = 0;
+        widget.section_model.productList = [];
 
-      getSection(top);
-    });
+        getSection(top);
+      });
   }
 
   productItem(int index) {
+    Product model = widget.section_model.productList[index];
+
     double width = deviceWidth * 0.5 - 20;
-    double price = double.parse(
-        widget.section_model.productList[index].prVarientList[0].disPrice);
+    double price = double.parse(model.prVarientList[model.selVarient].disPrice);
+    List att, val;
+    if (model.prVarientList[model.selVarient].attr_name != null) {
+      att = model.prVarientList[model.selVarient].attr_name.split(',');
+      val = model.prVarientList[model.selVarient].varient_value.split(',');
+    }
+    if (_controller.length < index + 1)
+      _controller.add(new TextEditingController());
+
+    _controller[index].text = model.prVarientList[model.selVarient].cartCount;
+    items = new List<String>.generate(
+        model.totalAllow != null ? int.parse(model.totalAllow) : 10,
+        (i) => (i + 1).toString());
+
     if (price == 0)
-      price = double.parse(
-          widget.section_model.productList[index].prVarientList[0].price);
+      price = double.parse(model.prVarientList[model.selVarient].price);
     return Card(
       elevation: 0,
       child: InkWell(
@@ -880,10 +1329,10 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         topLeft: Radius.circular(5),
                         topRight: Radius.circular(5)),
                     child: FadeInImage(
-                      image: NetworkImage(
-                          widget.section_model.productList[index].image),
+                      image: NetworkImage(model.image),
                       height: double.maxFinite,
                       width: double.maxFinite,
+                      fit: extendImg ? BoxFit.fill : BoxFit.contain,
                       //errorWidget:(context, url,e) => placeHolder(width) ,
                       placeholder: placeHolder(width),
                     ),
@@ -891,8 +1340,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                 ),
                 Align(
                   alignment: AlignmentDirectional.topStart,
-                  child: widget.section_model.productList[index].availability ==
-                          "0"
+                  child: model.availability == "0"
                       ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
                           style: Theme.of(context).textTheme.subtitle2.copyWith(
                               color: Colors.red, fontWeight: FontWeight.bold))
@@ -910,7 +1358,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                           size: 10,
                         ),
                         Text(
-                          widget.section_model.productList[index].rating,
+                          model.rating,
                           style: Theme.of(context)
                               .textTheme
                               .overline
@@ -928,7 +1376,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      widget.section_model.productList[index].name,
+                      model.name,
                       style: Theme.of(context)
                           .textTheme
                           .caption
@@ -938,7 +1386,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  widget.section_model.productList[index].isFavLoading
+                  model.isFavLoading
                       ? Container(
                           height: 15,
                           width: 15,
@@ -953,8 +1401,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8.0, vertical: 3),
                             child: Icon(
-                              widget.section_model.productList[index].isFav ==
-                                      "0"
+                              model.isFav == "0"
                                   ? Icons.favorite_border
                                   : Icons.favorite,
                               size: 15,
@@ -963,8 +1410,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                           ),
                           onTap: () {
                             if (CUR_USERID != null) {
-                              widget.section_model.productList[index].isFav ==
-                                      "0"
+                              model.isFav == "0"
                                   ? _setFav(index)
                                   : _removeFav(index);
                             } else {
@@ -984,13 +1430,12 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
               child: Row(
                 children: <Widget>[
                   Text(
-                    double.parse(widget.section_model.productList[index]
-                                .prVarientList[0].disPrice) !=
+                    double.parse(model
+                                .prVarientList[model.selVarient].disPrice) !=
                             0
                         ? CUR_CURRENCY +
                             "" +
-                            widget.section_model.productList[index]
-                                .prVarientList[0].price
+                            model.prVarientList[model.selVarient].price
                         : "",
                     style: Theme.of(context).textTheme.overline.copyWith(
                         decoration: TextDecoration.lineThrough,
@@ -1000,7 +1445,176 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                       style: TextStyle(color: colors.primary)),
                 ],
               ),
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: model.prVarientList[model.selVarient].attr_name !=
+                                null &&
+                            model.prVarientList[model.selVarient].attr_name
+                                .isNotEmpty
+                        ? ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 5.0),
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: att.length,
+                            itemBuilder: (context, index) {
+                              return Row(children: [
+                                Flexible(
+                                  child: Text(
+                                    att[index].trim() + ":",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .caption
+                                        .copyWith(color: colors.lightBlack),
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Padding(
+                                    padding:
+                                        EdgeInsetsDirectional.only(start: 5.0),
+                                    child: Text(
+                                      val[index],
+                                      maxLines: 1,
+                                      overflow: TextOverflow.visible,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .caption
+                                          .copyWith(
+                                              color: colors.lightBlack,
+                                              fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                )
+                              ]);
+                            })
+                        : Container(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                        start: 3.0, bottom: 5, top: 3),
+                    child: model.availability == "0"
+                        ? Container()
+                        : Row(
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  GestureDetector(
+                                    child: Container(
+                                      padding: EdgeInsets.all(2),
+                                      margin:
+                                          EdgeInsetsDirectional.only(end: 8),
+                                      child: Icon(
+                                        Icons.remove,
+                                        size: 14,
+                                        color: colors.fontColor,
+                                      ),
+                                      decoration: BoxDecoration(
+                                          color: colors.lightWhite,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(3))),
+                                    ),
+                                    onTap: () {
+                                      if (_isProgress == false &&
+                                          (int.parse(model
+                                                  .prVarientList[
+                                                      model.selVarient]
+                                                  .cartCount)) >
+                                              0) removeFromCart(index);
+                                    },
+                                  ),
+                                  Container(
+                                    width: 40,
+                                    height: 20,
+                                    child: Stack(
+                                      children: [
+                                        TextField(
+                                          textAlign: TextAlign.center,
+                                          readOnly: true,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                          ),
+                                          controller: _controller[index],
+                                          decoration: InputDecoration(
+                                            contentPadding: EdgeInsets.all(5.0),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: colors.fontColor,
+                                                  width: 0.5),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: colors.fontColor,
+                                                  width: 0.5),
+                                              borderRadius:
+                                                  BorderRadius.circular(5.0),
+                                            ),
+                                          ),
+                                        ),
+                                        PopupMenuButton<String>(
+                                          tooltip: '',
+                                          icon: const Icon(
+                                            Icons.arrow_drop_down,
+                                            size: 1,
+                                          ),
+                                          onSelected: (String value) {
+                                            if (_isProgress == false)
+                                              addToCart(index, value);
+                                          },
+                                          itemBuilder: (BuildContext context) {
+                                            return items
+                                                .map<PopupMenuItem<String>>(
+                                                    (String value) {
+                                              return new PopupMenuItem(
+                                                  child: new Text(value),
+                                                  value: value);
+                                            }).toList();
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ), // ),
+
+                                  GestureDetector(
+                                    child: Container(
+                                      padding: EdgeInsets.all(2),
+                                      margin: EdgeInsets.only(left: 8),
+                                      child: Icon(
+                                        Icons.add,
+                                        size: 14,
+                                        color: colors.fontColor,
+                                      ),
+                                      decoration: BoxDecoration(
+                                          color: colors.lightWhite,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(3))),
+                                    ),
+                                    onTap: () {
+                                      if (_isProgress == false)
+                                        addToCart(
+                                            index,
+                                            (int.parse(model
+                                                        .prVarientList[
+                                                            model.selVarient]
+                                                        .cartCount) +
+                                                    1)
+                                                .toString());
+                                    },
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                  )
+                ],
+              ),
+            ),
           ],
         ),
         onTap: () {
@@ -1024,7 +1638,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   }
 
   updateSectionList() {
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<Null> getSection(String top) async {
@@ -1063,9 +1677,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
             List<Section_Model> temp = (data as List)
                 .map((data) => new Section_Model.fromJson(data))
                 .toList();
-
-            sectionList[widget.index].productList.addAll(temp[0].productList);
-            //temp[0];
+            getAvailVarient(temp[0].productList);
 
             offset = widget.section_model.offset + perPage;
 
@@ -1077,19 +1689,22 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
 
     return null;
@@ -1099,9 +1714,10 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          widget.section_model.productList[index].isFavLoading = true;
-        });
+        if (mounted)
+          setState(() {
+            widget.section_model.productList[index].isFavLoading = true;
+          });
 
         var parameter = {
           USER_ID: CUR_USERID,
@@ -1121,16 +1737,18 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-         if (mounted) setState(() {
-          widget.section_model.productList[index].isFavLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            widget.section_model.productList[index].isFavLoading = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -1150,9 +1768,10 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-         if (mounted) setState(() {
-          widget.section_model.productList[index].isFavLoading = true;
-        });
+        if (mounted)
+          setState(() {
+            widget.section_model.productList[index].isFavLoading = true;
+          });
 
         var parameter = {
           USER_ID: CUR_USERID,
@@ -1177,16 +1796,18 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           setSnackbar(msg);
         }
 
-         if (mounted) setState(() {
-          widget.section_model.productList[index].isFavLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            widget.section_model.productList[index].isFavLoading = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 }

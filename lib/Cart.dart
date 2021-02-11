@@ -192,9 +192,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(7.0),
                     child: FadeInImage(
                       image: NetworkImage(cartList[index].productList[0].image),
-                      height: 60.0,
-                      width: 60.0,
-                      placeholder: placeHolder(60),
+                      height: 80.0,
+                      width: 80.0,
+                      placeholder: placeHolder(80),
                     ))),
             Expanded(
               child: Padding(
@@ -440,9 +440,10 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                     child: FadeInImage(
                       image: NetworkImage(
                           saveLaterList[index].productList[0].image),
-                      height: 60.0,
-                      width: 60.0,
-                      placeholder: placeHolder(60),
+                      height: 80.0,
+                      width: 80.0,
+                      fit: extendImg?BoxFit.fill:BoxFit.contain,
+                      placeholder: placeHolder(80),
                     ))),
             Expanded(
               child: Padding(

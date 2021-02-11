@@ -20,40 +20,40 @@ class StripeService {
   };
   static init() {
     StripePayment.setOptions(
-      StripeOptions(
-        publishableKey: stripeId,
-        merchantId: "Test",
-        androidPayMode: stripeMode
-      )
+        StripeOptions(
+            publishableKey: stripeId,
+            merchantId: "Test",
+            androidPayMode: stripeMode
+        )
     );
   }
 
   static Future<StripeTransactionResponse> payViaExistingCard({String amount, String currency, CreditCard card}) async{
     try {
       var paymentMethod = await StripePayment.createPaymentMethod(
-        PaymentMethodRequest(card: card)
+          PaymentMethodRequest(card: card)
       );
       var paymentIntent = await StripeService.createPaymentIntent(
-        amount,
-        currency
+          amount,
+          currency
       );
       var response = await StripePayment.confirmPaymentIntent(
-        PaymentIntent(
-          clientSecret: paymentIntent['client_secret'],
-          paymentMethodId: paymentMethod.id
-        )
+          PaymentIntent(
+              clientSecret: paymentIntent['client_secret'],
+              paymentMethodId: paymentMethod.id
+          )
       );
       if (response.status == 'succeeded'||response.status == 'pending'||response.status == 'captured') {
         return new StripeTransactionResponse(
-          message: 'Transaction successful',
-          success: true,
-          status: response.status
+            message: 'Transaction successful',
+            success: true,
+            status: response.status
 
         );
       } else {
         return new StripeTransactionResponse(
-          message: 'Transaction failed',
-          success: false,
+            message: 'Transaction failed',
+            success: false,
             status: response.status
         );
       }
@@ -61,8 +61,8 @@ class StripeService {
       return StripeService.getPlatformExceptionErrorResult(err);
     } catch (err) {
       return new StripeTransactionResponse(
-        message: 'Transaction failed: ${err.toString()}',
-        success: false,
+          message: 'Transaction failed: ${err.toString()}',
+          success: false,
           status: "fail"
       );
     }
@@ -71,27 +71,30 @@ class StripeService {
   static Future<StripeTransactionResponse> payWithNewCard({String amount, String currency}) async {
     try {
       var paymentMethod = await StripePayment.paymentRequestWithCardForm(
-        CardFormPaymentRequest()
+          CardFormPaymentRequest()
       );
+
+      print("stripe***$amount***$currency");
+
       var paymentIntent = await StripeService.createPaymentIntent(
-        amount,
-        currency
+          amount,
+          currency
       );
 
 
       var response = await StripePayment.confirmPaymentIntent(
-        PaymentIntent(
-          clientSecret: paymentIntent['client_secret'],
-          paymentMethodId: paymentMethod.id,
-        )
+          PaymentIntent(
+            clientSecret: paymentIntent['client_secret'],
+            paymentMethodId: paymentMethod.id,
+          )
       );
 
       stripePayId=paymentIntent['id'];
 
       if (response.status == 'succeeded') {
         return new StripeTransactionResponse(
-          message: 'Transaction successful',
-          success: true,
+            message: 'Transaction successful',
+            success: true,
             status: response.status
         );
       }
@@ -105,8 +108,8 @@ class StripeService {
 
       else {
         return new StripeTransactionResponse(
-          message: 'Transaction failed',
-          success: false,
+            message: 'Transaction failed',
+            success: false,
             status: response.status
         );
       }
@@ -116,8 +119,8 @@ class StripeService {
 
 
       return new StripeTransactionResponse(
-        message: 'Transaction failed: ${err.toString()}',
-        success: false,
+          message: 'Transaction failed: ${err.toString()}',
+          success: false,
           status: "fail"
       );
     }
@@ -130,8 +133,8 @@ class StripeService {
     }
 
     return new StripeTransactionResponse(
-      message: message,
-      success: false,
+        message: message,
+        success: false,
         status: "cancelled"
     );
   }
@@ -146,9 +149,9 @@ class StripeService {
 
 
       var response = await http.post(
-        StripeService.paymentApiUrl,
-        body: body,
-        headers: StripeService.headers
+          StripeService.paymentApiUrl,
+          body: body,
+          headers: StripeService.headers
       );
       return jsonDecode(response.body);
     } catch (err) {
