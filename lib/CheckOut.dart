@@ -11,7 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
-import 'package:rave_flutter/rave_flutter.dart';
+import 'package:paytm/paytm.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'Cart.dart';
@@ -57,7 +57,12 @@ String razorpayId,
     stripeCurCode,
     stripePayId,
     flutterwaveId = 'FLWPUBK_TEST-1ffbaed6ee3788cd2bcbb898d3b90c59-X',
-    flutterwaveSec = 'FLWSECK_TEST25c36edcfcaa';
+    flutterwaveSec = 'FLWSECK_TEST25c36edcfcaa',
+    paytmMerId = "PpGeMd34849525540215",
+    paytmMerKey = "eIcrB!DTHJlQ5DN8",
+    website = "WEBSTAGING";
+
+bool payTesting = true;
 int selectedAddress = 0;
 StateCheckout stateCheck;
 bool isTimeSlot, isPromoValid = false, isUseWallet = false, isPayLayShow = true;
@@ -289,23 +294,21 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                         ));
                                   } else if (payMethod == null ||
                                       payMethod.isEmpty) {
-
-                                    msg=getTranslated(context, 'payWarning');
+                                    msg = getTranslated(context, 'payWarning');
                                     Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                             builder: (BuildContext context) =>
-                                                Payment(updateCheckout,msg)));
+                                                Payment(updateCheckout, msg)));
                                   } else if (isTimeSlot &&
                                       int.parse(allowDay) > 0 &&
                                       (selDate == null || selDate.isEmpty)) {
-
-                                    msg=getTranslated(context, 'dateWarning');
+                                    msg = getTranslated(context, 'dateWarning');
                                     Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                             builder: (BuildContext context) =>
-                                                Payment(updateCheckout,msg)));
+                                                Payment(updateCheckout, msg)));
                                   } else if (isTimeSlot &&
                                       timeSlotList.length > 0 &&
                                       (selTime == null || selTime.isEmpty)) {
@@ -324,13 +327,15 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                                   else if (payMethod ==
                                       getTranslated(context, 'PAYSTACK_LBL'))
                                     paystackPayment(context);
-                                  else if (payMethod ==
+                                  /* else if (payMethod ==
                                       getTranslated(context, 'FLUTTERWAVE_LBL'))
-                                    startFlutterwavePayment(
-                                        totalPrice, 'ke', 'kes');
+                                    startFlutterwavePayment(totalPrice, 'ke', 'kes');*/
                                   else if (payMethod ==
                                       getTranslated(context, 'STRIPE_LBL'))
                                     stripePayment();
+                                  else if (payMethod ==
+                                      getTranslated(context, 'PAYTM_LBL'))
+                                    paytmPayment(1);
                                   else
                                     placeOrder('');
                                 }),
@@ -355,7 +360,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     );
   }
 
-  void startFlutterwavePayment(double amt, String cntry, String cur) async {
+  /*void startFlutterwavePayment(double amt, String cntry, String cur) async {
     bool acceptCardPayment = true;
     bool acceptAccountPayment = true;
     bool acceptMpesaPayment = true;
@@ -402,7 +407,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       placeOrder(response.rawResponse["data"]["id"].toString());
     }
   }
-
+*/
   noCartImage(BuildContext context) {
     return Image.asset(
       'assets/images/empty_cart.png',
@@ -505,7 +510,7 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
                               cartList[index].productList[0].image),
                           height: 80.0,
                           width: 80.0,
-                          fit: extendImg?BoxFit.fill:BoxFit.contain,
+                          fit: extendImg ? BoxFit.fill : BoxFit.contain,
                           // errorWidget: (context, url, e) => placeHolder(60),
                           placeholder: placeHolder(80),
                         ))),
@@ -1036,11 +1041,17 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    setSnackbar(response.message);
+
     if (mounted)
       setState(() {
         _isProgress = false;
       });
+    print("res*****${response.message}");
+   // var getdata = jsonDecode(response.message);
+   // print("res*****${getdata["description"]}");
+    setSnackbar(response.message);
+    //print("res*****${getdata["description"]}");
+    //AddTransaction(tranId, orderId, SUCCESS, msg,false);
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
@@ -1064,9 +1075,6 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         AMOUNT: amt.toString(),
         NAME: CUR_USERNAME,
         'prefill': {CONTACT: contact, EMAIL: email},
-        'external': {
-          'wallets': ['paytm']
-        }
       };
 
       try {
@@ -1134,6 +1142,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         setState(() {
           _isProgress = false;
         });
+
+
     }
     setSnackbar(response.message);
   }
@@ -1233,6 +1243,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         payVia = "Flutterwave";
       else if (payMethod == getTranslated(context, 'STRIPE_LBL'))
         payVia = "Stripe";
+      else if (payMethod == getTranslated(context, 'PAYTM_LBL'))
+        payVia = "Paytm";
 
       try {
         var parameter = {
@@ -1281,12 +1293,16 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
           if (!error) {
             String orderId = getdata["order_id"].toString();
             if (payMethod == getTranslated(context, 'RAZORPAY_LBL')) {
-              AddTransaction(tranId, orderId, SUCCESS, msg);
+              AddTransaction(tranId, orderId, SUCCESS, msg,true);
             } else if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
               paypalPayment(orderId);
             } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
               AddTransaction(stripePayId, orderId,
-                  tranId == "succeeded" ? SUCCESS : WAITING, msg);
+                  tranId == "succeeded" ? SUCCESS : WAITING, msg,true);
+            } else if (payMethod == getTranslated(context, 'PAYSTACK_LBL')) {
+              AddTransaction(tranId, orderId, SUCCESS, msg,true);
+            } else if (payMethod == getTranslated(context, 'PAYTM_LBL')) {
+              AddTransaction(tranId, orderId, SUCCESS, msg,true);
             } else {
               CUR_CART_COUNT = "0";
               promoAmt = 0;
@@ -1360,8 +1376,8 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> AddTransaction(
-      String tranId, String orderID, String status, String msg) async {
+  Future<void> AddTransaction(String tranId, String orderID, String status,
+      String msg, bool redirect) async {
     try {
       var parameter = {
         USER_ID: CUR_USERID,
@@ -1381,25 +1397,27 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
       bool error = getdata["error"];
       String msg1 = getdata["message"];
       if (!error) {
-        CUR_CART_COUNT = "0";
-        promoAmt = 0;
-        remWalBal = 0;
-        usedBal = 0;
-        payMethod = '';
-        isPromoValid = false;
-        isUseWallet = false;
-        isPayLayShow = true;
-        selectedMethod = 0;
-        totalPrice = 0;
-        oriPrice = 0;
-        taxAmt = 0;
-        taxPer = 0;
-        delCharge = 0;
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (BuildContext context) => OrderSuccess()),
-            ModalRoute.withName('/home'));
+        if (redirect) {
+          CUR_CART_COUNT = "0";
+          promoAmt = 0;
+          remWalBal = 0;
+          usedBal = 0;
+          payMethod = '';
+          isPromoValid = false;
+          isUseWallet = false;
+          isPayLayShow = true;
+          selectedMethod = 0;
+          totalPrice = 0;
+          oriPrice = 0;
+          taxAmt = 0;
+          taxPer = 0;
+          delCharge = 0;
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => OrderSuccess()),
+              ModalRoute.withName('/home'));
+        }
       } else {
         setSnackbar(msg1);
       }
@@ -1528,11 +1546,12 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(4),
         onTap: () async {
           _scaffoldKey.currentState.removeCurrentSnackBar();
-          msg='';
+          msg = '';
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (BuildContext context) => Payment(updateCheckout,msg)));
+                  builder: (BuildContext context) =>
+                      Payment(updateCheckout, msg)));
           if (mounted) setState(() {});
         },
         child: Padding(
@@ -1772,5 +1791,81 @@ class StateCheckout extends State<CheckOut> with TickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  void paytmPayment(int mode) async {
+    String payment_response;
+    setState(() {
+      _isProgress = true;
+    });
+    String orderId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    String callBackUrl = (payTesting
+            ? 'https://securegw-stage.paytm.in'
+            : 'https://securegw.paytm.in') +
+        '/theia/paytmCallback?ORDER_ID=' +
+        orderId;
+
+    //Host the Server Side Code on your Server and use your URL here. The following URL may or may not work. Because hosted on free server.
+    //Server Side code url: https://github.com/mrdishant/Paytm-Plugin-Server
+    var url = 'https://desolate-anchorage-29312.herokuapp.com/generateTxnToken';
+
+    var body = json.encode({
+      "mid": paytmMerId,
+      "key_secret": paytmMerKey,
+      "website": website,
+      "orderId": orderId,
+      "amount": totalPrice.toString(),
+      "callbackUrl": callBackUrl,
+      "custId": CUR_USERID,
+      // "mode": mode.toString(),
+      "testing": payTesting ? 0 : 1
+    });
+
+    try {
+      final response = await post(
+        url,
+        body: body,
+        headers: {'Content-type': "application/json"},
+      );
+      print("Response is");
+      print(response.body);
+      String txnToken = response.body;
+      setState(() {
+        payment_response = txnToken;
+      });
+
+      var paytmResponse = Paytm.payWithPaytm(paytmMerId, orderId, txnToken,
+          totalPrice.toString(), callBackUrl, payTesting);
+
+      paytmResponse.then((value) {
+        print(value);
+        setState(() {
+          _isProgress = false;
+          print("Value is ");
+          print(value);
+          if (value['error']) {
+            payment_response = value['errorMessage'];
+
+            if (value['response'] != null)
+              AddTransaction(value['response']['TXNID'], orderId,
+                  value['response']['STATUS'], payment_response,false                                                                                                                                       );
+          } else {
+            if (value['response'] != null) {
+              payment_response = value['response']['STATUS'];
+              if (payment_response == "TXN_SUCCESS")
+                placeOrder(value['response']['TXNID']);
+              else
+                AddTransaction(value['response']['TXNID'], orderId,
+                    value['response']['STATUS'], value['errorMessage'],false);
+            }
+          }
+
+          setSnackbar(payment_response);
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 }

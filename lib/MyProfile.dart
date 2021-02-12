@@ -7,7 +7,7 @@ import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/Home.dart';
 import 'package:eshop/Setting.dart';
-import 'package:eshop/Transaction_History.dart';
+import 'package:eshop/MyTransactions.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -562,10 +562,10 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
               'assets/images/pro_address.png'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'MYWALLET'),
-              'assets/images/pro_favourite.png'),
+              'assets/images/pro_wh.png'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'MYTRANSACTION'),
-              'assets/images/pro_notification.png'),
+              'assets/images/pro_th.png'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'CHANGE_THEME_LBL'),
               'assets/images/pro_theme.png'),

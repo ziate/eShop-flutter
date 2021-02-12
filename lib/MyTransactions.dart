@@ -98,7 +98,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
             await post(getWalTranApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
-        print("response****${response.body.toString()}");
+        print("response****$parameter${response.body.toString()}");
 
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
@@ -172,7 +172,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
 
   listItem(int index) {
     Color back;
-    if (tranList[index].status == "credit") {
+    if (tranList[index].status == "Success") {
       back = Colors.green;
     } else
       back = Colors.red;
@@ -190,7 +190,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Text(
-                          getTranslated(context, 'AMT_LBL') +
+                          getTranslated(context, 'AMOUNT') +
                               " : " +
                               CUR_CURRENCY +
                               " " +
@@ -207,14 +207,14 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Text(getTranslated(context, 'ID_LBL') +
+                        Text(getTranslated(context, 'ORDER_ID_LBL') +
                             " : " +
-                            tranList[index].id),
+                            tranList[index].orderId),
                         Spacer(),
                         Container(
                           margin: EdgeInsets.only(left: 8),
                           padding:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                           decoration: BoxDecoration(
                               color: back,
                               borderRadius: new BorderRadius.all(
@@ -226,19 +226,23 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                         )
                       ],
                     ),
-                    tranList[index].opnBal != null &&
-                        tranList[index].opnBal.isNotEmpty
-                        ? Text(" : " + tranList[index].opnBal)
-                        : Container(),
-                    tranList[index].clsBal != null &&
-                        tranList[index].clsBal.isNotEmpty
-                        ? Text(" : " + tranList[index].clsBal)
+                    tranList[index].type != null &&
+                            tranList[index].type.isNotEmpty
+                        ? Text(getTranslated(context, 'PAYMENT_METHOD_LBL') +
+                            " : " +
+                            tranList[index].type)
                         : Container(),
                     tranList[index].msg != null &&
-                        tranList[index].msg.isNotEmpty
+                            tranList[index].msg.isNotEmpty
                         ? Text(getTranslated(context, 'MSG') +
-                        " : " +
-                        tranList[index].msg)
+                            " : " +
+                            tranList[index].msg)
+                        : Container(),
+                    tranList[index].txnID != null &&
+                            tranList[index].txnID.isNotEmpty
+                        ? Text(getTranslated(context, 'Txn_id') +
+                            " : " +
+                            tranList[index].txnID)
                         : Container(),
                   ]))),
     );

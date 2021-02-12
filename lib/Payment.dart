@@ -36,7 +36,14 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   bool _isLoading = true;
   String startingDate;
 
-  bool cod, paypal, razorpay, paumoney, paystack, flutterwave = true, stripe;
+  bool cod,
+      paypal,
+      razorpay,
+      paumoney,
+      paystack,
+      flutterwave = true,
+      stripe,
+      paytm = true;
   List<RadioModel> timeModel = new List<RadioModel>();
   List<RadioModel> payModel = new List<RadioModel>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -49,6 +56,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
     'assets/images/rozerpay.png',
     'assets/images/paystack.png',
     'assets/images/flutterwave.png',
+    'assets/images/stripe.png',
     'assets/images/stripe.png',
   ];
 
@@ -71,12 +79,12 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         getTranslated(context, 'PAYSTACK_LBL'),
         getTranslated(context, 'FLUTTERWAVE_LBL'),
         getTranslated(context, 'STRIPE_LBL'),
+        getTranslated(context, 'PAYTM_LBL'),
       ];
     });
     if (widget.msg != '')
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) =>
-    setSnackbar(widget.msg));
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => setSnackbar(widget.msg));
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
     buttonSqueezeanimation = new Tween(
@@ -287,7 +295,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                     ListView.builder(
                                         shrinkWrap: true,
                                         physics: NeverScrollableScrollPhysics(),
-                                        itemCount:  paymentMethodList.length,
+                                        itemCount: paymentMethodList.length,
                                         itemBuilder: (context, index) {
                                           if (index == 0 && cod)
                                             return paymentItem(index);
@@ -302,6 +310,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                           else if (index == 5 && flutterwave)
                                             return paymentItem(index);
                                           else if (index == 6 && stripe)
+                                            return paymentItem(index);
+                                          else if (index == 7 && paytm)
                                             return paymentItem(index);
                                           else
                                             return Container();
@@ -392,7 +402,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         Response response =
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
+        print("response***${response.body.toString()}");
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
@@ -428,6 +438,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
             paystack = payment["paystack_payment_method"] == "1" ? true : false;
             stripe = payment["stripe_payment_method"] == "1" ? true : false;
+            paytm = payment["paytm_payment_method"] == "1" ? true : false;
 
             if (razorpay) razorpayId = payment["razorpay_key_id"];
             if (paystack) {
@@ -443,6 +454,13 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
               StripeService.secret = stripeSecret;
               StripeService.init();
             }
+            if (paytm) {
+              paytmMerId = payment['paytm_merchant_id'];
+              paytmMerKey = payment['paytm_merchant_key'];
+              payTesting =
+                  payment['paytm_payment_mode'] == 'sandbox' ? true : false;
+            }
+
             for (int i = 0; i < paymentMethodList.length; i++) {
               payModel.add(RadioModel(
                   isSelected: i == selectedMethod ? true : false,

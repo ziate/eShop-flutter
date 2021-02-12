@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
-import 'package:rave_flutter/rave_flutter.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -23,8 +24,6 @@ class MyWallet extends StatefulWidget {
     return StateWallet();
   }
 }
-
-
 
 class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   bool _isNetworkAvail = true;
@@ -146,7 +145,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
- /*       USER_ID: CUR_USERID,
+        /*       USER_ID: CUR_USERID,
     ORDER_ID: orderID,
     TYPE: payMethod,
     TXNID: tranId,
@@ -158,14 +157,14 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
           AMOUNT: amtC.text.toString(),
           TRANS_TYPE: WALLET,
           TYPE: CREDIT,
-          MSG: msgC.text??" ",
+          MSG: msgC.text ?? " ",
           TXNID: '',
           ORDER_ID: payId,
           STATUS: "Success",
 
           // PAYMENT_ADD: bankDetailC.text.toString()
         };
-       Response response =
+        Response response =
             await post(addTransactionApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
@@ -361,7 +360,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                             razorpayPayment(double.parse(amtC.text));
                           else if (payMethod.trim() ==
                               getTranslated(context, 'PAYSTACK_LBL').trim())
-                            paystackPayment(context,int.parse(amtC.text));
+                            paystackPayment(context, int.parse(amtC.text));
 
                           Navigator.pop(context);
                         }
@@ -391,7 +390,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
     setSnackbar(response.message);
   }
 
-  paystackPayment(BuildContext context,int price) async {
+  paystackPayment(BuildContext context, int price) async {
     if (mounted)
       setState(() {
         _isProgress = true;
@@ -489,11 +488,9 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
     }
   }
 
-
-
   listItem(int index) {
     Color back;
-    if (tranList[index].status == "credit") {
+    if (tranList[index].type == "credit") {
       back = Colors.green;
     } else
       back = Colors.red;
@@ -511,7 +508,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Text(
-                          getTranslated(context, 'AMT_LBL') +
+                          getTranslated(context, 'AMOUNT') +
                               " : " +
                               CUR_CURRENCY +
                               " " +
@@ -541,20 +538,13 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                               borderRadius: new BorderRadius.all(
                                   const Radius.circular(4.0))),
                           child: Text(
-                            (tranList[index].status),
+                            (tranList[index].type),
                             style: TextStyle(color: colors.white),
                           ),
                         )
                       ],
                     ),
-                    tranList[index].opnBal != null &&
-                            tranList[index].opnBal.isNotEmpty
-                        ? Text(" : " + tranList[index].opnBal)
-                        : Container(),
-                    tranList[index].clsBal != null &&
-                            tranList[index].clsBal.isNotEmpty
-                        ? Text(" : " + tranList[index].clsBal)
-                        : Container(),
+
                     tranList[index].msg != null &&
                             tranList[index].msg.isNotEmpty
                         ? Text(getTranslated(context, 'MSG') +
@@ -609,6 +599,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
           LIMIT: perPage.toString(),
           OFFSET: offset.toString(),
           USER_ID: CUR_USERID,
+          TRANS_TYPE: WALLET
         };
 
         Response response =

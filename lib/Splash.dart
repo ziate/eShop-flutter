@@ -11,86 +11,86 @@ import 'Helper/String.dart';
 
 //splash screen of app
 class Splash extends StatefulWidget {
-  @override
-  _SplashScreen createState() => _SplashScreen();
+    @override
+    _SplashScreen createState() => _SplashScreen();
 }
 
 class _SplashScreen extends State<Splash> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+    final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
 
-  @override
-  void initState() {
-    super.initState();
-    startTime();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    deviceHeight = MediaQuery.of(context).size.height;
-    deviceWidth = MediaQuery.of(context).size.width;
-
-    SystemChrome.setEnabledSystemUIOverlays([]);
-    return Scaffold(
-      key: _scaffoldKey,
-      body: Stack(
-        children: <Widget>[
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: back(),
-            child: Center(
-              child: Image.asset(
-                'assets/images/splashlogo.png',
-              ),
-            ),
-          ),
-          Image.asset(
-            'assets/images/doodle.png',
-            fit: BoxFit.fill,
-            width: double.infinity,
-            height: double.infinity,
-          ),
-        ],
-      ),
-    );
-  }
-
-  startTime() async {
-    var _duration = Duration(seconds: 2);
-    return Timer(_duration, navigationPage);
-  }
-
-  Future<void> navigationPage() async {
-    bool isFirstTime = await getPrefrenceBool(ISFIRSTTIME);
-    if (isFirstTime) {
-      Navigator.pushReplacementNamed(context, "/home");
-    } else {
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Intro_Slider(),
-          ));
+    @override
+    void initState() {
+        super.initState();
+        startTime();
     }
-  }
+
+    @override
+    Widget build(BuildContext context) {
+        deviceHeight = MediaQuery.of(context).size.height;
+        deviceWidth = MediaQuery.of(context).size.width;
+
+        SystemChrome.setEnabledSystemUIOverlays([]);
+        return Scaffold(
+            key: _scaffoldKey,
+            body: Stack(
+                children: <Widget>[
+                    Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: back(),
+                        child: Center(
+                            child: Image.asset(
+                                'assets/images/splashlogo.png',
+                            ),
+                        ),
+                    ),
+                    Image.asset(
+                        'assets/images/doodle.png',
+                        fit: BoxFit.fill,
+                        width: double.infinity,
+                        height: double.infinity,
+                    ),
+                ],
+            ),
+        );
+    }
+
+    startTime() async {
+        var _duration = Duration(seconds: 2);
+        return Timer(_duration, navigationPage);
+    }
+
+    Future<void> navigationPage() async {
+        bool isFirstTime = await getPrefrenceBool(ISFIRSTTIME);
+        if (isFirstTime) {
+            Navigator.pushReplacementNamed(context, "/home");
+        } else {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Intro_Slider(),
+                ));
+        }
+    }
 
 
-  setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
-      content: new Text(
-        msg,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: colors.black),
-      ),
-      backgroundColor: colors.white,
-      elevation: 1.0,
-    ));
-  }
+    setSnackbar(String msg) {
+        _scaffoldKey.currentState.showSnackBar(new SnackBar(
+            content: new Text(
+                msg,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: colors.black),
+            ),
+            backgroundColor: colors.white,
+            elevation: 1.0,
+        ));
+    }
 
-  @override
-  void dispose() {
-    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    super.dispose();
-  }
+    @override
+    void dispose() {
+        SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+        super.dispose();
+    }
 
 }

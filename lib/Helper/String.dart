@@ -78,6 +78,8 @@ const String PORDER = 'p_order';
 const String DEL_CHARGES='delivery_charges';
 const String FREE_AMT='minimum_free_delivery_order_amount';
 
+
+
 const String LIMIT = 'limit';
 const String OFFSET = 'offset';
 const String PRIVACY_POLLICY = 'privacy_policy';
@@ -99,6 +101,7 @@ const String VARIENT_VALUE = 'variant_values';
 const String COMMENT = 'comment';
 const String MESSAGE = 'message';
 const String DATE = 'date_sent';
+const String TRN_DATE='transaction_date';
 const String SEARCH = 'search';
 const String PAYMENT_METHOD = 'payment_method';
 const String ISWALLETBALUSED = "is_wallet_used";
