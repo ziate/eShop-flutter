@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
@@ -141,7 +141,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -159,10 +159,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         getArea(setState);
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+          _isLoading = false;
+        });
     }
   }
 
@@ -177,9 +178,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       setUpdateUser();
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -195,9 +197,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   Future<void> setProfilePic(File _image) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
-       if (mounted) setState(() {
-        _isLoading = true;
-      });
+      if (mounted)
+        setState(() {
+          _isLoading = true;
+        });
       try {
         var request =
             http.MultipartRequest("POST", Uri.parse(getUpdateUserApi));
@@ -223,19 +226,22 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         } else {
           setSnackbar(msg);
         }
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
@@ -306,9 +312,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     if (result != null) {
       File image = File(result.files.single.path);
       if (image != null) {
-         if (mounted) setState(() {
-          _isLoading = true;
-        });
+        if (mounted)
+          setState(() {
+            _isLoading = true;
+          });
         setProfilePic(image);
       }
     } else {
@@ -332,22 +339,25 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
             (data as List).map((data) => new User.fromJson(data)).toList();
         for (int i = 0; i < cityList.length; i++) {
           if (cityList[i].id == city) {
-             if (mounted) setState(() {
-              cityName = cityList[i].name;
-            });
+            if (mounted)
+              setState(() {
+                cityName = cityList[i].name;
+              });
           }
         }
       } else {
         setSnackbar(msg);
       }
-       if (mounted) setState(() {
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+        });
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
-       if (mounted) setState(() {
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+        });
     }
   }
 
@@ -387,15 +397,17 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-       if (mounted) setState(() {
-        isArea = true;
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          isArea = true;
+          _isLoading = false;
+        });
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
-       if (mounted) setState(() {
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+        });
     }
   }
 
@@ -416,7 +428,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         padding: EdgeInsets.all(15.0),
         child: Row(
           children: <Widget>[
-            Image.asset('assets/images/username.png', fit: BoxFit.fill),
+            SvgPicture.asset('assets/images/username.svg', fit: BoxFit.fill),
             Padding(
                 padding: EdgeInsetsDirectional.only(start: 15.0),
                 child: Column(
@@ -509,9 +521,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold)),
                               onPressed: () {
-                                 if (mounted) setState(() {
-                                  Navigator.pop(context);
-                                });
+                                if (mounted)
+                                  setState(() {
+                                    Navigator.pop(context);
+                                  });
                               }),
                           new FlatButton(
                               child: Text(getTranslated(context, 'SAVE_LBL'),
@@ -523,10 +536,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                 final form = _formKey.currentState;
                                 if (form.validate()) {
                                   form.save();
-                                   if (mounted) setState(() {
-                                    name = nameC.text;
-                                    Navigator.pop(context);
-                                  });
+                                  if (mounted)
+                                    setState(() {
+                                      name = nameC.text;
+                                      Navigator.pop(context);
+                                    });
                                   checkNetwork();
                                 }
                               })
@@ -544,7 +558,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         padding: EdgeInsets.all(15.0),
         child: Row(
           children: <Widget>[
-            Image.asset('assets/images/email.png', fit: BoxFit.fill),
+            SvgPicture.asset('assets/images/email.svg', fit: BoxFit.fill),
             Padding(
                 padding: EdgeInsetsDirectional.only(start: 15.0),
                 child: Column(
@@ -624,7 +638,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                         autovalidateMode:
                                             AutovalidateMode.onUserInteraction,
                                         controller: emailC,
-                                        onChanged: (v) =>  setState(() {
+                                        onChanged: (v) => setState(() {
                                           email = v;
                                         }),
                                       )))
@@ -637,9 +651,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold)),
                               onPressed: () {
-                                 if (mounted) setState(() {
-                                  Navigator.pop(context);
-                                });
+                                if (mounted)
+                                  setState(() {
+                                    Navigator.pop(context);
+                                  });
                               }),
                           new FlatButton(
                               child: Text(getTranslated(context, 'SAVE_LBL'),
@@ -651,10 +666,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                 final form = _formKey.currentState;
                                 if (form.validate()) {
                                   form.save();
-                                   if (mounted) setState(() {
-                                    email = emailC.text;
-                                    Navigator.pop(context);
-                                  });
+                                  if (mounted)
+                                    setState(() {
+                                      email = emailC.text;
+                                      Navigator.pop(context);
+                                    });
                                   checkNetwork();
                                 }
                               })
@@ -672,7 +688,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
         child: Row(
           children: <Widget>[
-            Image.asset('assets/images/mobilenumber.png', fit: BoxFit.fill),
+            SvgPicture.asset('assets/images/mobilenumber.svg', fit: BoxFit.fill),
             Padding(
                 padding: EdgeInsetsDirectional.only(start: 15.0),
                 child: Column(
@@ -707,7 +723,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Image.asset('assets/images/location.png', fit: BoxFit.fill),
+            SvgPicture.asset('assets/images/location.svg', fit: BoxFit.fill),
             Padding(
                 padding: EdgeInsetsDirectional.only(start: 15.0),
                 child: Column(
@@ -807,10 +823,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                     ),
                                     value: city,
                                     onChanged: (newValue) {
-                                       if (mounted) setState(() {
-                                        city = newValue;
-                                        isArea = false;
-                                      });
+                                      if (mounted)
+                                        setState(() {
+                                          city = newValue;
+                                          isArea = false;
+                                        });
 
                                       getArea(setStater);
                                     },
@@ -867,9 +884,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                     value: area,
                                     onChanged: isArea
                                         ? (newValue) {
-                                             if (mounted) setState(() {
-                                              area = newValue;
-                                            });
+                                            if (mounted)
+                                              setState(() {
+                                                area = newValue;
+                                              });
                                           }
                                         : null,
                                     items: areaList.map((User user) {
@@ -902,9 +920,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold)),
                                 onPressed: () {
-                                   if (mounted) setState(() async {
-                                    Navigator.pop(context);
-                                  });
+                                  if (mounted)
+                                    setState(() async {
+                                      Navigator.pop(context);
+                                    });
                                 }),
                             new FlatButton(
                                 child: Text(getTranslated(context, 'SAVE_LBL'),
@@ -917,10 +936,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                       areaName != null &&
                                       cityName != null &&
                                       cityName != "") {
-                                     if (mounted) setState(() {
-                                      Navigator.pop(context);
-                                      checkNetwork();
-                                    });
+                                    if (mounted)
+                                      setState(() {
+                                        Navigator.pop(context);
+                                        checkNetwork();
+                                      });
                                   }
                                 })
                           ],
@@ -1063,7 +1083,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                           )),
                                       obscureText: !_showPassword,
                                       controller: newPassC,
-                                      onChanged: (v) =>  setState(() {
+                                      onChanged: (v) => setState(() {
                                         newPass = v;
                                       }),
                                     )),
@@ -1109,7 +1129,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                           )),
                                       obscureText: !_scPwd,
                                       controller: confPassC,
-                                      onChanged: (v) =>  setState(() {
+                                      onChanged: (v) => setState(() {
                                         confPass = v;
                                       }),
                                     )),
@@ -1144,9 +1164,10 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                       final form = _formKey.currentState;
                       if (form.validate()) {
                         form.save();
-                         if (mounted) setState(() {
-                          Navigator.pop(context);
-                        });
+                        if (mounted)
+                          setState(() {
+                            Navigator.pop(context);
+                          });
                         checkNetwork();
                       }
                     })
@@ -1166,23 +1187,23 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                     radius: 50,
                     backgroundColor: colors.primary,
                     child: ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child:
+                      new FadeInImage(
+                        fadeInDuration: Duration(milliseconds: 150),
+                        image: NetworkImage(image),
+                        height: 100.0,
+                        width: 100.0,
+                        fit: BoxFit.cover,
+                        placeholder: placeHolder(100),
+                      ),
+                    ))
+                : Container(
+                    decoration: BoxDecoration(
+                        color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(50),
-                        child: Image.network(
-                          image,
-                          fit: BoxFit.fill,
-                          width: 100,
-                          height: 100,
-                        )))
-                : CircleAvatar(
-                    radius: 50,
-                    backgroundColor: colors.primary,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(50),
-                            border: Border.all(color: colors.primary)),
-                        child: Icon(Icons.account_circle, size: 100)),
-                  ),
+                        border: Border.all(color: colors.primary)),
+                    child: Icon(Icons.account_circle, size: 100)),
             Positioned(
                 bottom: 3,
                 right: 5,
@@ -1196,10 +1217,11 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                       size: 10,
                     ),
                     onTap: () {
-                       if (mounted) setState(() {
-                        _imgFromGallery();
-                        //_showPicker(context);
-                      });
+                      if (mounted)
+                        setState(() {
+                          _imgFromGallery();
+                          //_showPicker(context);
+                        });
                     },
                   ),
                   decoration: BoxDecoration(

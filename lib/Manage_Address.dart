@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'CheckOut.dart';
+
 import 'Helper/CustomRadio.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
@@ -40,7 +40,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
     super.initState();
 
     if (widget.home) {
-       if (mounted) setState(() {
+      if (mounted) setState(() {
         _isLoading = true;
       });
       _getAddress();
@@ -98,7 +98,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
                   _getAddress();
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -143,12 +143,12 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
 
           addAddressModel();
         } else {}
-         if (mounted) setState(() {
+        if (mounted) setState(() {
           _isLoading = false;
         });
       } on TimeoutException catch (_) {}
     } else {
-       if (mounted) setState(() {
+      if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -156,7 +156,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-     if (mounted) setState(() {
+    if (mounted) setState(() {
       _isLoading = true;
     });
     addressList.clear();
@@ -223,7 +223,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
                       index: addressList.length,
                     )),
               );
-               if (mounted) setState(() {
+              if (mounted) setState(() {
                 addModel.clear();
                 addAddressModel();
               });
@@ -263,7 +263,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-       if (mounted) setState(() {
+      if (mounted) setState(() {
         _isProgress = false;
       });
     } on TimeoutException catch (_) {
@@ -277,7 +277,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
         child: new InkWell(
           borderRadius: BorderRadius.circular(4),
           onTap: () {
-             if (mounted) setState(() {
+            if (mounted) setState(() {
               if (!ISFLAT_DEL) {
                 if (oriPrice + taxAmt <
                     double.parse(addressList[selectedAddress].freeAmt)) {
@@ -359,14 +359,14 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
         } else {
           setSnackbar(msg);
         }
-         if (mounted) setState(() {
+        if (mounted) setState(() {
           _isProgress = false;
         });
       } on TimeoutException catch (_) {
         setSnackbar( getTranslated(context,'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
+      if (mounted) setState(() {
         _isNetworkAvail = false;
       });
     }
@@ -391,13 +391,13 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
           addItem: addressList[i],
           show: !widget.home,
           onSetDefault: () {
-             if (mounted) setState(() {
+            if (mounted) setState(() {
               _isProgress = true;
             });
             setAsDefault(i);
           },
           onDeleteSelected: () {
-             if (mounted) setState(() {
+            if (mounted) setState(() {
               _isProgress = true;
             });
             deleteAddress(i);
@@ -411,7 +411,9 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
                     index: i,
                   ),
                 ));
-             if (mounted) setState(() {
+
+
+            if (mounted) setState(() {
               addModel.clear();
               addAddressModel();
             });

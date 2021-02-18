@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'Cart.dart';
-import 'CheckOut.dart';
+
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -50,14 +50,14 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
 
   List<String> paymentMethodList = [];
   List<String> paymentIconList = [
-    'assets/images/cod.png',
-    'assets/images/paypal.png',
-    'assets/images/payu.png',
-    'assets/images/rozerpay.png',
-    'assets/images/paystack.png',
-    'assets/images/flutterwave.png',
-    'assets/images/stripe.png',
-    'assets/images/stripe.png',
+    'assets/images/cod.svg',
+    'assets/images/paypal.svg',
+    'assets/images/payu.svg',
+    'assets/images/rozerpay.svg',
+    'assets/images/paystack.svg',
+    'assets/images/flutterwave.svg',
+    'assets/images/stripe.svg',
+    'assets/images/paytm.svg',
   ];
 
   Animation buttonSqueezeanimation;
@@ -266,7 +266,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                     ListView.builder(
                                         shrinkWrap: true,
                                         physics: NeverScrollableScrollPhysics(),
-                                        itemCount: timeSlotList.length,
+                                        itemCount: timeModel.length,
                                         itemBuilder: (context, index) {
                                           return timeSlotItem(index);
                                         })
@@ -382,11 +382,50 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       onTap: () {
         DateTime date = today.add(Duration(days: index));
 
-        if (mounted)
-          setState(() {
-            selectedDate = index;
-            selDate = DateFormat('yyyy-MM-dd').format(date);
-          });
+        if (mounted) selectedDate = index;
+        selDate = DateFormat('yyyy-MM-dd').format(date);
+        timeModel.clear();
+
+
+
+        if (date == today) {
+
+          if (timeSlotList.length > 0) {
+
+            for (int i = 0; i < timeSlotList.length; i++) {
+                         DateTime cur = DateTime.now();
+              String time = timeSlotList[i].lastTime;
+              DateTime last = DateTime(
+                  cur.year,
+                  cur.month,
+                  cur.day,
+                  int.parse(time.split(':')[0]),
+                  int.parse(time.split(':')[1]),
+                  int.parse(time.split(':')[2]));
+
+
+              if (cur.isAfter(last)) {
+                timeModel.add(new RadioModel(
+                    isSelected: i == selectedTime ? true : false,
+                    name: timeSlotList[i].name,
+                    img: ''));
+
+                print("date****$last***$cur**${timeModel.length}");
+              }
+            }
+          }
+        }
+        else{
+          if (timeSlotList.length > 0) {
+            for (int i = 0; i < timeSlotList.length; i++) {
+              timeModel.add(new RadioModel(
+                  isSelected: i == selectedTime ? true : false,
+                  name: timeSlotList[i].name,
+                  img: ''));
+            }
+          }
+        }
+        setState(() {});
       },
     );
   }
@@ -458,7 +497,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
               paytmMerId = payment['paytm_merchant_id'];
               paytmMerKey = payment['paytm_merchant_key'];
               payTesting =
-                  payment['paytm_payment_mode'] == 'sandbox' ? true : false;
+                  payment['paytm_mode'] == 'sandbox' ? true : false;
             }
 
             for (int i = 0; i < paymentMethodList.length; i++) {

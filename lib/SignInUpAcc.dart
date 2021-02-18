@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'SendOtp.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 class SignInUpAcc extends StatefulWidget {
   @override
   _SignInUpAccState createState() => new _SignInUpAccState();
@@ -17,8 +17,8 @@ class _SignInUpAccState extends State<SignInUpAcc> {
   _subLogo() {
     return Padding(
         padding: EdgeInsetsDirectional.only(top: 30.0),
-        child: Image.asset(
-          'assets/images/homelogo.png',
+        child: SvgPicture.asset(
+          'assets/images/homelogo.svg',
         ));
   }
 

@@ -220,6 +220,11 @@ const String ANSWER="answer";
 const String INVOICE="invoice_html";
 const String APP_THEME="App Theme";
 const String SHORT="short_description";
+const String FROMTIME='from_time';
+const String TOTIME='last_order_time';
+
+
+
 
 const String CITYNAME = "cityName";
 const String AREANAME = "areaName";
@@ -229,8 +234,8 @@ const String DEFAULT_SYSTEM="System default";
 const String LIGHT="Light";
 const String DARK="Dark";
 String ISDARK="";
-const String PAYPAL_RESPONSE_URL =
-    "http://eshop.wrteam.in/app/v1/api/app_payment_status"; //?amt=10.00&cc=USD&item_name=Welcome%20&item_number=7&st=Completed&tx=50X78734DF4190710";'
+final String PAYPAL_RESPONSE_URL =
+    "$baseUrl"+"app_payment_status";
 
 String CUR_CURRENCY = '';
 String CUR_USERID = '';

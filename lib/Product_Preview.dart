@@ -49,9 +49,10 @@ class StatePreview extends State<ProductPreview> {
               itemCount: widget.imgList.length,
               controller: PageController(initialPage: curPos),
               onPageChanged: (index) {
-                 if (mounted) setState(() {
-                  curPos = index;
-                });
+                if (mounted)
+                  setState(() {
+                    curPos = index;
+                  });
               },
               itemBuilder: (BuildContext context, int index) {
                 return PhotoView(

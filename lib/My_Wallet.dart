@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'dart:math';
+import 'package:eshop/PaypalWebviewActivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
+import 'package:paytm/paytm.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'Helper/AppBtn.dart';
@@ -38,16 +40,17 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   TextEditingController amtC, msgC;
   List<String> paymentMethodList = [];
   List<String> paymentIconList = [
-    'assets/images/cod.png',
-    'assets/images/paypal.png',
-    'assets/images/payu.png',
-    'assets/images/rozerpay.png',
-    'assets/images/paystack.png',
-    'assets/images/flutterwave.png',
-    'assets/images/stripe.png',
+    'assets/images/cod.svg',
+    'assets/images/paypal.svg',
+    'assets/images/payu.svg',
+    'assets/images/rozerpay.svg',
+    'assets/images/paystack.svg',
+    'assets/images/flutterwave.svg',
+    'assets/images/stripe.svg',
+    'assets/images/paytm.svg',
   ];
   List<RadioModel> payModel = new List<RadioModel>();
-  bool paypal, razorpay, paumoney, paystack, flutterwave = true, stripe;
+  bool paypal, razorpay, paumoney, paystack, flutterwave = true, stripe, paytm;
   String razorpayId,
       paystackId,
       stripeId,
@@ -56,7 +59,11 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
       stripeCurCode,
       stripePayId,
       flutterwaveId = 'FLWPUBK_TEST-1ffbaed6ee3788cd2bcbb898d3b90c59-X',
-      flutterwaveSec = 'FLWSECK_TEST25c36edcfcaa';
+      flutterwaveSec = 'FLWSECK_TEST25c36edcfcaa',
+      paytmMerId = "PpGeMd34849525540215",
+      paytmMerKey = "eIcrB!DTHJlQ5DN8",
+      website = "WEBSTAGING";
+
   int selectedMethod;
   String payMethod;
   StateSetter dialogState;
@@ -65,8 +72,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   List<TransactionModel> tranList = [];
   int offset = 0;
   int total = 0;
-  bool isLoadingmore = true;
-  bool _isLoading = true;
+  bool isLoadingmore, _isLoading = true, payTesting = true;
 
   @override
   void initState() {
@@ -82,6 +88,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         getTranslated(context, 'PAYSTACK_LBL'),
         getTranslated(context, 'FLUTTERWAVE_LBL'),
         getTranslated(context, 'STRIPE_LBL'),
+        getTranslated(context, 'PAYTM_LBL'),
       ];
       _getpaymentMethod();
     });
@@ -141,25 +148,23 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
     );
   }
 
-  Future<Null> sendRequest(String payId) async {
+  Future<Null> sendRequest(String txnId) async {
+
+
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
+
+      String orderId="wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900)+ 100}";
       try {
-        /*       USER_ID: CUR_USERID,
-    ORDER_ID: orderID,
-    TYPE: payMethod,
-    TXNID: tranId,
-    AMOUNT: totalPrice.toString(),
-    STATUS: status,
-    MSG: msg*/
+
         var parameter = {
           USER_ID: CUR_USERID,
           AMOUNT: amtC.text.toString(),
           TRANS_TYPE: WALLET,
           TYPE: CREDIT,
-          MSG: msgC.text ?? " ",
-          TXNID: '',
-          ORDER_ID: payId,
+          MSG: (msgC.text==''||msgC.text.isEmpty )?"Added through wallet":msgC.text,
+          TXNID: txnId,
+          ORDER_ID: orderId,
           STATUS: "Success",
 
           // PAYMENT_ADD: bankDetailC.text.toString()
@@ -313,6 +318,8 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                             return paymentItem(index);
                                           else if (index == 6 && stripe)
                                             return paymentItem(index);
+                                          else if (index == 7 && paytm)
+                                            return paymentItem(index);
                                           else
                                             return Container();
                                         }),
@@ -361,6 +368,13 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                           else if (payMethod.trim() ==
                               getTranslated(context, 'PAYSTACK_LBL').trim())
                             paystackPayment(context, int.parse(amtC.text));
+                          else if (payMethod ==
+                              getTranslated(context, 'PAYTM_LBL'))
+                            paytmPayment(double.parse(amtC.text));
+                          else if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
+                            paypalPayment();
+                          }
+
 
                           Navigator.pop(context);
                         }
@@ -370,6 +384,110 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
             );
           });
         });
+  }
+  Future<void> paypalPayment() async {
+
+    String orderId="wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900)+ 100}";
+
+    try {
+      var parameter = {
+        USER_ID: CUR_USERID,
+        ORDER_ID: orderId,
+      };
+      Response response =
+      await post(paypalTransactionApi, body: parameter, headers: headers)
+          .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        String data = getdata["data"];
+        print(data);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (BuildContext context) => PaypalWebview(
+                  url: data,
+                  from: "wallet",
+                )));
+      } else {
+        setSnackbar(msg);
+      }
+    } on TimeoutException catch (_) {
+      setSnackbar(getTranslated(context, 'somethingMSg'));
+    }
+  }
+  void paytmPayment(double price) async {
+    String payment_response;
+    setState(() {
+      _isProgress = true;
+    });
+    String orderId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    String callBackUrl = (payTesting
+            ? 'https://securegw-stage.paytm.in'
+            : 'https://securegw.paytm.in') +
+        '/theia/paytmCallback?ORDER_ID=' +
+        orderId;
+
+    //Host the Server Side Code on your Server and use your URL here. The following URL may or may not work. Because hosted on free server.
+    //Server Side code url: https://github.com/mrdishant/Paytm-Plugin-Server
+    var url = 'https://desolate-anchorage-29312.herokuapp.com/generateTxnToken';
+
+    var body = json.encode({
+      "mid": paytmMerId,
+      "key_secret": paytmMerKey,
+      "website": website,
+      "orderId": orderId,
+      "amount": price.toString(),
+      "callbackUrl": callBackUrl,
+      "custId": CUR_USERID,
+      // "mode": mode.toString(),
+      "testing": payTesting ? 0 : 1
+    });
+
+    try {
+      final response = await post(
+        url,
+        body: body,
+        headers: {'Content-type': "application/json"},
+      );
+      print("Response is");
+      print(response.body);
+      String txnToken = response.body;
+      setState(() {
+        payment_response = txnToken;
+      });
+
+      var paytmResponse = Paytm.payWithPaytm(paytmMerId, orderId, txnToken,
+          price.toString(), callBackUrl, payTesting);
+
+      paytmResponse.then((value) {
+        print(value);
+        setState(() {
+          _isProgress = false;
+          print("Value is ");
+          print(value);
+          if (value['error']) {
+            payment_response = value['errorMessage'];
+          } else {
+            if (value['response'] != null) {
+              payment_response = value['response']['STATUS'];
+              if (payment_response == "TXN_SUCCESS")
+                sendRequest(value['response']['TXNID']);
+                //placeOrder(value['response']['TXNID']);
+
+            }
+          }
+
+          setSnackbar(payment_response);
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   stripePayment(int price) async {
@@ -470,9 +588,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         AMOUNT: amt.toString(),
         NAME: CUR_USERNAME,
         'prefill': {CONTACT: contact, EMAIL: email},
-        'external': {
-          'wallets': ['paytm']
-        }
+
       };
 
       try {
@@ -544,7 +660,6 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                         )
                       ],
                     ),
-
                     tranList[index].msg != null &&
                             tranList[index].msg.isNotEmpty
                         ? Text(getTranslated(context, 'MSG') +
@@ -779,6 +894,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
             razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
             paystack = payment["paystack_payment_method"] == "1" ? true : false;
             stripe = payment["stripe_payment_method"] == "1" ? true : false;
+            paytm = payment["paytm_payment_method"] == "1" ? true : false;
 
             if (razorpay) razorpayId = payment["razorpay_key_id"];
             if (paystack) {
@@ -794,6 +910,15 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
               StripeService.secret = stripeSecret;
               StripeService.init();
             }
+            if (paytm) {
+              paytmMerId = payment['paytm_merchant_id'];
+              paytmMerKey = payment['paytm_merchant_key'];
+              payTesting =
+                  payment['paytm_mode'] == 'sandbox' ? true : false;
+            }
+
+            print("mer****$paytmMerId***$paytmMerKey***$payTesting***$paytm");
+
             for (int i = 0; i < paymentMethodList.length; i++) {
               payModel.add(RadioModel(
                   isSelected: i == selectedMethod ? true : false,

@@ -11,7 +11,7 @@ import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -195,8 +195,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     return Expanded(
       flex: 4,
       child: Center(
-        child: new Image.asset(
-          'assets/images/homelogo.png',
+        child:  SvgPicture.asset(
+          'assets/images/homelogo.svg',
         ),
       ),
     );

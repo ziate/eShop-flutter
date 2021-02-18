@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Intro_Slider extends StatefulWidget {
   @override
@@ -30,17 +30,17 @@ class _GettingStartedScreenState extends State<Intro_Slider>
     new Future.delayed(Duration.zero,() {
        slideList = [
         Slide(
-          imageUrl: 'assets/images/introimage_a.png',
+          imageUrl: 'assets/images/introimage_a.svg',
           title: getTranslated(context, 'TITLE1_LBL'),
           description: getTranslated(context, 'DISCRIPTION1'),
         ),
         Slide(
-          imageUrl: 'assets/images/introimage_b.png',
+          imageUrl: 'assets/images/introimage_b.svg',
           title: getTranslated(context,'TITLE2_LBL'),
           description: getTranslated(context, 'DISCRIPTION2'),
         ),
         Slide(
-          imageUrl: 'assets/images/introimage_c.png',
+          imageUrl: 'assets/images/introimage_c.svg',
           title: getTranslated(context, 'TITLE3_LBL'),
           description: getTranslated(context, 'DISCRIPTION3'),
         ),
@@ -103,7 +103,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
               children: <Widget>[
                 Container(
                   height: MediaQuery.of(context).size.height * .5,
-                  child: Image.asset(
+                  child: SvgPicture.asset(
                     slideList[index].imageUrl,
                   ),
                 ),

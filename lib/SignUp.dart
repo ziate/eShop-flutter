@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -194,7 +194,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
     return Expanded(
       flex: 3,
       child: Center(
-        child: new Image.asset('assets/images/homelogo.png'),
+        child: new SvgPicture.asset('assets/images/homelogo.svg'),
       ),
     );
   }

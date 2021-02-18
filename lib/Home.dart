@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -131,7 +132,7 @@ class StateHome extends State<Home> {
 
     return AppBar(
       title: curSelected == 0
-          ? Image.asset('assets/images/titleicon.png')
+          ? SvgPicture.asset('assets/images/titleicon.svg')
           : Text(
               title,
               style: TextStyle(
@@ -161,9 +162,11 @@ class StateHome extends State<Home> {
                 },
                 child: new Stack(children: <Widget>[
                   Center(
-                    child: Image.asset(
-                      'assets/images/noti_cart.png',
-                      width: 30,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: SvgPicture.asset(
+                        'assets/images/noti_cart.svg',
+                      ),
                     ),
                   ),
                   (CUR_CART_COUNT != null &&
@@ -210,36 +213,46 @@ class StateHome extends State<Home> {
         height: 65,
         items: <Widget>[
           curSelected == 0
-              ? Image.asset(
-                  "assets/images/sel_home.png",
-                  height: 35,
-                )
-              : Image.asset(
-                  "assets/images/desel_home.png",
+              ? Container(
+                  height: 40,
+                  child: Center(
+                      child: SvgPicture.asset(
+                    "assets/images/sel_home.svg",
+                  )))
+              : SvgPicture.asset(
+                  "assets/images/desel_home.svg",
                 ),
           curSelected == 1
-              ? Image.asset(
-                  "assets/images/sel_fav.png",
-                  height: 35,
+              ? Container(
+                  height: 40,
+                  child: Center(
+                    child: SvgPicture.asset(
+                      "assets/images/sel_fav.svg",
+                    ),
+                  ),
                 )
-              : Image.asset(
-                  "assets/images/desel_fav.png",
+              : SvgPicture.asset(
+                  "assets/images/desel_fav.svg",
                 ),
           curSelected == 2
-              ? Image.asset(
-                  "assets/images/sel_notification.png",
-                  height: 35,
-                )
-              : Image.asset(
-                  "assets/images/desel_notification.png",
+              ? Container(
+                  height: 40,
+                  child: Center(
+                      child: SvgPicture.asset(
+                    "assets/images/sel_notification.svg",
+                  )))
+              : SvgPicture.asset(
+                  "assets/images/desel_notification.svg",
                 ),
           curSelected == 3
-              ? Image.asset(
-                  "assets/images/sel_user.png",
-                  height: 35,
-                )
-              : Image.asset(
-                  "assets/images/desel_user.png",
+              ? Container(
+                  height: 40,
+                  child: Center(
+                      child: SvgPicture.asset(
+                    "assets/images/sel_user.svg",
+                  )))
+              : SvgPicture.asset(
+                  "assets/images/desel_user.svg",
                 )
         ],
         onTap: (int index) {
@@ -677,8 +690,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 27),
             child: ClipRRect(
               borderRadius: BorderRadius.all(Radius.circular(10.0)),
-              child: Image.asset(
-                'assets/images/sliderph.png',
+              child: SvgPicture.asset(
+                'assets/images/sliderph.svg',
                 height: height,
                 width: double.infinity,
                 fit: BoxFit.fill,
@@ -739,9 +752,12 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               hintStyle: Theme.of(context).textTheme.bodyText2.copyWith(
                     color: colors.fontColor,
                   ),
-              suffixIcon: Image.asset(
-                'assets/images/search.png',
-                color: isDarkTheme ? colors.secondary : colors.primary,
+              suffixIcon: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SvgPicture.asset(
+                  'assets/images/search.svg',
+                  color: isDarkTheme ? colors.secondary : colors.primary,
+                ),
               ),
               fillColor: colors.white,
               filled: true),
@@ -1524,8 +1540,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           height: height,
           width: double.maxFinite,
           fit: BoxFit.fill,
-          placeholder: (context, url) => Image.asset(
-            "assets/images/sliderph.png",
+          placeholder: (context, url) => SvgPicture.asset(
+            "assets/images/sliderph.svg",
             fit: BoxFit.fill,
             height: height,
           ),

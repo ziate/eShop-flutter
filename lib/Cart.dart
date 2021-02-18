@@ -1,20 +1,31 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 
-import 'package:eshop/CheckOut.dart';
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_paystack/flutter_paystack.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart';
+import 'package:paytm/paytm.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
+import 'Add_Address.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/SimBtn.dart';
 import 'Helper/String.dart';
+import 'Helper/Stripe_Service.dart';
 import 'Home.dart';
+import 'Manage_Address.dart';
 import 'Model/Section_Model.dart';
+import 'Model/User.dart';
+import 'Order_Success.dart';
+import 'Payment.dart';
+import 'PaypalWebviewActivity.dart';
 
 class Cart extends StatefulWidget {
   final Function updateHome, updateParent;
@@ -25,23 +36,58 @@ class Cart extends StatefulWidget {
   State<StatefulWidget> createState() => StateCart();
 }
 
+List<User> addressList = [];
 List<Section_Model> cartList = [];
 double totalPrice = 0, oriPrice = 0, delCharge = 0, taxAmt = 0, taxPer = 0;
+int selectedAddress = 0;
+String latitude,
+    longitude,
+    selAddress,
+    payMethod = '',
+    payIcon = '',
+    selTime,
+    selDate,
+    promocode;
+bool isTimeSlot, isPromoValid = false, isUseWallet = false, isPayLayShow = true;
+int selectedTime, selectedDate, selectedMethod;
+double promoAmt = 0;
+double remWalBal, usedBal = 0;
+String razorpayId,
+    paystackId,
+    stripeId,
+    stripeSecret,
+    stripeMode = "test",
+    stripeCurCode,
+    stripePayId,
+    flutterwaveId = 'FLWPUBK_TEST-1ffbaed6ee3788cd2bcbb898d3b90c59-X',
+    flutterwaveSec = 'FLWSECK_TEST25c36edcfcaa',
+    paytmMerId = "PpGeMd34849525540215",
+    paytmMerKey = "eIcrB!DTHJlQ5DN8",
+    website = "WEBSTAGING";
+bool payTesting = true;
 
 class StateCart extends State<Cart> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   bool _isProgress = false;
+  final GlobalKey<ScaffoldState> _checkscaffoldKey =
+      new GlobalKey<ScaffoldState>();
+
   bool _isCartLoad = true, _isSaveLoad = true;
   HomePage home;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
-  bool _value = false;
+
   List<TextEditingController> _controller = [];
   var items;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
   List<Section_Model> saveLaterList = [];
+  String msg;
+  bool _isLoading = true;
+  Razorpay _razorpay;
+  TextEditingController promoC = new TextEditingController();
+  StateSetter checkoutState;
 
   @override
   void initState() {
@@ -89,8 +135,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   @override
   void dispose() {
     buttonController.dispose();
-    for(int i=0;i<_controller.length;i++)
-      _controller[i].dispose();
+    for (int i = 0; i < _controller.length; i++) _controller[i].dispose();
     super.dispose();
   }
 
@@ -194,6 +239,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       image: NetworkImage(cartList[index].productList[0].image),
                       height: 80.0,
                       width: 80.0,
+                      fit: extendImg ? BoxFit.fill : BoxFit.contain,
                       placeholder: placeHolder(80),
                     ))),
             Expanded(
@@ -327,7 +373,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                           ),
                                           onSelected: (String value) {
                                             if (_isProgress == false)
-                                            addToCart(index, value);
+                                              addToCart(index, value);
                                           },
                                           itemBuilder: (BuildContext context) {
                                             return items
@@ -359,10 +405,10 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                     ),
                                     onTap: () {
                                       if (_isProgress == false)
-                                      addToCart(
-                                          index,
-                                          (int.parse(cartList[index].qty) + 1)
-                                              .toString());
+                                        addToCart(
+                                            index,
+                                            (int.parse(cartList[index].qty) + 1)
+                                                .toString());
                                     },
                                   )
                                 ],
@@ -398,6 +444,328 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                   ],
                 ),
               ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget cartItem(int index) {
+    int selectedPos = 0;
+    for (int i = 0;
+        i < cartList[index].productList[0].prVarientList.length;
+        i++) {
+      if (cartList[index].varientId ==
+          cartList[index].productList[0].prVarientList[i].id) selectedPos = i;
+    }
+
+    double price = double.parse(
+        cartList[index].productList[0].prVarientList[selectedPos].disPrice);
+    if (price == 0)
+      price = double.parse(
+          cartList[index].productList[0].prVarientList[selectedPos].price);
+
+    cartList[index].perItemPrice = price.toString();
+    cartList[index].perItemTotal =
+        (price * double.parse(cartList[index].qty)).toString();
+
+    items = new List<String>.generate(
+        cartList[index].productList[0].totalAllow != null
+            ? int.parse(cartList[index].productList[0].totalAllow)
+            : 10,
+        (i) => (i + 1).toString());
+
+    _controller[index].text = cartList[index].qty;
+
+    double taxAmt = ((double.parse(cartList[index].perItemTotal) *
+            double.parse(cartList[index].productList[0].tax)) /
+        100);
+
+    return Card(
+      elevation: 0.1,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Row(
+              children: <Widget>[
+                Hero(
+                    tag: "$index${cartList[index].productList[0].id}",
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(7.0),
+                        child: FadeInImage(
+                          image: NetworkImage(
+                              cartList[index].productList[0].image),
+                          height: 80.0,
+                          width: 80.0,
+                          fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                          // errorWidget: (context, url, e) => placeHolder(60),
+                          placeholder: placeHolder(80),
+                        ))),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsetsDirectional.only(top: 5.0),
+                                child: Text(
+                                  cartList[index].productList[0].name,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(color: colors.lightBlack),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.only(
+                                    start: 8.0, end: 8, bottom: 8),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 13,
+                                  color: colors.fontColor,
+                                ),
+                              ),
+                              onTap: () {
+                                if (_isProgress == false)
+                                  removeFromCartCheckout(index, true);
+                              },
+                            )
+                          ],
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              double.parse(cartList[index]
+                                          .productList[0]
+                                          .prVarientList[selectedPos]
+                                          .disPrice) !=
+                                      0
+                                  ? CUR_CURRENCY +
+                                      "" +
+                                      cartList[index]
+                                          .productList[0]
+                                          .prVarientList[selectedPos]
+                                          .price
+                                  : "",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(
+                                      decoration: TextDecoration.lineThrough,
+                                      letterSpacing: 0.7),
+                            ),
+                            Text(
+                              " " + CUR_CURRENCY + " " + price.toString(),
+                              style: TextStyle(
+                                  color: colors.fontColor,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        cartList[index].productList[0].availability == "1" ||
+                                cartList[index].productList[0].stockType ==
+                                    "null"
+                            ? Row(
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      GestureDetector(
+                                        child: Container(
+                                          padding: EdgeInsets.all(2),
+                                          margin: EdgeInsetsDirectional.only(
+                                              end: 8, top: 8, bottom: 8),
+                                          child: Icon(
+                                            Icons.remove,
+                                            size: 12,
+                                            color: colors.fontColor,
+                                          ),
+                                          decoration: BoxDecoration(
+                                              color: colors.lightWhite,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(3))),
+                                        ),
+                                        onTap: () {
+                                          if (_isProgress == false)
+                                            removeFromCartCheckout(
+                                                index, false);
+                                        },
+                                      ),
+
+                                      Container(
+                                        width: 40,
+                                        height: 20,
+                                        child: Stack(
+                                          children: [
+                                            TextField(
+                                              textAlign: TextAlign.center,
+                                              readOnly: true,
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                              ),
+                                              controller: _controller[index],
+                                              decoration: InputDecoration(
+                                                contentPadding:
+                                                    EdgeInsets.all(5.0),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: colors.fontColor,
+                                                      width: 0.5),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: colors.fontColor,
+                                                      width: 0.5),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
+                                                ),
+                                              ),
+                                            ),
+                                            PopupMenuButton<String>(
+                                              tooltip: '',
+                                              icon: const Icon(
+                                                Icons.arrow_drop_down,
+                                                size: 1,
+                                              ),
+                                              onSelected: (String value) {
+                                                addToCartCheckout(index, value);
+                                              },
+                                              itemBuilder:
+                                                  (BuildContext context) {
+                                                return items
+                                                    .map<PopupMenuItem<String>>(
+                                                        (String value) {
+                                                  return new PopupMenuItem(
+                                                      child: new Text(value),
+                                                      value: value);
+                                                }).toList();
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ), // ),
+
+                                      GestureDetector(
+                                        child: Container(
+                                          padding: EdgeInsets.all(2),
+                                          margin: EdgeInsets.all(8),
+                                          child: Icon(
+                                            Icons.add,
+                                            size: 12,
+                                            color: colors.fontColor,
+                                          ),
+                                          decoration: BoxDecoration(
+                                              color: colors.lightWhite,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(3))),
+                                        ),
+                                        onTap: () {
+                                          addToCartCheckout(
+                                              index,
+                                              (int.parse(cartList[index].qty) +
+                                                      1)
+                                                  .toString());
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              )
+                            : Container(),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+            Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  getTranslated(context, 'SUBTOTAL'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Text(
+                  CUR_CURRENCY + " " + price.toString(),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Text(
+                  CUR_CURRENCY + " " + cartList[index].perItemTotal,
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                )
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  getTranslated(context, 'TAXPER'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Text(
+                  cartList[index].productList[0].tax + "%",
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Text(
+                  CUR_CURRENCY + " " + taxAmt.toStringAsFixed(2),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                )
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  getTranslated(context, 'TOTAL_LBL'),
+                  style: Theme.of(context).textTheme.caption.copyWith(
+                      fontWeight: FontWeight.bold, color: colors.lightBlack2),
+                ),
+                Text(
+                  CUR_CURRENCY +
+                      " " +
+                      (double.parse(cartList[index].perItemTotal) + taxAmt)
+                          .toStringAsFixed(2)
+                          .toString(),
+                  //+ " "+cartList[index].productList[0].taxrs,
+                  style: Theme.of(context).textTheme.caption.copyWith(
+                      fontWeight: FontWeight.bold, color: colors.lightBlack2),
+                )
+              ],
             )
           ],
         ),
@@ -442,7 +810,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                           saveLaterList[index].productList[0].image),
                       height: 80.0,
                       width: 80.0,
-                      fit: extendImg?BoxFit.fill:BoxFit.contain,
+                      fit: extendImg ? BoxFit.fill : BoxFit.contain,
                       placeholder: placeHolder(80),
                     ))),
             Expanded(
@@ -586,7 +954,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           for (int i = 0; i < cartList.length; i++)
             _controller.add(new TextEditingController());
         } else {
-          if (msg != 'Cart Is Empty !') setSnackbar(msg);
+          if (msg != 'Cart Is Empty !') setSnackbar(msg, _scaffoldKey);
         }
         if (mounted)
           setState(() {
@@ -594,7 +962,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           });
         if (mounted) setState(() {});
       } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'), _scaffoldKey);
       }
     } else {
       if (mounted)
@@ -626,7 +994,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           for (int i = 0; i < cartList.length; i++)
             _controller.add(new TextEditingController());
         } else {
-          if (msg != 'Cart Is Empty !') setSnackbar(msg);
+          if (msg != 'Cart Is Empty !') setSnackbar(msg, _scaffoldKey);
         }
         if (mounted)
           setState(() {
@@ -634,7 +1002,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           });
         if (mounted) setState(() {});
       } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'), _scaffoldKey);
       }
     } else {
       if (mounted)
@@ -683,7 +1051,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           taxAmt = double.parse(data[TAX_AMT]);
           totalPrice = oriPrice + taxAmt;
         } else {
-          setSnackbar(msg);
+          setSnackbar(msg, _scaffoldKey);
         }
 
         if (mounted)
@@ -693,7 +1061,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
         widget.updateHome();
       } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'), _scaffoldKey);
         if (mounted)
           setState(() {
             _isProgress = false;
@@ -702,6 +1070,94 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     } else {
       if (mounted)
         setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  Future<void> addToCartCheckout(int index, String qty) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          checkoutState(() {
+            _isProgress = true;
+          });
+
+        var parameter = {
+          PRODUCT_VARIENT_ID: cartList[index].varientId,
+          USER_ID: CUR_USERID,
+          QTY: qty,
+        };
+
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
+
+            String qty = data['total_quantity'];
+            CUR_CART_COUNT = data['cart_count'];
+
+            cartList[index].qty = qty;
+            taxAmt = double.parse(data[TAX_AMT]);
+            oriPrice = double.parse(data['sub_total']);
+            _controller[index].text = qty;
+            totalPrice = 0;
+
+            if (!ISFLAT_DEL) {
+              if ((oriPrice + taxAmt) <
+                  double.parse(addressList[selectedAddress].freeAmt))
+                delCharge =
+                    double.parse(addressList[selectedAddress].deliveryCharge);
+              else
+                delCharge = 0;
+            }
+            totalPrice = delCharge + oriPrice + taxAmt;
+
+            if (isPromoValid) {
+              validatePromo();
+            } else if (isUseWallet) {
+              if (mounted)
+                checkoutState(() {
+                  remWalBal = 0;
+                  payMethod = null;
+                  usedBal = 0;
+                  isUseWallet = false;
+                  isPayLayShow = true;
+                  _isProgress = false;
+                });
+            } else {
+              if (mounted)
+                checkoutState(() {
+                  _isProgress = false;
+                });
+            }
+          } else {
+            setSnackbar(msg, _checkscaffoldKey);
+            if (mounted)
+              checkoutState(() {
+                _isProgress = false;
+              });
+          }
+
+          widget.updateHome();
+        }
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'), _checkscaffoldKey);
+        if (mounted)
+          checkoutState(() {
+            _isProgress = false;
+          });
+      }
+    } else {
+      if (mounted)
+        checkoutState(() {
           _isNetworkAvail = false;
         });
     }
@@ -754,7 +1210,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             totalPrice = oriPrice + taxAmt;
           }
         } else {
-          setSnackbar(msg);
+          setSnackbar(msg, _scaffoldKey);
         }
         if (mounted)
           setState(() {
@@ -763,7 +1219,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         if (widget.updateHome != null) widget.updateHome();
         if (widget.updateParent != null) widget.updateParent();
       } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'), _scaffoldKey);
         if (mounted)
           setState(() {
             _isProgress = false;
@@ -772,6 +1228,102 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     } else {
       if (mounted)
         setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  removeFromCartCheckout(int index, bool remove) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          checkoutState(() {
+            _isProgress = true;
+          });
+
+        var parameter = {
+          PRODUCT_VARIENT_ID: cartList[index].varientId,
+          USER_ID: CUR_USERID,
+          QTY: remove ? "0" : (int.parse(cartList[index].qty) - 1).toString()
+        };
+
+        Response response =
+            await post(manageCartApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
+
+            String qty = data['total_quantity'];
+            CUR_CART_COUNT = data['cart_count'];
+            if (qty == "0") remove = true;
+
+            if (remove) {
+              oriPrice = oriPrice - double.parse(cartList[index].perItemTotal);
+
+              cartList.removeWhere(
+                  (item) => item.varientId == cartList[index].varientId);
+            } else {
+              oriPrice = oriPrice - double.parse(cartList[index].perItemPrice);
+              cartList[index].qty = qty.toString();
+            }
+            taxAmt = double.parse(data[TAX_AMT]);
+            if (!ISFLAT_DEL) {
+              if ((oriPrice + taxAmt) <
+                  double.parse(addressList[selectedAddress].freeAmt))
+                delCharge =
+                    double.parse(addressList[selectedAddress].deliveryCharge);
+              else
+                delCharge = 0;
+            }
+
+            totalPrice = 0;
+
+            totalPrice = delCharge + oriPrice + taxAmt;
+
+            if (isPromoValid) {
+              validatePromo();
+            } else if (isUseWallet) {
+              if (mounted)
+                setState(() {
+                  remWalBal = 0;
+                  payMethod = null;
+                  usedBal = 0;
+                  isPayLayShow = true;
+                  isUseWallet = false;
+                  _isProgress = false;
+                });
+            } else {
+              if (mounted)
+                checkoutState(() {
+                  _isProgress = false;
+                });
+            }
+          } else {
+            setSnackbar(msg, _checkscaffoldKey);
+            if (mounted)
+              checkoutState(() {
+                _isProgress = false;
+              });
+          }
+
+          if (widget.updateHome != null) widget.updateHome();
+        }
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'), _checkscaffoldKey);
+        if (mounted)
+          checkoutState(() {
+            _isProgress = false;
+          });
+      }
+    } else {
+      if (mounted)
+        checkoutState(() {
           _isNetworkAvail = false;
         });
     }
@@ -831,7 +1383,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             }
           }
         } else {
-          setSnackbar(msg);
+          setSnackbar(msg, _scaffoldKey);
         }
         if (mounted)
           setState(() {
@@ -840,7 +1392,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         if (widget.updateHome != null) widget.updateHome();
         if (widget.updateParent != null) widget.updateParent();
       } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
+        setSnackbar(getTranslated(context, 'somethingMSg'), _scaffoldKey);
         if (mounted)
           setState(() {
             _isProgress = false;
@@ -854,7 +1406,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     }
   }
 
-  setSnackbar(String msg) {
+  setSnackbar(String msg, GlobalKey<ScaffoldState> _scaffoldKey) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
       content: new Text(
         msg,
@@ -940,16 +1492,18 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                           title: getTranslated(context, 'PROCEED_CHECKOUT'),
                           onBtnSelected: () async {
                             if (oriPrice > 0) {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      CheckOut(widget.updateHome),
-                                ),
-                              );
+                              /* await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CheckOut(widget.updateHome),
+                      ),
+                    );*/
+                              checkout();
                               if (mounted) setState(() {});
                             } else
-                              setSnackbar(getTranslated(context, 'ADD_ITEM'));
+                              setSnackbar(getTranslated(context, 'ADD_ITEM'),
+                                  _scaffoldKey);
                           }),
                     ]),
                   ),
@@ -971,8 +1525,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   noCartImage(BuildContext context) {
-    return Image.asset(
-      'assets/images/empty_cart.png',
+    return SvgPicture.asset(
+      'assets/images/empty_cart.svg',
       fit: BoxFit.contain,
     );
   }
@@ -1022,5 +1576,1101 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         },
       ),
     );
+  }
+
+  checkout() {
+    _getAddress();
+
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+
+    deviceHeight = MediaQuery.of(context).size.height;
+    deviceWidth = MediaQuery.of(context).size.width;
+    return showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10), topRight: Radius.circular(10))),
+        builder: (builder) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            checkoutState = setState;
+            return Container(
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.8),
+                child: Scaffold(
+                  key: _checkscaffoldKey,
+                  // appBar: getAppBar(getTranslated(context, 'CHECKOUT'), context),
+                  body: _isNetworkAvail
+                      ? cartList.length == 0
+                          ? cartEmpty()
+                          : _isLoading
+                              ? shimmer()
+                              : Column(
+                                  children: [
+                                    Expanded(
+                                      child: Stack(
+                                        children: <Widget>[
+                                          SingleChildScrollView(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  address(),
+                                                  payment(),
+                                                  cartItems(),
+                                                  promo(),
+                                                  orderSummary(),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          showCircularProgress(
+                                              _isProgress, colors.primary),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      color: colors.white,
+                                      child: Row(children: <Widget>[
+                                        Padding(
+                                            padding: EdgeInsetsDirectional.only(
+                                                start: 15.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  CUR_CURRENCY + " $totalPrice",
+                                                  style: TextStyle(
+                                                      color: colors.fontColor,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                    cartList.length.toString() +
+                                                        " Items"),
+                                              ],
+                                            )),
+                                        Spacer(),
+                                        SimBtn(
+                                            size: 0.4,
+                                            title: getTranslated(
+                                                context, 'PLACE_ORDER'),
+                                            onBtnSelected: () {
+                                              if (selAddress == null ||
+                                                  selAddress.isEmpty) {
+                                                msg = getTranslated(
+                                                    context, 'addressWarning');
+                                                Navigator.pushReplacement(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (BuildContext
+                                                              context) =>
+                                                          ManageAddress(
+                                                        home: false,
+                                                      ),
+                                                    ));
+                                              } else if (payMethod == null ||
+                                                  payMethod.isEmpty) {
+                                                msg = getTranslated(
+                                                    context, 'payWarning');
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            Payment(
+                                                                updateCheckout,
+                                                                msg)));
+                                              } else if (isTimeSlot &&
+                                                  int.parse(allowDay) > 0 &&
+                                                  (selDate == null ||
+                                                      selDate.isEmpty)) {
+                                                msg = getTranslated(
+                                                    context, 'dateWarning');
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            Payment(
+                                                                updateCheckout,
+                                                                msg)));
+                                              } else if (isTimeSlot &&
+                                                  timeSlotList.length > 0 &&
+                                                  (selTime == null ||
+                                                      selTime.isEmpty)) {
+                                                msg = getTranslated(
+                                                    context, 'timeWarning');
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            Payment(
+                                                                updateCheckout,
+                                                                msg)));
+                                              } else if (payMethod ==
+                                                  getTranslated(
+                                                      context, 'PAYPAL_LBL'))
+                                                placeOrder('');
+                                              else if (payMethod ==
+                                                  getTranslated(
+                                                      context, 'RAZORPAY_LBL'))
+                                                razorpayPayment();
+                                              else if (payMethod ==
+                                                  getTranslated(
+                                                      context, 'PAYSTACK_LBL'))
+                                                paystackPayment(context);
+                                              /* else if (payMethod ==
+                                      getTranslated(context, 'FLUTTERWAVE_LBL'))
+                                    startFlutterwavePayment(totalPrice, 'ke', 'kes');*/
+                                              else if (payMethod ==
+                                                  getTranslated(
+                                                      context, 'STRIPE_LBL'))
+                                                stripePayment();
+                                              else if (payMethod ==
+                                                  getTranslated(
+                                                      context, 'PAYTM_LBL'))
+                                                paytmPayment();
+                                              else
+                                                placeOrder('');
+                                            }),
+                                      ]),
+                                    ),
+                                  ],
+                                )
+                      : noInternet(context),
+                ));
+          });
+        });
+  }
+
+  Future<void> _getAddress() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          USER_ID: CUR_USERID,
+        };
+        Response response =
+            await post(getAddressApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
+
+            addressList = (data as List)
+                .map((data) => new User.fromAddress(data))
+                .toList();
+
+            if (addressList.length == 1) {
+              selectedAddress = 0;
+              selAddress = addressList[0].id;
+              if (!ISFLAT_DEL) {
+                if (totalPrice < double.parse(addressList[0].freeAmt))
+                  delCharge = double.parse(addressList[0].deliveryCharge);
+                else
+                  delCharge = 0;
+              }
+            } else {
+              for (int i = 0; i < addressList.length; i++) {
+                if (addressList[i].isDefault == "1") {
+                  selectedAddress = i;
+                  selAddress = addressList[i].id;
+                  if (!ISFLAT_DEL) {
+                    if (totalPrice < double.parse(addressList[i].freeAmt))
+                      delCharge = double.parse(addressList[i].deliveryCharge);
+                    else
+                      delCharge = 0;
+                  }
+                }
+              }
+            }
+
+            if (!ISFLAT_DEL) {
+              totalPrice = totalPrice + delCharge;
+            }
+          } else {}
+          if (mounted) {
+            checkoutState(() {
+              _isLoading = false;
+            });
+          }
+        } else {
+          setSnackbar(
+              getTranslated(context, 'somethingMSg'), _checkscaffoldKey);
+          if (mounted)
+            setState(() {
+              _isLoading = false;
+            });
+        }
+      } on TimeoutException catch (_) {}
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    placeOrder(response.paymentId);
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    if (mounted)
+      setState(() {
+        _isProgress = false;
+      });
+    print("res*****${response.message}");
+    // var getdata = jsonDecode(response.message);
+    // print("res*****${getdata["description"]}");
+    setSnackbar(response.message, _checkscaffoldKey);
+    //print("res*****${getdata["description"]}");
+    //AddTransaction(tranId, orderId, SUCCESS, msg,false);
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    print("EXTERNAL_WALLET: " + response.walletName);
+  }
+
+  updateCheckout() {
+    if (mounted) checkoutState(() {});
+  }
+
+  razorpayPayment() async {
+    String contact = await getPrefrence(MOBILE);
+    String email = await getPrefrence(EMAIL);
+
+    double amt = totalPrice * 100;
+
+    if (contact != '' && email != '') {
+      if (mounted)
+        setState(() {
+          _isProgress = true;
+        });
+
+      var options = {
+        KEY: razorpayId,
+        AMOUNT: amt.toString(),
+        NAME: CUR_USERNAME,
+        'prefill': {CONTACT: contact, EMAIL: email},
+      };
+
+      try {
+        _razorpay.open(options);
+      } catch (e) {
+        debugPrint(e);
+      }
+    } else {
+      if (email == '')
+        setSnackbar(getTranslated(context, 'emailWarning'), _checkscaffoldKey);
+      else if (contact == '')
+        setSnackbar(getTranslated(context, 'phoneWarning'), _checkscaffoldKey);
+    }
+  }
+
+  void paytmPayment() async {
+    String payment_response;
+    setState(() {
+      _isProgress = true;
+    });
+    String orderId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    String callBackUrl = (payTesting
+            ? 'https://securegw-stage.paytm.in'
+            : 'https://securegw.paytm.in') +
+        '/theia/paytmCallback?ORDER_ID=' +
+        orderId;
+
+    //Host the Server Side Code on your Server and use your URL here. The following URL may or may not work. Because hosted on free server.
+    //Server Side code url: https://github.com/mrdishant/Paytm-Plugin-Server
+    var url = 'https://desolate-anchorage-29312.herokuapp.com/generateTxnToken';
+
+    var body = json.encode({
+      "mid": paytmMerId,
+      "key_secret": paytmMerKey,
+      "website": website,
+      "orderId": orderId,
+      "amount": totalPrice.toString(),
+      "callbackUrl": callBackUrl,
+      "custId": CUR_USERID,
+      // "mode": mode.toString(),
+      "testing": payTesting ? 0 : 1
+    });
+
+    try {
+      final response = await post(
+        url,
+        body: body,
+        headers: {'Content-type': "application/json"},
+      );
+      print("Response is");
+      print(response.body);
+      String txnToken = response.body;
+      setState(() {
+        payment_response = txnToken;
+      });
+
+      var paytmResponse = Paytm.payWithPaytm(paytmMerId, orderId, txnToken,
+          totalPrice.toString(), callBackUrl, payTesting);
+
+      paytmResponse.then((value) {
+        print(value);
+        setState(() {
+          _isProgress = false;
+          print("Value is ");
+          print(value);
+          if (value['error']) {
+            payment_response = value['errorMessage'];
+
+            if (value['response'] != null)
+              AddTransaction(value['response']['TXNID'], orderId,
+                  value['response']['STATUS'], payment_response, false);
+          } else {
+            if (value['response'] != null) {
+              payment_response = value['response']['STATUS'];
+              if (payment_response == "TXN_SUCCESS")
+                placeOrder(value['response']['TXNID']);
+              else
+                AddTransaction(value['response']['TXNID'], orderId,
+                    value['response']['STATUS'], value['errorMessage'], false);
+            }
+          }
+
+          setSnackbar(payment_response, _checkscaffoldKey);
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> placeOrder(String tranId) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      checkoutState(() {
+        _isProgress = true;
+      });
+
+      String mob = await getPrefrence(MOBILE);
+      String varientId, quantity;
+      for (Section_Model sec in cartList) {
+        varientId =
+            varientId != null ? varientId + "," + sec.varientId : sec.varientId;
+        quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
+      }
+      String payVia;
+      if (payMethod == getTranslated(context, 'COD_LBL'))
+        payVia = "COD";
+      else if (payMethod == getTranslated(context, 'PAYPAL_LBL'))
+        payVia = "PayPal";
+      else if (payMethod == getTranslated(context, 'PAYUMONEY_LBL'))
+        payVia = "PayUMoney";
+      else if (payMethod == getTranslated(context, 'RAZORPAY_LBL'))
+        payVia = "RazorPay";
+      else if (payMethod == getTranslated(context, 'PAYSTACK_LBL'))
+        payVia = "Paystack";
+      else if (payMethod == getTranslated(context, 'FLUTTERWAVE_LBL'))
+        payVia = "Flutterwave";
+      else if (payMethod == getTranslated(context, 'STRIPE_LBL'))
+        payVia = "Stripe";
+      else if (payMethod == getTranslated(context, 'PAYTM_LBL'))
+        payVia = "Paytm";
+      else if (payMethod == "Wallet") payVia = "Wallet";
+      try {
+        var parameter = {
+          USER_ID: CUR_USERID,
+          MOBILE: mob,
+          PRODUCT_VARIENT_ID: varientId,
+          QUANTITY: quantity,
+          TOTAL: oriPrice.toString(),
+          DEL_CHARGE: delCharge.toString(),
+          TAX_AMT: taxAmt.toString(),
+          TAX_PER: taxPer.toString(),
+          FINAL_TOTAL: totalPrice.toString(),
+          PAYMENT_METHOD: payVia,
+          ADD_ID: selAddress,
+          ISWALLETBALUSED: isUseWallet ? "1" : "0",
+          WALLET_BAL_USED: usedBal.toString(),
+        };
+
+        if (isTimeSlot) {
+          parameter[DELIVERY_TIME] = selTime ?? 'Anytime';
+          parameter[DELIVERY_DATE] = selDate ?? '';
+        }
+        if (isPromoValid) {
+          parameter[PROMOCODE] = promocode;
+          parameter[PROMO_DIS] = promoAmt.toString();
+        }
+
+        if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
+          parameter[ACTIVE_STATUS] = WAITING;
+        } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
+          if (tranId == "succeeded")
+            parameter[ACTIVE_STATUS] = SUCCESS;
+          else
+            parameter[ACTIVE_STATUS] = WAITING;
+        }
+
+        print("param****$parameter");
+        Response response =
+            await post(placeOrderApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            String orderId = getdata["order_id"].toString();
+            if (payMethod == getTranslated(context, 'RAZORPAY_LBL')) {
+              AddTransaction(tranId, orderId, SUCCESS, msg, true);
+            } else if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
+              paypalPayment(orderId);
+            } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
+              AddTransaction(stripePayId, orderId,
+                  tranId == "succeeded" ? SUCCESS : WAITING, msg, true);
+            } else if (payMethod == getTranslated(context, 'PAYSTACK_LBL')) {
+              AddTransaction(tranId, orderId, SUCCESS, msg, true);
+            } else if (payMethod == getTranslated(context, 'PAYTM_LBL')) {
+              AddTransaction(tranId, orderId, SUCCESS, msg, true);
+            } else {
+              CUR_CART_COUNT = "0";
+              promoAmt = 0;
+              remWalBal = 0;
+              usedBal = 0;
+              payMethod = '';
+              isPromoValid = false;
+              isUseWallet = false;
+              isPayLayShow = true;
+              selectedMethod = 0;
+              totalPrice = 0;
+              oriPrice = 0;
+              taxAmt = 0;
+              taxPer = 0;
+              delCharge = 0;
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (BuildContext context) => OrderSuccess()),
+                  ModalRoute.withName('/home'));
+            }
+          } else {
+            setSnackbar(msg, _checkscaffoldKey);
+          }
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
+        }
+      } on TimeoutException catch (_) {
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+      }
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  Future<void> paypalPayment(String orderId) async {
+    try {
+      var parameter = {
+        USER_ID: CUR_USERID,
+        ORDER_ID: orderId,
+      };
+      Response response =
+          await post(paypalTransactionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        String data = getdata["data"];
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (BuildContext context) => PaypalWebview(
+                      url: data,
+                      from: "order",
+                    )));
+      } else {
+        setSnackbar(msg, _checkscaffoldKey);
+      }
+    } on TimeoutException catch (_) {
+      setSnackbar(getTranslated(context, 'somethingMSg'), _checkscaffoldKey);
+    }
+  }
+
+  Future<void> AddTransaction(String tranId, String orderID, String status,
+      String msg, bool redirect) async {
+    try {
+      var parameter = {
+        USER_ID: CUR_USERID,
+        ORDER_ID: orderID,
+        TYPE: payMethod,
+        TXNID: tranId,
+        AMOUNT: totalPrice.toString(),
+        STATUS: status,
+        MSG: msg
+      };
+      Response response =
+          await post(addTransactionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+
+      bool error = getdata["error"];
+      String msg1 = getdata["message"];
+      if (!error) {
+        if (redirect) {
+          CUR_CART_COUNT = "0";
+          promoAmt = 0;
+          remWalBal = 0;
+          usedBal = 0;
+          payMethod = '';
+          isPromoValid = false;
+          isUseWallet = false;
+          isPayLayShow = true;
+          selectedMethod = 0;
+          totalPrice = 0;
+          oriPrice = 0;
+          taxAmt = 0;
+          taxPer = 0;
+          delCharge = 0;
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => OrderSuccess()),
+              ModalRoute.withName('/home'));
+        }
+      } else {
+        setSnackbar(msg1, _checkscaffoldKey);
+      }
+    } on TimeoutException catch (_) {
+      setSnackbar(getTranslated(context, 'somethingMSg'), _checkscaffoldKey);
+    }
+  }
+
+  paystackPayment(BuildContext context) async {
+    if (mounted)
+      setState(() {
+        _isProgress = true;
+      });
+
+    String email = await getPrefrence(EMAIL);
+
+    Charge charge = Charge()
+      ..amount = totalPrice.toInt()
+      ..reference = _getReference()
+      ..email = email;
+
+    try {
+      CheckoutResponse response = await PaystackPlugin.checkout(
+        context,
+        method: CheckoutMethod.card,
+        charge: charge,
+      );
+      if (response.status) {
+        placeOrder(response.reference);
+      } else {
+        setSnackbar(response.message, _checkscaffoldKey);
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isProgress = false);
+      rethrow;
+    }
+  }
+
+  String _getReference() {
+    String platform;
+    if (Platform.isIOS) {
+      platform = 'iOS';
+    } else {
+      platform = 'Android';
+    }
+
+    return 'ChargedFrom${platform}_${DateTime.now().millisecondsSinceEpoch}';
+  }
+
+  stripePayment() async {
+    if (mounted)
+      setState(() {
+        _isProgress = true;
+      });
+
+    var response = await StripeService.payWithNewCard(
+        amount: (totalPrice.toInt() * 100).toString(), currency: stripeCurCode);
+
+    if (response.message == "Transaction successful") {
+      placeOrder(response.status);
+    } else if (response.status == 'pending' || response.status == "captured") {
+      placeOrder(response.status);
+    } else {
+      if (mounted)
+        setState(() {
+          _isProgress = false;
+        });
+    }
+    setSnackbar(response.message, _checkscaffoldKey);
+  }
+
+  address() {
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.location_on),
+            addressList.length > 0
+                ? Expanded(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsetsDirectional.only(bottom: 5.0),
+                            child: Text(addressList[selectedAddress].name),
+                          ),
+                          Text(
+                            addressList[selectedAddress].address +
+                                ", " +
+                                addressList[selectedAddress].area +
+                                ", " +
+                                addressList[selectedAddress].city +
+                                ", " +
+                                addressList[selectedAddress].state +
+                                ", " +
+                                addressList[selectedAddress].country +
+                                ", " +
+                                addressList[selectedAddress].pincode,
+                            style: Theme.of(context)
+                                .textTheme
+                                .caption
+                                .copyWith(color: colors.lightBlack),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  addressList[selectedAddress].mobile,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .caption
+                                      .copyWith(color: colors.lightBlack),
+                                ),
+                                Spacer(),
+                                InkWell(
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 2),
+                                    decoration: BoxDecoration(
+                                        color: colors.lightWhite,
+                                        borderRadius: new BorderRadius.all(
+                                            const Radius.circular(4.0))),
+                                    child: Text(
+                                      getTranslated(context, 'CHANGE'),
+                                      style: TextStyle(
+                                          color: colors.fontColor,
+                                          fontSize: 10),
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                ManageAddress(
+                                                  home: false,
+                                                )));
+
+                                    checkoutState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                : Expanded(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 8.0),
+                      child: GestureDetector(
+                        child: Text(
+                          getTranslated(context, 'ADDADDRESS'),
+                          style: TextStyle(
+                              color: colors.fontColor,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        onTap: () async {
+                          _scaffoldKey.currentState.removeCurrentSnackBar();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddAddress(
+                                      update: false,
+                                      index: addressList.length,
+                                    )),
+                          );
+                          if (mounted) setState(() {});
+                        },
+                      ),
+                    ),
+                  )
+          ],
+        ),
+      ),
+    );
+  }
+
+  payment() {
+    return Card(
+      elevation: 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: () async {
+          _scaffoldKey.currentState.removeCurrentSnackBar();
+          msg = '';
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      Payment(updateCheckout, msg)));
+          if (mounted) checkoutState(() {});
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Icon(Icons.payment),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 8.0),
+                child: Text(
+                  //SELECT_PAYMENT,
+                  payMethod != null && payMethod != ''
+                      ? payMethod
+                      : getTranslated(context, 'SELECT_PAYMENT'),
+                  style: TextStyle(
+                      color: colors.fontColor, fontWeight: FontWeight.bold),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  cartItems() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: cartList.length,
+      physics: NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return cartItem(index);
+      },
+    );
+  }
+
+  orderSummary() {
+    return Card(
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                getTranslated(context, 'ORDER_SUMMARY') +
+                    " (" +
+                    cartList.length.toString() +
+                    " items)",
+                style: Theme.of(context).textTheme.subtitle2.copyWith(
+                    color: colors.lightBlack, fontWeight: FontWeight.bold),
+              ),
+              Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    getTranslated(context, 'SUBTOTAL'),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
+                  ),
+                  Text(
+                    CUR_CURRENCY + " " + oriPrice.toString(),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
+                  )
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    getTranslated(context, 'TAXPER'),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
+                  ),
+                  Text(
+                    CUR_CURRENCY + " " + taxAmt.toString(),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
+                  )
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    getTranslated(context, 'DELIVERY_CHARGE'),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
+                  ),
+                  Text(
+                    CUR_CURRENCY + " " + delCharge.toString(),
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: colors.lightBlack2),
+                  )
+                ],
+              ),
+              isPromoValid
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          getTranslated(context, 'PROMO_CODE_DIS_LBL'),
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption
+                              .copyWith(color: colors.lightBlack2),
+                        ),
+                        Text(
+                          CUR_CURRENCY + " " + promoAmt.toString(),
+                          style: Theme.of(context)
+                              .textTheme
+                              .caption
+                              .copyWith(color: colors.lightBlack2),
+                        )
+                      ],
+                    )
+                  : Container(),
+              isUseWallet
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          getTranslated(context, 'WALLET_BAL'),
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                        Text(
+                          CUR_CURRENCY + " " + usedBal.toString(),
+                          style: Theme.of(context).textTheme.caption,
+                        )
+                      ],
+                    )
+                  : Container(),
+            ],
+          ),
+        ));
+  }
+
+  promo() {
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Text(
+                  getTranslated(context, 'PROMOCODE_LBL'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: colors.lightBlack2),
+                ),
+                Spacer(),
+                InkWell(
+                  child: Icon(
+                    Icons.refresh,
+                    size: 15,
+                  ),
+                  onTap: () {
+                    if (promoAmt != 0 && isPromoValid) {
+                      if (mounted)
+                        checkoutState(() {
+                          totalPrice = totalPrice + promoAmt;
+                          promoC.text = '';
+                          isPromoValid = false;
+                          promoAmt = 0;
+                          promocode = '';
+                        });
+                    }
+                  },
+                )
+              ],
+            ),
+            Container(
+              //  color: red,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: promoC,
+                      style: Theme.of(context).textTheme.subtitle2,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.all(
+                          5,
+                        ),
+                        hintText: 'Promo Code..',
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colors.fontColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colors.fontColor),
+                        ),
+                      ),
+                    ),
+                  ),
+                  CupertinoButton(
+                    child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                        alignment: FractionalOffset.center,
+                        decoration: BoxDecoration(
+                            color: colors.lightWhite,
+                            borderRadius: new BorderRadius.all(
+                                const Radius.circular(4.0))),
+                        child: Text(getTranslated(context, 'APPLY'),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.button.copyWith(
+                                  color: colors.fontColor,
+                                ))),
+                    onPressed: () {
+                      if (promoC.text.trim().isEmpty)
+                        setSnackbar(getTranslated(context, 'ADD_PROMO'),
+                            _checkscaffoldKey);
+                      else if (!isPromoValid) validatePromo();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> validatePromo() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          checkoutState(() {
+            _isProgress = true;
+          });
+
+        var parameter = {
+          USER_ID: CUR_USERID,
+          PROMOCODE: promoC.text,
+          FINAL_TOTAL: totalPrice.toString()
+        };
+        Response response =
+            await post(validatePromoApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        print("response****${response.body.toString()}");
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"][0];
+
+            totalPrice = double.parse(data["final_total"]);
+            promoAmt = double.parse(data["final_discount"]);
+            promocode = data["promo_code"];
+            isPromoValid = true;
+            setSnackbar(
+                getTranslated(context, 'PROMO_SUCCESS'), _checkscaffoldKey);
+          } else {
+            isPromoValid = false;
+            setSnackbar(msg, _checkscaffoldKey);
+          }
+          if (isUseWallet) {
+            if (mounted)
+              checkoutState(() {
+                remWalBal = 0;
+                payMethod = null;
+                usedBal = 0;
+                isUseWallet = false;
+                isPayLayShow = true;
+                _isProgress = false;
+              });
+          } else {
+            checkoutState(() {
+              _isProgress = false;
+            });
+          }
+        }
+      } on TimeoutException catch (_) {
+        checkoutState(() {
+          _isProgress = false;
+        });
+        setSnackbar(getTranslated(context, 'somethingMSg'), _checkscaffoldKey);
+      }
+    } else {
+      if (mounted)
+        checkoutState(() {
+          _isNetworkAvail = false;
+        });
+    }
   }
 }

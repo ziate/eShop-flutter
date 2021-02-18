@@ -204,27 +204,30 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                       ],
                     ),
                     Divider(),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(getTranslated(context, 'ORDER_ID_LBL') +
-                            " : " +
-                            tranList[index].orderId),
-                        Spacer(),
-                        Container(
-                          margin: EdgeInsets.only(left: 8),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                          decoration: BoxDecoration(
-                              color: back,
-                              borderRadius: new BorderRadius.all(
-                                  const Radius.circular(4.0))),
-                          child: Text(
-                            (tranList[index].status),
-                            style: TextStyle(color: colors.white),
-                          ),
-                        )
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical:4.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(getTranslated(context, 'ORDER_ID_LBL') +
+                              " : " +
+                              tranList[index].orderId),
+                          Spacer(),
+                          Container(
+                            margin: EdgeInsets.only(left: 8),
+                            padding:
+                                EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                            decoration: BoxDecoration(
+                                color: back,
+                                borderRadius: new BorderRadius.all(
+                                    const Radius.circular(4.0))),
+                            child: Text(
+                              (tranList[index].status),
+                              style: TextStyle(color: colors.white),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                     tranList[index].type != null &&
                             tranList[index].type.isNotEmpty
@@ -232,12 +235,15 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                             " : " +
                             tranList[index].type)
                         : Container(),
-                    tranList[index].msg != null &&
-                            tranList[index].msg.isNotEmpty
-                        ? Text(getTranslated(context, 'MSG') +
-                            " : " +
-                            tranList[index].msg)
-                        : Container(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical:4.0),
+                      child: tranList[index].msg != null &&
+                              tranList[index].msg.isNotEmpty
+                          ? Text(getTranslated(context, 'MSG') +
+                              " : " +
+                              tranList[index].msg)
+                          : Container(),
+                    ),
                     tranList[index].txnID != null &&
                             tranList[index].txnID.isNotEmpty
                         ? Text(getTranslated(context, 'Txn_id') +

@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'Cart.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -479,6 +479,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   removeFromCart(int index) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
+      if (CUR_USERID != null)
       try {
         if (mounted)
           setState(() {
@@ -530,6 +531,12 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             _isProgress = false;
           });
       }
+    else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Login()),
+      );
+    }
     } else {
       if (mounted)
         setState(() {
@@ -743,9 +750,11 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
               },
               child: new Stack(children: <Widget>[
                 Center(
-                  child: Image.asset(
-                    'assets/images/noti_cart.png',
-                    width: 30,
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: SvgPicture.asset(
+                      'assets/images/noti_cart.svg',
+                    ),
                   ),
                 ),
                 (CUR_CART_COUNT != null &&
@@ -1311,6 +1320,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   Future<void> addToCart(int index, String qty) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
+      if (CUR_USERID != null)
       try {
         if (mounted)
           setState(() {
@@ -1354,6 +1364,12 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           setState(() {
             _isProgress = false;
           });
+      }
+      else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
       }
     } else {
       if (mounted)

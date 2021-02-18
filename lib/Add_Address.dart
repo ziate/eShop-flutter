@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:core';
 
-import 'package:eshop/CheckOut.dart';
+
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Map.dart';
@@ -441,7 +441,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       onSaved: (String value) {
         pincode = value;
       },
-     // validator:(val)=> validatePincode(val,getTranslated(context,'PIN_REQUIRED'),getTranslated(context, 'VALID_PIN')),
+      validator:(val)=> validatePincode(val,getTranslated(context,'PIN_REQUIRED')),
       decoration: InputDecoration(
         hintText: getTranslated(context, 'PINCODEHINT_LBL'),
         isDense: true,
@@ -627,6 +627,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         if (!error) {
           var data = getdata["data"];
 
+
           if (widget.update) {
             if (checkedDefault.toString() == "true" ||
                 addressList.length == 1) {
@@ -648,6 +649,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               }
 
               User value = new User.fromAddress(data[0]);
+
+
               addressList[widget.index] = value;
 
               selectedAddress = widget.index;

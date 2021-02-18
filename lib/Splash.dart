@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'Helper/Color.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 
 
 //splash screen of app
@@ -40,13 +40,13 @@ class _SplashScreen extends State<Splash> {
                         height: double.infinity,
                         decoration: back(),
                         child: Center(
-                            child: Image.asset(
-                                'assets/images/splashlogo.png',
+                            child: SvgPicture.asset(
+                                'assets/images/splashlogo.svg',
                             ),
                         ),
                     ),
-                    Image.asset(
-                        'assets/images/doodle.png',
+                    SvgPicture.asset(
+                        'assets/images/doodle.svg',
                         fit: BoxFit.fill,
                         width: double.infinity,
                         height: double.infinity,

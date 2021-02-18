@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'Constant.dart';
 import 'Color.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 class RadioItem extends StatelessWidget {
     final RadioModel _item;
 
@@ -42,7 +42,7 @@ class RadioItem extends StatelessWidget {
                         child: new Text(_item.name),
                     ),
                     Spacer(),
-                    _item.img != "" ? Image.asset(_item.img) : Container()
+                    _item.img != "" ? SvgPicture.asset(_item.img) : Container()
                 ],
             ),
         );

@@ -5,7 +5,7 @@ import 'package:eshop/Helper/Session.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -224,8 +224,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                   },
                   child: new Stack(children: <Widget>[
                     Center(
-                      child: Image.asset(
-                        'assets/images/noti_cart.png',
+                      child: SvgPicture.asset(
+                        'assets/images/noti_cart.svg',
                         width: 30,
                       ),
                     ),

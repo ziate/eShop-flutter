@@ -18,7 +18,7 @@ import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
 import 'Search.dart';
 import 'Cart.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 class SectionList extends StatefulWidget {
   final int index;
   Section_Model section_model;
@@ -305,9 +305,11 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                 },
                 child: new Stack(children: <Widget>[
                   Center(
-                    child: Image.asset(
-                      'assets/images/noti_cart.png',
-                      width: 30,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: SvgPicture.asset(
+                        'assets/images/noti_cart.svg',
+                      ),
                     ),
                   ),
                   (CUR_CART_COUNT != null &&
@@ -807,7 +809,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     Product model = widget.section_model.productList[index];
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
-      try {
+      if (CUR_USERID != null)
+        try {
         if (mounted)
           setState(() {
             _isProgress = true;
@@ -847,6 +850,12 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
             _isProgress = false;
           });
       }
+      else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
+      }
     } else {
       if (mounted)
         setState(() {
@@ -859,6 +868,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
     Product model = widget.section_model.productList[index];
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
+
+      if (CUR_USERID != null)
       try {
         if (mounted)
           setState(() {
@@ -902,6 +913,12 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           setState(() {
             _isProgress = false;
           });
+      }
+      else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
       }
     } else {
       if (mounted)

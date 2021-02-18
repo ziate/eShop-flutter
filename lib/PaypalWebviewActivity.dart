@@ -1,19 +1,22 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/String.dart';
+import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'Order_Success.dart';
-import 'Helper/Session.dart';
+
 import 'Helper/Constant.dart';
+import 'Helper/Session.dart';
+import 'Order_Success.dart';
 
 class PaypalWebview extends StatefulWidget {
-  final String url;
+  final String url, from;
 
-  const PaypalWebview({Key key, this.url}) : super(key: key);
+  const PaypalWebview({Key key, this.url, this.from}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
+    print(url);
     return StatePayPalWebview();
   }
 }
@@ -25,14 +28,11 @@ class StatePayPalWebview extends State<PaypalWebview> {
   final Completer<WebViewController> _controller =
   Completer<WebViewController>();
 
-
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar:  getAppBar(appName, context),
-        body:
-        Stack(
+        appBar: getAppBar(appName, context),
+        body: Stack(
           children: <Widget>[
             WebView(
               initialUrl: widget.url,
@@ -45,39 +45,47 @@ class StatePayPalWebview extends State<PaypalWebview> {
               ].toSet(),
               navigationDelegate: (NavigationRequest request) async {
                 if (request.url.startsWith(PAYPAL_RESPONSE_URL)) {
-                   if (mounted) setState(() {
-                    isloading = true;
-                  });
+                  if (mounted)
+                    setState(() {
+                      isloading = true;
+                    });
 
                   String responseurl = request.url;
 
                   if (responseurl.contains("Failed") ||
                       responseurl.contains("failed")) {
-                     if (mounted) setState(() {
-                      isloading = false;
-                      message = "Transaction Failed";
-                    });
+                    if (mounted)
+                      setState(() {
+                        isloading = false;
+                        message = "Transaction Failed";
+                      });
                     Timer(Duration(seconds: 1), () {
                       Navigator.pop(context);
                     });
                   } else if (responseurl.contains("Completed") ||
                       responseurl.contains("completed")) {
-                     if (mounted) setState(() {
-                       if (mounted) setState(() {
-                        message = "Transaction Successfull";
+                    if (mounted)
+                      setState(() {
+                        if (mounted)
+                          setState(() {
+                            message = "Transaction Successfull";
+                          });
                       });
-                    });
                     List<String> testdata = responseurl.split("&");
                     for (String data in testdata) {
                       if (data.split("=")[0].toLowerCase() == "tx") {
-                        String txid = data.split("=")[1];
+                        // String txid = data.split("=")[1];
                         CUR_CART_COUNT = "0";
-
-                        Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) => OrderSuccess()),
-                            ModalRoute.withName('/home'));
+                        if (widget.from == "order") {
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      OrderSuccess()),
+                              ModalRoute.withName('/home'));
+                        } else if (widget.from == "wallet") {
+                          Navigator.of(context).pop();
+                        }
 
                         break;
                       }
@@ -94,15 +102,14 @@ class StatePayPalWebview extends State<PaypalWebview> {
                 // print('Page finished loading: $url');
               },
             ),
-
-
-
             isloading
                 ? Center(
               child: new CircularProgressIndicator(),
             )
                 : Container(),
-            message.trim().isEmpty
+            message
+                .trim()
+                .isEmpty
                 ? Container()
                 : Center(
                 child: Container(
@@ -128,14 +135,14 @@ class StatePayPalWebview extends State<PaypalWebview> {
   }
 
   void FinishPage(String finishmessage) {
-     if (mounted) setState(() {
-      message = finishmessage;
-    });
+    if (mounted)
+      setState(() {
+        message = finishmessage;
+      });
     Timer(Duration(seconds: 1), () {
       Navigator.pop(context);
     });
   }
-
 }
 
 class BlankBar extends StatelessWidget implements PreferredSizeWidget {

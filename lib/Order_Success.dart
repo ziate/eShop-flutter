@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'Helper/String.dart';
 import 'Helper/Constant.dart';
 import 'Home.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 class OrderSuccess extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -41,7 +41,7 @@ class StateSuccess extends State<OrderSuccess> {
                 Container(
                   padding: EdgeInsets.all(25),
                   margin: EdgeInsets.symmetric(vertical: 40),
-                  child: Image.asset("assets/images/orderplaced.png"),
+                  child: SvgPicture.asset("assets/images/orderplaced.svg"),
                   decoration: BoxDecoration(
                       color: colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(20))),

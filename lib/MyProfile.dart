@@ -1,13 +1,11 @@
 import 'dart:convert';
-
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
-import 'package:eshop/Home.dart';
-import 'package:eshop/Setting.dart';
 import 'package:eshop/MyTransactions.dart';
+import 'package:eshop/Setting.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -22,10 +20,11 @@ import 'Helper/Theme.dart';
 import 'Login.dart';
 import 'Manage_Address.dart';
 import 'MyOrder.dart';
+import 'My_Wallet.dart';
 import 'Privacy_Policy.dart';
 import 'Profile.dart';
+import 'VideoTest.dart';
 import 'main.dart';
-import 'My_Wallet.dart';
 
 class MyProfile extends StatefulWidget {
   Function update;
@@ -50,7 +49,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   int selectLan, curTheme;
   TextEditingController curPassC, newPassC, confPassC;
   String curPass, newPass, confPass, mobile;
-  bool _showPassword = false,_showNPassword = false,_showCPassword = false;
+  bool _showPassword = false, _showNPassword = false, _showCPassword = false;
 
   @override
   void initState() {
@@ -90,7 +89,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     selectLan = langCode.indexOf(getlng ?? "en");
 
     // print("get***$get***$prevTheme***${getTranslated(context, 'SYSTEM_DEFAULT')}");
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   getUserDetails() async {
@@ -98,7 +97,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     CUR_USERNAME = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
     profile = await getPrefrence(IMAGE);
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   _getHeader() {
@@ -134,14 +133,16 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                   .copyWith(color: colors.fontColor),
                             )
                           : Container(),
-
-                          CUR_BALANCE!=null && CUR_BALANCE != "" && CUR_BALANCE!="0" && CUR_BALANCE.isNotEmpty
-                            ?  Text(CUR_CURRENCY+" "+CUR_BALANCE,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle2
-                            .copyWith(color: colors.fontColor)):Container(),
-
+                      CUR_BALANCE != null &&
+                              CUR_BALANCE != "" &&
+                              CUR_BALANCE != "0" &&
+                              CUR_BALANCE.isNotEmpty
+                          ? Text(CUR_CURRENCY + " " + CUR_BALANCE,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(color: colors.fontColor))
+                          : Container(),
                       CUR_USERNAME == "" || CUR_USERNAME == null
                           ? Padding(
                               padding: const EdgeInsetsDirectional.only(top: 7),
@@ -209,23 +210,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(100.0),
                   child: profile != null
-                      ? CircleAvatar(
-                          backgroundImage: NetworkImage(profile),
-                          radius: 32,
-
-                          //fit: BoxFit.cover,
-                          //errorWidget: (context, url, e) => placeHolder(64),
-                          // placeholder: placeHolder(64)
+                      ? new FadeInImage(
+                          fadeInDuration: Duration(milliseconds: 150),
+                          image: NetworkImage(profile),
+                          height: 64.0,
+                          width: 64.0,
+                          fit: BoxFit.cover,
+                          placeholder: placeHolder(64),
                         )
-                      /*    (context, url) {
-                            return new Container(
-                              child: Icon(
-                                Icons.account_circle,
-                                color: white,
-                                size: 64,
-                              ),
-                            );
-                          })*/
                       : imagePlaceHolder(62),
                 ),
               ),
@@ -242,11 +234,11 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
               index,
               InkWell(
                 onTap: () {
-                   if (mounted) setState(() {
-                    selectLan = index;
-                    _changeLan(langCode[index]);
-
-                  });
+                  if (mounted)
+                    setState(() {
+                      selectLan = index;
+                      _changeLan(langCode[index]);
+                    });
                 },
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 5),
@@ -312,7 +304,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     Locale _locale = await setLocale(language);
 
     MyApp.setLocale(context, _locale);
-
   }
 
   _showDialog() async {
@@ -415,13 +406,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                             color: colors.lightBlack,
                                             onPressed: () {
                                               setStater(() {
-                                                _showNPassword = !_showNPassword;
+                                                _showNPassword =
+                                                    !_showNPassword;
                                               });
                                             },
                                           )),
                                       obscureText: !_showNPassword,
                                       controller: newPassC,
-                                      onChanged: (v) =>   setState(() {
+                                      onChanged: (v) => setState(() {
                                         newPass = v;
                                       }),
                                     )),
@@ -461,13 +453,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                                             color: colors.lightBlack,
                                             onPressed: () {
                                               setStater(() {
-                                                _showCPassword = !_showCPassword;
+                                                _showCPassword =
+                                                    !_showCPassword;
                                               });
                                             },
                                           )),
                                       obscureText: !_showCPassword,
                                       controller: confPassC,
-                                      onChanged: (v) =>  setState(() {
+                                      onChanged: (v) => setState(() {
                                         confPass = v;
                                       }),
                                     )),
@@ -502,9 +495,10 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       final form = _formkey.currentState;
                       if (form.validate()) {
                         form.save();
-                         if (mounted)  if (mounted) setState(() {
-                          Navigator.pop(context);
-                        });
+                        if (mounted) if (mounted)
+                          setState(() {
+                            Navigator.pop(context);
+                          });
                         setUpdateUser();
                       }
                     })
@@ -556,29 +550,27 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         physics: BouncingScrollPhysics(),
         children: <Widget>[
           _getDrawerItem(getTranslated(context, 'MY_ORDERS_LBL'),
-              'assets/images/pro_myorder.png'),
+              'assets/images/pro_myorder.svg'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'MANAGE_ADD_LBL'),
-              'assets/images/pro_address.png'),
+              'assets/images/pro_address.svg'),
           _getDivider(),
-          _getDrawerItem(getTranslated(context, 'MYWALLET'),
-              'assets/images/pro_wh.png'),
+          _getDrawerItem(
+              getTranslated(context, 'MYWALLET'), 'assets/images/pro_wh.svg'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'MYTRANSACTION'),
-              'assets/images/pro_th.png'),
+              'assets/images/pro_th.svg'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'CHANGE_THEME_LBL'),
-              'assets/images/pro_theme.png'),
+              'assets/images/pro_theme.svg'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'CHANGE_LANGUAGE_LBL'),
-              'assets/images/pro_language.png'),
+              'assets/images/pro_language.svg'),
           CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
           CUR_USERID == "" || CUR_USERID == null
               ? Container()
-              :
-
-          _getDrawerItem(getTranslated(context, 'CHANGE_PASS_LBL'),
-              'assets/images/pro_pass.png'),
+              : _getDrawerItem(getTranslated(context, 'CHANGE_PASS_LBL'),
+                  'assets/images/pro_pass.svg'),
         ],
       ),
     );
@@ -593,7 +585,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
 
   _getDrawerSecond() {
     return Card(
-      margin: EdgeInsetsDirectional.only(start: 10.0, end: 10.0, top: 15.0, bottom: 15.0),
+      margin: EdgeInsetsDirectional.only(
+          start: 10.0, end: 10.0, top: 15.0, bottom: 15.0),
       elevation: 0,
       child: ListView(
         padding: EdgeInsets.zero,
@@ -601,30 +594,30 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         physics: BouncingScrollPhysics(),
         children: <Widget>[
           _getDrawerItem(getTranslated(context, 'ABOUT_LBL'),
-              'assets/images/pro_aboutus.png'),
+              'assets/images/pro_aboutus.svg'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'CONTACT_LBL'),
-              'assets/images/pro_customersupport.png'),
+              'assets/images/pro_customersupport.svg'),
           _getDivider(),
           _getDrawerItem(
-              getTranslated(context, 'FAQS'), 'assets/images/pro_faq.png'),
+              getTranslated(context, 'FAQS'), 'assets/images/pro_faq.svg'),
           _getDivider(),
           _getDrawerItem(
-              getTranslated(context, 'PRIVACY'), 'assets/images/pro_pp.png'),
+              getTranslated(context, 'PRIVACY'), 'assets/images/pro_pp.svg'),
           _getDivider(),
           _getDrawerItem(
-              getTranslated(context, 'TERM'), 'assets/images/pro_tc.png'),
+              getTranslated(context, 'TERM'), 'assets/images/pro_tc.svg'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'RATE_US'),
-              'assets/images/pro_rateus.png'),
+              'assets/images/pro_rateus.svg'),
           _getDivider(),
           _getDrawerItem(getTranslated(context, 'SHARE_APP'),
-              'assets/images/pro_share.png'),
+              'assets/images/pro_share.svg'),
           CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
           CUR_USERID == "" || CUR_USERID == null
               ? Container()
               : _getDrawerItem(getTranslated(context, 'LOGOUT'),
-                  'assets/images/pro_logout.png'),
+                  'assets/images/pro_logout.svg'),
         ],
       ),
     );
@@ -638,7 +631,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           decoration: BoxDecoration(
               borderRadius: new BorderRadius.all(const Radius.circular(5.0)),
               color: colors.lightWhite),
-          child: Image.asset(
+          child: SvgPicture.asset(
             img,
           )),
       title: Text(
@@ -646,7 +639,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         style: TextStyle(color: colors.lightBlack2, fontSize: 15),
       ),
       onTap: () {
-
         print("title***$title***${getTranslated(context, 'MyWallet')}");
         if (title == getTranslated(context, 'MY_ORDERS_LBL')) {
           Navigator.push(
@@ -660,14 +652,12 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
               MaterialPageRoute(
                 builder: (context) => TransactionHistory(),
               ));
-
         } else if (title == getTranslated(context, 'MYWALLET')) {
           Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => MyWallet(),
               ));
-
         } else if (title == getTranslated(context, 'SETTING')) {
           CUR_USERID == null
               ? Navigator.push(
@@ -901,7 +891,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   _updateState(int position) {
-    curTheme=position;
+    curTheme = position;
     onThemeChanged(themeList[position]);
   }
 
@@ -911,26 +901,28 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     if (value == getTranslated(context, 'SYSTEM_DEFAULT')) {
       themeNotifier.setThemeMode(ThemeMode.system);
       var brightness = SchedulerBinding.instance.window.platformBrightness;
-       if (mounted) setState(() {
-
-        isDark = brightness == Brightness.dark;
-        if(isDark)
-          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-        else
-          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-      });
+      if (mounted)
+        setState(() {
+          isDark = brightness == Brightness.dark;
+          if (isDark)
+            SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+          else
+            SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+        });
     } else if (value == getTranslated(context, 'LIGHT_THEME')) {
       themeNotifier.setThemeMode(ThemeMode.light);
-       if (mounted) setState(() {
-        isDark = false;
-        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-      });
+      if (mounted)
+        setState(() {
+          isDark = false;
+          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+        });
     } else if (value == getTranslated(context, 'DARK_THEME')) {
       themeNotifier.setThemeMode(ThemeMode.dark);
-       if (mounted) setState(() {
-        isDark = true;
-        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-      });
+      if (mounted)
+        setState(() {
+          isDark = true;
+          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+        });
     }
     ISDARK = isDark.toString();
 

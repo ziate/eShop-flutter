@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:eshop/Model/Order_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -142,7 +142,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                      height: 45,
+                      height: 35,
                       padding: EdgeInsetsDirectional.only(
                           start: 5.0, end: 5.0),
                       child: TextField(
@@ -159,9 +159,13 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                           fillColor: colors.white,
                           contentPadding:
                           EdgeInsets.fromLTRB(15.0, 9.0, 0, 9.0),
-                          prefixIcon: Image.asset(
-                            'assets/images/search.png',
-                            color: colors.primary,
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SvgPicture.asset(
+                              'assets/images/search.svg',
+                              color: colors.primary,
+                              height: 10,
+                            ),
                           ),
                           hintText: getTranslated(
                               context, 'FIND_ORDER_ITEMS_LBL'),
@@ -320,12 +324,13 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                 Hero(
                     tag: "$index${orderItem.id}",
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(7.0),
                       child: FadeInImage(
                         fadeInDuration: Duration(milliseconds: 150),
                         image: NetworkImage(orderItem.image),
                         height: 90.0,
                         width: 90.0,
+                        fit: extendImg ? BoxFit.fill : BoxFit.contain,
                         // errorWidget:(context, url,e) => placeHolder(90) ,
                         placeholder: placeHolder(90),
                       ),

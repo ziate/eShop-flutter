@@ -1,8 +1,10 @@
 import 'dart:convert';
-import 'package:eshop/CheckOut.dart';
+import 'package:eshop/Cart.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:stripe_payment/stripe_payment.dart';
+import 'String.dart';
+import 'dart:math';
 
 class StripeTransactionResponse {
   String message,status;
@@ -78,7 +80,7 @@ class StripeService {
 
       var paymentIntent = await StripeService.createPaymentIntent(
           amount,
-          currency
+          currency,
       );
 
 
@@ -140,11 +142,14 @@ class StripeService {
   }
 
   static Future<Map<String, dynamic>> createPaymentIntent(String amount, String currency) async {
+    String orderId="wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900)+ 100}";
+
     try {
       Map<String, dynamic> body = {
         'amount': amount,
         'currency': currency,
-        'payment_method_types[]': 'card'
+        'payment_method_types[]': 'card',
+        'metadata[order_id]':orderId
       };
 
 

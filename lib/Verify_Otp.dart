@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:sms_autofill/sms_autofill.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
@@ -249,7 +249,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
     return Expanded(
       flex: 4,
       child: Center(
-        child: new Image.asset('assets/images/homelogo.png'),
+        child: new SvgPicture.asset('assets/images/homelogo.svg'),
       ),
     );
   }

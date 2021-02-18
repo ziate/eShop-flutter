@@ -2,6 +2,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:jaguar_jwt/jaguar_jwt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
@@ -106,8 +107,8 @@ getAppBar(String title, BuildContext context) {
 }
 
 noIntImage() {
-  return Image.asset(
-    'assets/images/no_internet.png',
+  return SvgPicture.asset(
+    'assets/images/no_internet.svg',
     fit: BoxFit.contain,
   );
 }
@@ -259,11 +260,9 @@ String validateField(String value,String msg) {
 
 
 
-String validatePincode(String value,String msg1,String msg2) {
+String validatePincode(String value,String msg1) {
   if (value.length == 0)
     return msg1;
-  else if (!RegExp(r'^[1-9][0-9]{5}$').hasMatch(value))
-    return msg2;
   else
     return null;
 }

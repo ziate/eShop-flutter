@@ -5,20 +5,20 @@ import 'package:eshop/Model/Section_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart';
 
+import 'Cart.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Session.dart';
 import 'Helper/SimBtn.dart';
 import 'Helper/String.dart';
+import 'Login.dart';
 import 'ProductList.dart';
 import 'Product_Detail.dart';
 import 'Search.dart';
-import 'Login.dart';
-import 'Cart.dart';
-
 
 class SubCat extends StatefulWidget {
   String title;
@@ -319,8 +319,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                   subList[_tc.index].isFromProd &&
                   subList[_tc.index].subList.length > 0
               ? Container(
-                  margin:
-                      EdgeInsetsDirectional.only(top: 10, bottom: 10),
+                  margin: EdgeInsetsDirectional.only(top: 10, bottom: 10),
                   decoration: shadow(),
                   child: Card(
                       elevation: 0,
@@ -340,8 +339,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                       )))
               : Container(),
           Container(
-            margin:
-            EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 5),
+            margin: EdgeInsetsDirectional.only(top: 10, bottom: 10, end: 5),
             decoration: shadow(),
             child: Card(
               elevation: 0,
@@ -350,45 +348,48 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                 onTap: () {
                   CUR_USERID == null
                       ? Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Login(),
-                      ))
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Login(),
+                          ))
                       : Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Cart(widget.updateHome, null),
-                      )).then((val) => widget.updateHome);
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Cart(widget.updateHome, null),
+                          )).then((val) => widget.updateHome);
                 },
                 child: new Stack(children: <Widget>[
                   Center(
-                    child: Image.asset(
-                      'assets/images/noti_cart.png',
-                      width: 30,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: SvgPicture.asset(
+                        'assets/images/noti_cart.svg',
+                      ),
                     ),
                   ),
                   (CUR_CART_COUNT != null &&
-                      CUR_CART_COUNT.isNotEmpty &&
-                      CUR_CART_COUNT != "0")
+                          CUR_CART_COUNT.isNotEmpty &&
+                          CUR_CART_COUNT != "0")
                       ? new Positioned(
-                    top: 0.0,
-                    right: 5.0,
-                    bottom: 10,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: colors.primary.withOpacity(0.5)),
-                        child: new Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(3),
-                            child: new Text(
-                              CUR_CART_COUNT,
-                              style: TextStyle(
-                                  fontSize: 7, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        )),
-                  )
+                          top: 0.0,
+                          right: 5.0,
+                          bottom: 10,
+                          child: Container(
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: colors.primary.withOpacity(0.5)),
+                              child: new Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(3),
+                                  child: new Text(
+                                    CUR_CART_COUNT,
+                                    style: TextStyle(
+                                        fontSize: 7,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              )),
+                        )
                       : Container()
                 ]),
               ),
@@ -817,48 +818,55 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   Future<void> addToCart(int index, String qty, Product model) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
-      try {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-            _views[_tc.index] = createTabContent(_tc.index, subList);
-          });
-        var parameter = {
-          USER_ID: CUR_USERID,
-          PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
-          QTY: qty
-        };
-        Response response =
-            await post(manageCartApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+      if (CUR_USERID != null)
+        try {
+          if (mounted)
+            setState(() {
+              _isProgress = true;
+              _views[_tc.index] = createTabContent(_tc.index, subList);
+            });
+          var parameter = {
+            USER_ID: CUR_USERID,
+            PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
+            QTY: qty
+          };
+          Response response =
+              await post(manageCartApi, body: parameter, headers: headers)
+                  .timeout(Duration(seconds: timeOut));
 
-        var getdata = json.decode(response.body);
+          var getdata = json.decode(response.body);
 
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
 
-          String qty = data['total_quantity'];
-          CUR_CART_COUNT = data['cart_count'];
+            String qty = data['total_quantity'];
+            CUR_CART_COUNT = data['cart_count'];
 
-          model.prVarientList[model.selVarient].cartCount = qty.toString();
-        } else {
-          setSnackbar(msg);
+            model.prVarientList[model.selVarient].cartCount = qty.toString();
+          } else {
+            setSnackbar(msg);
+          }
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+              _views[_tc.index] = createTabContent(_tc.index, subList);
+            });
+
+          widget.updateHome();
+        } on TimeoutException catch (_) {
+          setSnackbar(getTranslated(context, 'somethingMSg'));
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
         }
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-            _views[_tc.index] = createTabContent(_tc.index, subList);
-          });
-
-        widget.updateHome();
-      } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-          });
+      else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
       }
     } else {
       if (mounted)
@@ -871,52 +879,59 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   removeFromCart(int index, Product model) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
-      try {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-            _views[_tc.index] = createTabContent(_tc.index, subList);
-          });
+      if (CUR_USERID != null)
+        try {
+          if (mounted)
+            setState(() {
+              _isProgress = true;
+              _views[_tc.index] = createTabContent(_tc.index, subList);
+            });
 
-        var parameter = {
-          PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
-          USER_ID: CUR_USERID,
-          QTY: (int.parse(model.prVarientList[model.selVarient].cartCount) - 1)
-              .toString()
-        };
-        print("remove****$parameter");
+          var parameter = {
+            PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
+            USER_ID: CUR_USERID,
+            QTY:
+                (int.parse(model.prVarientList[model.selVarient].cartCount) - 1)
+                    .toString()
+          };
+          print("remove****$parameter");
 
-        Response response =
-            await post(manageCartApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
-        print("remove****${response.body.toString()}");
-        var getdata = json.decode(response.body);
+          Response response =
+              await post(manageCartApi, body: parameter, headers: headers)
+                  .timeout(Duration(seconds: timeOut));
+          print("remove****${response.body.toString()}");
+          var getdata = json.decode(response.body);
 
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
 
-          String qty = data['total_quantity'];
-          CUR_CART_COUNT = data['cart_count'];
+            String qty = data['total_quantity'];
+            CUR_CART_COUNT = data['cart_count'];
 
-          model.prVarientList[model.selVarient].cartCount = qty.toString();
-
-        } else {
-          setSnackbar(msg);
+            model.prVarientList[model.selVarient].cartCount = qty.toString();
+          } else {
+            setSnackbar(msg);
+          }
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+              _views[_tc.index] = createTabContent(_tc.index, subList);
+            });
+          if (widget.updateHome != null) widget.updateHome();
+        } on TimeoutException catch (_) {
+          setSnackbar(getTranslated(context, 'somethingMSg'));
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
         }
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-            _views[_tc.index] = createTabContent(_tc.index, subList);
-          });
-        if (widget.updateHome != null) widget.updateHome();
-      } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-          });
+      else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
       }
     } else {
       if (mounted)
@@ -1393,7 +1408,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             if (msg != "Products Not Found !") setSnackbar(msg);
             isLoadingmore = false;
           }
-       if (mounted)
+          if (mounted)
             setState(() {
               _isLoading = false;
             });

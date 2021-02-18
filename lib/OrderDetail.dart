@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Helper/Session.dart';
@@ -151,18 +152,30 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         );
       }),
       actions: <Widget>[
-        InkWell(
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 10),
-            child: Container(
-              decoration: shadow(),
-              child: Card(
-                elevation: 0,
+        Padding(
+          padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 10,end:10),
+          child: Container(
+            decoration: shadow(),
+            child: Card(
+
+              elevation: 0,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () async {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Cart(widget.updateHome, updateDetail),
+                      ));
+                },
                 child: new Stack(children: <Widget>[
                   Center(
-                    child: Image.asset(
-                      'assets/images/noti_cart.png',
-                      width: 30,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: SvgPicture.asset(
+                        'assets/images/noti_cart.svg',
+
+                      ),
                     ),
                   ),
                   (CUR_CART_COUNT != null &&
@@ -193,13 +206,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
               ),
             ),
           ),
-          onTap: () async {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Cart(widget.updateHome, updateDetail),
-                ));
-          },
         ),
       ],
     );
@@ -752,12 +758,14 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 Row(
                   children: [
                     ClipRRect(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(7.0),
                         child: FadeInImage(
                           fadeInDuration: Duration(milliseconds: 150),
                           image: NetworkImage(orderItem.image),
                           height: 90.0,
                           width: 90.0,
+                          fit: extendImg ? BoxFit.fill : BoxFit.contain,
+
                           placeholder: placeHolder(90),
                         )),
                     Expanded(
