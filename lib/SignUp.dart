@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+
 import 'package:eshop/Helper/String.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:convert';
-import 'package:http/http.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart';
+
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -27,6 +30,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   final mobileController = TextEditingController();
   final ccodeController = TextEditingController();
   final passwordController = TextEditingController();
+  final referController = TextEditingController();
+int count=1;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   String name,
       email,
@@ -39,8 +44,13 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       pincode,
       address,
       latitude,
-      longitude;
-  FocusNode nameFocus, emailFocus, passFocus = FocusNode();
+      longitude,
+      referCode,
+      friendCode;
+  FocusNode nameFocus,
+      emailFocus,
+      passFocus = FocusNode(),
+      referFocus = FocusNode();
   bool _isNetworkAvail = true;
   Animation buttonSqueezeanimation;
 
@@ -56,7 +66,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   getUserDetails() async {
     mobile = await getPrefrence(MOBILE);
     countrycode = await getPrefrence(COUNTRY_CODE);
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<Null> _playAnimation() async {
@@ -68,12 +78,13 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   Future<void> checkNetwork() async {
     bool avail = await isNetworkAvailable();
     if (avail) {
-      getRegisterUser();
+      if (referCode != null) getRegisterUser();
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
-         if (mounted) setState(() {
-          _isNetworkAvail = false;
-        });
+        if (mounted)
+          setState(() {
+            _isNetworkAvail = false;
+          });
         await buttonController.reverse();
       });
     }
@@ -107,7 +118,6 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         textAlign: TextAlign.center,
         style: TextStyle(color: colors.fontColor),
       ),
-
       elevation: 1.0,
     ));
   }
@@ -136,7 +146,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -153,13 +163,14 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         NAME: name,
         EMAIL: email,
         PASSWORD: password,
-        COUNTRY_CODE: countrycode
+        COUNTRY_CODE: countrycode,
+        REFERCODE: referCode,
+        FRNDCODE: friendCode
       };
 
-
       Response response =
-      await post(getUserSignUpApi, body: data, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(getUserSignUpApi, body: data, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
       bool error = getdata["error"];
@@ -183,16 +194,16 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-       if (mounted) setState(() {});
+      if (mounted) setState(() {});
     } on TimeoutException catch (_) {
-      setSnackbar( getTranslated(context,'somethingMSg'));
+      setSnackbar(getTranslated(context, 'somethingMSg'));
       await buttonController.reverse();
     }
   }
 
   subLogo() {
     return Expanded(
-      flex: 3,
+      flex: 2,
       child: Center(
         child: new SvgPicture.asset('assets/images/homelogo.svg'),
       ),
@@ -204,10 +215,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         padding: EdgeInsetsDirectional.only(top: 30.0),
         child: Center(
           child: new Text(getTranslated(context, 'USER_REGISTER_DETAILS'),
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle1
-                  .copyWith(color: colors.fontColor, fontWeight: FontWeight.bold)),
+              style: Theme.of(context).textTheme.subtitle1.copyWith(
+                  color: colors.fontColor, fontWeight: FontWeight.bold)),
         ));
   }
 
@@ -224,13 +233,12 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         controller: nameController,
         focusNode: nameFocus,
         textInputAction: TextInputAction.next,
-        style: TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
+        style:
+            TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
         validator: (val) => validateUserName(
             val,
-            getTranslated(
-                context, 'USER_REQUIRED'),
-            getTranslated(
-                context, 'USER_LENGTH')),
+            getTranslated(context, 'USER_REQUIRED'),
+            getTranslated(context, 'USER_LENGTH')),
         onSaved: (String value) {
           name = value;
         },
@@ -277,13 +285,12 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         focusNode: emailFocus,
         textInputAction: TextInputAction.next,
         controller: emailController,
-        style: TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
+        style:
+            TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
         validator: (val) => validateEmail(
             val,
-            getTranslated(
-                context, 'EMAIL_REQUIRED'),
-            getTranslated(
-                context, 'VALID_EMAIL')),
+            getTranslated(context, 'EMAIL_REQUIRED'),
+            getTranslated(context, 'VALID_EMAIL')),
         onSaved: (String value) {
           email = value;
         },
@@ -296,7 +303,51 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
             color: colors.fontColor,
             size: 17,
           ),
-          hintText: getTranslated(context,'EMAILHINT_LBL'),
+          hintText: getTranslated(context, 'EMAILHINT_LBL'),
+          hintStyle: Theme.of(this.context)
+              .textTheme
+              .subtitle2
+              .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
+          filled: true,
+          fillColor: colors.lightWhite,
+          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          prefixIconConstraints: BoxConstraints(minWidth: 40, maxHeight: 25),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: colors.fontColor),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: colors.lightWhite),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      ),
+    );
+  }
+
+  setRefer() {
+    return Padding(
+      padding: EdgeInsetsDirectional.only(
+        top: 10.0,
+        start: 25.0,
+        end: 25.0,
+      ),
+      child: TextFormField(
+        keyboardType: TextInputType.text,
+        focusNode: referFocus,
+        controller: referController,
+        style:
+            TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
+        onSaved: (String value) {
+          friendCode = value;
+        },
+        decoration: InputDecoration(
+          prefixIcon: Icon(
+            Icons.card_giftcard_outlined,
+            color: colors.fontColor,
+            size: 17,
+          ),
+          hintText: getTranslated(context, 'REFER'),
           hintStyle: Theme.of(this.context)
               .textTheme
               .subtitle2
@@ -325,9 +376,17 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
           keyboardType: TextInputType.text,
           obscureText: !this._showPassword,
           focusNode: passFocus,
-          style: TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
+          onFieldSubmitted: (v) {
+            _fieldFocusChange(context, passFocus, referFocus);
+          },
+          textInputAction: TextInputAction.next,
+          style:
+              TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
           controller: passwordController,
-          validator:(val)=> validatePass(val,getTranslated(context, 'PWD_REQUIRED'),getTranslated(context, 'PWD_LENGTH')),
+          validator: (val) => validatePass(
+              val,
+              getTranslated(context, 'PWD_REQUIRED'),
+              getTranslated(context, 'PWD_LENGTH')),
           onSaved: (String value) {
             password = value;
           },
@@ -338,10 +397,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               size: 17,
             ),
             hintText: getTranslated(context, 'PASSHINT_LBL'),
-            hintStyle: Theme.of(this.context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
+            hintStyle: Theme.of(this.context).textTheme.subtitle2.copyWith(
+                color: colors.fontColor, fontWeight: FontWeight.normal),
             filled: true,
             fillColor: colors.lightWhite,
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -372,14 +429,15 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
               checkColor: colors.fontColor,
               activeColor: colors.lightWhite,
               onChanged: (bool value) {
-                 if (mounted) setState(() {
-                  _showPassword = value;
-                });
+                if (mounted)
+                  setState(() {
+                    _showPassword = value;
+                  });
               },
             ),
             Text(getTranslated(context, 'SHOW_PASSWORD'),
-                style:
-                TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal))
+                style: TextStyle(
+                    color: colors.fontColor, fontWeight: FontWeight.normal))
           ],
         ));
   }
@@ -397,16 +455,14 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
 
   loginTxt() {
     return Padding(
-      padding:
-      EdgeInsetsDirectional.only(bottom: 30.0, start: 25.0, end: 25.0, top: 10.0),
+      padding: EdgeInsetsDirectional.only(
+          bottom: 30.0, start: 25.0, end: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(getTranslated(context, 'ALREADY_A_CUSTOMER'),
-              style: Theme.of(context)
-                  .textTheme
-                  .caption
-                  .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal)),
+              style: Theme.of(context).textTheme.caption.copyWith(
+                  color: colors.fontColor, fontWeight: FontWeight.normal)),
           InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
@@ -428,37 +484,37 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   backBtn() {
     return Platform.isIOS
         ? Container(
-        padding: EdgeInsetsDirectional.only(top: 20.0, start: 10.0),
-        alignment: AlignmentDirectional.topStart,
-        child: Card(
-          elevation: 0,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(end: 4.0),
-            child: InkWell(
-              child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
-              onTap: () => Navigator.of(context).pop(),
-            ),
-          ),
-        ))
+            padding: EdgeInsetsDirectional.only(top: 20.0, start: 10.0),
+            alignment: AlignmentDirectional.topStart,
+            child: Card(
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(end: 4.0),
+                child: InkWell(
+                  child: Icon(Icons.keyboard_arrow_left, color: colors.primary),
+                  onTap: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ))
         : Container();
   }
 
   expandedBottomView() {
-
     return Expanded(
-        flex: 7,
+        flex: 8,
         child: Container(
           alignment: Alignment.bottomCenter,
-          child: SingleChildScrollView(
-            // physics: BouncingScrollPhysics(),
-
-            child: Form(
+          child: ScrollConfiguration(
+            behavior: MyBehavior(),
+            child: SingleChildScrollView(
+                child: Form(
               key: _formkey,
               child: Card(
                 elevation: 0.5,
-                shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                margin: EdgeInsetsDirectional.only(start: 20.0, end: 20.0, top: 20.0),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                margin: EdgeInsetsDirectional.only(
+                    start: 20.0, end: 20.0, top: 20.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -466,13 +522,14 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
                     setUserName(),
                     setEmail(),
                     setPass(),
+                    setRefer(),
                     showPass(),
                     verifyBtn(),
                     loginTxt(),
                   ],
                 ),
               ),
-            ),
+            )),
           ),
         ));
   }
@@ -494,6 +551,8 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         0.150,
       ),
     ));
+
+    generateReferral();
   }
 
   @override
@@ -501,18 +560,56 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
     return Scaffold(
         key: _scaffoldKey,
         body: _isNetworkAvail
-            ? Container(
-            color: colors.lightWhite,
-            padding: EdgeInsetsDirectional.only(
-              bottom: 20.0,
-            ),
-            child: Column(
-              children: <Widget>[
-                backBtn(),
-                subLogo(),
-                expandedBottomView(),
-              ],
-            ))
+            ? SafeArea(
+                child: Container(
+                    color: colors.lightWhite,
+                    padding: EdgeInsetsDirectional.only(
+                      bottom: 20.0,
+                    ),
+                    child: Column(
+                      children: <Widget>[
+                        backBtn(),
+                        subLogo(),
+                        expandedBottomView(),
+                      ],
+                    )),
+              )
             : noInternet(context));
   }
+
+  Future<void> generateReferral() async {
+    String refer = getRandomString(8);
+
+    try {
+      var data = {
+        REFERCODE: refer,
+      };
+
+      Response response =
+          await post(validateReferalApi, body: data, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+
+      if (!error) {
+        referCode = refer;
+        REFER_CODE = refer;
+        if (mounted) setState(() {});
+      } else {
+        if(count<5)
+        generateReferral();
+        count++;
+      }
+    } on TimeoutException catch (_) {}
+  }
+
+  final _chars =
+      'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  Random _rnd = Random();
+
+  String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
+      length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 }

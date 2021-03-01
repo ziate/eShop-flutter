@@ -1,15 +1,17 @@
 import 'dart:convert';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/MyTransactions.dart';
+import 'package:eshop/ReferEarn.dart';
 import 'package:eshop/Setting.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +25,6 @@ import 'MyOrder.dart';
 import 'My_Wallet.dart';
 import 'Privacy_Policy.dart';
 import 'Profile.dart';
-import 'VideoTest.dart';
 import 'main.dart';
 
 class MyProfile extends StatefulWidget {
@@ -555,12 +556,16 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           _getDrawerItem(getTranslated(context, 'MANAGE_ADD_LBL'),
               'assets/images/pro_address.svg'),
           _getDivider(),
-          _getDrawerItem(
-              getTranslated(context, 'MYWALLET'), 'assets/images/pro_wh.svg'),
-          _getDivider(),
-          _getDrawerItem(getTranslated(context, 'MYTRANSACTION'),
-              'assets/images/pro_th.svg'),
-          _getDivider(),
+          CUR_USERID == "" || CUR_USERID == null
+              ? Container()
+              : _getDrawerItem(getTranslated(context, 'MYWALLET'),
+                  'assets/images/pro_wh.svg'),
+          CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
+          CUR_USERID == "" || CUR_USERID == null
+              ? Container()
+              : _getDrawerItem(getTranslated(context, 'MYTRANSACTION'),
+                  'assets/images/pro_th.svg'),
+          CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
           _getDrawerItem(getTranslated(context, 'CHANGE_THEME_LBL'),
               'assets/images/pro_theme.svg'),
           _getDivider(),
@@ -593,6 +598,11 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
         children: <Widget>[
+          CUR_USERID == "" || CUR_USERID == null
+              ? Container()
+              : _getDrawerItem(getTranslated(context, 'REFEREARN'),
+                  'assets/images/pro_referral.svg'),
+          CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
           _getDrawerItem(getTranslated(context, 'ABOUT_LBL'),
               'assets/images/pro_aboutus.svg'),
           _getDivider(),
@@ -684,6 +694,12 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       home: true,
                     ),
                   ));
+        } else if (title == getTranslated(context, 'REFEREARN')) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ReferEarn(),
+              ));
         } else if (title == getTranslated(context, 'CONTACT_LBL')) {
           Navigator.push(
               context,

@@ -45,8 +45,8 @@ class _SplashScreen extends State<Splash> {
                             ),
                         ),
                     ),
-                    SvgPicture.asset(
-                        'assets/images/doodle.svg',
+                    Image.asset(
+                       'assets/images/doodle.png',
                         fit: BoxFit.fill,
                         width: double.infinity,
                         height: double.infinity,

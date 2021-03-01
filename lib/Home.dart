@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
+import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -51,6 +52,7 @@ bool _isCatLoading = true;
 bool _isNetworkAvail = true;
 int curSelected = 0;
 GlobalKey bottomNavigationKey = GlobalKey();
+int count = 1;
 
 class StateHome extends State<Home> {
   List<Widget> fragments;
@@ -834,6 +836,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                         builder: (context) => ProductList(
                             name: catList[index].name,
                             id: catList[index].id,
+                            tag: false,
                             updateHome: widget.updateHome),
                       ));
                   if (mounted) setState(() {});
@@ -968,14 +971,58 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   _getOfferImage(index) {
-    return FadeInImage(
-        fadeInDuration: Duration(milliseconds: 150),
-        image: NetworkImage(offerImages[index].image),
-        width: double.maxFinite,
-        // errorWidget: (context, url, e) => placeHolder(50),
-        placeholder: AssetImage(
-          "assets/images/sliderph.png",
-        ));
+    return InkWell(
+      child: FadeInImage(
+          fadeInDuration: Duration(milliseconds: 150),
+          image: NetworkImage(offerImages[index].image),
+          width: double.maxFinite,
+          // errorWidget: (context, url, e) => placeHolder(50),
+          placeholder: AssetImage(
+            "assets/images/sliderph.png",
+          )),
+      onTap: () {
+        if (offerImages[index].type == "products") {
+          Product item = offerImages[index].list;
+
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+                //transitionDuration: Duration(seconds: 1),
+                pageBuilder: (_, __, ___) => ProductDetail(
+                    model: item,
+                    updateParent: updateHomePage,
+                    secPos: 0,
+                    index: 0,
+                    updateHome: widget.updateHome,
+                    list: true
+                    //  title: sectionList[secPos].title,
+                    )),
+          );
+        } else if (offerImages[index].type == "categories") {
+          Product item = offerImages[index].list;
+          if (item.subList == null || item.subList.length == 0) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductList(
+                      name: item.name,
+                      id: item.id,
+                      tag: false,
+                      updateHome: widget.updateHome),
+                ));
+          } else {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SubCat(
+                      title: item.name,
+                      subList: item.subList,
+                      updateHome: widget.updateHome),
+                ));
+          }
+        }
+      },
+    );
   }
 
   _getSection(int i) {
@@ -1464,6 +1511,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       Response response = await post(getSettingApi,
               body: CUR_USERID != null ? parameter : null, headers: headers)
           .timeout(Duration(seconds: timeOut));
+
+      print("get info***${response.body.toString()}");
+
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
 
@@ -1471,9 +1521,11 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         String msg = getdata["message"];
         if (!error) {
           var data = getdata["data"]["system_settings"][0];
+          cartBtnList = data["cart_btn_on_list"] == "1" ? true : false;
           CUR_CURRENCY = data["currency"];
           RETURN_DAYS = data['max_product_return_days'];
           MAX_ITEMS = data["max_items_cart"];
+          extendImg = data["expand_product_images"] == "1" ? true : false;
           String del = data["area_wise_delivery_charge"];
           if (del == "0")
             ISFLAT_DEL = true;
@@ -1482,7 +1534,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           if (CUR_USERID != null) {
             CUR_CART_COUNT =
                 getdata["data"]["user_data"][0]["cart_total_items"].toString();
-
+            REFER_CODE = getdata['data']['user_data'][0]['referral_code'];
+            if (REFER_CODE == null || REFER_CODE == '' || REFER_CODE.isEmpty)
+              generateReferral();
             CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
           }
           widget.updateHome();
@@ -1493,6 +1547,50 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
     }
+  }
+
+  Future<void> generateReferral() async {
+    String refer = getRandomString(8);
+
+    try {
+      var data = {
+        REFERCODE: refer,
+      };
+
+      Response response =
+          await post(validateReferalApi, body: data, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+
+      bool error = getdata["error"];
+
+      if (!error) {
+        REFER_CODE = refer;
+        setUpdateUser(refer);
+      } else {
+        if (count < 5) generateReferral();
+        count++;
+      }
+    } on TimeoutException catch (_) {}
+  }
+
+  final _chars =
+      'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  Random _rnd = Random();
+
+  String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
+      length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+
+  Future<void> setUpdateUser(String code) async {
+    var data = {
+      USER_ID: CUR_USERID,
+      REFERCODE: code,
+    };
+
+    Response response =
+        await post(getUpdateUserApi, body: data, headers: headers)
+            .timeout(Duration(seconds: timeOut));
   }
 
   Future<Null> getOfferImages() async {
@@ -1574,6 +1672,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                   builder: (context) => ProductList(
                       name: item.name,
                       id: item.id,
+                      tag: false,
                       updateHome: widget.updateHome),
                 ));
           } else {

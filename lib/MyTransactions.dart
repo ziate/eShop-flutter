@@ -98,7 +98,6 @@ class _TransactionHistoryState extends State<TransactionHistory> {
             await post(getWalTranApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
-        print("response****$parameter${response.body.toString()}");
 
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
@@ -172,10 +171,12 @@ class _TransactionHistoryState extends State<TransactionHistory> {
 
   listItem(int index) {
     Color back;
-    if (tranList[index].status == "Success") {
+    if (tranList[index].status.toLowerCase().contains("success")) {
       back = Colors.green;
-    } else
+    } else if(tranList[index].status.toLowerCase().contains("failure"))
       back = Colors.red;
+    else
+      back=Colors.orange;
     return Card(
       elevation: 0,
       margin: EdgeInsets.all(5.0),
@@ -209,10 +210,11 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Text(getTranslated(context, 'ORDER_ID_LBL') +
-                              " : " +
-                              tranList[index].orderId),
-                          Spacer(),
+                          Expanded(
+                            child: Text(getTranslated(context, 'ORDER_ID_LBL') +
+                                " : " +
+                                tranList[index].orderId),
+                          ),
                           Container(
                             margin: EdgeInsets.only(left: 8),
                             padding:

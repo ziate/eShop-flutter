@@ -38,8 +38,6 @@ class Model {
   }
 
   factory Model.fromTimeSlot(Map<String, dynamic> parsedJson) {
-
-
     return new Model(
         id: parsedJson[ID],
         name: parsedJson[TITLE],

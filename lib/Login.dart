@@ -382,8 +382,10 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       flex: 6,
       child: Container(
         alignment: Alignment.bottomCenter,
-        child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
+        child:
+        ScrollConfiguration(
+        behavior: MyBehavior(),child:
+        SingleChildScrollView(
           child: Form(
             key: _formkey,
             child: Card(
@@ -404,7 +406,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
               ),
             ),
           ),
-        ),
+        )),
       ),
     );
   }

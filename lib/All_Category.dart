@@ -165,6 +165,7 @@ class StateCat extends State<AllCategory> {
                   name: catList[index].name,
                   id: catList[index].id,
                   updateHome: widget.updateHome,
+                  tag: false,
                 ),
               ));
         } else {

@@ -59,11 +59,8 @@ String razorpayId,
     stripeMode = "test",
     stripeCurCode,
     stripePayId,
-    flutterwaveId = 'FLWPUBK_TEST-1ffbaed6ee3788cd2bcbb898d3b90c59-X',
-    flutterwaveSec = 'FLWSECK_TEST25c36edcfcaa',
-    paytmMerId = "PpGeMd34849525540215",
-    paytmMerKey = "eIcrB!DTHJlQ5DN8",
-    website = "WEBSTAGING";
+    paytmMerId ,
+    paytmMerKey;
 bool payTesting = true;
 
 class StateCart extends State<Cart> with TickerProviderStateMixin {
@@ -1028,11 +1025,11 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           USER_ID: CUR_USERID,
           QTY: qty,
         };
-        print("cart add***$parameter");
+
         Response response =
             await post(manageCartApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-        print("cart add***res***${response.body.toString()}");
+
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -1344,12 +1341,12 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           USER_ID: CUR_USERID,
           QTY: remove ? "0" : (int.parse(cartList[index].qty) - 1).toString()
         };
-        print("remove****$parameter");
+
 
         Response response =
             await post(manageCartApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-        print("remove****${response.body.toString()}");
+
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -1728,9 +1725,10 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                                   getTranslated(
                                                       context, 'PAYSTACK_LBL'))
                                                 paystackPayment(context);
-                                              /* else if (payMethod ==
-                                      getTranslated(context, 'FLUTTERWAVE_LBL'))
-                                    startFlutterwavePayment(totalPrice, 'ke', 'kes');*/
+                                              else if (payMethod ==
+                                                  getTranslated(context,
+                                                      'FLUTTERWAVE_LBL'))
+                                                flutterwavePayment();
                                               else if (payMethod ==
                                                   getTranslated(
                                                       context, 'STRIPE_LBL'))
@@ -1895,64 +1893,74 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         '/theia/paytmCallback?ORDER_ID=' +
         orderId;
 
-    //Host the Server Side Code on your Server and use your URL here. The following URL may or may not work. Because hosted on free server.
-    //Server Side code url: https://github.com/mrdishant/Paytm-Plugin-Server
-    var url = 'https://desolate-anchorage-29312.herokuapp.com/generateTxnToken';
 
-    var body = json.encode({
-      "mid": paytmMerId,
-      "key_secret": paytmMerKey,
-      "website": website,
-      "orderId": orderId,
-      "amount": totalPrice.toString(),
-      "callbackUrl": callBackUrl,
-      "custId": CUR_USERID,
-      // "mode": mode.toString(),
-      "testing": payTesting ? 0 : 1
-    });
+    var parameter = {
+      AMOUNT: totalPrice.toString(),
+       USER_ID:CUR_USERID,
+      ORDER_ID: orderId
+    };
 
     try {
       final response = await post(
-        url,
-        body: body,
-        headers: {'Content-type': "application/json"},
+        getPytmChecsumkApi,
+        body: parameter,
+        headers: headers,
       );
-      print("Response is");
-      print(response.body);
-      String txnToken = response.body;
-      setState(() {
-        payment_response = txnToken;
-      });
 
-      var paytmResponse = Paytm.payWithPaytm(paytmMerId, orderId, txnToken,
-          totalPrice.toString(), callBackUrl, payTesting);
 
-      paytmResponse.then((value) {
-        print(value);
+
+      var getdata = json.decode(response.body);
+
+      bool error = getdata["error"];
+
+      if (!error) {
+        String txnToken = getdata["txn_token"];
+
         setState(() {
-          _isProgress = false;
-          print("Value is ");
-          print(value);
-          if (value['error']) {
-            payment_response = value['errorMessage'];
-
-            if (value['response'] != null)
-              AddTransaction(value['response']['TXNID'], orderId,
-                  value['response']['STATUS'], payment_response, false);
-          } else {
-            if (value['response'] != null) {
-              payment_response = value['response']['STATUS'];
-              if (payment_response == "TXN_SUCCESS")
-                placeOrder(value['response']['TXNID']);
-              else
-                AddTransaction(value['response']['TXNID'], orderId,
-                    value['response']['STATUS'], value['errorMessage'], false);
-            }
-          }
-
-          setSnackbar(payment_response, _checkscaffoldKey);
+          payment_response = txnToken;
         });
-      });
+        // orderId, mId, txnToken, txnAmount, callback
+        var paytmResponse = Paytm.payWithPaytm(paytmMerId, orderId, txnToken,
+            totalPrice.toString(), callBackUrl, payTesting);
+
+        paytmResponse.then((value) {
+          print(value);
+          setState(() {
+            _isProgress = false;
+            print("Value is ");
+            print(value);
+            if (value['error']) {
+              payment_response = value['errorMessage'];
+
+
+
+              if (value['response'] != null)
+                AddTransaction(value['response']['TXNID'], orderId,
+                    value['response']['STATUS'], payment_response, false);
+            } else {
+              if (value['response'] != null) {
+                payment_response = value['response']['STATUS'];
+                if (payment_response == "TXN_SUCCESS")
+                  placeOrder(value['response']['TXNID']);
+                else
+                  AddTransaction(
+                      value['response']['TXNID'],
+                      orderId,
+                      value['response']['STATUS'],
+                      value['errorMessage'],
+                      false);
+              }
+            }
+
+            setSnackbar(payment_response, _checkscaffoldKey);
+          });
+        });
+      } else {
+        setState(() {
+          _isProgress=false;
+        });
+        setSnackbar(getdata["message"], _checkscaffoldKey);
+      }
     } catch (e) {
       print(e);
     }
@@ -2025,7 +2033,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             parameter[ACTIVE_STATUS] = WAITING;
         }
 
-        print("param****$parameter");
+
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
@@ -2095,6 +2103,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
       var parameter = {
         USER_ID: CUR_USERID,
         ORDER_ID: orderId,
+        AMOUNT: totalPrice.toString()
       };
       Response response =
           await post(paypalTransactionApi, body: parameter, headers: headers)
@@ -2113,7 +2122,13 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       url: data,
                       from: "order",
                     )));
+        checkoutState(() {
+          _isProgress = false;
+        });
       } else {
+        checkoutState(() {
+          _isProgress = false;
+        });
         setSnackbar(msg, _checkscaffoldKey);
       }
     } on TimeoutException catch (_) {
@@ -2625,7 +2640,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             await post(validatePromoApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
-        print("response****${response.body.toString()}");
+
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
@@ -2659,6 +2674,59 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
               _isProgress = false;
             });
           }
+        }
+      } on TimeoutException catch (_) {
+        checkoutState(() {
+          _isProgress = false;
+        });
+        setSnackbar(getTranslated(context, 'somethingMSg'), _checkscaffoldKey);
+      }
+    } else {
+      if (mounted)
+        checkoutState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  Future<void> flutterwavePayment() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          checkoutState(() {
+            _isProgress = true;
+          });
+
+        var parameter = {
+          AMOUNT: totalPrice.toString(),
+          USER_ID: CUR_USERID,
+        };
+        Response response =
+            await post(flutterwaveApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        print("response****${response.body.toString()}");
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["link"];
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => PaypalWebview(
+                          url: data,
+                          from: "order",
+                        )));
+          } else {
+            setSnackbar(msg, _checkscaffoldKey);
+          }
+          checkoutState(() {
+            _isProgress = false;
+          });
         }
       } on TimeoutException catch (_) {
         checkoutState(() {

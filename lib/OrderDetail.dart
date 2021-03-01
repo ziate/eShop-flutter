@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Helper/Session.dart';
@@ -13,12 +12,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:http/http.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'Give_Rating.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -50,11 +51,9 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   int total = 0;
   List<User> reviewList = [];
   bool isLoadingmore = true;
-  double initialRate = 0;
+
   String proId, image;
-  TextEditingController _commentC = new TextEditingController();
-  List<File> files = [];
-  double curRating = 0.0;
+
 
   @override
   void initState() {
@@ -153,11 +152,11 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       }),
       actions: <Widget>[
         Padding(
-          padding: const EdgeInsetsDirectional.only(top: 10.0, bottom: 10,end:10),
+          padding:
+              const EdgeInsetsDirectional.only(top: 10.0, bottom: 10, end: 10),
           child: Container(
             decoration: shadow(),
             child: Card(
-
               elevation: 0,
               child: InkWell(
                 borderRadius: BorderRadius.circular(4),
@@ -165,7 +164,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Cart(widget.updateHome, updateDetail),
+                        builder: (context) =>
+                            Cart(widget.updateHome, updateDetail),
                       ));
                 },
                 child: new Stack(children: <Widget>[
@@ -174,7 +174,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                       padding: const EdgeInsets.all(5.0),
                       child: SvgPicture.asset(
                         'assets/images/noti_cart.svg',
-
                       ),
                     ),
                   ),
@@ -298,7 +297,9 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                                 .copyWith(
                                                     color: colors.lightBlack2),
                                           )))),
-                              model.otp != null && model.otp.isNotEmpty && model.otp!="0"
+                              model.otp != null &&
+                                      model.otp.isNotEmpty &&
+                                      model.otp != "0"
                                   ? Container(
                                       width: deviceWidth,
                                       child: Card(
@@ -327,7 +328,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                   return productItem(orderItem, model);
                                 },
                               ),
-                              _writeReview(),
+
                               DwnInvoice(),
                               shippingDetails(),
                               priceDetails(),
@@ -529,6 +530,24 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
+                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(getTranslated(context, 'PAYABLE') + " " + ":",
+                        style: Theme.of(context)
+                            .textTheme
+                            .button
+                            .copyWith(color: colors.lightBlack2)),
+                    Text(CUR_CURRENCY + " " + widget.model.payable,
+                        style: Theme.of(context)
+                            .textTheme
+                            .button
+                            .copyWith(color: colors.lightBlack2))
+                  ],
+                ),
+              ),
+              Padding(
                 padding: EdgeInsetsDirectional.only(
                     start: 15.0, end: 15.0, top: 5.0),
                 child: Row(
@@ -582,146 +601,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             ])));
   }
 
-  _writeReview() {
-    return widget.model.itemList[0].listStatus.contains(DELIVERD)
-        ? Card(
-            elevation: 0,
-            child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        getTranslated(context, 'WRITE_REVIEW_LBL'),
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(color: colors.fontColor),
-                      ),
-                      _rating(),
-                      Padding(
-                          padding: EdgeInsetsDirectional.only(
-                              start: 20.0, end: 20.0),
-                          child: TextField(
-                            controller: _commentC,
-                            style: Theme.of(context).textTheme.subtitle2,
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            decoration: InputDecoration(
-                              hintText:
-                                  getTranslated(context, 'REVIEW_HINT_LBL'),
-                              hintStyle: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(
-                                      color:
-                                          colors.lightBlack2.withOpacity(0.7)),
-                            ),
-                          )),
-                      Container(
-                        padding: EdgeInsetsDirectional.only(
-                            start: 20.0, end: 20.0, top: 5),
-                        height: files != null && files.length > 0 ? 80 : 50,
-                        child: Row(
-                          children: [
-                            Expanded(
-                                child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: files.length,
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, i) {
-                                return InkWell(
-                                  child: Stack(
-                                    alignment: AlignmentDirectional.topEnd,
-                                    children: [
-                                      Image.file(
-                                        files[i],
-                                        width: 80,
-                                        height: 80,
-                                      ),
-                                      Container(
-                                          color: Colors.black26,
-                                          child: Icon(
-                                            Icons.clear,
-                                            size: 15,
-                                          ))
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    if (mounted)
-                                      setState(() {
-                                        files.removeAt(i);
-                                      });
-                                  },
-                                );
-                              },
-                            )),
-                            IconButton(
-                                icon: Icon(
-                                  Icons.add_photo_alternate,
-                                  color: colors.primary,
-                                  size: 25.0,
-                                ),
-                                onPressed: () {
-                                  _imgFromGallery();
-                                })
-                          ],
-                        ),
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional.bottomEnd,
-                        child: GestureDetector(
-                          child: Container(
-                            margin:
-                                EdgeInsetsDirectional.only(start: 8, end: 20),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 2),
-                            decoration: BoxDecoration(
-                                color: colors.lightWhite,
-                                borderRadius: new BorderRadius.all(
-                                    const Radius.circular(4.0))),
-                            child: Text(
-                              getTranslated(context, 'SUBMIT_LBL'),
-                              style: TextStyle(
-                                  color: colors.fontColor, fontSize: 10),
-                            ),
-                          ),
-                          onTap: () {
-                            if (curRating != 0 ||
-                                _commentC.text != '' ||
-                                (files != null && files.length > 0))
-                              setRating(curRating, _commentC.text, files);
-                            else
-                              setSnackbar(getTranslated(context, 'REVIEW_W'));
-                          },
-                        ),
-                      ),
-                    ])))
-        : Container();
-  }
 
-  _rating() {
-    return Padding(
-      padding: EdgeInsetsDirectional.only(top: 7.0, bottom: 7.0),
-      child: RatingBar.builder(
-        initialRating: 0,
-        minRating: 1,
-        direction: Axis.horizontal,
-        allowHalfRating: false,
-        itemCount: 5,
-        itemSize: 32,
-        itemPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 5),
-        itemBuilder: (context, _) => Icon(
-          Icons.star,
-          color: colors.primary,
-        ),
-        onRatingUpdate: (rating) {
-          curRating = rating;
-        },
-      ),
-    );
-  }
+
 
   productItem(OrderItem orderItem, Order_Model model) {
     String pDate, prDate, sDate, dDate, cDate, rDate;
@@ -765,7 +646,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           height: 90.0,
                           width: 90.0,
                           fit: extendImg ? BoxFit.fill : BoxFit.contain,
-
                           placeholder: placeHolder(90),
                         )),
                     Expanded(
@@ -941,6 +821,36 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                               )
                             : Container()
                     : Container(),
+                orderItem.status == DELIVERD ? Divider() : Container(),
+                orderItem.status == DELIVERD
+                    ? InkWell(
+                        child: ListTile(
+                          dense: true,
+                          title: Text(
+                            getTranslated(context, 'WRITE_REVIEW_LBL'),
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle2
+                                .copyWith(color: colors.lightBlack),
+                          ),
+                          trailing: RatingBarIndicator(
+                            rating: 5,
+                            itemBuilder: (context, index) => Icon(
+                              Icons.star,
+                              color: colors.primary,
+                            ),
+                            itemCount: 5,
+                            itemSize: 15.0,
+                            direction: Axis.horizontal,
+                          ),
+                        ),
+                        onTap: () async {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => GiveRating(productId:  orderItem.productId,name:orderItem.name,img: orderItem.image,)));
+                        })
+                    : Container()
               ],
             )));
   }
@@ -1266,73 +1176,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     }
   }
 
-  _imgFromGallery() async {
-    /* files = await FilePicker.getMultiFile(type: FileType.image);
-    if (files != null) {
-       if (mounted) setState(() {});
-    }*/
 
-    ///for ios uncomment below code and update file picker library version in pubspec.yaml
-    FilePickerResult result =
-        await FilePicker.platform.pickFiles(allowMultiple: true);
-    if (result != null) {
-      files = result.paths.map((path) => File(path)).toList();
-      if (mounted) setState(() {});
-    } else {
-      // User canceled the picker
-    }
-  }
 
-  Future<void> setRating(
-      double rating, String comment, List<File> files) async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      try {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-          });
-        var request = http.MultipartRequest("POST", Uri.parse(setRatingApi));
-        request.headers.addAll(headers);
-        request.fields[USER_ID] = CUR_USERID;
-        request.fields[PRODUCT_ID] = widget.model.itemList[0].productId;
-
-        if (files != null) {
-          for (int i = 0; i < files.length; i++) {
-            var pic = await http.MultipartFile.fromPath(IMGS, files[i].path);
-            request.files.add(pic);
-          }
-        }
-
-        if (comment != "") request.fields[COMMENT] = comment;
-        if (rating != 0) request.fields[RATING] = rating.toString();
-        var response = await request.send();
-        var responseData = await response.stream.toBytes();
-        var responseString = String.fromCharCodes(responseData);
-        var getdata = json.decode(responseString);
-        bool error = getdata["error"];
-        String msg = getdata['message'];
-        if (!error) {
-          setSnackbar(msg);
-        } else {
-          setSnackbar(msg);
-          initialRate = 0;
-        }
-
-        _commentC.text = "";
-        files.clear();
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-          });
-      } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
-      }
-    } else if (mounted)
-      setState(() {
-        _isNetworkAvail = false;
-      });
-  }
 
   setSnackbar(String msg) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(

@@ -21,8 +21,8 @@ import 'Search.dart';
 class ProductList extends StatefulWidget {
   final String name, id;
   final Function updateHome;
-
-  const ProductList({Key key, this.id, this.name, this.updateHome})
+final bool tag;
+  const ProductList({Key key, this.id, this.name, this.updateHome, this.tag})
       : super(key: key);
 
   @override
@@ -314,7 +314,9 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             Spacer(),
                             model.availability == "0"
                                 ? Container()
-                                : Row(
+                                :
+
+                            cartBtnList?Row(
                                     children: <Widget>[
                                       Row(
                                         children: <Widget>[
@@ -439,7 +441,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                                         ],
                                       ),
                                     ],
-                                  ),
+                                  ):Container(),
                           ],
                         ),
                       ],
@@ -554,18 +556,23 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       try {
         var parameter = {
-          CATID: widget.id,
+          CATID: widget.id??'',
           SORT: sortBy,
           ORDER: orderBy,
           LIMIT: perPage.toString(),
           OFFSET: offset.toString(),
-          TOP_RETAED: top
+          TOP_RETAED: top,
+
         };
         if (selId != null && selId != "") {
           parameter[ATTRIBUTE_VALUE_ID] = selId;
         }
+        if(widget.tag)
+          parameter[TAG] = widget.name;
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
-        print("get product***$parameter");
+
+        print("param***$parameter");
+
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
@@ -1029,118 +1036,115 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                         start: 3.0, bottom: 5, top: 3),
                     child: model.availability == "0"
                         ? Container()
-                        : Row(
-                            children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  GestureDetector(
-                                    child: Container(
-                                      padding: EdgeInsets.all(2),
-                                      margin:
-                                          EdgeInsetsDirectional.only(end: 8),
-                                      child: Icon(
-                                        Icons.remove,
-                                        size: 14,
-                                        color: colors.fontColor,
-                                      ),
-                                      decoration: BoxDecoration(
-                                          color: colors.lightWhite,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(3))),
+                        :
+    cartBtnList?                    Row(
+                          children: <Widget>[
+                            GestureDetector(
+                              child: Container(
+                                padding: EdgeInsets.all(2),
+                                margin:
+                                    EdgeInsetsDirectional.only(end: 8),
+                                child: Icon(
+                                  Icons.remove,
+                                  size: 14,
+                                  color: colors.fontColor,
+                                ),
+                                decoration: BoxDecoration(
+                                    color: colors.lightWhite,
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(3))),
+                              ),
+                              onTap: () {
+                                if (_isProgress == false &&
+                                    (int.parse(productList[index]
+                                            .prVarientList[
+                                                model.selVarient]
+                                            .cartCount)) >
+                                        0) removeFromCart(index);
+                              },
+                            ),
+                            Container(
+                              width: 40,
+                              height: 20,
+                              child: Stack(
+                                children: [
+                                  TextField(
+                                    textAlign: TextAlign.center,
+                                    readOnly: true,
+                                    style: TextStyle(
+                                      fontSize: 10,
                                     ),
-                                    onTap: () {
-                                      if (_isProgress == false &&
-                                          (int.parse(productList[index]
-                                                  .prVarientList[
-                                                      model.selVarient]
-                                                  .cartCount)) >
-                                              0) removeFromCart(index);
+                                    controller: _controller[index],
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.all(5.0),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: colors.fontColor,
+                                            width: 0.5),
+                                        borderRadius:
+                                            BorderRadius.circular(5.0),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: colors.fontColor,
+                                            width: 0.5),
+                                        borderRadius:
+                                            BorderRadius.circular(5.0),
+                                      ),
+                                    ),
+                                  ),
+                                  PopupMenuButton<String>(
+                                    tooltip: '',
+                                    icon: const Icon(
+                                      Icons.arrow_drop_down,
+                                      size: 1,
+                                    ),
+                                    onSelected: (String value) {
+                                      if (_isProgress == false)
+                                        addToCart(index, value);
+                                    },
+                                    itemBuilder: (BuildContext context) {
+                                      return items
+                                          .map<PopupMenuItem<String>>(
+                                              (String value) {
+                                        return new PopupMenuItem(
+                                            child: new Text(value),
+                                            value: value);
+                                      }).toList();
                                     },
                                   ),
-                                  Container(
-                                    width: 40,
-                                    height: 20,
-                                    child: Stack(
-                                      children: [
-                                        TextField(
-                                          textAlign: TextAlign.center,
-                                          readOnly: true,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                          ),
-                                          controller: _controller[index],
-                                          decoration: InputDecoration(
-                                            contentPadding: EdgeInsets.all(5.0),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: colors.fontColor,
-                                                  width: 0.5),
-                                              borderRadius:
-                                                  BorderRadius.circular(5.0),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: colors.fontColor,
-                                                  width: 0.5),
-                                              borderRadius:
-                                                  BorderRadius.circular(5.0),
-                                            ),
-                                          ),
-                                        ),
-                                        PopupMenuButton<String>(
-                                          tooltip: '',
-                                          icon: const Icon(
-                                            Icons.arrow_drop_down,
-                                            size: 1,
-                                          ),
-                                          onSelected: (String value) {
-                                            if (_isProgress == false)
-                                              addToCart(index, value);
-                                          },
-                                          itemBuilder: (BuildContext context) {
-                                            return items
-                                                .map<PopupMenuItem<String>>(
-                                                    (String value) {
-                                              return new PopupMenuItem(
-                                                  child: new Text(value),
-                                                  value: value);
-                                            }).toList();
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ), // ),
-
-                                  GestureDetector(
-                                    child: Container(
-                                      padding: EdgeInsets.all(2),
-                                      margin: EdgeInsets.only(left: 8),
-                                      child: Icon(
-                                        Icons.add,
-                                        size: 14,
-                                        color: colors.fontColor,
-                                      ),
-                                      decoration: BoxDecoration(
-                                          color: colors.lightWhite,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(3))),
-                                    ),
-                                    onTap: () {
-                                      if (_isProgress == false)
-                                        addToCart(
-                                            index,
-                                            (int.parse(model
-                                                        .prVarientList[
-                                                            model.selVarient]
-                                                        .cartCount) +
-                                                    1)
-                                                .toString());
-                                    },
-                                  )
                                 ],
                               ),
-                            ],
-                          ),
+                            ), // ),
+
+                            GestureDetector(
+                              child: Container(
+                                padding: EdgeInsets.all(2),
+                                margin: EdgeInsets.only(left: 8),
+                                child: Icon(
+                                  Icons.add,
+                                  size: 14,
+                                  color: colors.fontColor,
+                                ),
+                                decoration: BoxDecoration(
+                                    color: colors.lightWhite,
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(3))),
+                              ),
+                              onTap: () {
+                                if (_isProgress == false)
+                                  addToCart(
+                                      index,
+                                      (int.parse(model
+                                                  .prVarientList[
+                                                      model.selVarient]
+                                                  .cartCount) +
+                                              1)
+                                          .toString());
+                              },
+                            )
+                          ],
+                        ):Container(),
                   )
                 ],
               ),

@@ -169,6 +169,7 @@ class OrderItem {
       subTotal: json[SUB_TOTAL],
       varientId: json[PRODUCT_VARIENT_ID],
       listStatus: lStatus,
+      status: json[ACTIVE_STATUS],
       listDate: lDate,
       isCancle: json[ISCANCLEABLE],
       isReturn: json[ISRETURNABLE],

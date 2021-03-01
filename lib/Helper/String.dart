@@ -37,9 +37,10 @@ final String getOfferImageApi = baseUrl + 'get_offer_images';
 final String getFaqsApi = baseUrl + 'get_faqs';
 final String updateFcmApi = baseUrl + 'update_fcm';
 final String getWalTranApi = baseUrl + 'transactions';
-
-
-
+final String getPytmChecsumkApi=baseUrl + 'generate_paytm_txn_token';
+//final String verifyPytmChecksumApi=baseUrl +'validate_paytm_checksum';
+final String validateReferalApi=baseUrl+'validate_refer_code';
+final String flutterwaveApi=baseUrl+'flutterwave_webview';
 
 
 final String ISFIRSTTIME = 'isfirst$appName';
@@ -222,10 +223,13 @@ const String APP_THEME="App Theme";
 const String SHORT="short_description";
 const String FROMTIME='from_time';
 const String TOTIME='last_order_time';
-
-
-
-
+const String REFERCODE='referral_code';
+const String FRNDCODE='friends_code';
+const String VIDEO='video';
+const String VIDEO_TYPE='video_type';
+const String WARRANTY='warranty_period';
+const String GAURANTEE="guarantee_period";
+const String TAG='tags';
 const String CITYNAME = "cityName";
 const String AREANAME = "areaName";
 const String LAGUAGE_CODE = 'languageCode';
@@ -234,8 +238,10 @@ const String DEFAULT_SYSTEM="System default";
 const String LIGHT="Light";
 const String DARK="Dark";
 String ISDARK="";
-final String PAYPAL_RESPONSE_URL =
-    "$baseUrl"+"app_payment_status";
+final String PAYPAL_RESPONSE_URL = "$baseUrl"+"app_payment_status";
+final String FLUTTERWAVE_RES_URL=baseUrl+"flutterwave-payment-response";
+
+
 
 String CUR_CURRENCY = '';
 String CUR_USERID = '';
@@ -244,8 +250,11 @@ String CUR_CART_COUNT = "";
 String CUR_BALANCE = '';
 String RETURN_DAYS='';
 String MAX_ITEMS='';
+String REFER_CODE='';
+
 bool ISFLAT_DEL=true;
 bool extendImg=true;
+bool cartBtnList=true;
 
 double deviceHeight;
 double deviceWidth;

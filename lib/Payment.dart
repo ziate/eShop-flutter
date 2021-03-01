@@ -5,9 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'Cart.dart';
 
+import 'Cart.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -41,11 +40,13 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       razorpay,
       paumoney,
       paystack,
-      flutterwave = true,
+      flutterwave,
       stripe,
       paytm = true;
   List<RadioModel> timeModel = new List<RadioModel>();
   List<RadioModel> payModel = new List<RadioModel>();
+  List<RadioModel> timeModelList = new List<RadioModel>();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   List<String> paymentMethodList = [];
@@ -385,15 +386,12 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         if (mounted) selectedDate = index;
         selDate = DateFormat('yyyy-MM-dd').format(date);
         timeModel.clear();
-
-
-
-        if (date == today) {
-
+        DateTime cur = DateTime.now();
+        DateTime tdDate = DateTime(cur.year, cur.month, cur.day);
+        if (date == tdDate) {
           if (timeSlotList.length > 0) {
-
             for (int i = 0; i < timeSlotList.length; i++) {
-                         DateTime cur = DateTime.now();
+              DateTime cur = DateTime.now();
               String time = timeSlotList[i].lastTime;
               DateTime last = DateTime(
                   cur.year,
@@ -404,18 +402,15 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                   int.parse(time.split(':')[2]));
 
 
-              if (cur.isAfter(last)) {
+              if (cur.isBefore(last)) {
                 timeModel.add(new RadioModel(
                     isSelected: i == selectedTime ? true : false,
                     name: timeSlotList[i].name,
                     img: ''));
-
-                print("date****$last***$cur**${timeModel.length}");
               }
             }
           }
-        }
-        else{
+        } else {
           if (timeSlotList.length > 0) {
             for (int i = 0; i < timeSlotList.length; i++) {
               timeModel.add(new RadioModel(
@@ -441,8 +436,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         Response response =
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-        print("response***${response.body.toString()}");
-        if (response.statusCode == 200) {
+         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
           bool error = getdata["error"];
@@ -461,19 +455,86 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
 
             if (timeSlotList.length > 0) {
               for (int i = 0; i < timeSlotList.length; i++) {
+
+                if (selectedDate != null) {
+                  DateTime today = DateTime.parse(startingDate);
+
+                  DateTime date = today.add(Duration(days: selectedDate));
+
+                  DateTime cur = DateTime.now();
+                  DateTime tdDate = DateTime(cur.year, cur.month, cur.day);
+
+                  if (date == tdDate) {
+                    DateTime cur = DateTime.now();
+                    String time = timeSlotList[i].lastTime;
+                    DateTime last = DateTime(
+                        cur.year,
+                        cur.month,
+                        cur.day,
+                        int.parse(time.split(':')[0]),
+                        int.parse(time.split(':')[1]),
+                        int.parse(time.split(':')[2]));
+
+                    if (cur.isBefore(last)) {
+                      timeModel.add(new RadioModel(
+                          isSelected: i == selectedTime ? true : false,
+                          name: timeSlotList[i].name,
+                          img: ''));
+                    }
+                  }else{
+                    timeModel.add(new RadioModel(
+                        isSelected: i == selectedTime ? true : false,
+                        name: timeSlotList[i].name,
+                        img: ''));
+                  }
+                } else {
+                  timeModel.add(new RadioModel(
+                      isSelected: i == selectedTime ? true : false,
+                      name: timeSlotList[i].name,
+                      img: ''));
+                }
+              }
+            }
+
+            /*     if (timeSlotList.length > 0) {
+              for (int i = 0; i < timeSlotList.length; i++) {
+                DateTime cur = DateTime.now();
+                String time = timeSlotList[i].lastTime;
+                DateTime last = DateTime(
+                    cur.year,
+                    cur.month,
+                    cur.day,
+                    int.parse(time.split(':')[0]),
+                    int.parse(time.split(':')[1]),
+                    int.parse(time.split(':')[2]));
+
+                print("date****$last***$cur**${timeModel.length}");
+                if (cur.isBefore(last)) {
+                  timeModel.add(new RadioModel(
+                      isSelected: i == selectedTime ? true : false,
+                      name: timeSlotList[i].name,
+                      img: ''));
+                }
+              }
+            }
+
+
+            if (timeSlotList.length > 0) {
+              for (int i = 0; i < timeSlotList.length; i++) {
                 timeModel.add(new RadioModel(
                     isSelected: i == selectedTime ? true : false,
                     name: timeSlotList[i].name,
                     img: ''));
               }
-            }
+            }*/
 
             var payment = data["payment_method"];
             cod = payment["cod_method"] == "1" ? true : false;
             paypal = payment["paypal_payment_method"] == "1" ? true : false;
             paumoney =
                 payment["payumoney_payment_method"] == "1" ? true : false;
-            //   flutterwave = payment["flutterwave_payment_method"] == "1" ? true : false;
+            flutterwave =
+                payment["flutterwave_payment_method"] == "1" ? true : false;
             razorpay = payment["razorpay_payment_method"] == "1" ? true : false;
             paystack = payment["paystack_payment_method"] == "1" ? true : false;
             stripe = payment["stripe_payment_method"] == "1" ? true : false;
@@ -491,13 +552,13 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
               stripeCurCode = payment['stripe_currency_code'];
               stripeMode = payment['stripe_mode'] ?? 'test';
               StripeService.secret = stripeSecret;
-              StripeService.init();
+              StripeService.init(stripeId, stripeMode);
             }
             if (paytm) {
               paytmMerId = payment['paytm_merchant_id'];
               paytmMerKey = payment['paytm_merchant_key'];
               payTesting =
-                  payment['paytm_mode'] == 'sandbox' ? true : false;
+                  payment['paytm_payment_mode'] == 'sandbox' ? true : false;
             }
 
             for (int i = 0; i < paymentMethodList.length; i++) {
@@ -526,6 +587,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   }
 
   Widget timeSlotItem(int index) {
+    print(
+        "time slot****$index***${timeModel.length}***$selectedDate**${timeSlotList.length}");
     return new InkWell(
       onTap: () {
         if (mounted)

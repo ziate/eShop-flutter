@@ -138,7 +138,8 @@ class StateRate extends State<RatingReview> {
                           index: 0,
                           id: "$index${reviewList[i].id}",
                           imgList: reviewList[i].imgList,
-                          list: true),
+                          list: true,
+                      from: false,),
                     ));
               },
               child: Hero(

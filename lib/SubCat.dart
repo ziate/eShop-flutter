@@ -651,7 +651,9 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                   Spacer(),
                                   model.availability == "0"
                                       ? Container()
-                                      : Row(
+                                      :
+                                  cartBtnList?
+                                  Row(
                                           children: <Widget>[
                                             Row(
                                               children: <Widget>[
@@ -794,7 +796,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                               ],
                                             ),
                                           ],
-                                        ),
+                                        ):Container(),
                                 ],
                               ),
                             ],
@@ -894,12 +896,11 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                 (int.parse(model.prVarientList[model.selVarient].cartCount) - 1)
                     .toString()
           };
-          print("remove****$parameter");
 
           Response response =
               await post(manageCartApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
-          print("remove****${response.body.toString()}");
+
           var getdata = json.decode(response.body);
 
           bool error = getdata["error"];
@@ -986,6 +987,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                 builder: (context) => ProductList(
                   name: subItem[index].name,
                   id: subItem[index].id,
+                  tag: false,
                   updateHome: widget.updateHome,
                 ),
               ));

@@ -224,9 +224,11 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                   },
                   child: new Stack(children: <Widget>[
                     Center(
-                      child: SvgPicture.asset(
-                        'assets/images/noti_cart.svg',
-                        width: 30,
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: SvgPicture.asset(
+                          'assets/images/noti_cart.svg',
+                        ),
                       ),
                     ),
                     (CUR_CART_COUNT != null &&
@@ -418,7 +420,9 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                                 Spacer(),
                                 model.availability == "0"
                                     ? Container()
-                                    : Row(
+                                    :
+                                cartBtnList?
+                                Row(
                                   children: <Widget>[
                                     Row(
                                       children: <Widget>[
@@ -543,7 +547,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                                       ],
                                     ),
                                   ],
-                                ),
+                                ):Container(),
                               ],
                             ),
                           ],
@@ -590,6 +594,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   Future<void> addToCart(int index, String qty) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
+      if (CUR_USERID != null)
       try {
         if (mounted)
           setState(() {
@@ -646,6 +651,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     Product model = productList[index];
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
+      if (CUR_USERID != null)
       try {
         if (mounted)
           setState(() {

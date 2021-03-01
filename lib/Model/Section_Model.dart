@@ -98,6 +98,7 @@ class Product {
   List<Product_Varient> prVarientList;
   List<Attribute> attributeList;
   List<String> selectedId = [];
+  List<String> tagList = [];
   String isFav,
       isReturnable,
       isCancelable,
@@ -109,7 +110,11 @@ class Product {
       cancleTill,
       total,
       banner,
-      totalAllow;
+      totalAllow,
+      video,
+      videType,
+      warranty,
+      gurantee;
 
   bool isFavLoading = false, isFromProd = false;
   int offset, totalItem, selVarient;
@@ -152,7 +157,12 @@ class Product {
       this.offset,
       this.totalAllow,
       this.banner,
-      this.selVarient});
+      this.selVarient,
+      this.video,
+      this.videType,
+      this.tagList,
+      this.warranty,
+      this.gurantee});
 
   factory Product.fromJson(Map<String, dynamic> json) {
     List<Product_Varient> varientList = (json[PRODUCT_VARIENT] as List)
@@ -173,6 +183,8 @@ class Product {
     List<String> other_image = List<String>.from(json[OTHER_IMAGE]);
     List<String> selected = [];
 
+    List<String> tags = List<String>.from(json[TAG]);
+    print("gurantee**prod*${json[GAURANTEE]}");
     return new Product(
         id: json[ID],
         name: json[NAME],
@@ -203,7 +215,12 @@ class Product {
         categoryId: json[CATID],
         selectedId: selected,
         totalAllow: json[TOTALALOOW],
-        cancleTill: json[CANCLE_TILL]);
+        cancleTill: json[CANCLE_TILL],
+        video: json[VIDEO],
+        videType: json[VIDEO_TYPE],
+        tagList: tags,
+        warranty: json[WARRANTY],
+        gurantee: json[GAURANTEE]);
   }
 
   factory Product.fromCat(Map<String, dynamic> parsedJson) {

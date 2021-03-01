@@ -6,8 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:sms_autofill/sms_autofill.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sms_autofill/sms_autofill.dart';
+
 import 'Helper/AppBtn.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
@@ -73,7 +74,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   getUserDetails() async {
     mobile = await getPrefrence(MOBILE);
     countrycode = await getPrefrence(COUNTRY_CODE);
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> checkNetworkOtp() async {
@@ -85,9 +86,10 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
         setSnackbar(getTranslated(context, 'OTPWR'));
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
 
       Future.delayed(Duration(seconds: 60)).then((_) async {
         bool avail = await isNetworkAvailable();
@@ -128,9 +130,10 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   }
 
   void _onVerifyCode() async {
-     if (mounted) setState(() {
-      isCodeSent = true;
-    });
+    if (mounted)
+      setState(() {
+        isCodeSent = true;
+      });
     final PhoneVerificationCompleted verificationCompleted =
         (AuthCredential phoneAuthCredential) {
       _firebaseAuth
@@ -165,25 +168,28 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
         (FirebaseAuthException authException) {
       setSnackbar(authException.message);
       print(authException.message);
-       if (mounted) setState(() {
-        isCodeSent = false;
-      });
+      if (mounted)
+        setState(() {
+          isCodeSent = false;
+        });
     };
 
     final PhoneCodeSent codeSent =
         (String verificationId, [int forceResendingToken]) async {
       _verificationId = verificationId;
-       if (mounted) setState(() {
-        _verificationId = verificationId;
-      });
+      if (mounted)
+        setState(() {
+          _verificationId = verificationId;
+        });
     };
     final PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout =
         (String verificationId) {
       _verificationId = verificationId;
-       if (mounted) setState(() {
-        _isClickable = true;
-        _verificationId = verificationId;
-      });
+      if (mounted)
+        setState(() {
+          _isClickable = true;
+          _verificationId = verificationId;
+        });
     };
 
     await _firebaseAuth.verifyPhoneNumber(
@@ -350,26 +356,27 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
       flex: 6,
       child: Container(
         alignment: Alignment.bottomCenter,
-        child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
-          child: Card(
-            elevation: 0.5,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: EdgeInsetsDirectional.only(start: 20.0, end: 20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                monoVarifyText(),
-                otpText(),
-                mobText(),
-                otpLayout(),
-                verifyBtn(),
-                resendText(),
-              ],
-            ),
-          ),
-        ),
+        child: ScrollConfiguration(
+            behavior: MyBehavior(),
+            child: SingleChildScrollView(
+              child: Card(
+                elevation: 0.5,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                margin: EdgeInsetsDirectional.only(start: 20.0, end: 20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    monoVarifyText(),
+                    otpText(),
+                    mobText(),
+                    otpLayout(),
+                    verifyBtn(),
+                    resendText(),
+                  ],
+                ),
+              ),
+            )),
       ),
     );
   }

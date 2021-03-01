@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+
 import 'package:eshop/PaypalWebviewActivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -40,9 +41,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   TextEditingController amtC, msgC;
   List<String> paymentMethodList = [];
   List<String> paymentIconList = [
-    'assets/images/cod.svg',
     'assets/images/paypal.svg',
-    'assets/images/payu.svg',
     'assets/images/rozerpay.svg',
     'assets/images/paystack.svg',
     'assets/images/flutterwave.svg',
@@ -50,7 +49,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
     'assets/images/paytm.svg',
   ];
   List<RadioModel> payModel = new List<RadioModel>();
-  bool paypal, razorpay, paumoney, paystack, flutterwave = true, stripe, paytm;
+  bool paypal, razorpay, paumoney, paystack, flutterwave, stripe, paytm;
   String razorpayId,
       paystackId,
       stripeId,
@@ -58,11 +57,8 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
       stripeMode = "test",
       stripeCurCode,
       stripePayId,
-      flutterwaveId = 'FLWPUBK_TEST-1ffbaed6ee3788cd2bcbb898d3b90c59-X',
-      flutterwaveSec = 'FLWSECK_TEST25c36edcfcaa',
-      paytmMerId = "PpGeMd34849525540215",
-      paytmMerKey = "eIcrB!DTHJlQ5DN8",
-      website = "WEBSTAGING";
+      paytmMerId,
+      paytmMerKey;
 
   int selectedMethod;
   String payMethod;
@@ -72,7 +68,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   List<TransactionModel> tranList = [];
   int offset = 0;
   int total = 0;
-  bool isLoadingmore, _isLoading = true, payTesting = true;
+  bool isLoadingmore = true, _isLoading = true, payTesting = true;
 
   @override
   void initState() {
@@ -81,9 +77,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
     payMethod = null;
     new Future.delayed(Duration.zero, () {
       paymentMethodList = [
-        getTranslated(context, 'COD_LBL'),
         getTranslated(context, 'PAYPAL_LBL'),
-        getTranslated(context, 'PAYUMONEY_LBL'),
         getTranslated(context, 'RAZORPAY_LBL'),
         getTranslated(context, 'PAYSTACK_LBL'),
         getTranslated(context, 'FLUTTERWAVE_LBL'),
@@ -148,54 +142,55 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
     );
   }
 
-  Future<Null> sendRequest(String txnId) async {
-
-
+  Future<Null> sendRequest(String txnId, String payMethod) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
-
-      String orderId="wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900)+ 100}";
+      String orderId =
+          "wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900) + 100}";
       try {
-
         var parameter = {
           USER_ID: CUR_USERID,
           AMOUNT: amtC.text.toString(),
           TRANS_TYPE: WALLET,
           TYPE: CREDIT,
-          MSG: (msgC.text==''||msgC.text.isEmpty )?"Added through wallet":msgC.text,
+          MSG: (msgC.text == '' || msgC.text.isEmpty)
+              ? "Added through wallet"
+              : msgC.text,
           TXNID: txnId,
           ORDER_ID: orderId,
           STATUS: "Success",
-
-          // PAYMENT_ADD: bankDetailC.text.toString()
+          PAYMENT_METHOD: payMethod.toLowerCase()
         };
+
         Response response =
             await post(addTransactionApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
-        print("trans api resoponse***$parameter**${response.body.toString()}");
 
         bool error = getdata["error"];
         String msg = getdata["message"];
 
         if (!error) {
-          CUR_BALANCE = double.parse(getdata["data"]).toStringAsFixed(2);
+          CUR_BALANCE = double.parse(getdata["new_balance"]).toStringAsFixed(2);
         }
-        if (mounted) setState(() {});
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
         setSnackbar(msg);
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
 
         setState(() {
-          _isLoading = false;
+          _isProgress = false;
         });
       }
     } else {
       if (mounted)
         setState(() {
           _isNetworkAvail = false;
-          _isLoading = false;
+          _isProgress = false;
         });
     }
 
@@ -214,118 +209,124 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
               contentPadding: const EdgeInsets.all(0.0),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              content: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                            padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                            child: Text(
-                              getTranslated(context, 'ADD_MONEY'),
-                              style: Theme.of(this.context)
-                                  .textTheme
-                                  .subtitle1
-                                  .copyWith(color: colors.fontColor),
-                            )),
-                        Divider(color: colors.lightBlack),
-                        Form(
-                            key: _formkey,
+              content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                        padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                        child: Text(
+                          getTranslated(context, 'ADD_MONEY'),
+                          style: Theme.of(this.context)
+                              .textTheme
+                              .subtitle1
+                              .copyWith(color: colors.fontColor),
+                        )),
+                    Divider(color: colors.lightBlack),
+                    Form(
+                      key: _formkey,
+                      child: Flexible(
+                        child: SingleChildScrollView(
                             child: new Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Padding(
-                                    padding:
-                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      validator: (val) => validateField(
-                                          val,
-                                          getTranslated(
-                                              context, 'FIELD_REQUIRED')),
-                                      autovalidateMode:
-                                          AutovalidateMode.onUserInteraction,
-                                      decoration: InputDecoration(
-                                        hintText:
-                                            getTranslated(context, "AMOUNT"),
-                                        hintStyle: Theme.of(this.context)
-                                            .textTheme
-                                            .subtitle1
-                                            .copyWith(
-                                                color: colors.lightBlack,
-                                                fontWeight: FontWeight.normal),
-                                      ),
-                                      controller: amtC,
-                                    )),
-                                Padding(
-                                    padding:
-                                        EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
-                                    child: TextFormField(
-                                      autovalidateMode:
-                                          AutovalidateMode.onUserInteraction,
-                                      decoration: new InputDecoration(
-                                        hintText: getTranslated(context, 'MSG'),
-                                        hintStyle: Theme.of(this.context)
-                                            .textTheme
-                                            .subtitle1
-                                            .copyWith(
-                                                color: colors.lightBlack,
-                                                fontWeight: FontWeight.normal),
-                                      ),
-                                      controller: msgC,
-                                    )),
-                                //Divider(),
-                                Padding(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                              Padding(
                                   padding:
-                                      EdgeInsets.fromLTRB(20.0, 10, 20.0, 5),
-                                  child: Text(
-                                    getTranslated(context, 'SELECT_PAYMENT'),
-                                    style:
-                                        Theme.of(context).textTheme.subtitle2,
-                                  ),
+                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.number,
+                                    validator: (val) => validateField(
+                                        val,
+                                        getTranslated(
+                                            context, 'FIELD_REQUIRED')),
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          getTranslated(context, "AMOUNT"),
+                                      hintStyle: Theme.of(this.context)
+                                          .textTheme
+                                          .subtitle1
+                                          .copyWith(
+                                              color: colors.lightBlack,
+                                              fontWeight: FontWeight.normal),
+                                    ),
+                                    controller: amtC,
+                                  )),
+                              Padding(
+                                  padding:
+                                      EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                                  child: TextFormField(
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    decoration: new InputDecoration(
+                                      hintText: getTranslated(context, 'MSG'),
+                                      hintStyle: Theme.of(this.context)
+                                          .textTheme
+                                          .subtitle1
+                                          .copyWith(
+                                              color: colors.lightBlack,
+                                              fontWeight: FontWeight.normal),
+                                    ),
+                                    controller: msgC,
+                                  )),
+                              //Divider(),
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(20.0, 10, 20.0, 5),
+                                child: Text(
+                                  getTranslated(context, 'SELECT_PAYMENT'),
+                                  style: Theme.of(context).textTheme.subtitle2,
                                 ),
-                                Divider(),
-                                payWarn
-                                    ? Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20.0),
-                                        child: Text(
-                                          getTranslated(context, 'payWarning'),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .caption
-                                              .copyWith(color: Colors.red),
-                                        ),
-                                      )
-                                    : Container(),
-                                paypal == null
-                                    ? Center(child: CircularProgressIndicator())
-                                    : ListView.builder(
-                                        shrinkWrap: true,
-                                        physics: NeverScrollableScrollPhysics(),
-                                        itemCount: paymentMethodList.length,
-                                        itemBuilder: (context, index) {
-                                          if (index == 1 && paypal)
-                                            return paymentItem(index);
-                                          else if (index == 2 && paumoney)
-                                            return paymentItem(index);
-                                          else if (index == 3 && razorpay)
-                                            return paymentItem(index);
-                                          else if (index == 4 && paystack)
-                                            return paymentItem(index);
-                                          else if (index == 5 && flutterwave)
-                                            return paymentItem(index);
-                                          else if (index == 6 && stripe)
-                                            return paymentItem(index);
-                                          else if (index == 7 && paytm)
-                                            return paymentItem(index);
-                                          else
-                                            return Container();
-                                        }),
-                              ],
-                            ))
-                      ])),
+                              ),
+                              Divider(),
+                              payWarn
+                                  ? Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20.0),
+                                      child: Text(
+                                        getTranslated(context, 'payWarning'),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .caption
+                                            .copyWith(color: Colors.red),
+                                      ),
+                                    )
+                                  : Container(),
+
+                              paypal == null
+                                  ? Center(child: CircularProgressIndicator())
+                                  : Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: getPayList()),
+                            ])),
+                      ),
+
+                      /*ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: paymentMethodList.length,
+                                    itemBuilder: (context, index) {
+                                      if (index == 1 && paypal)
+                                        return paymentItem(index);
+                                      else if (index == 2 && paumoney)
+                                        return paymentItem(index);
+                                      else if (index == 3 && razorpay)
+                                        return paymentItem(index);
+                                      else if (index == 4 && paystack)
+                                        return paymentItem(index);
+                                      else if (index == 5 && flutterwave)
+                                        return paymentItem(index);
+                                      else if (index == 6 && stripe)
+                                        return paymentItem(index);
+                                      else if (index == 7 && paytm)
+                                        return paymentItem(index);
+                                      else
+                                        return Container();
+                                    }),*/
+                    )
+                  ]),
               actions: <Widget>[
                 new FlatButton(
                     child: Text(
@@ -371,11 +372,12 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                           else if (payMethod ==
                               getTranslated(context, 'PAYTM_LBL'))
                             paytmPayment(double.parse(amtC.text));
-                          else if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
-                            paypalPayment();
-                          }
-
-
+                          else if (payMethod ==
+                              getTranslated(context, 'PAYPAL_LBL')) {
+                            paypalPayment((amtC.text).toString());
+                          } else if (payMethod ==
+                              getTranslated(context, 'FLUTTERWAVE_LBL'))
+                            flutterwavePayment(amtC.text);
                           Navigator.pop(context);
                         }
                       }
@@ -385,18 +387,26 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
           });
         });
   }
-  Future<void> paypalPayment() async {
 
-    String orderId="wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900)+ 100}";
+  List<Widget> getPayList() {
+    return paymentMethodList
+        .asMap()
+        .map(
+          (index, element) => MapEntry(index, paymentItem(index)),
+        )
+        .values
+        .toList();
+  }
+
+  Future<void> paypalPayment(String amt) async {
+    String orderId =
+        "wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900) + 100}";
 
     try {
-      var parameter = {
-        USER_ID: CUR_USERID,
-        ORDER_ID: orderId,
-      };
+      var parameter = {USER_ID: CUR_USERID, ORDER_ID: orderId, AMOUNT: amt};
       Response response =
-      await post(paypalTransactionApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(paypalTransactionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -409,9 +419,9 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
             context,
             MaterialPageRoute(
                 builder: (BuildContext context) => PaypalWebview(
-                  url: data,
-                  from: "wallet",
-                )));
+                      url: data,
+                      from: "wallet",
+                    )));
       } else {
         setSnackbar(msg);
       }
@@ -419,6 +429,61 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
       setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
+
+  Future<void> flutterwavePayment(String price) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
+
+        var parameter = {
+          AMOUNT: price,
+          USER_ID: CUR_USERID,
+        };
+        Response response =
+            await post(flutterwaveApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        if (response.statusCode == 200) {
+          var getdata = json.decode(response.body);
+
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["link"];
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => PaypalWebview(
+                          url: data,
+                          from: "wallet",
+                          amt: amtC.text.toString(),
+                          msg: msgC.text,
+                        )));
+          } else {
+            setSnackbar(msg);
+          }
+          setState(() {
+            _isProgress = false;
+          });
+        }
+      } on TimeoutException catch (_) {
+        setState(() {
+          _isProgress = false;
+        });
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+      }
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
   void paytmPayment(double price) async {
     String payment_response;
     setState(() {
@@ -432,33 +497,22 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         '/theia/paytmCallback?ORDER_ID=' +
         orderId;
 
-    //Host the Server Side Code on your Server and use your URL here. The following URL may or may not work. Because hosted on free server.
-    //Server Side code url: https://github.com/mrdishant/Paytm-Plugin-Server
-    var url = 'https://desolate-anchorage-29312.herokuapp.com/generateTxnToken';
-
-    var body = json.encode({
-      "mid": paytmMerId,
-      "key_secret": paytmMerKey,
-      "website": website,
-      "orderId": orderId,
-      "amount": price.toString(),
-      "callbackUrl": callBackUrl,
-      "custId": CUR_USERID,
-      // "mode": mode.toString(),
-      "testing": payTesting ? 0 : 1
-    });
+    var parameter = {
+      AMOUNT: price.toString(),
+      USER_ID: CUR_USERID,
+      ORDER_ID: orderId
+    };
 
     try {
       final response = await post(
-        url,
-        body: body,
-        headers: {'Content-type': "application/json"},
+        getPytmChecsumkApi,
+        body: parameter,
+        headers: headers,
       );
-      print("Response is");
-      print(response.body);
-      String txnToken = response.body;
+      var getdata = json.decode(response.body);
+      String txnToken;
       setState(() {
-        payment_response = txnToken;
+        txnToken = getdata["txn_token"];
       });
 
       var paytmResponse = Paytm.payWithPaytm(paytmMerId, orderId, txnToken,
@@ -468,7 +522,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         print(value);
         setState(() {
           _isProgress = false;
-          print("Value is ");
+
           print(value);
           if (value['error']) {
             payment_response = value['errorMessage'];
@@ -476,9 +530,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
             if (value['response'] != null) {
               payment_response = value['response']['STATUS'];
               if (payment_response == "TXN_SUCCESS")
-                sendRequest(value['response']['TXNID']);
-                //placeOrder(value['response']['TXNID']);
-
+                sendRequest(orderId, "Paytm");
             }
           }
 
@@ -495,8 +547,6 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
       setState(() {
         _isProgress = true;
       });
-
-    print("stripe****${price * 100}***$stripeCurCode");
 
     var response = await StripeService.payWithNewCard(
         amount: (price * 100).toString(), currency: stripeCurCode);
@@ -528,7 +578,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         charge: charge,
       );
       if (response.status) {
-        sendRequest(response.reference);
+        sendRequest(response.reference, "Paystack");
       } else {
         setSnackbar(response.message);
         if (mounted)
@@ -556,7 +606,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     //placeOrder(response.paymentId);
     print("razorpay response***${response.toString()}");
-    sendRequest(response.paymentId);
+    sendRequest(response.paymentId, "RazorPay");
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -588,7 +638,6 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         AMOUNT: amt.toString(),
         NAME: CUR_USERNAME,
         'prefill': {CONTACT: contact, EMAIL: email},
-
       };
 
       try {
@@ -720,8 +769,6 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         Response response =
             await post(getWalTranApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-
-        print("response****${response.body.toString()}");
 
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
@@ -875,7 +922,6 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         Response response =
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-        print("response*****${response.body.toString()}");
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
@@ -908,16 +954,14 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
               stripeCurCode = payment['stripe_currency_code'];
               stripeMode = payment['stripe_mode'] ?? 'test';
               StripeService.secret = stripeSecret;
-              StripeService.init();
+              StripeService.init(stripeId, stripeMode);
             }
             if (paytm) {
               paytmMerId = payment['paytm_merchant_id'];
               paytmMerKey = payment['paytm_merchant_key'];
               payTesting =
-                  payment['paytm_mode'] == 'sandbox' ? true : false;
+                  payment['paytm_payment_mode'] == 'sandbox' ? true : false;
             }
-
-            print("mer****$paytmMerId***$paytmMerKey***$payTesting***$paytm");
 
             for (int i = 0; i < paymentMethodList.length; i++) {
               payModel.add(RadioModel(

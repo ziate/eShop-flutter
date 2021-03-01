@@ -30,17 +30,17 @@ class _GettingStartedScreenState extends State<Intro_Slider>
     new Future.delayed(Duration.zero,() {
        slideList = [
         Slide(
-          imageUrl: 'assets/images/introimage_a.svg',
+          imageUrl: 'assets/images/introimage_a.png',
           title: getTranslated(context, 'TITLE1_LBL'),
           description: getTranslated(context, 'DISCRIPTION1'),
         ),
         Slide(
-          imageUrl: 'assets/images/introimage_b.svg',
+          imageUrl: 'assets/images/introimage_b.png',
           title: getTranslated(context,'TITLE2_LBL'),
           description: getTranslated(context, 'DISCRIPTION2'),
         ),
         Slide(
-          imageUrl: 'assets/images/introimage_c.svg',
+          imageUrl: 'assets/images/introimage_c.png',
           title: getTranslated(context, 'TITLE3_LBL'),
           description: getTranslated(context, 'DISCRIPTION3'),
         ),
@@ -103,7 +103,7 @@ class _GettingStartedScreenState extends State<Intro_Slider>
               children: <Widget>[
                 Container(
                   height: MediaQuery.of(context).size.height * .5,
-                  child: SvgPicture.asset(
+                  child: Image.asset(
                     slideList[index].imageUrl,
                   ),
                 ),

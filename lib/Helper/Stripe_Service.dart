@@ -7,7 +7,7 @@ import 'String.dart';
 import 'dart:math';
 
 class StripeTransactionResponse {
-  String message,status;
+ final String message,status;
   bool success;
   StripeTransactionResponse({this.message, this.success,this.status});
 }
@@ -16,11 +16,14 @@ class StripeService {
   static String apiBase = 'https://api.stripe.com/v1';
   static String paymentApiUrl = '${StripeService.apiBase}/payment_intents';
   static String secret ;
+
+
   static Map<String, String> headers = {
     'Authorization': 'Bearer ${StripeService.secret}',
     'Content-Type': 'application/x-www-form-urlencoded'
   };
-  static init() {
+
+  static init(String stripeId,String stripeMode) {
     StripePayment.setOptions(
         StripeOptions(
             publishableKey: stripeId,
@@ -76,7 +79,7 @@ class StripeService {
           CardFormPaymentRequest()
       );
 
-      print("stripe***$amount***$currency");
+
 
       var paymentIntent = await StripeService.createPaymentIntent(
           amount,
@@ -90,6 +93,7 @@ class StripeService {
             paymentMethodId: paymentMethod.id,
           )
       );
+
 
       stripePayId=paymentIntent['id'];
 
