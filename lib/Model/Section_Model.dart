@@ -184,7 +184,7 @@ class Product {
     List<String> selected = [];
 
     List<String> tags = List<String>.from(json[TAG]);
-    print("gurantee**prod*${json[GAURANTEE]}");
+
     return new Product(
         id: json[ID],
         name: json[NAME],

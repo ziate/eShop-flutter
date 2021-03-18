@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:flutter/material.dart';
@@ -14,9 +15,10 @@ import 'Model/Section_Model.dart';
 import 'Order_Success.dart';
 
 class PaypalWebview extends StatefulWidget {
-  final String url, from, msg, amt;
+  final String url, from, msg, amt, orderId;
 
-  const PaypalWebview({Key key, this.url, this.from, this.msg, this.amt})
+  const PaypalWebview(
+      {Key key, this.url, this.from, this.msg, this.amt, this.orderId})
       : super(key: key);
 
   @override
@@ -30,132 +32,190 @@ class StatePayPalWebview extends State<PaypalWebview> {
   bool isloading = true;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final Completer<WebViewController> _controller =
-  Completer<WebViewController>();
+      Completer<WebViewController>();
+  DateTime currentBackPressTime;
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: getAppBar(appName, context),
-        body: Stack(
-          children: <Widget>[
-            WebView(
-              initialUrl: widget.url,
-              javascriptMode: JavascriptMode.unrestricted,
-              onWebViewCreated: (WebViewController webViewController) {
-                _controller.complete(webViewController);
-              },
-              javascriptChannels: <JavascriptChannel>[
-                _toasterJavascriptChannel(context),
-              ].toSet(),
-              navigationDelegate: (NavigationRequest request) async {
+      key: scaffoldKey,
+        appBar:  AppBar(
+          titleSpacing: 0,
+          leading: Builder(builder: (BuildContext context) {
+            return Container(
+              margin: EdgeInsets.all(10),
+              decoration: shadow(),
+              child: Card(
+                elevation: 0,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(4),
+                  onTap: () {
+                    DateTime now = DateTime.now();
+                    if (currentBackPressTime == null ||
+                        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+                      currentBackPressTime = now;
+                      setSnackbar("Don't press back while doing payment!\n "+getTranslated(context, 'EXIT_WR'));
 
-                if (request.url.startsWith(PAYPAL_RESPONSE_URL) ||
-                    request.url.startsWith(FLUTTERWAVE_RES_URL)) {
-                  if (mounted)
-                    setState(() {
-                      isloading = true;
-                    });
+                      return Future.value(false);
+                    }
+                    if (widget.from == "order" &&
+                        widget.orderId != null) deleteOrdesr();
+                    Navigator.pop(context);
+                  },
+                  child: Center(
+                    child: Icon(
+                      Icons.keyboard_arrow_left,
+                      color: colors.primary,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+          title: Text(
+            appName,
+            style: TextStyle(
+              color: colors.fontColor,
+            ),
+          ),
+        ),
+        body: WillPopScope(
+            onWillPop: onWillPop,
+            child:
+                Stack(
+                  children: <Widget>[
+                    WebView(
+                      initialUrl: widget.url,
+                      javascriptMode: JavascriptMode.unrestricted,
+                      onWebViewCreated: (WebViewController webViewController) {
+                        _controller.complete(webViewController);
+                      },
+                      javascriptChannels: <JavascriptChannel>[
+                        _toasterJavascriptChannel(context),
+                      ].toSet(),
+                      navigationDelegate: (NavigationRequest request) async {
+                        if (request.url.startsWith(PAYPAL_RESPONSE_URL) ||
+                            request.url.startsWith(FLUTTERWAVE_RES_URL)) {
+                          if (mounted)
+                            setState(() {
+                              isloading = true;
+                            });
 
-                  String responseurl = request.url;
+                          String responseurl = request.url;
 
-                  if (responseurl.contains("Failed") ||
-                      responseurl.contains("failed")) {
-                    if (mounted)
-                      setState(() {
-                        isloading = false;
-                        message = "Transaction Failed";
-                      });
-                    Timer(Duration(seconds: 1), () {
-                      Navigator.pop(context);
-                    });
-                  } else if (responseurl.contains("Completed") ||
-                      responseurl.contains("completed") ||
-                      responseurl.toLowerCase().contains("success")) {
-                    if (mounted)
-                      setState(() {
-                        if (mounted)
-                          setState(() {
-                            message = "Transaction Successfull";
-                          });
-                      });
-                    List<String> testdata = responseurl.split("&");
-                    for (String data in testdata) {
+                          if (responseurl.contains("Failed") ||
+                              responseurl.contains("failed")) {
+                            if (mounted)
+                              setState(() {
+                                isloading = false;
+                                message = "Transaction Failed";
+                              });
+                            Timer(Duration(seconds: 1), () {
+                              Navigator.pop(context);
+                            });
+                          } else if (responseurl.contains("Completed") ||
+                              responseurl.contains("completed") ||
+                              responseurl.toLowerCase().contains("success")) {
+                            if (mounted)
+                              setState(() {
+                                if (mounted)
+                                  setState(() {
+                                    message = "Transaction Successfull";
+                                  });
+                              });
+                            List<String> testdata = responseurl.split("&");
+                            for (String data in testdata) {
+                              if (data.split("=")[0].toLowerCase() == "tx" ||
+                                  data.split("=")[0].toLowerCase() ==
+                                      "transaction_id") {
+                                // String txid = data.split("=")[1];
+                                CUR_CART_COUNT = "0";
 
-                      if (data.split("=")[0].toLowerCase() == "tx" ||
-                          data.split("=")[0].toLowerCase() ==
-                              "transaction_id") {
-                        // String txid = data.split("=")[1];
-                        CUR_CART_COUNT = "0";
+                                if (widget.from == "order") {
+                                  if (request.url.startsWith(PAYPAL_RESPONSE_URL))
+                                    Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                OrderSuccess()),
+                                        ModalRoute.withName('/home'));
+                                  else {
+                                    String txid = data.split("=")[1];
 
-                        if (widget.from == "order") {
-                          if (request.url.startsWith(PAYPAL_RESPONSE_URL))
-                            Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        OrderSuccess()),
-                                ModalRoute.withName('/home'));
-                          else {
-                            String txid = data.split("=")[1];
+                                    placeOrder(txid);
+                                  }
+                                } else if (widget.from == "wallet") {
+                                  if (request.url.startsWith(FLUTTERWAVE_RES_URL)) {
+                                    String txid = data.split("=")[1];
+                                    sendRequest(txid, "flutterwave");
+                                  } else
+                                    Navigator.of(context).pop();
+                                }
 
-                            placeOrder(txid);
+                                break;
+                              }
+                            }
                           }
-                        } else if (widget.from == "wallet") {
-                          if (request.url.startsWith(FLUTTERWAVE_RES_URL)) {
-                            String txid = data.split("=")[1];
-                            sendRequest(txid, "flutterwave");
-                          }
-                          else
-                            Navigator.of(context).pop();
+
+                          if (request.url.startsWith(PAYPAL_RESPONSE_URL) &&
+                              widget.orderId != null &&
+                              (responseurl.contains('Canceled-Reversal') ||
+                                  responseurl.contains('Denied') ||
+                                  responseurl.contains('Failed'))) deleteOrdesr();
+                          return NavigationDecision.prevent;
                         }
 
-                        break;
-                      }
-                    }
-                  }
+                        print('allowing navigation to $request');
+                        return NavigationDecision.navigate;
+                      },
+                      onPageFinished: (String url) {
+                        setState(() {
+                          isloading = false;
+                        });
 
-                  return NavigationDecision.prevent;
-                }
+                        // print('Page finished loading: $url');
+                      },
+                    ),
+                    isloading
+                        ? Center(
+                            child: new CircularProgressIndicator(),
+                          )
+                        : Container(),
+                    message.trim().isEmpty
+                        ? Container()
+                        : Center(
+                            child: Container(
+                                color: colors.primary,
+                                padding: EdgeInsets.all(5),
+                                margin: EdgeInsets.all(5),
+                                child: Text(
+                                  message,
+                                  style: TextStyle(color: colors.white),
+                                )))
+                  ],
 
-                print('allowing navigation to $request');
-                return NavigationDecision.navigate;
-              },
-              onPageFinished: (String url) {
-                setState(() {
-                  isloading = false;
-                });
-
-                // print('Page finished loading: $url');
-              },
-            ),
-            isloading
-                ? Center(
-              child: new CircularProgressIndicator(),
-            )
-                : Container(),
-            message
-                .trim()
-                .isEmpty
-                ? Container()
-                : Center(
-                child: Container(
-                    color: colors.primary,
-                    padding: EdgeInsets.all(5),
-                    margin: EdgeInsets.all(5),
-                    child: Text(
-                      message,
-                      style: TextStyle(color: colors.white),
-                    )))
-          ],
-        ));
+            )));
   }
 
 
+
+  Future<bool> onWillPop() {
+    DateTime now = DateTime.now();
+    if (currentBackPressTime == null ||
+        now.difference(currentBackPressTime) > Duration(seconds: 2)) {
+      currentBackPressTime = now;
+      setSnackbar("Don't press back while doing payment!\n "+getTranslated(context, 'EXIT_WR'));
+
+      return Future.value(false);
+    }
+    if (widget.from == "order" &&
+        widget.orderId != null) deleteOrdesr();
+    return Future.value(true);
+  }
+
   Future<Null> sendRequest(String txnId, String payMethod) async {
     String orderId =
-        "wallet-refill-user-$CUR_USERID-${DateTime
-        .now()
-        .millisecondsSinceEpoch}-${Random().nextInt(900) + 100}";
+        "wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900) + 100}";
     try {
       var parameter = {
         USER_ID: CUR_USERID,
@@ -171,10 +231,9 @@ class StatePayPalWebview extends State<PaypalWebview> {
         PAYMENT_METHOD: payMethod.toLowerCase()
       };
 
-
       Response response =
-      await post(addTransactionApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(addTransactionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -182,13 +241,12 @@ class StatePayPalWebview extends State<PaypalWebview> {
       String msg = getdata["message"];
 
       if (!error) {
-
         CUR_BALANCE = double.parse(getdata["new_balance"]).toStringAsFixed(2);
-
       }
-      if (mounted) setState(() {
-        isloading = false;
-      });
+      if (mounted)
+        setState(() {
+          isloading = false;
+        });
       //setSnackbar(msg);
       Navigator.of(context).pop();
     } on TimeoutException catch (_) {
@@ -200,6 +258,34 @@ class StatePayPalWebview extends State<PaypalWebview> {
     }
   }
 
+  Future<Null> deleteOrdesr() async {
+    try {
+      var parameter = {
+        ORDER_ID: widget.orderId,
+      };
+
+      Response response =
+          await post(deleteOrderApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
+
+      var getdata = json.decode(response.body);
+    // bool error = getdata["error"];
+      //  String msg = getdata["message"];
+
+      if (mounted)
+        setState(() {
+          isloading = false;
+        });
+
+      Navigator.of(context).pop();
+    } on TimeoutException catch (_) {
+      setSnackbar(getTranslated(context, 'somethingMSg'));
+
+      setState(() {
+        isloading = false;
+      });
+    }
+  }
 
   JavascriptChannel _toasterJavascriptChannel(BuildContext context) {
     return JavascriptChannel(
@@ -212,7 +298,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
   }
 
   setSnackbar(String msg) {
-    Scaffold.of(context).showSnackBar(new SnackBar(
+   scaffoldKey.currentState.showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -242,7 +328,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
     String varientId, quantity;
     for (Section_Model sec in cartList) {
       varientId =
-      varientId != null ? varientId + "," + sec.varientId : sec.varientId;
+          varientId != null ? varientId + "," + sec.varientId : sec.varientId;
       quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
     }
     String payVia;
@@ -275,10 +361,9 @@ class StatePayPalWebview extends State<PaypalWebview> {
         parameter[PROMO_DIS] = promoAmt.toString();
       }
 
-
       Response response =
-      await post(placeOrderApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(placeOrderApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
@@ -317,11 +402,12 @@ class StatePayPalWebview extends State<PaypalWebview> {
         MSG: msg
       };
 
-
       Response response =
-      await post(addTransactionApi, body: parameter, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(addTransactionApi, body: parameter, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
+      DateTime now = DateTime.now();
+      currentBackPressTime = now;
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
@@ -342,6 +428,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
           taxAmt = 0;
           taxPer = 0;
           delCharge = 0;
+
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
@@ -355,14 +442,4 @@ class StatePayPalWebview extends State<PaypalWebview> {
       setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
-}
-
-class BlankBar extends StatelessWidget implements PreferredSizeWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-
-  @override
-  Size get preferredSize => Size(0.0, 0.0);
 }

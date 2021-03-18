@@ -178,8 +178,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                             if (totalPrice <=
                                                 double.parse(CUR_BALANCE)) {
                                               remWalBal =
-                                                  double.parse(CUR_BALANCE) -
-                                                      totalPrice;
+                                              (double.parse(CUR_BALANCE) -
+                                                      totalPrice);
                                               usedBal = totalPrice;
                                               payMethod = "Wallet";
 
@@ -219,7 +219,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                                 " : " +
                                                 CUR_CURRENCY +
                                                 " " +
-                                                remWalBal.toString()
+                                                remWalBal.toStringAsFixed(2)
                                             : getTranslated(
                                                     context, 'TOTAL_BAL') +
                                                 " : " +
@@ -384,6 +384,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         DateTime date = today.add(Duration(days: index));
 
         if (mounted) selectedDate = index;
+        selectedTime=null;
+        selTime=null;
         selDate = DateFormat('yyyy-MM-dd').format(date);
         timeModel.clear();
         DateTime cur = DateTime.now();
@@ -496,37 +498,6 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
               }
             }
 
-            /*     if (timeSlotList.length > 0) {
-              for (int i = 0; i < timeSlotList.length; i++) {
-                DateTime cur = DateTime.now();
-                String time = timeSlotList[i].lastTime;
-                DateTime last = DateTime(
-                    cur.year,
-                    cur.month,
-                    cur.day,
-                    int.parse(time.split(':')[0]),
-                    int.parse(time.split(':')[1]),
-                    int.parse(time.split(':')[2]));
-
-                print("date****$last***$cur**${timeModel.length}");
-                if (cur.isBefore(last)) {
-                  timeModel.add(new RadioModel(
-                      isSelected: i == selectedTime ? true : false,
-                      name: timeSlotList[i].name,
-                      img: ''));
-                }
-              }
-            }
-
-
-            if (timeSlotList.length > 0) {
-              for (int i = 0; i < timeSlotList.length; i++) {
-                timeModel.add(new RadioModel(
-                    isSelected: i == selectedTime ? true : false,
-                    name: timeSlotList[i].name,
-                    img: ''));
-              }
-            }*/
 
             var payment = data["payment_method"];
             cod = payment["cod_method"] == "1" ? true : false;
@@ -587,8 +558,6 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
   }
 
   Widget timeSlotItem(int index) {
-    print(
-        "time slot****$index***${timeModel.length}***$selectedDate**${timeSlotList.length}");
     return new InkWell(
       onTap: () {
         if (mounted)

@@ -549,7 +549,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
       });
 
     var response = await StripeService.payWithNewCard(
-        amount: (price * 100).toString(), currency: stripeCurCode);
+        amount: (price * 100).toString(), currency: stripeCurCode,from: "wallet");
 
     if (mounted)
       setState(() {
@@ -605,8 +605,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     //placeOrder(response.paymentId);
-    print("razorpay response***${response.toString()}");
-    sendRequest(response.paymentId, "RazorPay");
+     sendRequest(response.paymentId, "RazorPay");
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -669,20 +668,22 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Row(
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Text(
-                          getTranslated(context, 'AMOUNT') +
-                              " : " +
-                              CUR_CURRENCY +
-                              " " +
-                              tranList[index].amt,
-                          style: TextStyle(
-                              color: colors.fontColor,
-                              fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            getTranslated(context, 'AMOUNT') +
+                                " : " +
+                                CUR_CURRENCY +
+                                " " +
+                                tranList[index].amt,
+                            style: TextStyle(
+                                color: colors.fontColor,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        Spacer(),
+
                         Text(tranList[index].date),
                       ],
                     ),
@@ -988,6 +989,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   }
 
   showContent() {
+
     return RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: _refresh,
@@ -1021,7 +1023,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                           ),
                         ],
                       ),
-                      Text(CUR_CURRENCY + " " + CUR_BALANCE,
+                      Text(CUR_CURRENCY + " " + double.parse(CUR_BALANCE).toStringAsFixed(2),
                           style: Theme.of(context).textTheme.headline6.copyWith(
                               color: colors.fontColor,
                               fontWeight: FontWeight.bold)),

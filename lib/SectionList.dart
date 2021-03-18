@@ -493,6 +493,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                   child: ClipRRect(
                       borderRadius: BorderRadius.circular(7.0),
                       child: FadeInImage(
+
                         image: NetworkImage(
                             widget.section_model.productList[index].image),
                         height: 80.0,
@@ -1344,6 +1345,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                       image: NetworkImage(model.image),
                       height: double.maxFinite,
                       width: double.maxFinite,
+                      fadeInDuration: Duration(milliseconds: 150),
                       fit: extendImg ? BoxFit.fill : BoxFit.contain,
                       //errorWidget:(context, url,e) => placeHolder(width) ,
                       placeholder: placeHolder(width),

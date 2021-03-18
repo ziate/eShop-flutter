@@ -38,7 +38,8 @@ final String getFaqsApi = baseUrl + 'get_faqs';
 final String updateFcmApi = baseUrl + 'update_fcm';
 final String getWalTranApi = baseUrl + 'transactions';
 final String getPytmChecsumkApi=baseUrl + 'generate_paytm_txn_token';
-//final String verifyPytmChecksumApi=baseUrl +'validate_paytm_checksum';
+final String deleteOrderApi=baseUrl + 'delete_order';
+
 final String validateReferalApi=baseUrl+'validate_refer_code';
 final String flutterwaveApi=baseUrl+'flutterwave_webview';
 

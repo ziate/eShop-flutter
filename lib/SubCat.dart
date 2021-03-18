@@ -832,9 +832,12 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
             QTY: qty
           };
+
+
           Response response =
               await post(manageCartApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
+
 
           var getdata = json.decode(response.body);
 
@@ -1461,7 +1464,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         textAlign: TextAlign.center,
         style: TextStyle(color: colors.black),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: colors.white,
       elevation: 1.0,
     ));
   }

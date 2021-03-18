@@ -621,7 +621,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   _getVarient(int pos) {
     if (widget.model.type == "variable_product") {
-      List<String> attr_name =
+      /*   List<String> attr_name =
           widget.model.prVarientList[pos].attr_name.split(',');
       List<String> attr_value =
           widget.model.prVarientList[pos].varient_value.split(',');
@@ -645,7 +645,65 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             onTap: _chooseVarient,
           ),
         ],
-      );
+      );*/
+      List att, val;
+      if (widget.model.prVarientList[widget.model.selVarient].attr_name !=
+          null) {
+        att = widget.model.prVarientList[widget.model.selVarient].attr_name
+            .split(',');
+        val = widget.model.prVarientList[widget.model.selVarient].varient_value
+            .split(',');
+      }
+      return widget.model.prVarientList[widget.model.selVarient].attr_name !=
+                  null &&
+              widget.model.prVarientList[widget.model.selVarient].attr_name
+                  .isNotEmpty
+          ? GestureDetector(
+              child: ListTile(
+                dense: true,
+                trailing: Icon(Icons.keyboard_arrow_right),
+                title: MediaQuery.removePadding(
+                  removeTop: true,
+                  context: context,
+                  child: ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: att.length,
+                      itemBuilder: (context, index) {
+
+                        return Row(
+
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                          Flexible(
+                            child: Text(
+                              att[index].trim() + ":",
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(color: colors.lightBlack),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsetsDirectional.only(start: 5.0),
+                            child: Text(
+                              val[index],
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
+                                      color: colors.lightBlack,
+                                      fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        ]);
+                      }),
+                ),
+              ),
+              onTap: _chooseVarient,
+            )
+          : Container();
     } else {
       return Container();
     }
@@ -1948,7 +2006,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   _gaurantee() {
     String gaurantee = widget.model.gurantee;
-print("gurantee***$gaurantee");
+
 
     return gaurantee != null && gaurantee.isNotEmpty
         ? Padding(

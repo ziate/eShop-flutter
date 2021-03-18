@@ -499,13 +499,12 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                   1)
               .toString()
         };
-        print("remove****$parameter");
+
 
         Response response =
             await post(manageCartApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-        print("remove****${response.body.toString()}");
-        var getdata = json.decode(response.body);
+         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
         String msg = getdata["message"];
@@ -571,7 +570,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           parameter[TAG] = widget.name;
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
-        print("param***$parameter");
+
 
         Response response =
             await post(getProductApi, headers: headers, body: parameter)

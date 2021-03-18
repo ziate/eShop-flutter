@@ -42,7 +42,7 @@ class Home extends StatefulWidget {
     return StateHome();
   }
 }
-
+bool isConfigured = false;
 List<Product> catList = [];
 List<Model> homeSliderList = [];
 List<Section_Model> sectionList = [];
@@ -74,8 +74,10 @@ class StateHome extends State<Home> {
       NotificationList(),
       MyProfile(updateHome),
     ];
-
-    firNotificationInitialize();
+    if (!isConfigured) {
+      firNotificationInitialize();
+      isConfigured=true;
+    }
   }
 
   updateHome() {
@@ -290,7 +292,7 @@ class StateHome extends State<Home> {
             iOS: initializationSettingsIOS,
             macOS: initializationSettingsMacOS);
 
-    PushNotificationService.flutterLocalNotificationsPlugin.initialize(
+               flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onSelectNotification: onSelectNotification);
   }
@@ -324,17 +326,23 @@ class StateHome extends State<Home> {
   Future onSelectNotification(String payload) {
     if (payload != null) {
       debugPrint('notification payload: $payload');
-    }
 
-    List<String> pay = payload.split(",");
-    if (pay[0] == "products") {
-      getProduct(pay[1], 0, 0, true);
-    } else if (pay[0] == "categories") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => AllCategory()),
-      );
-    } else {
+
+      List<String> pay = payload.split(",");
+      if (pay[0] == "products") {
+        getProduct(pay[1], 0, 0, true);
+      } else if (pay[0] == "categories") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AllCategory()),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MyApp()),
+        );
+      }
+    }else{
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => MyApp()),
@@ -346,7 +354,7 @@ class StateHome extends State<Home> {
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData dynamicLink) async {
       final Uri deepLink = dynamicLink?.link;
-
+print("deeplink****$deepLink");
       if (deepLink != null) {
         if (deepLink.queryParameters.length > 0) {
           int index = int.parse(deepLink.queryParameters['index']);
@@ -364,6 +372,22 @@ class StateHome extends State<Home> {
       print('onLinkError');
       print(e.message);
     });
+
+    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri deepLink = data?.link;
+    if (deepLink != null) {
+      if (deepLink.queryParameters.length > 0) {
+        int index = int.parse(deepLink.queryParameters['index']);
+
+        int secPos = int.parse(deepLink.queryParameters['secPos']);
+
+        String id = deepLink.queryParameters['id'];
+
+        String list = deepLink.queryParameters['list'];
+
+        getProduct(id, index, secPos,  true );
+      }
+    }
   }
 
   Future<void> getProduct(String id, int index, int secPos, bool list) async {
@@ -1512,7 +1536,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               body: CUR_USERID != null ? parameter : null, headers: headers)
           .timeout(Duration(seconds: timeOut));
 
-      print("get info***${response.body.toString()}");
 
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);

@@ -33,7 +33,7 @@ class StripeService {
     );
   }
 
-  static Future<StripeTransactionResponse> payViaExistingCard({String amount, String currency, CreditCard card}) async{
+  /*static Future<StripeTransactionResponse> payViaExistingCard({String amount, String currency, CreditCard card}) async{
     try {
       var paymentMethod = await StripePayment.createPaymentMethod(
           PaymentMethodRequest(card: card)
@@ -72,8 +72,8 @@ class StripeService {
       );
     }
   }
-
-  static Future<StripeTransactionResponse> payWithNewCard({String amount, String currency}) async {
+*/
+  static Future<StripeTransactionResponse> payWithNewCard({String amount, String currency,String from}) async {
     try {
       var paymentMethod = await StripePayment.paymentRequestWithCardForm(
           CardFormPaymentRequest()
@@ -84,6 +84,7 @@ class StripeService {
       var paymentIntent = await StripeService.createPaymentIntent(
           amount,
           currency,
+        from
       );
 
 
@@ -145,7 +146,7 @@ class StripeService {
     );
   }
 
-  static Future<Map<String, dynamic>> createPaymentIntent(String amount, String currency) async {
+  static Future<Map<String, dynamic>> createPaymentIntent(String amount, String currency,String from) async {
     String orderId="wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900)+ 100}";
 
     try {
@@ -153,11 +154,11 @@ class StripeService {
         'amount': amount,
         'currency': currency,
         'payment_method_types[]': 'card',
-        'metadata[order_id]':orderId
+
       };
-
-
-      var response = await http.post(
+if(from=='wallet')
+  body['metadata[order_id]']=orderId;
+     var response = await http.post(
           StripeService.paymentApiUrl,
           body: body,
           headers: StripeService.headers

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:eshop/Favorite.dart';
@@ -8,6 +9,7 @@ import 'package:eshop/MyTransactions.dart';
 import 'package:eshop/ReferEarn.dart';
 import 'package:eshop/Setting.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -15,13 +17,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:provider/provider.dart';
-
+import 'MyOrder.dart';
 import 'Faqs.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Theme.dart';
 import 'Login.dart';
 import 'Manage_Address.dart';
-import 'MyOrder.dart';
 import 'My_Wallet.dart';
 import 'Privacy_Policy.dart';
 import 'Profile.dart';
@@ -138,7 +139,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                               CUR_BALANCE != "" &&
                               CUR_BALANCE != "0" &&
                               CUR_BALANCE.isNotEmpty
-                          ? Text(CUR_CURRENCY + " " + CUR_BALANCE,
+                          ? Text(CUR_CURRENCY + " " + "${double.parse(CUR_BALANCE).toStringAsFixed(2)}",
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle2
@@ -649,13 +650,14 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         style: TextStyle(color: colors.lightBlack2, fontSize: 15),
       ),
       onTap: () {
-        print("title***$title***${getTranslated(context, 'MyWallet')}");
-        if (title == getTranslated(context, 'MY_ORDERS_LBL')) {
-          Navigator.push(
+          if (title == getTranslated(context, 'MY_ORDERS_LBL')) {
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => MyOrder(),
               ));
+
+          //sendAndRetrieveMessage();
         } else if (title == getTranslated(context, 'MYTRANSACTION')) {
           Navigator.push(
               context,
@@ -758,6 +760,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
       },
     );
   }
+
+
 
   languageDialog() async {
     await showDialog(

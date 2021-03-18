@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
-import 'package:vimeoplayer/vimeoplayer.dart';
+import 'Helper/vimeoplayer.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'Helper/Session.dart';
@@ -237,7 +237,6 @@ class _ControlsOverlay extends StatelessWidget {
         GestureDetector(
 
           onTap: () {
-            print("play****${ controller.value.isPlaying}");
 
             controller.value.isPlaying ? controller.pause() : controller.play();
           },

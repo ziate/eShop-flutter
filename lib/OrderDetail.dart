@@ -733,10 +733,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     )
                   ],
                 ),
-                Divider(
+                pDate!=null?    Divider(
                   color: colors.lightBlack,
-                ),
-                Padding(
+                ):Container(),
+              pDate!=null?  Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -749,7 +749,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                       getReturned(orderItem, rDate, model),
                     ],
                   ),
-                ),
+                ):Container(),
                 model.itemList.length > 1
                     ? (!orderItem.listStatus.contains(DELIVERD) &&
                             (!orderItem.listStatus.contains(RETURNED)) &&

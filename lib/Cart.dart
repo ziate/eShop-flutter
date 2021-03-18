@@ -59,7 +59,7 @@ String razorpayId,
     stripeMode = "test",
     stripeCurCode,
     stripePayId,
-    paytmMerId ,
+    paytmMerId,
     paytmMerKey;
 bool payTesting = true;
 
@@ -69,7 +69,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _checkscaffoldKey =
       new GlobalKey<ScaffoldState>();
 
-  bool _isCartLoad = true, _isSaveLoad = true;
+  bool _isCartLoad = true, _isSaveLoad = true, _placeOrder = true;
   HomePage home;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
@@ -1287,7 +1287,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
               validatePromo();
             } else if (isUseWallet) {
               if (mounted)
-                setState(() {
+                checkoutState(() {
                   remWalBal = 0;
                   payMethod = null;
                   usedBal = 0;
@@ -1341,7 +1341,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           USER_ID: CUR_USERID,
           QTY: remove ? "0" : (int.parse(cartList[index].qty) - 1).toString()
         };
-
 
         Response response =
             await post(manageCartApi, body: parameter, headers: headers)
@@ -1655,91 +1654,120 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                               ],
                                             )),
                                         Spacer(),
+
                                         SimBtn(
                                             size: 0.4,
                                             title: getTranslated(
                                                 context, 'PLACE_ORDER'),
-                                            onBtnSelected: () {
-                                              if (selAddress == null ||
-                                                  selAddress.isEmpty) {
-                                                msg = getTranslated(
-                                                    context, 'addressWarning');
-                                                Navigator.pushReplacement(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          ManageAddress(
-                                                        home: false,
-                                                      ),
-                                                    ));
-                                              } else if (payMethod == null ||
-                                                  payMethod.isEmpty) {
-                                                msg = getTranslated(
-                                                    context, 'payWarning');
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            Payment(
-                                                                updateCheckout,
-                                                                msg)));
-                                              } else if (isTimeSlot &&
-                                                  int.parse(allowDay) > 0 &&
-                                                  (selDate == null ||
-                                                      selDate.isEmpty)) {
-                                                msg = getTranslated(
-                                                    context, 'dateWarning');
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            Payment(
-                                                                updateCheckout,
-                                                                msg)));
-                                              } else if (isTimeSlot &&
-                                                  timeSlotList.length > 0 &&
-                                                  (selTime == null ||
-                                                      selTime.isEmpty)) {
-                                                msg = getTranslated(
-                                                    context, 'timeWarning');
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            Payment(
-                                                                updateCheckout,
-                                                                msg)));
-                                              } else if (payMethod ==
-                                                  getTranslated(
-                                                      context, 'PAYPAL_LBL'))
-                                                placeOrder('');
-                                              else if (payMethod ==
-                                                  getTranslated(
-                                                      context, 'RAZORPAY_LBL'))
-                                                razorpayPayment();
-                                              else if (payMethod ==
-                                                  getTranslated(
-                                                      context, 'PAYSTACK_LBL'))
-                                                paystackPayment(context);
-                                              else if (payMethod ==
-                                                  getTranslated(context,
-                                                      'FLUTTERWAVE_LBL'))
-                                                flutterwavePayment();
-                                              else if (payMethod ==
-                                                  getTranslated(
-                                                      context, 'STRIPE_LBL'))
-                                                stripePayment();
-                                              else if (payMethod ==
-                                                  getTranslated(
-                                                      context, 'PAYTM_LBL'))
-                                                paytmPayment();
-                                              else
-                                                placeOrder('');
-                                            }),
+                                            onBtnSelected: _placeOrder
+                                                ? () {
+                                                    setState(() {
+                                                      _placeOrder = false;
+                                                    });
+
+                                                    if (selAddress == null ||
+                                                        selAddress.isEmpty) {
+                                                      msg = getTranslated(
+                                                          context,
+                                                          'addressWarning');
+                                                      Navigator.pushReplacement(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (BuildContext
+                                                                    context) =>
+                                                                ManageAddress(
+                                                              home: false,
+                                                            ),
+                                                          ));
+                                                      setState(() {
+                                                        _placeOrder = true;
+                                                      });
+                                                    } else if (payMethod ==
+                                                            null ||
+                                                        payMethod.isEmpty) {
+                                                      msg = getTranslated(
+                                                          context,
+                                                          'payWarning');
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  Payment(
+                                                                      updateCheckout,
+                                                                      msg)));
+                                                      setState(() {
+                                                        _placeOrder = true;
+                                                      });
+                                                    } else if (isTimeSlot &&
+                                                        int.parse(allowDay) >
+                                                            0 &&
+                                                        (selDate == null ||
+                                                            selDate.isEmpty)) {
+                                                      msg = getTranslated(
+                                                          context,
+                                                          'dateWarning');
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  Payment(
+                                                                      updateCheckout,
+                                                                      msg)));
+                                                      setState(() {
+                                                        _placeOrder = true;
+                                                      });
+                                                    } else if (isTimeSlot &&
+                                                        timeSlotList.length >
+                                                            0 &&
+                                                        (selTime == null ||
+                                                            selTime.isEmpty)) {
+                                                      msg = getTranslated(
+                                                          context,
+                                                          'timeWarning');
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  Payment(
+                                                                      updateCheckout,
+                                                                      msg)));
+                                                      setState(() {
+                                                        _placeOrder = true;
+                                                      });
+                                                    } else if (payMethod ==
+                                                        getTranslated(context,
+                                                            'PAYPAL_LBL'))
+                                                    {
+                                                      placeOrder('');
+                                                    }
+                                                    else if (payMethod ==
+                                                        getTranslated(context,
+                                                            'RAZORPAY_LBL'))
+                                                      razorpayPayment();
+                                                    else if (payMethod ==
+                                                        getTranslated(context,
+                                                            'PAYSTACK_LBL'))
+                                                      paystackPayment(context);
+                                                    else if (payMethod ==
+                                                        getTranslated(context,
+                                                            'FLUTTERWAVE_LBL'))
+                                                      flutterwavePayment();
+                                                    else if (payMethod ==
+                                                        getTranslated(context,
+                                                            'STRIPE_LBL'))
+                                                      stripePayment();
+                                                    else if (payMethod ==
+                                                        getTranslated(context,
+                                                            'PAYTM_LBL'))
+                                                      paytmPayment();
+                                                    else
+                                                      placeOrder('');
+                                                  }
+                                                : null)
+                                        //}),
                                       ]),
                                     ),
                                   ],
@@ -1893,10 +1921,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         '/theia/paytmCallback?ORDER_ID=' +
         orderId;
 
-
     var parameter = {
       AMOUNT: totalPrice.toString(),
-       USER_ID:CUR_USERID,
+      USER_ID: CUR_USERID,
       ORDER_ID: orderId
     };
 
@@ -1906,8 +1933,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         body: parameter,
         headers: headers,
       );
-
-
 
       var getdata = json.decode(response.body);
 
@@ -1932,8 +1957,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             if (value['error']) {
               payment_response = value['errorMessage'];
 
-
-
               if (value['response'] != null)
                 AddTransaction(value['response']['TXNID'], orderId,
                     value['response']['STATUS'], payment_response, false);
@@ -1957,7 +1980,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         });
       } else {
         setState(() {
-          _isProgress=false;
+          _isProgress = false;
         });
         setSnackbar(getdata["message"], _checkscaffoldKey);
       }
@@ -2028,21 +2051,25 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           parameter[ACTIVE_STATUS] = WAITING;
         } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
           if (tranId == "succeeded")
-            parameter[ACTIVE_STATUS] = SUCCESS;
+            parameter[ACTIVE_STATUS] = PLACED;
           else
             parameter[ACTIVE_STATUS] = WAITING;
         }
+
 
 
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
+
+
+        _placeOrder = true;
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
           String msg = getdata["message"];
-          if (!error) {
+           if (!error) {
             String orderId = getdata["order_id"].toString();
             if (payMethod == getTranslated(context, 'RAZORPAY_LBL')) {
               AddTransaction(tranId, orderId, SUCCESS, msg, true);
@@ -2070,6 +2097,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
               taxAmt = 0;
               taxPer = 0;
               delCharge = 0;
+
+              CUR_BALANCE=getdata['balance'][0]["balance"];
               Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
@@ -2080,19 +2109,20 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             setSnackbar(msg, _checkscaffoldKey);
           }
           if (mounted)
-            setState(() {
+            checkoutState(() {
               _isProgress = false;
             });
         }
       } on TimeoutException catch (_) {
         if (mounted)
-          setState(() {
+          checkoutState(() {
             _isProgress = false;
+            _placeOrder = true;
           });
       }
     } else {
       if (mounted)
-        setState(() {
+        checkoutState(() {
           _isNetworkAvail = false;
         });
     }
@@ -2121,6 +2151,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                 builder: (BuildContext context) => PaypalWebview(
                       url: data,
                       from: "order",
+                  orderId: orderId,
                     )));
         checkoutState(() {
           _isProgress = false;
@@ -2238,7 +2269,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
       });
 
     var response = await StripeService.payWithNewCard(
-        amount: (totalPrice.toInt() * 100).toString(), currency: stripeCurCode);
+        amount: (totalPrice.toInt() * 100).toString(),
+        currency: stripeCurCode,
+        from: "order");
 
     if (response.message == "Transaction successful") {
       placeOrder(response.status);
@@ -2640,7 +2673,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             await post(validatePromoApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
-
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
@@ -2706,8 +2738,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             await post(flutterwaveApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
-        print("response****${response.body.toString()}");
-        if (response.statusCode == 200) {
+         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
           bool error = getdata["error"];
