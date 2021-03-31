@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
@@ -33,11 +31,11 @@ bool _isProgress = false, _isFavLoading = true;
 int offset = 0;
 int total = 0;
 bool isLoadingmore = true;
-List<Section_Model> favList = [];
+List<SectionModel> favList = [];
 
 class StateFav extends State<Favorite> with TickerProviderStateMixin {
   ScrollController controller = new ScrollController();
-  List<Section_Model> tempList = [];
+  List<SectionModel> tempList = [];
   String msg;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
@@ -355,7 +353,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
               tempList.clear();
               var data = getdata["data"];
               tempList = (data as List)
-                  .map((data) => new Section_Model.fromFav(data))
+                  .map((data) => new SectionModel.fromFav(data))
                   .toList();
               if (offset == 0) favList.clear();
               favList.addAll(tempList);
@@ -463,7 +461,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    Scaffold.of(context).showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -605,26 +603,21 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
 
     var str =
         "\n$appName\n${getTranslated(context, 'APPFIND')}$androidLink$packageName\n${getTranslated(context, 'IOSLBL')}\n$iosLink$iosPackage";
-
     var documentDirectory;
-
     if (Platform.isIOS)
       documentDirectory = (await getApplicationDocumentsDirectory()).path;
     else
       documentDirectory = (await getExternalStorageDirectory()).path;
 
-    var request = await HttpClient()
-        .getUrl(Uri.parse(favList[index].productList[0].image));
-    var response = await request.close();
-    Uint8List bytes = await consolidateHttpClientResponseBytes(response);
-    await Share.file(
-      favList[index].productList[0].name,
-      '${favList[index].productList[0].name}.jpg',
-      bytes,
-      'image/jpg',
-      text:
-          "${favList[index].productList[0].name}\n${shortenedLink.shortUrl.toString()}\n$str",
-    );
+    final response1 = await get(Uri.parse(favList[index].productList[0].image));
+    final bytes1 = response1.bodyBytes;
+    final File imageFile =
+        File('$documentDirectory/${favList[index].productList[0].name}.png');
+    imageFile.writeAsBytesSync(bytes1);
+    Share.shareFiles(
+        ['$documentDirectory/${favList[index].productList[0].name}.png'],
+        text:
+            "${favList[index].productList[0].name}\n${shortenedLink.shortUrl.toString()}\n$str");
 
     if (mounted)
       setState(() {

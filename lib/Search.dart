@@ -15,10 +15,8 @@ import 'Product_Detail.dart';
 import 'Login.dart';
 import 'Cart.dart';
 
-
 class Search extends StatefulWidget {
   final Function updateHome;
-
 
   Search({this.updateHome});
 
@@ -37,7 +35,6 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true;
 
-  bool _isSearching;
   String _searchText = "", _lastsearch = "";
   int notificationoffset = 0;
   ScrollController notificationcontroller;
@@ -53,7 +50,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     productList.clear();
 
     notificationoffset = 0;
-    _isSearching = false;
+  
     notificationcontroller = ScrollController(keepScrollOffset: true);
     notificationcontroller.addListener(_transactionscrollListener);
 
@@ -61,13 +58,13 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
       if (_controller.text.isEmpty) {
         if (mounted)
           setState(() {
-            _isSearching = false;
+         
             _searchText = "";
           });
       } else {
         if (mounted)
           setState(() {
-            _isSearching = true;
+   
             _searchText = _controller.text;
           });
       }
@@ -116,7 +113,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     buttonController.dispose();
     notificationcontroller.dispose();
     _controller.dispose();
-    for (int i = 0; i < _controllerList.length; i++) _controllerList[i].dispose();
+    for (int i = 0; i < _controllerList.length; i++)
+      _controllerList[i].dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -203,7 +201,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
           titleSpacing: 0,
           actions: [
             Container(
-              margin: EdgeInsets.symmetric(vertical: 10,horizontal: 5),
+              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
               decoration: shadow(),
               child: Card(
                 elevation: 0,
@@ -212,15 +210,16 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                   onTap: () {
                     CUR_USERID == null
                         ? Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Login(),
-                        ))
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Login(),
+                            ))
                         : Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Cart(widget.updateHome, null),
-                        )).then((val) => widget.updateHome);
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  Cart(widget.updateHome, null),
+                            )).then((val) => widget.updateHome);
                   },
                   child: new Stack(children: <Widget>[
                     Center(
@@ -232,27 +231,28 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                       ),
                     ),
                     (CUR_CART_COUNT != null &&
-                        CUR_CART_COUNT.isNotEmpty &&
-                        CUR_CART_COUNT != "0")
+                            CUR_CART_COUNT.isNotEmpty &&
+                            CUR_CART_COUNT != "0")
                         ? new Positioned(
-                      top: 0.0,
-                      right: 5.0,
-                      bottom: 10,
-                      child: Container(
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: colors.primary.withOpacity(0.5)),
-                          child: new Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(3),
-                              child: new Text(
-                                CUR_CART_COUNT,
-                                style: TextStyle(
-                                    fontSize: 7, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          )),
-                    )
+                            top: 0.0,
+                            right: 5.0,
+                            bottom: 10,
+                            child: Container(
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: colors.primary.withOpacity(0.5)),
+                                child: new Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(3),
+                                    child: new Text(
+                                      CUR_CART_COUNT,
+                                      style: TextStyle(
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                )),
+                          )
                         : Container()
                   ]),
                 ),
@@ -276,11 +276,12 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     if (_controllerList.length < index + 1)
       _controllerList.add(new TextEditingController());
 
-    _controllerList[index].text = model.prVarientList[model.selVarient].cartCount;
+    _controllerList[index].text =
+        model.prVarientList[model.selVarient].cartCount;
 
     items = new List<String>.generate(
         model.totalAllow != null ? int.parse(model.totalAllow) : 10,
-            (i) => (i + 1).toString());
+        (i) => (i + 1).toString());
 
     double price = double.parse(model.prVarientList[model.selVarient].disPrice);
     if (price == 0)
@@ -409,145 +410,174 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                                     ),
                                     Text(
                                       " " + productList[index].rating,
-                                      style: Theme.of(context).textTheme.overline,
+                                      style:
+                                          Theme.of(context).textTheme.overline,
                                     ),
                                     Text(
-                                      " (" + productList[index].noOfRating + ")",
-                                      style: Theme.of(context).textTheme.overline,
+                                      " (" +
+                                          productList[index].noOfRating +
+                                          ")",
+                                      style:
+                                          Theme.of(context).textTheme.overline,
                                     )
                                   ],
                                 ),
                                 Spacer(),
                                 model.availability == "0"
                                     ? Container()
-                                    :
-                                cartBtnList?
-                                Row(
-                                  children: <Widget>[
-                                    Row(
-                                      children: <Widget>[
-                                        GestureDetector(
-                                          child: Container(
-                                            padding: EdgeInsets.all(2),
-                                            margin:
-                                            EdgeInsetsDirectional.only(
-                                                end: 8),
-                                            child: Icon(
-                                              Icons.remove,
-                                              size: 14,
-                                              color: colors.fontColor,
-                                            ),
-                                            decoration: BoxDecoration(
-                                                color: colors.lightWhite,
-                                                borderRadius:
-                                                BorderRadius.all(
-                                                    Radius.circular(3))),
-                                          ),
-                                          onTap: () {
-                                            if (_isProgress == false &&
-                                                (int.parse(productList[index]
-                                                    .prVarientList[
-                                                model.selVarient]
-                                                    .cartCount)) >
-                                                    0) removeFromCart(index);
-                                          },
-                                        ),
-                                        Container(
-                                          width: 40,
-                                          height: 20,
-                                          child: Stack(
-                                            children: [
-                                              TextField(
-                                                textAlign: TextAlign.center,
-                                                readOnly: true,
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                ),
-                                                controller:
-                                                _controllerList[index],
-                                                decoration: InputDecoration(
-                                                  contentPadding:
-                                                  EdgeInsets.all(5.0),
-                                                  focusedBorder:
-                                                  OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                        color:
-                                                        colors.fontColor,
-                                                        width: 0.5),
-                                                    borderRadius:
-                                                    BorderRadius.circular(
-                                                        5.0),
+                                    : cartBtnList
+                                        ? Row(
+                                            children: <Widget>[
+                                              Row(
+                                                children: <Widget>[
+                                                  GestureDetector(
+                                                    child: Container(
+                                                      padding:
+                                                          EdgeInsets.all(2),
+                                                      margin:
+                                                          EdgeInsetsDirectional
+                                                              .only(end: 8),
+                                                      child: Icon(
+                                                        Icons.remove,
+                                                        size: 14,
+                                                        color: colors.fontColor,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                          color:
+                                                              colors.lightWhite,
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius
+                                                                      .circular(
+                                                                          3))),
+                                                    ),
+                                                    onTap: () {
+                                                      if (_isProgress ==
+                                                              false &&
+                                                          (int.parse(productList[
+                                                                      index]
+                                                                  .prVarientList[
+                                                                      model
+                                                                          .selVarient]
+                                                                  .cartCount)) >
+                                                              0)
+                                                        removeFromCart(index);
+                                                    },
                                                   ),
-                                                  enabledBorder:
-                                                  OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                        color:
-                                                        colors.fontColor,
-                                                        width: 0.5),
-                                                    borderRadius:
-                                                    BorderRadius.circular(
-                                                        5.0),
-                                                  ),
-                                                ),
-                                              ),
-                                              PopupMenuButton<String>(
-                                                tooltip: '',
-                                                icon: const Icon(
-                                                  Icons.arrow_drop_down,
-                                                  size: 1,
-                                                ),
-                                                onSelected: (String value) {
-                                                  if (_isProgress == false)
-                                                    addToCart(index, value);
-                                                },
-                                                itemBuilder:
-                                                    (BuildContext context) {
-                                                  return items.map<
-                                                      PopupMenuItem<
-                                                          String>>(
-                                                          (String value) {
-                                                        return new PopupMenuItem(
-                                                            child:
-                                                            new Text(value),
-                                                            value: value);
-                                                      }).toList();
-                                                },
+                                                  Container(
+                                                    width: 40,
+                                                    height: 20,
+                                                    child: Stack(
+                                                      children: [
+                                                        TextField(
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          readOnly: true,
+                                                          style: TextStyle(
+                                                            fontSize: 10,
+                                                          ),
+                                                          controller:
+                                                              _controllerList[
+                                                                  index],
+                                                          decoration:
+                                                              InputDecoration(
+                                                            contentPadding:
+                                                                EdgeInsets.all(
+                                                                    5.0),
+                                                            focusedBorder:
+                                                                OutlineInputBorder(
+                                                              borderSide: BorderSide(
+                                                                  color: colors
+                                                                      .fontColor,
+                                                                  width: 0.5),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5.0),
+                                                            ),
+                                                            enabledBorder:
+                                                                OutlineInputBorder(
+                                                              borderSide: BorderSide(
+                                                                  color: colors
+                                                                      .fontColor,
+                                                                  width: 0.5),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5.0),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        PopupMenuButton<String>(
+                                                          tooltip: '',
+                                                          icon: const Icon(
+                                                            Icons
+                                                                .arrow_drop_down,
+                                                            size: 1,
+                                                          ),
+                                                          onSelected:
+                                                              (String value) {
+                                                            if (_isProgress ==
+                                                                false)
+                                                              addToCart(
+                                                                  index, value);
+                                                          },
+                                                          itemBuilder:
+                                                              (BuildContext
+                                                                  context) {
+                                                            return items.map<
+                                                                    PopupMenuItem<
+                                                                        String>>(
+                                                                (String value) {
+                                                              return new PopupMenuItem(
+                                                                  child:
+                                                                      new Text(
+                                                                          value),
+                                                                  value: value);
+                                                            }).toList();
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ), // ),
+
+                                                  GestureDetector(
+                                                    child: Container(
+                                                      padding:
+                                                          EdgeInsets.all(2),
+                                                      margin: EdgeInsets.only(
+                                                          left: 8),
+                                                      child: Icon(
+                                                        Icons.add,
+                                                        size: 14,
+                                                        color: colors.fontColor,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                          color:
+                                                              colors.lightWhite,
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius
+                                                                      .circular(
+                                                                          3))),
+                                                    ),
+                                                    onTap: () {
+                                                      if (_isProgress == false)
+                                                        addToCart(
+                                                            index,
+                                                            (int.parse(model
+                                                                        .prVarientList[
+                                                                            model.selVarient]
+                                                                        .cartCount) +
+                                                                    1)
+                                                                .toString());
+                                                    },
+                                                  )
+                                                ],
                                               ),
                                             ],
-                                          ),
-                                        ), // ),
-
-                                        GestureDetector(
-                                          child: Container(
-                                            padding: EdgeInsets.all(2),
-                                            margin: EdgeInsets.only(left: 8),
-                                            child: Icon(
-                                              Icons.add,
-                                              size: 14,
-                                              color: colors.fontColor,
-                                            ),
-                                            decoration: BoxDecoration(
-                                                color: colors.lightWhite,
-                                                borderRadius:
-                                                BorderRadius.all(
-                                                    Radius.circular(3))),
-                                          ),
-                                          onTap: () {
-                                            if (_isProgress == false)
-                                              addToCart(
-                                                  index,
-                                                  (int.parse(model
-                                                      .prVarientList[model
-                                                      .selVarient]
-                                                      .cartCount) +
-                                                      1)
-                                                      .toString());
-                                          },
-                                        )
-                                      ],
-                                    ),
-                                  ],
-                                ):Container(),
+                                          )
+                                        : Container(),
                               ],
                             ),
                           ],
@@ -589,56 +619,54 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     if (mounted) setState(() {});
   }
 
-
-
   Future<void> addToCart(int index, String qty) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       if (CUR_USERID != null)
-      try {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-          });
-        var parameter = {
-          USER_ID: CUR_USERID,
-          PRODUCT_VARIENT_ID: productList[index]
-              .prVarientList[productList[index].selVarient]
-              .id,
-          QTY: qty
-        };
-        Response response =
-        await post(manageCartApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+        try {
+          if (mounted)
+            setState(() {
+              _isProgress = true;
+            });
+          var parameter = {
+            USER_ID: CUR_USERID,
+            PRODUCT_VARIENT_ID: productList[index]
+                .prVarientList[productList[index].selVarient]
+                .id,
+            QTY: qty
+          };
+          Response response =
+              await post(manageCartApi, body: parameter, headers: headers)
+                  .timeout(Duration(seconds: timeOut));
 
-        var getdata = json.decode(response.body);
+          var getdata = json.decode(response.body);
 
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          var data = getdata["data"];
+          bool error = getdata["error"];
+          String msg = getdata["message"];
+          if (!error) {
+            var data = getdata["data"];
 
-          String qty = data['total_quantity'];
-          CUR_CART_COUNT = data['cart_count'];
+            String qty = data['total_quantity'];
+            CUR_CART_COUNT = data['cart_count'];
 
-          productList[index]
-              .prVarientList[productList[index].selVarient]
-              .cartCount = qty.toString();
-        } else {
-          setSnackbar(msg);
+            productList[index]
+                .prVarientList[productList[index].selVarient]
+                .cartCount = qty.toString();
+          } else {
+            setSnackbar(msg);
+          }
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
+          widget.updateHome();
+        } on TimeoutException catch (_) {
+          setSnackbar(getTranslated(context, 'somethingMSg'));
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
         }
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-          });
-        widget.updateHome();
-      } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-          });
-      }
     } else {
       if (mounted)
         setState(() {
@@ -652,51 +680,51 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       if (CUR_USERID != null)
-      try {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-          });
-        var parameter = {
-          PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
-          USER_ID: CUR_USERID,
-          QTY: (int.parse(productList[index]
-                      .prVarientList[model.selVarient]
-                      .cartCount) -
-                  1)
-              .toString()
-        };
+        try {
+          if (mounted)
+            setState(() {
+              _isProgress = true;
+            });
+          var parameter = {
+            PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
+            USER_ID: CUR_USERID,
+            QTY: (int.parse(productList[index]
+                        .prVarientList[model.selVarient]
+                        .cartCount) -
+                    1)
+                .toString()
+          };
 
-        Response response =
-            await post(manageCartApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
+          Response response =
+              await post(manageCartApi, body: parameter, headers: headers)
+                  .timeout(Duration(seconds: timeOut));
 
-        var getdata = json.decode(response.body);
+          var getdata = json.decode(response.body);
 
-        bool error = getdata["error"];
-        String msg = getdata["message"];
+          bool error = getdata["error"];
+          String msg = getdata["message"];
 
-        if (!error) {
-          var data = getdata["data"];
-          String qty = data["total_quantity"];
-          CUR_CART_COUNT = data['cart_count'];
-          model.prVarientList[model.selVarient].cartCount = qty.toString();
+          if (!error) {
+            var data = getdata["data"];
+            String qty = data["total_quantity"];
+            CUR_CART_COUNT = data['cart_count'];
+            model.prVarientList[model.selVarient].cartCount = qty.toString();
 
-          widget.updateHome();
-        } else {
-          setSnackbar(msg);
+            widget.updateHome();
+          } else {
+            setSnackbar(msg);
+          }
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
+        } on TimeoutException catch (_) {
+          setSnackbar(getTranslated(context, 'somethingMSg'));
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
         }
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-          });
-      } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-          });
-      }
     } else {
       if (mounted)
         setState(() {
@@ -730,7 +758,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
               notificationisloadmore = false;
               notificationisgettingdata = true;
               if (notificationoffset == 0) {
-                productList = new List<Product>();
+                productList = [];
               }
             });
 
@@ -762,8 +790,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                         List mainlist = getdata['data'];
 
                         if (mainlist.length != 0) {
-                          List<Product> items = new List<Product>();
-                          List<Product> allitems = new List<Product>();
+                          List<Product> items = [];
+                          List<Product> allitems = [];
 
                           items.addAll(mainlist
                               .map((data) => new Product.fromJson(data))
@@ -810,7 +838,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,

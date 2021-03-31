@@ -12,10 +12,10 @@ import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/String.dart';
 
-class Privacy_Policy extends StatefulWidget {
+class PrivacyPolicy extends StatefulWidget {
   final String title;
 
-  const Privacy_Policy({Key key, this.title}) : super(key: key);
+  const PrivacyPolicy({Key key, this.title}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -23,7 +23,7 @@ class Privacy_Policy extends StatefulWidget {
   }
 }
 
-class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
+class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
   bool _isLoading = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   String privacy;
@@ -85,7 +85,7 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -105,7 +105,6 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
           )
         : privacy != null
             ? WebviewScaffold(
-
                 appBar: getAppBar(widget.title, context),
                 withJavascript: true,
                 appCacheEnabled: true,
@@ -140,7 +139,7 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
         if (response.statusCode == 200) {
-  var getdata = json.decode(response.body);
+          var getdata = json.decode(response.body);
           bool error = getdata["error"];
           String msg = getdata["message"];
           if (!error) {
@@ -149,22 +148,24 @@ class StatePrivacy extends State<Privacy_Policy> with TickerProviderStateMixin {
             setSnackbar(msg);
           }
         }
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {
-       if (mounted) setState(() {
-        _isLoading = false;
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+          _isNetworkAvail = false;
+        });
     }
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,

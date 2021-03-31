@@ -28,10 +28,10 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
-  List<Faqs_Model> faqs_list = [];
+  List<FaqsModel> faqsList = [];
   List<String> selectedId = [];
   int selectedIndex = -1;
-  List toggled = List();
+  List toggled = [];
   bool flag = true;
   bool expand = true;
   bool isLoadingmore = true;
@@ -132,10 +132,10 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
             ? shimmer()
             : ListView.builder(
           controller: controller,
-          itemCount: faqs_list.length,
+          itemCount: faqsList.length,
           physics: BouncingScrollPhysics(),
           itemBuilder: (context, index) {
-            return (index == faqs_list.length && isLoadingmore)
+            return (index == faqsList.length && isLoadingmore)
                 ? Center(child: CircularProgressIndicator())
                 : listItem(index);
           },
@@ -161,7 +161,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
                   Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Text(
-                        faqs_list[index].question,
+                        faqsList[index].question,
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
@@ -177,7 +177,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8.0),
                               child: Text(
-                                faqs_list[index].answer,
+                                faqsList[index].answer,
                                 style: Theme.of(context)
                                     .textTheme
                                     .subtitle2
@@ -198,7 +198,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8.0),
                                 child: Text(
-                                  faqs_list[index].answer,
+                                  faqsList[index].answer,
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle2
@@ -225,8 +225,8 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
           String msg = getdata["message"];
           if (!error) {
             var data = getdata["data"];
-            faqs_list = (data as List)
-                .map((data) => new Faqs_Model.fromJson(data))
+            faqsList = (data as List)
+                .map((data) => new FaqsModel.fromJson(data))
                 .toList();
           } else {
             setSnackbar(msg);
@@ -247,7 +247,7 @@ class StateFaqs extends State<Faqs> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+  ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,

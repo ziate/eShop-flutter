@@ -1,5 +1,4 @@
 import 'package:eshop/Helper/String.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
 class User {
@@ -13,53 +12,55 @@ class User {
       street,
       password,
       pincode,
-      fcm_id,
+      fcmId,
       latitude,
       longitude,
-      user_id,
-      name,deliveryCharge,freeAmt;
+      userId,
+      name,
+      deliveryCharge,
+      freeAmt;
 
   List<String> imgList;
   String id, date, comment, rating;
 
-  String type, alt_mob, landmark, areaId, cityId, isDefault, state, country;
+  String type, altMob, landmark, areaId, cityId, isDefault, state, country;
 
   User(
       {this.id,
-        this.username,
-        this.date,
-        this.rating,
-        this.comment,
-        this.email,
-        this.mobile,
-        this.address,
-        this.dob,
-        this.city,
-        this.area,
-        this.street,
-        this.password,
-        this.pincode,
-        this.fcm_id,
-        this.latitude,
-        this.longitude,
-        this.user_id,
-        this.name,
-        this.type,
-        this.alt_mob,
-        this.landmark,
-        this.areaId,
-        this.cityId,
-        this.imgList,
-        this.isDefault,
-        this.state,
-        this.deliveryCharge,
-        this.freeAmt,
-        this.country});
+      this.username,
+      this.date,
+      this.rating,
+      this.comment,
+      this.email,
+      this.mobile,
+      this.address,
+      this.dob,
+      this.city,
+      this.area,
+      this.street,
+      this.password,
+      this.pincode,
+      this.fcmId,
+      this.latitude,
+      this.longitude,
+      this.userId,
+      this.name,
+      this.type,
+      this.altMob,
+      this.landmark,
+      this.areaId,
+      this.cityId,
+      this.imgList,
+      this.isDefault,
+      this.state,
+      this.deliveryCharge,
+      this.freeAmt,
+      this.country});
 
   factory User.forReview(Map<String, dynamic> parsedJson) {
     String date = parsedJson['data_added'];
     var allSttus = parsedJson['images'];
-    List<String> item=[];
+    List<String> item = [];
 
     for (String i in allSttus) item.add(i);
 
@@ -88,10 +89,10 @@ class User {
       street: parsedJson[STREET],
       password: parsedJson[PASSWORD],
       pincode: parsedJson[PINCODE],
-      fcm_id: parsedJson[FCM_ID],
+      fcmId: parsedJson[FCM_ID],
       latitude: parsedJson[LATITUDE],
       longitude: parsedJson[LONGITUDE],
-      user_id: parsedJson[USER_ID],
+      userId: parsedJson[USER_ID],
       name: parsedJson[NAME],
     );
   }
@@ -101,7 +102,7 @@ class User {
         id: parsedJson[ID],
         mobile: parsedJson[MOBILE],
         address: parsedJson[ADDRESS],
-        alt_mob: parsedJson[ALT_MOBNO],
+        altMob: parsedJson[ALT_MOBNO],
         cityId: parsedJson[CITY_ID],
         areaId: parsedJson[AREA_ID],
         area: parsedJson[AREA],
@@ -112,7 +113,7 @@ class User {
         country: parsedJson[COUNTRY],
         latitude: parsedJson[LATITUDE],
         longitude: parsedJson[LONGITUDE],
-        user_id: parsedJson[USER_ID],
+    userId: parsedJson[USER_ID],
         name: parsedJson[NAME],
         type: parsedJson[TYPE],
         deliveryCharge: parsedJson[DEL_CHARGES],

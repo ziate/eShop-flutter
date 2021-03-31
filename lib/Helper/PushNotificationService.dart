@@ -1,94 +1,220 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:eshop/Model/Section_Model.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+import '../All_Category.dart';
+import '../My_Wallet.dart';
+import '../Product_Detail.dart';
+import '../Splash.dart';
+import '../main.dart';
 import 'Constant.dart';
 import 'Session.dart';
 import 'String.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+FirebaseMessaging messaging = FirebaseMessaging.instance;
 
 class PushNotificationService {
-  final FirebaseMessaging _fcm;
+  final BuildContext context;
+  final Function updateHome;
 
-  PushNotificationService(this._fcm);
+  PushNotificationService({this.context, this.updateHome});
 
   Future initialise() async {
-    if (Platform.isIOS) {
-      iOS_Permission();
-    }
-
-    _fcm.getToken().then((token) async {
+    iOSPermission();
+    messaging.getToken().then((token) async {
       CUR_USERID = await getPrefrence(ID);
       if (CUR_USERID != null && CUR_USERID != "") _registerToken(token);
     });
 
-    _fcm.configure(
-      onMessage: (message) async {
-        print('onmessage $message');
-        await myForgroundMessageHandler(message);
-      },
-      onBackgroundMessage: myForgroundMessageHandler,
-      onResume: (message) async {
-        print('onresume $message');
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('ic_launcher');
+    final IOSInitializationSettings initializationSettingsIOS =
+        IOSInitializationSettings();
+    final MacOSInitializationSettings initializationSettingsMacOS =
+        MacOSInitializationSettings();
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsIOS,
+            macOS: initializationSettingsMacOS);
 
-      },
-      onLaunch: (message) async {
-        print('onlaunch $message');
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
 
-      },
-    );
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      var data = message.notification;
+
+      var title = data.title.toString();
+      var body = data.body.toString();
+      var image = message.data['image'] ?? '';
+
+      var type = message.data['type'] ?? '';
+      var id = '';
+      id = message.data['type_id'] ?? '';
+
+      if (image != null && image != 'null' && image != '') {
+        generateImageNotication(title, body, image, type, id);
+      } else {
+        generateSimpleNotication(title, body, type, id);
+      }
+    });
+
+    messaging.getInitialMessage().then((RemoteMessage message) async {
+      bool back = await getPrefrenceBool(ISFROMBACK);
+     if (message != null && back) {
+        var type = message.data['type'] ?? '';
+        var id = '';
+        id = message.data['type_id'] ?? '';
+
+        if (type == "products") {
+          getProduct(id, 0, 0, true);
+        } else if (type == "categories") {
+          Navigator.push(context,
+              (MaterialPageRoute(builder: (context) => AllCategory())));
+        } else if (type == "wallet") {
+          Navigator.push(
+              context, (MaterialPageRoute(builder: (context) => MyWallet())));
+        } else {
+          Navigator.push(
+              context, (MaterialPageRoute(builder: (context) => Splash())));
+        }
+      }
+      setPrefrenceBool(ISFROMBACK, false);
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      bool back = await getPrefrenceBool(ISFROMBACK);
+      if (back && message != null) {
+        var type = message.data['type'] ?? '';
+        var id = '';
+
+        id = message.data['type_id'] ?? '';
+
+        if (type == "products") {
+          getProduct(id, 0, 0, true);
+        } else if (type == "categories") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AllCategory()),
+          );
+        } else if (type == "wallet") {
+          Navigator.push(
+              context, (MaterialPageRoute(builder: (context) => MyWallet())));
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MyApp()),
+          );
+        }
+      }
+      setPrefrenceBool(ISFROMBACK, false);
+    });
   }
 
-  void iOS_Permission() {
-    _fcm.requestNotificationPermissions(
-        IosNotificationSettings(sound: true, badge: true, alert: true));
-    _fcm.onIosSettingsRegistered.listen((settings) {
-      //  print("Settings registered: $settings");
-    });
+  void iOSPermission() async {
+    await messaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
   }
 
   void _registerToken(String token) async {
     var parameter = {USER_ID: CUR_USERID, FCM_ID: token};
 
     Response response =
-        await post("$updateFcmApi", body: parameter, headers: headers)
+        await post(updateFcmApi, body: parameter, headers: headers)
             .timeout(Duration(seconds: timeOut));
 
     var getdata = json.decode(response.body);
   }
-}
 
-Future<dynamic> myForgroundMessageHandler(Map<String, dynamic> message) async {
+  Future onSelectNotification(String payload) {
+    if (payload != null) {
 
+      List<String> pay = payload.split(",");
+      if (pay[0] == "products") {
+        getProduct(pay[1], 0, 0, true);
+      } else if (pay[0] == "categories") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AllCategory()),
+        );
+      }
+      else if (pay[0]  == "wallet") {
+        Navigator.push(
+            context, (MaterialPageRoute(builder: (context) => MyWallet())));
+      }
 
-  if (message.containsKey('notification') || message.containsKey('data')) {
-    var data = message['notification'];
-
-    var title = data['title'].toString();
-    var body = data['body'].toString();
-    var image = message['data']['image'] ?? '';
-    var type = message['data']['type'] ?? '';
-    var id = message['data']['type_id'] ?? '';
-
-    if (image != null && image != 'null' && image != '') {
-      generateImageNotication(title, body, image, type, id);
+      else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Splash()),
+        );
+      }
     } else {
-      generateSimpleNotication(title, body, type, id);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => MyApp()),
+      );
     }
   }
+
+  Future<void> getProduct(String id, int index, int secPos, bool list) async {
+    try {
+      var parameter = {
+        ID: id,
+      };
+
+      //if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+      Response response =
+          await post(getProductApi, headers: headers, body: parameter)
+              .timeout(Duration(seconds: timeOut));
+     var getdata = json.decode(response.body);
+      bool error = getdata["error"];
+      String msg = getdata["message"];
+      if (!error) {
+        var data = getdata["data"];
+
+        List<Product> items = [];
+
+        items =
+            (data as List).map((data) => new Product.fromJson(data)).toList();
+
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ProductDetail(
+                  index: int.parse(id),
+                  updateHome: updateHome,
+                  updateParent: updateHome,
+                  model: items[0],
+                  secPos: secPos,
+                  list: list,
+                )));
+      } else {
+        //if (msg != "Products Not Found !") setSnackbar(msg);
+      }
+    } catch (Exception) {}
+  }
+}
+
+Future<dynamic> myForgroundMessageHandler(RemoteMessage message) async {
+  setPrefrenceBool(ISFROMBACK, true);
+ return Future<void>.value();
 }
 
 Future<String> _downloadAndSaveImage(String url, String fileName) async {
   var directory = await getApplicationDocumentsDirectory();
   var filePath = '${directory.path}/$fileName';
-  var response = await http.get(url);
+  var response = await http.get(Uri.parse(url));
 
   var file = File(filePath);
   await file.writeAsBytes(response.bodyBytes);
@@ -123,10 +249,10 @@ Future<void> generateSimpleNotication(
   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'your channel id', 'your channel name', 'your channel description',
       importance: Importance.max, priority: Priority.high, ticker: 'ticker');
+  var iosDetail = IOSNotificationDetails();
 
-  var platformChannelSpecifics =
-      NotificationDetails(android: androidPlatformChannelSpecifics);
-  await flutterLocalNotificationsPlugin.show(
-      0, title, msg, platformChannelSpecifics,
-      payload: type ?? '' + "," + id);
+  var platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics, iOS: iosDetail);
+  await flutterLocalNotificationsPlugin
+      .show(0, title, msg, platformChannelSpecifics, payload: type + "," + id);
 }

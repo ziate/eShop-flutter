@@ -37,7 +37,7 @@ class Cart extends StatefulWidget {
 }
 
 List<User> addressList = [];
-List<Section_Model> cartList = [];
+List<SectionModel> cartList = [];
 double totalPrice = 0, oriPrice = 0, delCharge = 0, taxAmt = 0, taxPer = 0;
 int selectedAddress = 0;
 String latitude,
@@ -69,7 +69,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _checkscaffoldKey =
       new GlobalKey<ScaffoldState>();
 
-  bool _isCartLoad = true, _isSaveLoad = true, _placeOrder = true;
+  bool _isCartLoad = true, _placeOrder = true;
   HomePage home;
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
@@ -79,12 +79,13 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   var items;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
-  List<Section_Model> saveLaterList = [];
+  List<SectionModel> saveLaterList = [];
   String msg;
   bool _isLoading = true;
   Razorpay _razorpay;
   TextEditingController promoC = new TextEditingController();
   StateSetter checkoutState;
+  final paystackPlugin = PaystackPlugin();
 
   @override
   void initState() {
@@ -117,7 +118,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     if (mounted)
       setState(() {
         _isCartLoad = true;
-        _isSaveLoad = true;
       });
     totalPrice = 0;
     oriPrice = 0;
@@ -945,7 +945,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           taxPer = double.parse(getdata[TAX_PER]);
           totalPrice = delCharge + oriPrice + taxAmt;
           cartList = (data as List)
-              .map((data) => new Section_Model.fromCart(data))
+              .map((data) => new SectionModel.fromCart(data))
               .toList();
 
           for (int i = 0; i < cartList.length; i++)
@@ -985,7 +985,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           var data = getdata["data"];
 
           saveLaterList = (data as List)
-              .map((data) => new Section_Model.fromCart(data))
+              .map((data) => new SectionModel.fromCart(data))
               .toList();
 
           for (int i = 0; i < cartList.length; i++)
@@ -993,10 +993,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         } else {
           if (msg != 'Cart Is Empty !') setSnackbar(msg, _scaffoldKey);
         }
-        if (mounted)
-          setState(() {
-            _isSaveLoad = false;
-          });
+        if (mounted) setState(() {});
         if (mounted) setState(() {});
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'), _scaffoldKey);
@@ -1161,7 +1158,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   saveForLater(String id, String save, String qty, double price,
-      Section_Model curItem) async {
+      SectionModel curItem) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -1188,7 +1185,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         if (!error) {
           var data = getdata["data"];
 
-          String qty = data['total_quantity'];
+          // String qty = data['total_quantity'];
           CUR_CART_COUNT = data['cart_count'];
 
           if (save == "1") {
@@ -1327,7 +1324,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   removeFromCart(
-      int index, bool remove, List<Section_Model> cartList, bool move) async {
+      int index, bool remove, List<SectionModel> cartList, bool move) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
@@ -1403,7 +1400,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg, GlobalKey<ScaffoldState> _scaffoldKey) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -1739,11 +1736,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                                       });
                                                     } else if (payMethod ==
                                                         getTranslated(context,
-                                                            'PAYPAL_LBL'))
-                                                    {
+                                                            'PAYPAL_LBL')) {
                                                       placeOrder('');
-                                                    }
-                                                    else if (payMethod ==
+                                                    } else if (payMethod ==
                                                         getTranslated(context,
                                                             'RAZORPAY_LBL'))
                                                       razorpayPayment();
@@ -1793,7 +1788,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           var getdata = json.decode(response.body);
 
           bool error = getdata["error"];
-          String msg = getdata["message"];
+          // String msg = getdata["message"];
           if (!error) {
             var data = getdata["data"];
 
@@ -1857,15 +1852,12 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
   void _handlePaymentError(PaymentFailureResponse response) {
     if (mounted)
-      setState(() {
+      checkoutState(() {
         _isProgress = false;
       });
-    print("res*****${response.message}");
-    // var getdata = jsonDecode(response.message);
-    // print("res*****${getdata["description"]}");
+
+
     setSnackbar(response.message, _checkscaffoldKey);
-    //print("res*****${getdata["description"]}");
-    //AddTransaction(tranId, orderId, SUCCESS, msg,false);
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
@@ -1909,7 +1901,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   }
 
   void paytmPayment() async {
-    String payment_response;
+    String paymentResponse;
     setState(() {
       _isProgress = true;
     });
@@ -1942,7 +1934,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         String txnToken = getdata["txn_token"];
 
         setState(() {
-          payment_response = txnToken;
+          paymentResponse = txnToken;
         });
         // orderId, mId, txnToken, txnAmount, callback
         var paytmResponse = Paytm.payWithPaytm(paytmMerId, orderId, txnToken,
@@ -1952,21 +1944,21 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           print(value);
           setState(() {
             _isProgress = false;
-            print("Value is ");
+
             print(value);
             if (value['error']) {
-              payment_response = value['errorMessage'];
+              paymentResponse = value['errorMessage'];
 
               if (value['response'] != null)
-                AddTransaction(value['response']['TXNID'], orderId,
-                    value['response']['STATUS'], payment_response, false);
+                addTransaction(value['response']['TXNID'], orderId,
+                    value['response']['STATUS'], paymentResponse, false);
             } else {
               if (value['response'] != null) {
-                payment_response = value['response']['STATUS'];
-                if (payment_response == "TXN_SUCCESS")
+                paymentResponse = value['response']['STATUS'];
+                if (paymentResponse == "TXN_SUCCESS")
                   placeOrder(value['response']['TXNID']);
                 else
-                  AddTransaction(
+                  addTransaction(
                       value['response']['TXNID'],
                       orderId,
                       value['response']['STATUS'],
@@ -1975,7 +1967,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
               }
             }
 
-            setSnackbar(payment_response, _checkscaffoldKey);
+            setSnackbar(paymentResponse, _checkscaffoldKey);
           });
         });
       } else {
@@ -1998,7 +1990,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
 
       String mob = await getPrefrence(MOBILE);
       String varientId, quantity;
-      for (Section_Model sec in cartList) {
+      for (SectionModel sec in cartList) {
         varientId =
             varientId != null ? varientId + "," + sec.varientId : sec.varientId;
         quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
@@ -2056,32 +2048,28 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             parameter[ACTIVE_STATUS] = WAITING;
         }
 
-
-
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
-
 
         _placeOrder = true;
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
           String msg = getdata["message"];
-           if (!error) {
+          if (!error) {
             String orderId = getdata["order_id"].toString();
             if (payMethod == getTranslated(context, 'RAZORPAY_LBL')) {
-              AddTransaction(tranId, orderId, SUCCESS, msg, true);
+              addTransaction(tranId, orderId, SUCCESS, msg, true);
             } else if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
               paypalPayment(orderId);
             } else if (payMethod == getTranslated(context, 'STRIPE_LBL')) {
-              AddTransaction(stripePayId, orderId,
-                  tranId == "succeeded" ? SUCCESS : WAITING, msg, true);
+              addTransaction(stripePayId, orderId,
+                  tranId == "succeeded" ? PLACED : WAITING, msg, true);
             } else if (payMethod == getTranslated(context, 'PAYSTACK_LBL')) {
-              AddTransaction(tranId, orderId, SUCCESS, msg, true);
+              addTransaction(tranId, orderId, SUCCESS, msg, true);
             } else if (payMethod == getTranslated(context, 'PAYTM_LBL')) {
-              AddTransaction(tranId, orderId, SUCCESS, msg, true);
+              addTransaction(tranId, orderId, SUCCESS, msg, true);
             } else {
               CUR_CART_COUNT = "0";
               promoAmt = 0;
@@ -2091,14 +2079,14 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
               isPromoValid = false;
               isUseWallet = false;
               isPayLayShow = true;
-              selectedMethod = 0;
+              selectedMethod = null;
               totalPrice = 0;
               oriPrice = 0;
               taxAmt = 0;
               taxPer = 0;
               delCharge = 0;
 
-              CUR_BALANCE=getdata['balance'][0]["balance"];
+              CUR_BALANCE = getdata['balance'][0]["balance"];
               Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
@@ -2151,7 +2139,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                 builder: (BuildContext context) => PaypalWebview(
                       url: data,
                       from: "order",
-                  orderId: orderId,
+                      orderId: orderId,
                     )));
         checkoutState(() {
           _isProgress = false;
@@ -2167,7 +2155,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> AddTransaction(String tranId, String orderID, String status,
+  Future<void> addTransaction(String tranId, String orderID, String status,
       String msg, bool redirect) async {
     try {
       var parameter = {
@@ -2197,7 +2185,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           isPromoValid = false;
           isUseWallet = false;
           isPayLayShow = true;
-          selectedMethod = 0;
+          selectedMethod = null;
           totalPrice = 0;
           oriPrice = 0;
           taxAmt = 0;
@@ -2231,7 +2219,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
       ..email = email;
 
     try {
-      CheckoutResponse response = await PaystackPlugin.checkout(
+      CheckoutResponse response = await paystackPlugin.checkout(
         context,
         method: CheckoutMethod.card,
         charge: charge,
@@ -2381,7 +2369,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                               fontWeight: FontWeight.bold),
                         ),
                         onTap: () async {
-                          _scaffoldKey.currentState.removeCurrentSnackBar();
+                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -2407,7 +2395,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
       child: InkWell(
         borderRadius: BorderRadius.circular(4),
         onTap: () async {
-          _scaffoldKey.currentState.removeCurrentSnackBar();
+          ScaffoldMessenger.of(context).removeCurrentSnackBar();
           msg = '';
           await Navigator.push(
               context,
@@ -2738,7 +2726,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             await post(flutterwaveApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
-         if (response.statusCode == 200) {
+        if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
           bool error = getdata["error"];

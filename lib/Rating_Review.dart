@@ -26,7 +26,7 @@ class RatingReview extends StatefulWidget {
 
 class StateRate extends State<RatingReview> {
   bool _isNetworkAvail = true;
-  bool _isProgress = false, _isLoading = true;
+ // bool _isProgress = false, _isLoading = true;
   bool isLoadingmore = true;
   ScrollController controller = new ScrollController();
   List<User> tempList = [];
@@ -42,11 +42,12 @@ class StateRate extends State<RatingReview> {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-         if (mounted) setState(() {
-          isLoadingmore = true;
+        if (mounted)
+          setState(() {
+            isLoadingmore = true;
 
-          if (offset < total) getReview();
-        });
+            if (offset < total) getReview();
+          });
       }
     }
   }
@@ -55,7 +56,6 @@ class StateRate extends State<RatingReview> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-
       appBar: getAppBar(getTranslated(context, 'CUSTOMER_REVIEW_LBL'), context),
       body: _review(),
     );
@@ -70,76 +70,78 @@ class StateRate extends State<RatingReview> {
         // physics: BouncingScrollPhysics(),
         separatorBuilder: (BuildContext context, int index) => Divider(),
         itemBuilder: (context, index) {
-
-
           return (index == reviewList.length && isLoadingmore)
               ? Center(child: CircularProgressIndicator())
               : Card(
-            elevation: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        reviewList[index].username,
-                        style: TextStyle(fontWeight: FontWeight.w400),
-                      ),
-                      Spacer(),
-                      Text(
-                        reviewList[index].date,
-                        style: TextStyle(color: colors.lightBlack, fontSize: 11),
-                      )
-                    ],
-                  ),
-                  RatingBarIndicator(
-                    rating: double.parse(reviewList[index].rating),
-                    itemBuilder: (context, index) => Icon(
-                      Icons.star,
-                      color: colors.primary,
+                  elevation: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              reviewList[index].username,
+                              style: TextStyle(fontWeight: FontWeight.w400),
+                            ),
+                            Spacer(),
+                            Text(
+                              reviewList[index].date,
+                              style: TextStyle(
+                                  color: colors.lightBlack, fontSize: 11),
+                            )
+                          ],
+                        ),
+                        RatingBarIndicator(
+                          rating: double.parse(reviewList[index].rating),
+                          itemBuilder: (context, index) => Icon(
+                            Icons.star,
+                            color: colors.primary,
+                          ),
+                          itemCount: 5,
+                          itemSize: 12.0,
+                          direction: Axis.horizontal,
+                        ),
+                        reviewList[index].comment != null &&
+                                reviewList[index].comment.isNotEmpty
+                            ? Text(reviewList[index].comment ?? '')
+                            : Container(),
+                        reviewImage(index)
+                      ],
                     ),
-                    itemCount: 5,
-                    itemSize: 12.0,
-                    direction: Axis.horizontal,
                   ),
-                  reviewList[index].comment != null && reviewList[index].comment.isNotEmpty
-                      ? Text(reviewList[index].comment ?? '')
-                      : Container(),
-                  reviewImage(index)
-                ],
-              ),
-            ),
-          );
+                );
         });
   }
 
   reviewImage(int i) {
     return Container(
-      height: reviewList[i].imgList.length>0 ?50:0,
+      height: reviewList[i].imgList.length > 0 ? 50 : 0,
       child: ListView.builder(
         itemCount: reviewList[i].imgList.length,
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsetsDirectional.only(end: 10, bottom: 5.0, top: 5),
+            padding:
+                const EdgeInsetsDirectional.only(end: 10, bottom: 5.0, top: 5),
             child: InkWell(
               onTap: () {
                 Navigator.push(
                     context,
                     PageRouteBuilder(
                       pageBuilder: (_, __, ___) => ProductPreview(
-                          pos: index,
-                          secPos: 0,
-                          index: 0,
-                          id: "$index${reviewList[i].id}",
-                          imgList: reviewList[i].imgList,
-                          list: true,
-                      from: false,),
+                        pos: index,
+                        secPos: 0,
+                        index: 0,
+                        id: "$index${reviewList[i].id}",
+                        imgList: reviewList[i].imgList,
+                        list: true,
+                        from: false,
+                      ),
                     ));
               },
               child: Hero(
@@ -172,8 +174,8 @@ class StateRate extends State<RatingReview> {
         };
 
         Response response =
-        await post(getRatingApi, body: parameter, headers: headers)
-            .timeout(Duration(seconds: timeOut));
+            await post(getRatingApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
 
@@ -196,25 +198,27 @@ class StateRate extends State<RatingReview> {
           if (msg != "No ratings found !") setSnackbar(msg);
           isLoadingmore = false;
         }
-        if (mounted)
-           if (mounted) setState(() {
-            _isLoading = false;
+        if (mounted) if (mounted)
+          setState(() {
+           
           });
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
-         if (mounted) setState(() {
-          _isLoading = false;
-        });
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+           
+          });
       }
     } else {
-       if (mounted) setState(() {
-        _isNetworkAvail = false;
-      });
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
     }
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,

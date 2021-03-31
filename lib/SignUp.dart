@@ -31,7 +31,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
   final ccodeController = TextEditingController();
   final passwordController = TextEditingController();
   final referController = TextEditingController();
-int count=1;
+  int count = 1;
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   String name,
       email,
@@ -112,7 +112,7 @@ int count=1;
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -592,15 +592,14 @@ int count=1;
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
-      String msg = getdata["message"];
+     
 
       if (!error) {
         referCode = refer;
         REFER_CODE = refer;
         if (mounted) setState(() {});
       } else {
-        if(count<5)
-        generateReferral();
+        if (count < 5) generateReferral();
         count++;
       }
     } on TimeoutException catch (_) {}

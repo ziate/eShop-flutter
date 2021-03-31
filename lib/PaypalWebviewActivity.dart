@@ -238,7 +238,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
-      String msg = getdata["message"];
+     // String msg = getdata["message"];
 
       if (!error) {
         CUR_BALANCE = double.parse(getdata["new_balance"]).toStringAsFixed(2);
@@ -268,7 +268,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
           await post(deleteOrderApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
 
-      var getdata = json.decode(response.body);
+    //  var getdata = json.decode(response.body);
     // bool error = getdata["error"];
       //  String msg = getdata["message"];
 
@@ -291,14 +291,14 @@ class StatePayPalWebview extends State<PaypalWebview> {
     return JavascriptChannel(
         name: 'Toaster',
         onMessageReceived: (JavascriptMessage message) {
-          Scaffold.of(context).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(message.message)),
           );
         });
   }
 
   setSnackbar(String msg) {
-   scaffoldKey.currentState.showSnackBar(new SnackBar(
+   ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -309,15 +309,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
     ));
   }
 
-  void FinishPage(String finishmessage) {
-    if (mounted)
-      setState(() {
-        message = finishmessage;
-      });
-    Timer(Duration(seconds: 1), () {
-      Navigator.pop(context);
-    });
-  }
+
 
   Future<void> placeOrder(String tranId) async {
     setState(() {
@@ -326,7 +318,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
 
     String mob = await getPrefrence(MOBILE);
     String varientId, quantity;
-    for (Section_Model sec in cartList) {
+    for (SectionModel sec in cartList) {
       varientId =
           varientId != null ? varientId + "," + sec.varientId : sec.varientId;
       quantity = quantity != null ? quantity + "," + sec.qty : sec.qty;
@@ -422,7 +414,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
           isPromoValid = false;
           isUseWallet = false;
           isPayLayShow = true;
-          selectedMethod = 0;
+          selectedMethod = null;
           totalPrice = 0;
           oriPrice = 0;
           taxAmt = 0;

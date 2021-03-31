@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-import 'dart:core';
-
 
 import 'package:eshop/Helper/Constant.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Map.dart';
-import 'package:eshop/Profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,11 +12,11 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 
+import 'Cart.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/String.dart';
 import 'Model/User.dart';
-import 'Cart.dart';
 
 class AddAddress extends StatefulWidget {
   final bool update;
@@ -104,7 +101,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       User item = addressList[widget.index];
       mobileC.text = item.mobile;
       nameC.text = item.name;
-      altMobC.text = item.alt_mob;
+      altMobC.text = item.altMob;
       landmarkC.text = item.landmark;
       pincodeC.text = item.pincode;
       addressC.text = item.address;
@@ -134,7 +131,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-
       appBar: getAppBar(getTranslated(context, 'ADDRESS_LBL'), context),
       body: _isNetworkAvail ? _showContent() : noInternet(context),
     );
@@ -163,7 +159,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -175,7 +171,9 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
   addBtn() {
     return AppBtn(
-      title: widget.update ? getTranslated(context, 'UPDATEADD') : getTranslated(context, 'ADDADDRESS'),
+      title: widget.update
+          ? getTranslated(context, 'UPDATEADD')
+          : getTranslated(context, 'ADDADDRESS'),
       btnAnim: buttonSqueezeanimation,
       btnCntrl: buttonController,
       onBtnSelected: () {
@@ -213,9 +211,10 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       addNewAddress();
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
-         if (mounted) setState(() {
-          _isNetworkAvail = false;
-        });
+        if (mounted)
+          setState(() {
+            _isNetworkAvail = false;
+          });
         await buttonController.reverse();
       });
     }
@@ -234,14 +233,20 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       focusNode: nameFocus,
       controller: nameC,
       textCapitalization: TextCapitalization.words,
-      validator:(val)=> validateUserName(val,getTranslated(context, 'USER_REQUIRED'),getTranslated(context, 'USER_LENGTH')),
+      validator: (val) => validateUserName(
+          val,
+          getTranslated(context, 'USER_REQUIRED'),
+          getTranslated(context, 'USER_LENGTH')),
       onSaved: (String value) {
         name = value;
       },
       onFieldSubmitted: (v) {
         _fieldFocusChange(context, nameFocus, monoFocus);
       },
-      style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
+      style: Theme.of(context)
+          .textTheme
+          .subtitle2
+          .copyWith(color: colors.fontColor),
       decoration: InputDecoration(
         isDense: true,
         hintText: getTranslated(context, 'NAME_LBL'),
@@ -256,8 +261,14 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       textInputAction: TextInputAction.next,
       focusNode: monoFocus,
-      style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
-      validator:(val)=> validateMob(val,getTranslated(context,'MOB_REQUIRED'),getTranslated(context,'VALID_MOB')),
+      style: Theme.of(context)
+          .textTheme
+          .subtitle2
+          .copyWith(color: colors.fontColor),
+      validator: (val) => validateMob(
+          val,
+          getTranslated(context, 'MOB_REQUIRED'),
+          getTranslated(context, 'VALID_MOB')),
       onSaved: (String value) {
         mobile = value;
       },
@@ -280,8 +291,12 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         textInputAction: TextInputAction.next,
         focusNode: almonoFocus,
-        validator:(val)=> validateAltMob(val,getTranslated(context,'VALID_MOB')),
-        style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
+        validator: (val) =>
+            validateAltMob(val, getTranslated(context, 'VALID_MOB')),
+        style: Theme.of(context)
+            .textTheme
+            .subtitle2
+            .copyWith(color: colors.fontColor),
         onSaved: (String value) {
           print(altMobC.text);
           altMob = value;
@@ -304,12 +319,16 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         getTranslated(context, 'CITYSELECT_LBL'),
       ),
       value: city,
-      style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
+      style: Theme.of(context)
+          .textTheme
+          .subtitle2
+          .copyWith(color: colors.fontColor),
       onChanged: (String newValue) {
-         if (mounted) setState(() {
-          city = newValue;
-          isArea = false;
-        });
+        if (mounted)
+          setState(() {
+            city = newValue;
+            isArea = false;
+          });
         getArea(city, true);
       },
       items: cityList.map((User user) {
@@ -333,17 +352,21 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       child: DropdownButtonFormField(
         iconEnabledColor: colors.fontColor,
         isDense: true,
-        style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
+        style: Theme.of(context)
+            .textTheme
+            .subtitle2
+            .copyWith(color: colors.fontColor),
         hint: new Text(
           getTranslated(context, 'AREASELECT_LBL'),
         ),
         value: area,
         onChanged: isArea
             ? (newValue) {
-           if (mounted) setState(() {
-            area = newValue;
-          });
-        }
+                if (mounted)
+                  setState(() {
+                    area = newValue;
+                  });
+              }
             : null,
         items: areaList.map((User user) {
           return DropdownMenuItem<String>(
@@ -375,7 +398,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                 .copyWith(color: colors.fontColor),
             focusNode: addFocus,
             controller: addressC,
-            validator: (val)=>validateField(val,getTranslated(context, 'FIELD_REQUIRED')),
+            validator: (val) =>
+                validateField(val, getTranslated(context, 'FIELD_REQUIRED')),
             onSaved: (String value) {
               address = value;
             },
@@ -383,7 +407,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               _fieldFocusChange(context, addFocus, locationFocus);
             },
             decoration: InputDecoration(
-              hintText: getTranslated(context,'ADDRESS_LBL'),
+              hintText: getTranslated(context, 'ADDRESS_LBL'),
               isDense: true,
             ),
           ),
@@ -405,26 +429,27 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   context,
                   MaterialPageRoute(
                       builder: (context) => Map(
-                        latitude: latitude == null
-                            ? position.latitude
-                            : double.parse(latitude),
-                        longitude: longitude == null
-                            ? position.longitude
-                            : double.parse(longitude),
-                        from: getTranslated(context, 'ADDADDRESS'),
-                      )));
-               if (mounted) setState(() {});
+                            latitude: latitude == null
+                                ? position.latitude
+                                : double.parse(latitude),
+                            longitude: longitude == null
+                                ? position.longitude
+                                : double.parse(longitude),
+                            from: getTranslated(context, 'ADDADDRESS'),
+                          )));
+              if (mounted) setState(() {});
               List<Placemark> placemark = await placemarkFromCoordinates(
                   double.parse(latitude), double.parse(longitude));
 
               state = placemark[0].administrativeArea;
               country = placemark[0].country;
               pincode = placemark[0].postalCode;
-               if (mounted) setState(() {
-                countryC.text = country;
-                stateC.text = state;
-                pincodeC.text = pincode;
-              });
+              if (mounted)
+                setState(() {
+                  countryC.text = country;
+                  stateC.text = state;
+                  pincodeC.text = pincode;
+                });
             },
           ),
         )
@@ -436,12 +461,17 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     return TextFormField(
       keyboardType: TextInputType.number,
       controller: pincodeC,
-      style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
+      readOnly: true,
+      style: Theme.of(context)
+          .textTheme
+          .subtitle2
+          .copyWith(color: colors.fontColor),
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       onSaved: (String value) {
         pincode = value;
       },
-      validator:(val)=> validatePincode(val,getTranslated(context,'PIN_REQUIRED')),
+      validator: (val) =>
+          validatePincode(val, getTranslated(context, 'PIN_REQUIRED')),
       decoration: InputDecoration(
         hintText: getTranslated(context, 'PINCODEHINT_LBL'),
         isDense: true,
@@ -458,9 +488,10 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       }
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
-         if (mounted) setState(() {
-          _isNetworkAvail = false;
-        });
+        if (mounted)
+          setState(() {
+            _isNetworkAvail = false;
+          });
       });
     }
   }
@@ -481,9 +512,9 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      if (mounted)  if (mounted) setState(() {});
+      if (mounted) if (mounted) setState(() {});
     } on TimeoutException catch (_) {
-      setSnackbar( getTranslated(context,'somethingMSg'));
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
 
@@ -494,8 +525,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       };
 
       Response response =
-      await post(getAreaByCityApi, body: data, headers: headers)
-          .timeout(Duration(seconds: timeOut));
+          await post(getAreaByCityApi, body: data, headers: headers)
+              .timeout(Duration(seconds: timeOut));
 
       var getdata = json.decode(response.body);
 
@@ -511,17 +542,17 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       } else {
         setSnackbar(msg);
       }
-      if (mounted)
-         if (mounted) setState(() {
+      if (mounted) if (mounted)
+        setState(() {
           isArea = true;
         });
     } on TimeoutException catch (_) {
-      setSnackbar( getTranslated(context,'somethingMSg'));
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -538,8 +569,12 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       textInputAction: TextInputAction.next,
       focusNode: landFocus,
       controller: landmarkC,
-      style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
-      validator: (val)=>validateField(val,getTranslated(context, 'FIELD_REQUIRED')),
+      style: Theme.of(context)
+          .textTheme
+          .subtitle2
+          .copyWith(color: colors.fontColor),
+      validator: (val) =>
+          validateField(val, getTranslated(context, 'FIELD_REQUIRED')),
       onSaved: (String value) {
         landmark = value;
       },
@@ -554,10 +589,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       keyboardType: TextInputType.text,
       textCapitalization: TextCapitalization.sentences,
       controller: stateC,
-      style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
-
+      style: Theme.of(context)
+          .textTheme
+          .subtitle2
+          .copyWith(color: colors.fontColor),
+      readOnly: true,
       //validator: validateField,
-      onChanged: (v) =>   setState(() {
+      onChanged: (v) => setState(() {
         state = v;
       }),
       onSaved: (String value) {
@@ -576,11 +614,16 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       keyboardType: TextInputType.text,
       textCapitalization: TextCapitalization.sentences,
       controller: countryC,
-      style: Theme.of(context).textTheme.subtitle2.copyWith(color: colors.fontColor),
+      readOnly: true,
+      style: Theme.of(context)
+          .textTheme
+          .subtitle2
+          .copyWith(color: colors.fontColor),
       onSaved: (String value) {
         country = value;
       },
-      validator: (val)=>validateField(val,getTranslated(context, 'FIELD_REQUIRED')),
+      validator: (val) =>
+          validateField(val, getTranslated(context, 'FIELD_REQUIRED')),
       decoration: InputDecoration(
         hintText: getTranslated(context, 'COUNTRY_LBL'),
         isDense: true,
@@ -590,9 +633,10 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   }
 
   Future<void> addNewAddress() async {
-     if (mounted) setState(() {
-      _isProgress = true;
-    });
+    if (mounted)
+      setState(() {
+        _isProgress = true;
+      });
 
     try {
       var data = {
@@ -613,9 +657,9 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       if (widget.update) data[ID] = addressList[widget.index].id;
 
       Response response = await post(
-          widget.update ? updateAddressApi : getAddAddressApi,
-          body: data,
-          headers: headers)
+              widget.update ? updateAddressApi : getAddAddressApi,
+              body: data,
+              headers: headers)
           .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
@@ -626,7 +670,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         await buttonController.reverse();
         if (!error) {
           var data = getdata["data"];
-
 
           if (widget.update) {
             if (checkedDefault.toString() == "true" ||
@@ -649,7 +692,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               }
 
               User value = new User.fromAddress(data[0]);
-
 
               addressList[widget.index] = value;
 
@@ -704,16 +746,17 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
             }
           }
 
-           if (mounted) setState(() {
-            _isProgress = false;
-          });
+          if (mounted)
+            setState(() {
+              _isProgress = false;
+            });
           Navigator.of(context).pop();
         } else {
           setSnackbar(msg);
         }
       }
     } on TimeoutException catch (_) {
-      setSnackbar( getTranslated(context,'somethingMSg'));
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
 
@@ -752,21 +795,22 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   activeColor: colors.fontColor,
                   value: 1,
                   onChanged: (val) {
-
-                     if (mounted) setState(() {
-                      selectedType = val;
-                      type = HOME;
-                    });
+                    if (mounted)
+                      setState(() {
+                        selectedType = val;
+                        type = HOME;
+                      });
                   },
                 ),
                 Text(getTranslated(context, 'HOME_LBL'))
               ],
             ),
             onTap: () {
-               if (mounted) setState(() {
-                selectedType = 1;
-                type = HOME;
-              });
+              if (mounted)
+                setState(() {
+                  selectedType = 1;
+                  type = HOME;
+                });
             },
           ),
         ),
@@ -781,20 +825,22 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   activeColor: colors.fontColor,
                   value: 2,
                   onChanged: (val) {
-                     if (mounted) setState(() {
-                      selectedType = val;
-                      type = OFFICE;
-                    });
+                    if (mounted)
+                      setState(() {
+                        selectedType = val;
+                        type = OFFICE;
+                      });
                   },
                 ),
                 Text(getTranslated(context, 'OFFICE_LBL'))
               ],
             ),
             onTap: () {
-               if (mounted) setState(() {
-                selectedType = 2;
-                type = OFFICE;
-              });
+              if (mounted)
+                setState(() {
+                  selectedType = 2;
+                  type = OFFICE;
+                });
             },
           ),
         ),
@@ -809,20 +855,22 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                   activeColor: colors.fontColor,
                   value: 3,
                   onChanged: (val) {
-                     if (mounted) setState(() {
-                      selectedType = val;
-                      type = OTHER;
-                    });
+                    if (mounted)
+                      setState(() {
+                        selectedType = val;
+                        type = OTHER;
+                      });
                   },
                 ),
                 Text(getTranslated(context, 'OTHER_LBL'))
               ],
             ),
             onTap: () {
-               if (mounted) setState(() {
-                selectedType = 3;
-                type = OTHER;
-              });
+              if (mounted)
+                setState(() {
+                  selectedType = 3;
+                  type = OTHER;
+                });
             },
           ),
         )
@@ -842,16 +890,15 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           activeColor: Theme.of(context).accentColor,
           dense: true,
           onChanged: (newValue) {
-             if (mounted) setState(() {
-              checkedDefault = newValue;
-            });
+            if (mounted)
+              setState(() {
+                checkedDefault = newValue;
+              });
           },
           title: Text(
             getTranslated(context, 'DEFAULT_ADD'),
-            style: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: colors.lightBlack, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.subtitle2.copyWith(
+                color: colors.lightBlack, fontWeight: FontWeight.bold),
           ),
         ));
   }
@@ -912,8 +959,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                       ),
                       child: Text(getTranslated(context, 'SAVE_LBL'),
                           style: Theme.of(context).textTheme.subtitle1.copyWith(
-                            color: colors.white,
-                          ))),
+                                color: colors.white,
+                              ))),
                   onTap: () {
                     validateAndSubmit();
                   },
@@ -938,10 +985,11 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     state = placemark[0].administrativeArea;
     country = placemark[0].country;
     pincode = placemark[0].postalCode;
-     if (mounted) setState(() {
-      countryC.text = country;
-      stateC.text = state;
-      pincodeC.text = pincode;
-    });
+    if (mounted)
+      setState(() {
+        countryC.text = country;
+        stateC.text = state;
+        pincodeC.text = pincode;
+      });
   }
 }

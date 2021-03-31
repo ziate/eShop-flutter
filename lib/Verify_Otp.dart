@@ -14,10 +14,10 @@ import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'SignUp.dart';
 
-class Verify_Otp extends StatefulWidget {
+class VerifyOtp extends StatefulWidget {
   final String mobileNumber, countryCode, title;
 
-  Verify_Otp(
+  VerifyOtp(
       {Key key, @required this.mobileNumber, this.countryCode, this.title})
       : assert(mobileNumber != null),
         super(key: key);
@@ -26,7 +26,7 @@ class Verify_Otp extends StatefulWidget {
   _MobileOTPState createState() => new _MobileOTPState();
 }
 
-class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
+class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
   final dataKey = new GlobalKey();
   String password, mobile, countrycode;
   String otp;
@@ -40,7 +40,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
 
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
-  bool _isNetworkAvail = true;
+ 
 
   @override
   void initState() {
@@ -88,7 +88,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
     } else {
       if (mounted)
         setState(() {
-          _isNetworkAvail = false;
+ 
         });
 
       Future.delayed(Duration(seconds: 60)).then((_) async {
@@ -118,7 +118,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -206,7 +206,7 @@ class _MobileOTPState extends State<Verify_Otp> with TickerProviderStateMixin {
 
     if (code.length == 6) {
       _playAnimation();
-      AuthCredential _authCredential = PhoneAuthProvider.getCredential(
+      AuthCredential _authCredential = PhoneAuthProvider.credential(
           verificationId: _verificationId, smsCode: code);
 
       _firebaseAuth

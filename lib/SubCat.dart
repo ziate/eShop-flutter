@@ -45,7 +45,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   int total = 0;
   bool isLoadingmore = true;
   bool _isNetworkAvail = true;
-  bool _isFirstLoad = true;
+
   String filter = "";
   String selId = "";
   String totalProduct;
@@ -651,152 +651,166 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                   Spacer(),
                                   model.availability == "0"
                                       ? Container()
-                                      :
-                                  cartBtnList?
-                                  Row(
-                                          children: <Widget>[
-                                            Row(
+                                      : cartBtnList
+                                          ? Row(
                                               children: <Widget>[
-                                                GestureDetector(
-                                                  child: Container(
-                                                    padding: EdgeInsets.all(2),
-                                                    margin:
-                                                        EdgeInsetsDirectional
-                                                            .only(end: 8),
-                                                    child: Icon(
-                                                      Icons.remove,
-                                                      size: 14,
-                                                      color: colors.fontColor,
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                        color:
-                                                            colors.lightWhite,
-                                                        borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    3))),
-                                                  ),
-                                                  onTap: () {
-                                                    if (_isProgress == false &&
-                                                        (int.parse(model
-                                                                .prVarientList[model
-                                                                    .selVarient]
-                                                                .cartCount)) >
-                                                            0)
-                                                      removeFromCart(
-                                                          index, model);
-                                                  },
-                                                ),
-                                                Container(
-                                                  width: 40,
-                                                  height: 20,
-                                                  child: Stack(
-                                                    children: [
-                                                      TextField(
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        readOnly: true,
-                                                        style: TextStyle(
-                                                          fontSize: 10,
+                                                Row(
+                                                  children: <Widget>[
+                                                    GestureDetector(
+                                                      child: Container(
+                                                        padding:
+                                                            EdgeInsets.all(2),
+                                                        margin:
+                                                            EdgeInsetsDirectional
+                                                                .only(end: 8),
+                                                        child: Icon(
+                                                          Icons.remove,
+                                                          size: 14,
+                                                          color:
+                                                              colors.fontColor,
                                                         ),
-                                                        controller:
-                                                            _controller[index],
-                                                        decoration:
-                                                            InputDecoration(
-                                                          contentPadding:
-                                                              EdgeInsets.all(
-                                                                  5.0),
-                                                          focusedBorder:
-                                                              OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                                color: colors
-                                                                    .fontColor,
-                                                                width: 0.5),
+                                                        decoration: BoxDecoration(
+                                                            color: colors
+                                                                .lightWhite,
                                                             borderRadius:
                                                                 BorderRadius
-                                                                    .circular(
-                                                                        5.0),
-                                                          ),
-                                                          enabledBorder:
-                                                              OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                                color: colors
-                                                                    .fontColor,
-                                                                width: 0.5),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5.0),
-                                                          ),
-                                                        ),
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            3))),
                                                       ),
-                                                      PopupMenuButton<String>(
-                                                        tooltip: '',
-                                                        icon: const Icon(
-                                                          Icons.arrow_drop_down,
-                                                          size: 1,
-                                                        ),
-                                                        onSelected:
-                                                            (String value) {
-                                                          if (_isProgress ==
-                                                              false)
-                                                            addToCart(index,
-                                                                value, model);
-                                                        },
-                                                        itemBuilder:
-                                                            (BuildContext
-                                                                context) {
-                                                          return items.map<
+                                                      onTap: () {
+                                                        if (_isProgress ==
+                                                                false &&
+                                                            (int.parse(model
+                                                                    .prVarientList[
+                                                                        model
+                                                                            .selVarient]
+                                                                    .cartCount)) >
+                                                                0)
+                                                          removeFromCart(
+                                                              index, model);
+                                                      },
+                                                    ),
+                                                    Container(
+                                                      width: 40,
+                                                      height: 20,
+                                                      child: Stack(
+                                                        children: [
+                                                          TextField(
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            readOnly: true,
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                            ),
+                                                            controller:
+                                                                _controller[
+                                                                    index],
+                                                            decoration:
+                                                                InputDecoration(
+                                                              contentPadding:
+                                                                  EdgeInsets
+                                                                      .all(5.0),
+                                                              focusedBorder:
+                                                                  OutlineInputBorder(
+                                                                borderSide: BorderSide(
+                                                                    color: colors
+                                                                        .fontColor,
+                                                                    width: 0.5),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5.0),
+                                                              ),
+                                                              enabledBorder:
+                                                                  OutlineInputBorder(
+                                                                borderSide: BorderSide(
+                                                                    color: colors
+                                                                        .fontColor,
+                                                                    width: 0.5),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5.0),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          PopupMenuButton<
+                                                              String>(
+                                                            tooltip: '',
+                                                            icon: const Icon(
+                                                              Icons
+                                                                  .arrow_drop_down,
+                                                              size: 1,
+                                                            ),
+                                                            onSelected:
+                                                                (String value) {
+                                                              if (_isProgress ==
+                                                                  false)
+                                                                addToCart(
+                                                                    index,
+                                                                    value,
+                                                                    model);
+                                                            },
+                                                            itemBuilder:
+                                                                (BuildContext
+                                                                    context) {
+                                                              return items.map<
                                                                   PopupMenuItem<
-                                                                      String>>(
-                                                              (String value) {
-                                                            return new PopupMenuItem(
-                                                                child: new Text(
-                                                                    value),
-                                                                value: value);
-                                                          }).toList();
-                                                        },
+                                                                      String>>((String
+                                                                  value) {
+                                                                return new PopupMenuItem(
+                                                                    child: new Text(
+                                                                        value),
+                                                                    value:
+                                                                        value);
+                                                              }).toList();
+                                                            },
+                                                          ),
+                                                        ],
                                                       ),
-                                                    ],
-                                                  ),
-                                                ), // ),
+                                                    ), // ),
 
-                                                GestureDetector(
-                                                  child: Container(
-                                                    padding: EdgeInsets.all(2),
-                                                    margin: EdgeInsets.only(
-                                                        left: 8),
-                                                    child: Icon(
-                                                      Icons.add,
-                                                      size: 14,
-                                                      color: colors.fontColor,
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                        color:
-                                                            colors.lightWhite,
-                                                        borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    3))),
-                                                  ),
-                                                  onTap: () {
-                                                    if (_isProgress == false)
-                                                      addToCart(
-                                                          index,
-                                                          (int.parse(model
-                                                                      .prVarientList[
-                                                                          model
-                                                                              .selVarient]
-                                                                      .cartCount) +
-                                                                  1)
-                                                              .toString(),
-                                                          model);
-                                                  },
-                                                )
+                                                    GestureDetector(
+                                                      child: Container(
+                                                        padding:
+                                                            EdgeInsets.all(2),
+                                                        margin: EdgeInsets.only(
+                                                            left: 8),
+                                                        child: Icon(
+                                                          Icons.add,
+                                                          size: 14,
+                                                          color:
+                                                              colors.fontColor,
+                                                        ),
+                                                        decoration: BoxDecoration(
+                                                            color: colors
+                                                                .lightWhite,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            3))),
+                                                      ),
+                                                      onTap: () {
+                                                        if (_isProgress ==
+                                                            false)
+                                                          addToCart(
+                                                              index,
+                                                              (int.parse(model
+                                                                          .prVarientList[
+                                                                              model.selVarient]
+                                                                          .cartCount) +
+                                                                      1)
+                                                                  .toString(),
+                                                              model);
+                                                      },
+                                                    )
+                                                  ],
+                                                ),
                                               ],
-                                            ),
-                                          ],
-                                        ):Container(),
+                                            )
+                                          : Container(),
                                 ],
                               ),
                             ],
@@ -833,11 +847,9 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
             QTY: qty
           };
 
-
           Response response =
               await post(manageCartApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
-
 
           var getdata = json.decode(response.body);
 
@@ -1458,7 +1470,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,

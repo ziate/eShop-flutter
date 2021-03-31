@@ -62,7 +62,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -117,7 +117,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                           builder: (BuildContext context) => super.widget));
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -269,7 +269,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Privacy_Policy(
+                      builder: (context) => PrivacyPolicy(
                         title: getTranslated(context, 'PRIVACY'),
                       ),
                     ));
@@ -310,7 +310,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Privacy_Policy(
+                      builder: (context) => PrivacyPolicy(
                         title: getTranslated(context, 'TERM'),
                       ),
                     ));
@@ -384,7 +384,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                           )),
                                       obscureText: !_showPassword,
                                       controller: curPassC,
-                                      onChanged: (v) =>   setState(() {
+                                      onChanged: (v) => setState(() {
                                         curPass = v;
                                       }),
                                     )),
@@ -424,7 +424,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                                           )),
                                       obscureText: !_showPassword,
                                       controller: newPassC,
-                                      onChanged: (v) =>   setState(() {
+                                      onChanged: (v) => setState(() {
                                         newPass = v;
                                       }),
                                     )),
@@ -478,7 +478,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                             ))
                       ])),
               actions: <Widget>[
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'CANCEL'),
                       style: Theme.of(this.context)
@@ -491,7 +491,7 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                     onPressed: () {
                       Navigator.pop(context);
                     }),
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'SAVE_LBL'),
                       style: Theme.of(this.context)
@@ -505,9 +505,10 @@ class StateSetting extends State<Setting> with TickerProviderStateMixin {
                       final form = _formkey.currentState;
                       if (form.validate()) {
                         form.save();
-                         if (mounted) setState(() {
-                          Navigator.pop(context);
-                        });
+                        if (mounted)
+                          setState(() {
+                            Navigator.pop(context);
+                          });
                         // checkNetwork();
                       }
                     })

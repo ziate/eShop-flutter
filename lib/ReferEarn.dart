@@ -3,7 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:share/share.dart';
+
 import 'Helper/Color.dart';
 import 'Helper/SimBtn.dart';
 import 'Helper/Constant.dart';
@@ -105,8 +106,8 @@ class _ReferEarnState extends State<ReferEarn> {
                   onBtnSelected: () {
 
                     var str =
-                        "$appName\n${getTranslated(context, 'APPFIND')}$androidLink$packageName\n\n${getTranslated(context, 'IOSLBL')}\n$iosLink$iosPackage\n\nRefer Code:$REFER_CODE";
-                    Share.text(appName, str, 'text/plain');
+                        "$appName\nRefer Code:$REFER_CODE\n${getTranslated(context, 'APPFIND')}$androidLink$packageName\n\n${getTranslated(context, 'IOSLBL')}\n$iosLink$iosPackage";
+                   Share.share(str);
 
                   },
                 ),
@@ -119,7 +120,7 @@ class _ReferEarnState extends State<ReferEarn> {
   }
 
   setSnackbar(String msg) {
-    scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,

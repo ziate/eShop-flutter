@@ -1,36 +1,35 @@
 import 'dart:convert';
+import 'dart:math';
+
 import 'package:eshop/Cart.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:stripe_payment/stripe_payment.dart';
+
 import 'String.dart';
-import 'dart:math';
 
 class StripeTransactionResponse {
- final String message,status;
+  final String message, status;
   bool success;
-  StripeTransactionResponse({this.message, this.success,this.status});
+
+  StripeTransactionResponse({this.message, this.success, this.status});
 }
 
 class StripeService {
   static String apiBase = 'https://api.stripe.com/v1';
   static String paymentApiUrl = '${StripeService.apiBase}/payment_intents';
-  static String secret ;
-
+  static String secret;
 
   static Map<String, String> headers = {
     'Authorization': 'Bearer ${StripeService.secret}',
     'Content-Type': 'application/x-www-form-urlencoded'
   };
 
-  static init(String stripeId,String stripeMode) {
-    StripePayment.setOptions(
-        StripeOptions(
-            publishableKey: stripeId,
-            merchantId: "Test",
-            androidPayMode: stripeMode
-        )
-    );
+  static init(String stripeId, String stripeMode) {
+    StripePayment.setOptions(StripeOptions(
+        publishableKey: stripeId,
+        merchantId: "Test",
+        androidPayMode: stripeMode));
   }
 
   /*static Future<StripeTransactionResponse> payViaExistingCard({String amount, String currency, CreditCard card}) async{
@@ -73,63 +72,46 @@ class StripeService {
     }
   }
 */
-  static Future<StripeTransactionResponse> payWithNewCard({String amount, String currency,String from}) async {
+  static Future<StripeTransactionResponse> payWithNewCard(
+      {String amount, String currency, String from}) async {
     try {
       var paymentMethod = await StripePayment.paymentRequestWithCardForm(
-          CardFormPaymentRequest()
-      );
+          CardFormPaymentRequest());
 
+      var paymentIntent =
+          await StripeService.createPaymentIntent(amount, currency, from);
 
+      var response = await StripePayment.confirmPaymentIntent(PaymentIntent(
+        clientSecret: paymentIntent['client_secret'],
+        paymentMethodId: paymentMethod.id,
+      ));
 
-      var paymentIntent = await StripeService.createPaymentIntent(
-          amount,
-          currency,
-        from
-      );
-
-
-      var response = await StripePayment.confirmPaymentIntent(
-          PaymentIntent(
-            clientSecret: paymentIntent['client_secret'],
-            paymentMethodId: paymentMethod.id,
-          )
-      );
-
-
-      stripePayId=paymentIntent['id'];
+      stripePayId = paymentIntent['id'];
 
       if (response.status == 'succeeded') {
         return new StripeTransactionResponse(
             message: 'Transaction successful',
             success: true,
-            status: response.status
-        );
-      }
-      else if (response.status == 'pending'|| response.status=="captured") {
+            status: response.status);
+      } else if (response.status == 'pending' ||
+          response.status == "captured") {
         return new StripeTransactionResponse(
             message: 'Transaction pending',
             success: true,
-            status: response.status
-        );
-      }
-
-      else {
+            status: response.status);
+      } else {
         return new StripeTransactionResponse(
             message: 'Transaction failed',
             success: false,
-            status: response.status
-        );
+            status: response.status);
       }
-    } on PlatformException catch(err) {
+    } on PlatformException catch (err) {
       return StripeService.getPlatformExceptionErrorResult(err);
     } catch (err) {
-
-
       return new StripeTransactionResponse(
           message: 'Transaction failed: ${err.toString()}',
           success: false,
-          status: "fail"
-      );
+          status: "fail");
     }
   }
 
@@ -140,29 +122,27 @@ class StripeService {
     }
 
     return new StripeTransactionResponse(
-        message: message,
-        success: false,
-        status: "cancelled"
-    );
+        message: message, success: false, status: "cancelled");
   }
 
-  static Future<Map<String, dynamic>> createPaymentIntent(String amount, String currency,String from) async {
-    String orderId="wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900)+ 100}";
+  static Future<Map<String, dynamic>> createPaymentIntent(
+      String amount, String currency, String from) async {
+    String orderId =
+        "wallet-refill-user-$CUR_USERID-${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(900) + 100}";
 
     try {
       Map<String, dynamic> body = {
         'amount': amount,
         'currency': currency,
         'payment_method_types[]': 'card',
+        'description': from,
 
       };
-if(from=='wallet')
-  body['metadata[order_id]']=orderId;
-     var response = await http.post(
-          StripeService.paymentApiUrl,
-          body: body,
-          headers: StripeService.headers
-      );
+      if (from == 'wallet') body['metadata[order_id]'] = orderId;
+
+
+      var response = await http.post(Uri.parse(StripeService.paymentApiUrl),
+          body: body, headers: StripeService.headers);
       return jsonDecode(response.body);
     } catch (err) {
       print('err charging user: ${err.toString()}');

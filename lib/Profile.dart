@@ -202,8 +202,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
           _isLoading = true;
         });
       try {
-        var request =
-            http.MultipartRequest("POST", Uri.parse(getUpdateUserApi));
+        var request = http.MultipartRequest("POST", (getUpdateUserApi));
         request.headers.addAll(headers);
         request.fields[USER_ID] = CUR_USERID;
         var pic = await http.MultipartFile.fromPath(IMAGE, _image.path);
@@ -412,7 +411,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -514,7 +513,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                       )))
                             ]),
                         actions: <Widget>[
-                          new FlatButton(
+                          new TextButton(
                               child: Text(getTranslated(context, 'CANCEL'),
                                   style: TextStyle(
                                       color: colors.lightBlack,
@@ -526,7 +525,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                     Navigator.pop(context);
                                   });
                               }),
-                          new FlatButton(
+                          new TextButton(
                               child: Text(getTranslated(context, 'SAVE_LBL'),
                                   style: TextStyle(
                                       color: colors.fontColor,
@@ -644,7 +643,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                       )))
                             ]),
                         actions: <Widget>[
-                          new FlatButton(
+                          new TextButton(
                               child: Text(getTranslated(context, 'CANCEL'),
                                   style: TextStyle(
                                       color: colors.lightBlack,
@@ -656,7 +655,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                     Navigator.pop(context);
                                   });
                               }),
-                          new FlatButton(
+                          new TextButton(
                               child: Text(getTranslated(context, 'SAVE_LBL'),
                                   style: TextStyle(
                                       color: colors.fontColor,
@@ -688,7 +687,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
         child: Row(
           children: <Widget>[
-            SvgPicture.asset('assets/images/mobilenumber.svg', fit: BoxFit.fill),
+            SvgPicture.asset('assets/images/mobilenumber.svg',
+                fit: BoxFit.fill),
             Padding(
                 padding: EdgeInsetsDirectional.only(start: 15.0),
                 child: Column(
@@ -913,7 +913,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                             ],
                           ),
                           actions: <Widget>[
-                            new FlatButton(
+                            new TextButton(
                                 child: Text(getTranslated(context, 'CANCEL'),
                                     style: TextStyle(
                                         color: colors.lightBlack,
@@ -925,7 +925,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                       Navigator.pop(context);
                                     });
                                 }),
-                            new FlatButton(
+                            new TextButton(
                                 child: Text(getTranslated(context, 'SAVE_LBL'),
                                     style: TextStyle(
                                         color: colors.fontColor,
@@ -1137,7 +1137,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                             ))
                       ])),
               actions: <Widget>[
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'CANCEL'),
                       style: Theme.of(this.context)
@@ -1150,7 +1150,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                     onPressed: () {
                       Navigator.pop(context);
                     }),
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'SAVE_LBL'),
                       style: Theme.of(this.context)
@@ -1188,8 +1188,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                     backgroundColor: colors.primary,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(50),
-                      child:
-                      new FadeInImage(
+                      child: new FadeInImage(
                         fadeInDuration: Duration(milliseconds: 150),
                         image: NetworkImage(image),
                         height: 100.0,

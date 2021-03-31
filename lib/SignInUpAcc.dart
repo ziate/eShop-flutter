@@ -4,10 +4,10 @@ import 'package:eshop/Login.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'Helper/Color.dart';
-import 'Helper/Constant.dart';
-import 'SendOtp.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'Helper/Color.dart';
+import 'SendOtp.dart';
 class SignInUpAcc extends StatefulWidget {
   @override
   _SignInUpAccState createState() => new _SignInUpAccState();

@@ -1,8 +1,7 @@
-import 'package:eshop/Model/User.dart';
-import 'package:eshop/Verify_Otp.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'Constant.dart';
+
 import 'Color.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 class RadioItem extends StatelessWidget {

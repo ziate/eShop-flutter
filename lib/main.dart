@@ -21,6 +21,10 @@ import 'Home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  FirebaseMessaging.onBackgroundMessage(myForgroundMessageHandler);
+
+
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     statusBarColor: Colors.transparent, // status bar color
   ));
@@ -54,6 +58,9 @@ void main() async {
   });
 }
 
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 class MyApp extends StatefulWidget {
   const MyApp({Key key}) : super(key: key);
 
@@ -68,12 +75,10 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Locale _locale;
-  static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   setLocale(Locale locale) {
-    print("loca****$locale");
-    if (mounted)
 
+    if (mounted)
       setState(() {
         _locale = locale;
       });
@@ -91,21 +96,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    if (!isConfigured) {
-      final pushNotificationService =
-          PushNotificationService(_firebaseMessaging);
-
-      pushNotificationService.initialise();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-    final modet = themeNotifier.getThemeMode();
 
     if (this._locale == null) {
       return Container(
@@ -116,6 +108,7 @@ class _MyAppState extends State<MyApp> {
       );
     } else {
       return MaterialApp(
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
         locale: _locale,
         supportedLocales: [
           Locale("en", "US"),
@@ -175,8 +168,10 @@ class _MyAppState extends State<MyApp> {
           dialogBackgroundColor: colors.darkColor2,
           primarySwatch: colors.primary_app,
           primaryColor: colors.darkColor,
-          cursorColor: colors.primary,
-          textSelectionHandleColor: colors.secondary,
+          textSelectionTheme: TextSelectionThemeData(
+              cursorColor: colors.primary,
+              selectionColor: colors.primary,
+              selectionHandleColor: colors.secondary),
           toggleableActiveColor: colors.primary,
           fontFamily: 'opensans',
           brightness: Brightness.dark,

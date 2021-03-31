@@ -56,6 +56,7 @@ class _SplashScreen extends State<Splash> {
         );
     }
 
+
     startTime() async {
         var _duration = Duration(seconds: 2);
         return Timer(_duration, navigationPage);
@@ -69,14 +70,14 @@ class _SplashScreen extends State<Splash> {
             Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => Intro_Slider(),
+                    builder: (context) => IntroSlider(),
                 ));
         }
     }
 
 
     setSnackbar(String msg) {
-        _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
             content: new Text(
                 msg,
                 textAlign: TextAlign.center,

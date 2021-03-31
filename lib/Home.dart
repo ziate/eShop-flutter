@@ -8,7 +8,6 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:eshop/All_Category.dart';
 import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
-import 'package:eshop/Helper/PushNotificationService.dart';
 import 'package:eshop/MyProfile.dart';
 import 'package:eshop/ProductList.dart';
 import 'package:eshop/Product_Detail.dart';
@@ -18,7 +17,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
 import 'package:shimmer/shimmer.dart';
@@ -26,6 +24,7 @@ import 'package:shimmer/shimmer.dart';
 import 'Cart.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Constant.dart';
+import 'Helper/PushNotificationService.dart';
 import 'Helper/Session.dart';
 import 'Helper/String.dart';
 import 'Login.dart';
@@ -34,7 +33,6 @@ import 'Model/Section_Model.dart';
 import 'NotificationLIst.dart';
 import 'Search.dart';
 import 'SubCat.dart';
-import 'main.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -42,10 +40,11 @@ class Home extends StatefulWidget {
     return StateHome();
   }
 }
+
 bool isConfigured = false;
 List<Product> catList = [];
 List<Model> homeSliderList = [];
-List<Section_Model> sectionList = [];
+List<SectionModel> sectionList = [];
 List<Model> offerImages = [];
 List<Widget> pages = [];
 bool _isCatLoading = true;
@@ -66,6 +65,11 @@ class StateHome extends State<Home> {
   @override
   void initState() {
     super.initState();
+    final pushNotificationService =
+        PushNotificationService(context: context, updateHome: updateHome);
+
+    pushNotificationService.initialise();
+
     initDynamicLinks();
     home = new HomePage(updateHome);
     fragments = [
@@ -74,10 +78,6 @@ class StateHome extends State<Home> {
       NotificationList(),
       MyProfile(updateHome),
     ];
-    if (!isConfigured) {
-      firNotificationInitialize();
-      isConfigured=true;
-    }
   }
 
   updateHome() {
@@ -118,7 +118,7 @@ class StateHome extends State<Home> {
   }
 
   setSnackbar(String msg) {
-    scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -275,86 +275,11 @@ class StateHome extends State<Home> {
         )).then((val) => home.updateHomepage());
   }
 
-  void firNotificationInitialize() {
-    //for firebase push notification
-    FlutterLocalNotificationsPlugin();
-// initialise the plugin. ic_launcher needs to be a added as a drawable resource to the Android head project
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    final IOSInitializationSettings initializationSettingsIOS =
-        IOSInitializationSettings(
-            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-    final MacOSInitializationSettings initializationSettingsMacOS =
-        MacOSInitializationSettings();
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: initializationSettingsAndroid,
-            iOS: initializationSettingsIOS,
-            macOS: initializationSettingsMacOS);
-
-               flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
-        onSelectNotification: onSelectNotification);
-  }
-
-  Future onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) {
-    return showDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            child: Text('Ok'),
-            onPressed: () async {
-              Navigator.of(context, rootNavigator: true).pop();
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MyApp(),
-                ),
-              );
-            },
-          )
-        ],
-      ),
-    );
-  }
-
-  Future onSelectNotification(String payload) {
-    if (payload != null) {
-      debugPrint('notification payload: $payload');
-
-
-      List<String> pay = payload.split(",");
-      if (pay[0] == "products") {
-        getProduct(pay[1], 0, 0, true);
-      } else if (pay[0] == "categories") {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AllCategory()),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MyApp()),
-        );
-      }
-    }else{
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => MyApp()),
-      );
-    }
-  }
-
   void initDynamicLinks() async {
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData dynamicLink) async {
       final Uri deepLink = dynamicLink?.link;
-print("deeplink****$deepLink");
+
       if (deepLink != null) {
         if (deepLink.queryParameters.length > 0) {
           int index = int.parse(deepLink.queryParameters['index']);
@@ -369,11 +294,12 @@ print("deeplink****$deepLink");
         }
       }
     }, onError: (OnLinkErrorException e) async {
-      print('onLinkError');
+
       print(e.message);
     });
 
-    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
     final Uri deepLink = data?.link;
     if (deepLink != null) {
       if (deepLink.queryParameters.length > 0) {
@@ -383,9 +309,9 @@ print("deeplink****$deepLink");
 
         String id = deepLink.queryParameters['id'];
 
-        String list = deepLink.queryParameters['list'];
+        // String list = deepLink.queryParameters['list'];
 
-        getProduct(id, index, secPos,  true );
+        getProduct(id, index, secPos, true);
       }
     }
   }
@@ -409,7 +335,7 @@ print("deeplink****$deepLink");
         if (!error) {
           var data = getdata["data"];
 
-          List<Product> items = new List<Product>();
+          List<Product> items = [];
 
           items =
               (data as List).map((data) => new Product.fromJson(data)).toList();
@@ -977,7 +903,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
             onTap: () {
-              Section_Model model = sectionList[index];
+              SectionModel model = sectionList[index];
               Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1357,43 +1283,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       return Container();
   }
 
-  _setFav(int secPos, int index) async {
-    try {
-      if (mounted)
-        setState(() {
-          sectionList[secPos].productList[index].isFavLoading = true;
-        });
-
-      var parameter = {
-        USER_ID: CUR_USERID,
-        PRODUCT_ID: sectionList[secPos].productList[index].id
-      };
-      Response response =
-          await post(setFavoriteApi, body: parameter, headers: headers)
-              .timeout(Duration(seconds: timeOut));
-      if (response.statusCode == 200) {
-        var getdata = json.decode(response.body);
-
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          sectionList[secPos].productList[index].isFav = "1";
-        } else {
-          setSnackbar(msg);
-        }
-
-        if (mounted)
-          setState(() {
-            sectionList[secPos].productList[index].isFavLoading = false;
-          });
-      }
-    } on TimeoutException catch (_) {
-      setSnackbar(getTranslated(context, 'somethingMSg'));
-    }
-  }
-
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -1504,7 +1395,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           var data = getdata["data"];
           sectionList.clear();
           sectionList = (data as List)
-              .map((data) => new Section_Model.fromJson(data))
+              .map((data) => new SectionModel.fromJson(data))
               .toList();
         } else {
           setSnackbar(msg);
@@ -1535,7 +1426,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       Response response = await post(getSettingApi,
               body: CUR_USERID != null ? parameter : null, headers: headers)
           .timeout(Duration(seconds: timeOut));
-
 
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);

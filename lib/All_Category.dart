@@ -28,7 +28,7 @@ class AllCategory extends StatefulWidget {
 class StateCat extends State<AllCategory> {
   int offset = perPage;
   int total = 0;
-  bool isLoadingmore = true, _isCatLoading = false;
+  bool isLoadingmore = true;
   ScrollController controller = new ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   List<Product> tempList = [];
@@ -81,7 +81,7 @@ class StateCat extends State<AllCategory> {
           catList =
               (data as List).map((data) => new Product.fromCat(data)).toList();
 
-          if (!error) {
+         if (!error) {
             total = int.parse(getdata["total"]);
 
             if ((offset) < total) {
@@ -99,23 +99,19 @@ class StateCat extends State<AllCategory> {
           isLoadingmore = false;
           setSnackbar(msg);
         }
-        if (mounted)
-          setState(() {
-            _isCatLoading = false;
-          });
+        if (mounted) setState(() {});
       }
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
       if (mounted)
         setState(() {
-          _isCatLoading = false;
           isLoadingmore = false;
         });
     }
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -144,7 +140,7 @@ class StateCat extends State<AllCategory> {
             ),
           ),
           Text(
-            catList[index].name+"\n",
+            catList[index].name + "\n",
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

@@ -1,6 +1,6 @@
 import 'package:eshop/Helper/String.dart';
 
-class Section_Model {
+class SectionModel {
   String id,
       title,
       varientId,
@@ -8,14 +8,13 @@ class Section_Model {
       productId,
       perItemTotal,
       perItemPrice,
-      style,
-      short_desc;
+      style;
   List<Product> productList;
   List<Filter> filterList;
   List<String> selectedId = [];
   int offset, totalItem;
 
-  Section_Model(
+  SectionModel(
       {this.id,
       this.title,
       this.productList,
@@ -25,13 +24,13 @@ class Section_Model {
       this.perItemTotal,
       this.perItemPrice,
       this.style,
-      this.short_desc,
+
       this.totalItem,
       this.offset,
       this.selectedId,
       this.filterList});
 
-  factory Section_Model.fromJson(Map<String, dynamic> parsedJson) {
+  factory SectionModel.fromJson(Map<String, dynamic> parsedJson) {
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
         .map((data) => new Product.fromJson(data))
         .toList();
@@ -43,11 +42,11 @@ class Section_Model {
     else
       filterList = flist.map((data) => new Filter.fromJson(data)).toList();
     List<String> selected = [];
-    return Section_Model(
+    return SectionModel(
         id: parsedJson[ID],
         title: parsedJson[TITLE],
         style: parsedJson[STYLE],
-        short_desc: parsedJson[SHORT_DESC],
+     
         productList: productList,
         offset: 0,
         totalItem: 0,
@@ -55,12 +54,12 @@ class Section_Model {
         selectedId: selected);
   }
 
-  factory Section_Model.fromCart(Map<String, dynamic> parsedJson) {
+  factory SectionModel.fromCart(Map<String, dynamic> parsedJson) {
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
         .map((data) => new Product.fromJson(data))
         .toList();
 
-    return Section_Model(
+    return SectionModel(
         id: parsedJson[ID],
         varientId: parsedJson[PRODUCT_VARIENT_ID],
         qty: parsedJson[QTY],
@@ -69,12 +68,12 @@ class Section_Model {
         productList: productList);
   }
 
-  factory Section_Model.fromFav(Map<String, dynamic> parsedJson) {
+  factory SectionModel.fromFav(Map<String, dynamic> parsedJson) {
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
         .map((data) => new Product.fromJson(data))
         .toList();
 
-    return Section_Model(
+    return SectionModel(
         id: parsedJson[ID],
         productId: parsedJson[PRODUCT_ID],
         productList: productList);

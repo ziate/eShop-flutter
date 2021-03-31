@@ -22,7 +22,7 @@ import 'Search.dart';
 
 class SectionList extends StatefulWidget {
   final int index;
-  Section_Model section_model;
+  SectionModel section_model;
   final Function updateHome;
 
   SectionList({Key key, this.index, this.section_model, this.updateHome})
@@ -1336,7 +1336,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
               children: [
                 Hero(
                   tag:
-                      "${sectionList[widget.index].productList[index].id}${widget.index}${index}",
+                      "${sectionList[widget.index].productList[index].id}${widget.index}$index",
                   child: ClipRRect(
                     borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(5),
@@ -1702,8 +1702,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           total = int.parse(data[0]["total"]);
 
           if (offset < total) {
-            List<Section_Model> temp = (data as List)
-                .map((data) => new Section_Model.fromJson(data))
+            List<SectionModel> temp = (data as List)
+                .map((data) => new SectionModel.fromJson(data))
                 .toList();
             getAvailVarient(temp[0].productList);
 
@@ -1781,7 +1781,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,

@@ -6,14 +6,12 @@ import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Model/Order_Model.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 import 'package:http/http.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -27,7 +25,7 @@ import 'Helper/String.dart';
 import 'Model/User.dart';
 
 class OrderDetail extends StatefulWidget {
-  final Order_Model model;
+  final OrderModel model;
   final Function updateHome;
 
   const OrderDetail({Key key, this.model, this.updateHome}) : super(key: key);
@@ -39,21 +37,21 @@ class OrderDetail extends StatefulWidget {
 }
 
 class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   ScrollController controller = new ScrollController();
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   List<User> tempList = [];
-  bool _isCancleable, _isReturnable, _isLoading = true;
+  bool _isCancleable, _isReturnable;
   bool _isProgress = false;
   int offset = 0;
   int total = 0;
   List<User> reviewList = [];
   bool isLoadingmore = true;
-
+  bool _isReturnClick = true;
   String proId, image;
-
 
   @override
   void initState() {
@@ -122,8 +120,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   _getAppbar() {
-    double width = deviceWidth;
-    double height = width / 2;
     return AppBar(
       title: Text(
         getTranslated(context, 'ORDER_DETAIL'),
@@ -215,7 +211,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     deviceHeight = MediaQuery.of(context).size.height;
     deviceWidth = MediaQuery.of(context).size.width;
 
-    Order_Model model = widget.model;
+    OrderModel model = widget.model;
     String pDate, prDate, sDate, dDate, cDate, rDate;
 
     if (model.listStatus.contains(PLACED)) {
@@ -266,7 +262,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     _isReturnable = model.isReturnable == "1" ? true : false;
 
     return Scaffold(
-      key: _scaffoldKey,
+      key: scaffoldMessengerKey,
       appBar: _getAppbar(),
       body: _isNetworkAvail
           ? Stack(
@@ -328,7 +324,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                   return productItem(orderItem, model);
                                 },
                               ),
-
                               DwnInvoice(),
                               shippingDetails(),
                               priceDetails(),
@@ -371,9 +366,15 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       ),
       width: deviceWidth,
       child: InkWell(
-        onTap: () {
-          cancelOrder(RETURNED, updateOrderApi, widget.model.id);
-        },
+        onTap: _isReturnClick
+            ? () {
+                setState(() {
+                  _isReturnClick = false;
+                  _isProgress = true;
+                });
+                cancelOrder(RETURNED, updateOrderApi, widget.model.id);
+              }
+            : null,
         child: Center(
             child: Text(
           getTranslated(context, 'RETURN_ORDER'),
@@ -399,9 +400,15 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       ),
       width: deviceWidth,
       child: InkWell(
-        onTap: () {
-          cancelOrder(CANCLED, updateOrderApi, widget.model.id);
-        },
+        onTap: _isReturnClick
+            ? () {
+                setState(() {
+                  _isReturnClick = false;
+                  _isProgress = true;
+                });
+                cancelOrder(CANCLED, updateOrderApi, widget.model.id);
+              }
+            : null,
         child: Center(
             child: Text(
           getTranslated(context, 'CANCEL_ORDER'),
@@ -601,10 +608,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             ])));
   }
 
-
-
-
-  productItem(OrderItem orderItem, Order_Model model) {
+  productItem(OrderItem orderItem, OrderModel model) {
     String pDate, prDate, sDate, dDate, cDate, rDate;
 
     if (orderItem.listStatus.contains(PLACED)) {
@@ -733,23 +737,27 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     )
                   ],
                 ),
-                pDate!=null?    Divider(
-                  color: colors.lightBlack,
-                ):Container(),
-              pDate!=null?  Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      getPlaced(pDate),
-                      getProcessed(prDate, cDate),
-                      getShipped(sDate, cDate),
-                      getDelivered(dDate, cDate),
-                      getCanceled(cDate),
-                      getReturned(orderItem, rDate, model),
-                    ],
-                  ),
-                ):Container(),
+                pDate != null
+                    ? Divider(
+                        color: colors.lightBlack,
+                      )
+                    : Container(),
+                pDate != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            getPlaced(pDate),
+                            getProcessed(prDate, cDate),
+                            getShipped(sDate, cDate),
+                            getDelivered(dDate, cDate),
+                            getCanceled(cDate),
+                            getReturned(orderItem, rDate, model),
+                          ],
+                        ),
+                      )
+                    : Container(),
                 model.itemList.length > 1
                     ? (!orderItem.listStatus.contains(DELIVERD) &&
                             (!orderItem.listStatus.contains(RETURNED)) &&
@@ -777,10 +785,16 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                               .copyWith(
                                                 color: colors.fontColor,
                                               ))),
-                                  onPressed: () {
-                                    cancelOrder(CANCLED, updateOrderItemApi,
-                                        orderItem.id);
-                                  },
+                                  onPressed: _isReturnClick
+                                      ? () {
+                                          setState(() {
+                                            _isReturnClick = false;
+                                            _isProgress = true;
+                                          });
+                                          cancelOrder(CANCLED,
+                                              updateOrderItemApi, orderItem.id);
+                                        }
+                                      : null,
                                 ),
                               ),
                             ],
@@ -811,10 +825,18 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                                   .copyWith(
                                                     color: colors.fontColor,
                                                   ))),
-                                      onPressed: () {
-                                        cancelOrder(RETURNED,
-                                            updateOrderItemApi, orderItem.id);
-                                      },
+                                      onPressed: _isReturnClick
+                                          ? () {
+                                              setState(() {
+                                                _isReturnClick = false;
+                                                _isProgress = true;
+                                              });
+                                              cancelOrder(
+                                                  RETURNED,
+                                                  updateOrderItemApi,
+                                                  orderItem.id);
+                                            }
+                                          : null,
                                     ),
                                   ),
                                 ],
@@ -848,7 +870,11 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => GiveRating(productId:  orderItem.productId,name:orderItem.name,img: orderItem.image,)));
+                                  builder: (context) => GiveRating(
+                                        productId: orderItem.productId,
+                                        name: orderItem.name,
+                                        img: orderItem.image,
+                                      )));
                         })
                     : Container()
               ],
@@ -857,6 +883,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
 
   getPlaced(String pDate) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Icon(
           Icons.circle,
@@ -889,6 +916,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Container(
                       height: 30,
@@ -1096,7 +1124,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         : Container();
   }
 
-  getReturned(OrderItem item, String rDate, Order_Model model) {
+  getReturned(OrderItem item, String rDate, OrderModel model) {
     return item.listStatus.contains(RETURNED)
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1138,33 +1166,29 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         : Container();
   }
 
-  Future<void> cancelOrder(String status, String api, String id) async {
+  Future<void> cancelOrder(String status, Uri api, String id) async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-          });
-
         var parameter = {ORDERID: id, STATUS: status};
-        Response response = await post(api, body: parameter, headers: headers)
+        Response response = await post((api), body: parameter, headers: headers)
             .timeout(Duration(seconds: timeOut));
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
         String msg = getdata["message"];
-        setSnackbar(msg);
-        if (!error) {
+       if (!error) {
           Future.delayed(Duration(seconds: 1)).then((_) async {
             Navigator.pop(context);
           });
-        } else {}
+        }
 
         if (mounted)
           setState(() {
             _isProgress = false;
+            _isReturnClick = true;
           });
+        setSnackbar(msg);
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
@@ -1172,15 +1196,15 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       if (mounted)
         setState(() {
           _isNetworkAvail = false;
+          _isReturnClick = true;
         });
     }
   }
 
-
-
-
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    final ScaffoldMessengerState scaffoldMessenger =
+        ScaffoldMessenger.of(context);
+    scaffoldMessenger.showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -1242,7 +1266,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 setState(() {
                   _isProgress = false;
                 });
-              _scaffoldKey.currentState.showSnackBar(new SnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
                 content: new Text(
                   "${getTranslated(context, 'INVOICE_PATH')} $targetFileName",
                   textAlign: TextAlign.center,

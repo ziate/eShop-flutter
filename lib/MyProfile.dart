@@ -8,8 +8,6 @@ import 'package:eshop/Helper/String.dart';
 import 'package:eshop/MyTransactions.dart';
 import 'package:eshop/ReferEarn.dart';
 import 'package:eshop/Setting.dart';
-import 'package:esys_flutter_share/esys_flutter_share.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -17,12 +15,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:provider/provider.dart';
-import 'MyOrder.dart';
+import 'package:share/share.dart';
+
 import 'Faqs.dart';
 import 'Helper/Constant.dart';
 import 'Helper/Theme.dart';
 import 'Login.dart';
 import 'Manage_Address.dart';
+import 'MyOrder.dart';
 import 'My_Wallet.dart';
 import 'Privacy_Policy.dart';
 import 'Profile.dart';
@@ -139,7 +139,10 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                               CUR_BALANCE != "" &&
                               CUR_BALANCE != "0" &&
                               CUR_BALANCE.isNotEmpty
-                          ? Text(CUR_CURRENCY + " " + "${double.parse(CUR_BALANCE).toStringAsFixed(2)}",
+                          ? Text(
+                              CUR_CURRENCY +
+                                  " " +
+                                  "${double.parse(CUR_BALANCE).toStringAsFixed(2)}",
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle2
@@ -470,7 +473,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                             ))
                       ])),
               actions: <Widget>[
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'CANCEL'),
                       style: Theme.of(this.context)
@@ -483,7 +486,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                     onPressed: () {
                       Navigator.pop(context);
                     }),
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'SAVE_LBL'),
                       style: Theme.of(this.context)
@@ -531,7 +534,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -650,8 +653,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         style: TextStyle(color: colors.lightBlack2, fontSize: 15),
       ),
       onTap: () {
-          if (title == getTranslated(context, 'MY_ORDERS_LBL')) {
-            Navigator.push(
+        if (title == getTranslated(context, 'MY_ORDERS_LBL')) {
+          Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => MyOrder(),
@@ -706,7 +709,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Privacy_Policy(
+                builder: (context) => PrivacyPolicy(
                   title: getTranslated(context, 'CONTACT_LBL'),
                 ),
               ));
@@ -714,7 +717,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Privacy_Policy(
+                builder: (context) => PrivacyPolicy(
                   title: getTranslated(context, 'TERM'),
                 ),
               ));
@@ -722,7 +725,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Privacy_Policy(
+                builder: (context) => PrivacyPolicy(
                   title: getTranslated(context, 'PRIVACY'),
                 ),
               ));
@@ -731,12 +734,13 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         } else if (title == getTranslated(context, 'SHARE_APP')) {
           var str =
               "$appName\n\n${getTranslated(context, 'APPFIND')}$androidLink$packageName\n\n ${getTranslated(context, 'IOSLBL')}\n$iosLink$iosPackage";
-          Share.text(appName, str, 'text/plain');
+
+          Share.share(str);
         } else if (title == getTranslated(context, 'ABOUT_LBL')) {
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Privacy_Policy(
+                builder: (context) => PrivacyPolicy(
                   title: getTranslated(context, 'ABOUT_LBL'),
                 ),
               ));
@@ -760,8 +764,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
       },
     );
   }
-
-
 
   languageDialog() async {
     await showDialog(
@@ -971,7 +973,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                     .copyWith(color: colors.fontColor),
               ),
               actions: <Widget>[
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'NO'),
                       style: Theme.of(this.context)
@@ -984,7 +986,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                     onPressed: () {
                       Navigator.of(context).pop(false);
                     }),
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'YES'),
                       style: Theme.of(this.context)

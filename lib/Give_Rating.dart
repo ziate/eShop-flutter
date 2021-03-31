@@ -205,7 +205,7 @@ class _GiveRatingState extends State<GiveRating> {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -236,7 +236,7 @@ class _GiveRatingState extends State<GiveRating> {
           setState(() {
             _isProgress = true;
           });
-        var request = http.MultipartRequest("POST", Uri.parse(setRatingApi));
+        var request = http.MultipartRequest("POST", setRatingApi);
         request.headers.addAll(headers);
         request.fields[USER_ID] = CUR_USERID;
         request.fields[PRODUCT_ID] = widget.productId;

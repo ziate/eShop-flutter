@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:eshop/Model/Notification_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
@@ -15,7 +17,7 @@ class NotificationList extends StatefulWidget {
   State<StatefulWidget> createState() => StateNoti();
 }
 
-List<Notification_Model> notiList = [];
+List<NotificationModel> notiList = [];
 int offset = 0;
 int total = 0;
 bool isLoadingmore = true;
@@ -24,12 +26,12 @@ bool _isLoading = true;
 class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   ScrollController controller = new ScrollController();
-  List<Notification_Model> tempList = [];
+  List<NotificationModel> tempList = [];
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-  new GlobalKey<RefreshIndicatorState>();
+      new GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -83,7 +85,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                   getNotification();
                 } else {
                   await buttonController.reverse();
-                   if (mounted) setState(() {});
+                  if (mounted) setState(() {});
                 }
               });
             },
@@ -94,9 +96,10 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   }
 
   Future<Null> _refresh() {
-     if (mounted) setState(() {
-      _isLoading = true;
-    });
+    if (mounted)
+      setState(() {
+        _isLoading = true;
+      });
     offset = 0;
     total = 0;
     notiList.clear();
@@ -109,33 +112,34 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
         key: _scaffoldKey,
         body: _isNetworkAvail
             ? _isLoading
-            ? shimmer()
-            : notiList.length == 0
-            ? Padding(
-            padding: const EdgeInsetsDirectional.only(top: kToolbarHeight),
-            child: Center(child: Text(getTranslated(context, 'noNoti'))))
-            : RefreshIndicator(
-            key: _refreshIndicatorKey,
-            onRefresh: _refresh,
-            child: ListView.builder(
-
-              // shrinkWrap: true,
-              controller: controller,
-              itemCount: (offset < total)
-                  ? notiList.length + 1
-                  : notiList.length,
-              physics: AlwaysScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return (index == notiList.length && isLoadingmore)
-                    ? Center(child: CircularProgressIndicator())
-                    : listItem(index);
-              },
-            ))
+                ? shimmer()
+                : notiList.length == 0
+                    ? Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                            top: kToolbarHeight),
+                        child: Center(
+                            child: Text(getTranslated(context, 'noNoti'))))
+                    : RefreshIndicator(
+                        key: _refreshIndicatorKey,
+                        onRefresh: _refresh,
+                        child: ListView.builder(
+                          // shrinkWrap: true,
+                          controller: controller,
+                          itemCount: (offset < total)
+                              ? notiList.length + 1
+                              : notiList.length,
+                          physics: AlwaysScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return (index == notiList.length && isLoadingmore)
+                                ? Center(child: CircularProgressIndicator())
+                                : listItem(index);
+                          },
+                        ))
             : noInternet(context));
   }
 
   Widget listItem(int index) {
-    Notification_Model model = notiList[index];
+    NotificationModel model = notiList[index];
     return Card(
       elevation: 0,
       child: Padding(
@@ -163,18 +167,18 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
             ),
             model.img != null && model.img != ''
                 ? Container(
-              width: 50,
-              height: 50,
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(3.0),
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(model.img),
-                    radius: 25,
-                  )),
-            )
+                    width: 50,
+                    height: 50,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(3.0),
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(model.img),
+                          radius: 25,
+                        )),
+                  )
                 : Container(
-              height: 0,
-            ),
+                    height: 0,
+                  ),
           ],
         ),
       ),
@@ -191,9 +195,9 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
         };
 
         Response response =
-        await post(getNotificationApi, headers: headers, body: parameter)
-            .timeout(Duration(seconds: timeOut));
-        if(response.statusCode==200) {
+            await post(getNotificationApi, headers: headers, body: parameter)
+                .timeout(Duration(seconds: timeOut));
+        if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
           String msg = getdata["message"];
@@ -205,7 +209,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
               tempList.clear();
               var data = getdata["data"];
               tempList = (data as List)
-                  .map((data) => new Notification_Model.fromJson(data))
+                  .map((data) => new NotificationModel.fromJson(data))
                   .toList();
 
               notiList.addAll(tempList);
@@ -217,19 +221,20 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
             isLoadingmore = false;
           }
         }
-        if (mounted)
-           if (mounted) setState(() {
+        if (mounted) if (mounted)
+          setState(() {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
-        setSnackbar( getTranslated(context,'somethingMSg'));
-         if (mounted) setState(() {
-          _isLoading = false;
-          isLoadingmore = false;
-        });
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+            isLoadingmore = false;
+          });
       }
-    } else
-       if (mounted) setState(() {
+    } else if (mounted)
+      setState(() {
         _isNetworkAvail = false;
       });
 
@@ -237,7 +242,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -252,11 +257,12 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {
-         if (mounted) setState(() {
-          isLoadingmore = true;
+        if (mounted)
+          setState(() {
+            isLoadingmore = true;
 
-          if (offset < total) getNotification();
-        });
+            if (offset < total) getNotification();
+          });
       }
     }
   }

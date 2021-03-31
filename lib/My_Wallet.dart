@@ -48,7 +48,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
     'assets/images/stripe.svg',
     'assets/images/paytm.svg',
   ];
-  List<RadioModel> payModel = new List<RadioModel>();
+  List<RadioModel> payModel = [];
   bool paypal, razorpay, paumoney, paystack, flutterwave, stripe, paytm;
   String razorpayId,
       paystackId,
@@ -69,6 +69,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   int offset = 0;
   int total = 0;
   bool isLoadingmore = true, _isLoading = true, payTesting = true;
+  final paystackPlugin = PaystackPlugin();
 
   @override
   void initState() {
@@ -328,7 +329,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                     )
                   ]),
               actions: <Widget>[
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'CANCEL'),
                       style: Theme.of(this.context)
@@ -341,7 +342,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                     onPressed: () {
                       Navigator.pop(context);
                     }),
-                new FlatButton(
+                new TextButton(
                     child: Text(
                       getTranslated(context, 'SEND'),
                       style: Theme.of(this.context)
@@ -414,7 +415,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
       String msg = getdata["message"];
       if (!error) {
         String data = getdata["data"];
-        print(data);
+
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -519,11 +520,11 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
           price.toString(), callBackUrl, payTesting);
 
       paytmResponse.then((value) {
-        print(value);
+
         setState(() {
           _isProgress = false;
 
-          print(value);
+
           if (value['error']) {
             payment_response = value['errorMessage'];
           } else {
@@ -549,7 +550,9 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
       });
 
     var response = await StripeService.payWithNewCard(
-        amount: (price * 100).toString(), currency: stripeCurCode,from: "wallet");
+        amount: (price * 100).toString(),
+        currency: stripeCurCode,
+        from: "wallet");
 
     if (mounted)
       setState(() {
@@ -572,7 +575,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
       ..email = email;
 
     try {
-      CheckoutResponse response = await PaystackPlugin.checkout(
+      CheckoutResponse response = await paystackPlugin.checkout(
         context,
         method: CheckoutMethod.card,
         charge: charge,
@@ -605,7 +608,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     //placeOrder(response.paymentId);
-     sendRequest(response.paymentId, "RazorPay");
+    sendRequest(response.paymentId, "RazorPay");
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -668,7 +671,8 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Expanded(
@@ -683,7 +687,6 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
-
                         Text(tranList[index].date),
                       ],
                     ),
@@ -759,6 +762,8 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   Future<Null> getTransaction() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
+
+ CUR_USERID = await getPrefrence(ID);
       try {
         var parameter = {
           LIMIT: perPage.toString(),
@@ -767,18 +772,18 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
           TRANS_TYPE: WALLET
         };
 
-        Response response =
+        var response =
             await post(getWalTranApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-
-        if (response.statusCode == 200) {
+         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
-          String msg = getdata["message"];
+          // String msg = getdata["message"];
 
           if (!error) {
             total = int.parse(getdata["total"]);
-
+      getdata.containsKey("balance");   
+       CUR_BALANCE = getdata["balance"];
             if ((offset) < total) {
               tempList.clear();
               var data = getdata["data"];
@@ -827,11 +832,10 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         Response response =
             await post(getWalTranApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
-          String msg = getdata["message"];
+          // String msg = getdata["message"];
 
           if (!error) {
             total = int.parse(getdata["total"]);
@@ -872,7 +876,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -947,7 +951,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
             if (paystack) {
               paystackId = payment["paystack_key_id"];
 
-              PaystackPlugin.initialize(publicKey: paystackId);
+              paystackPlugin.initialize(publicKey: paystackId);
             }
             if (stripe) {
               stripeId = payment['stripe_publishable_key'];
@@ -989,7 +993,6 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   }
 
   showContent() {
-
     return RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: _refresh,
@@ -1023,7 +1026,10 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                           ),
                         ],
                       ),
-                      Text(CUR_CURRENCY + " " + double.parse(CUR_BALANCE).toStringAsFixed(2),
+                      Text(
+                          CUR_CURRENCY +
+                              " " +
+                              double.parse(CUR_BALANCE).toStringAsFixed(2),
                           style: Theme.of(context).textTheme.headline6.copyWith(
                               color: colors.fontColor,
                               fontWeight: FontWeight.bold)),

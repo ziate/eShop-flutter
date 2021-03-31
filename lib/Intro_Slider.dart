@@ -1,21 +1,20 @@
 
-import 'package:eshop/Helper/Constant.dart';
+
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Helper/String.dart';
 import 'package:eshop/SignInUpAcc.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-class Intro_Slider extends StatefulWidget {
+class IntroSlider extends StatefulWidget {
   @override
   _GettingStartedScreenState createState() => _GettingStartedScreenState();
 }
 
-class _GettingStartedScreenState extends State<Intro_Slider>
+class _GettingStartedScreenState extends State<IntroSlider>
     with TickerProviderStateMixin {
   int _currentPage = 0;
   final PageController _pageController = PageController(initialPage: 0);

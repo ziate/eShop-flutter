@@ -1,7 +1,7 @@
 import 'package:eshop/Helper/String.dart';
 import 'package:intl/intl.dart';
 
-class Order_Model {
+class OrderModel {
   String id,
       name,
       mobile,
@@ -31,7 +31,7 @@ class Order_Model {
   List<String> listStatus = [];
   List<String> listDate = [];
 
-  Order_Model(
+  OrderModel(
       {this.id,
         this.name,
         this.mobile,
@@ -60,7 +60,7 @@ class Order_Model {
         this.otp,this.invoice,
         this.deliveryBoyId});
 
-  factory Order_Model.fromJson(Map<String, dynamic> parsedJson) {
+  factory OrderModel.fromJson(Map<String, dynamic> parsedJson) {
     List<OrderItem> itemList=[];
     var order=(parsedJson[ORDER_ITEMS] as List);
     if (order == null || order.isEmpty) return null;
@@ -78,7 +78,7 @@ class Order_Model {
       lStatus.add(curStatus[0]);
       lDate.add(curStatus[1]);
     }
-    return new Order_Model(
+    return new OrderModel(
         id: parsedJson[ID],
         name: parsedJson[USERNAME],
         mobile: parsedJson[MOBILE],

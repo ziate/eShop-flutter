@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:eshop/Cart.dart';
 import 'package:eshop/ProductList.dart';
 import 'package:eshop/Rating_Review.dart';
-import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -17,6 +15,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 
 import 'Favorite.dart';
 import 'Helper/AppBtn.dart';
@@ -153,17 +152,14 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     else
       documentDirectory = (await getExternalStorageDirectory()).path;
 
-    var request = await HttpClient().getUrl(Uri.parse(widget.model.image));
-    var response = await request.close();
-    Uint8List bytes = await consolidateHttpClientResponseBytes(response);
-    await Share.file(
-      widget.model.name,
-      '${widget.model.name}.jpg',
-      bytes,
-      'image/jpg',
-      text:
-          "${widget.model.name}\n${shortenedLink.shortUrl.toString()}\n$shareLink",
-    );
+    final response1 = await get(Uri.parse(widget.model.image));
+    final bytes1 = response1.bodyBytes;
+
+    final File imageFile = File('$documentDirectory/${widget.model.name}.png');
+    imageFile.writeAsBytesSync(bytes1);
+    Share.shareFiles(['$documentDirectory/${widget.model.name}.png'],
+        text:
+            "${widget.model.name}\n${shortenedLink.shortUrl.toString()}\n$shareLink");
   }
 
   Future<Null> _playAnimation() async {
@@ -608,7 +604,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -670,34 +666,32 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       shrinkWrap: true,
                       itemCount: att.length,
                       itemBuilder: (context, index) {
-
                         return Row(
-
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                          Flexible(
-                            child: Text(
-                              att[index].trim() + ":",
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(color: colors.lightBlack),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsetsDirectional.only(start: 5.0),
-                            child: Text(
-                              val[index],
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  .copyWith(
-                                      color: colors.lightBlack,
-                                      fontWeight: FontWeight.bold),
-                            ),
-                          )
-                        ]);
+                              Flexible(
+                                child: Text(
+                                  att[index].trim() + ":",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(color: colors.lightBlack),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsetsDirectional.only(start: 5.0),
+                                child: Text(
+                                  val[index],
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .subtitle2
+                                      .copyWith(
+                                          color: colors.lightBlack,
+                                          fontWeight: FontWeight.bold),
+                                ),
+                              )
+                            ]);
                       }),
                 ),
               ),
@@ -823,7 +817,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     physics: NeverScrollableScrollPhysics(),
                     itemCount: widget.model.attributeList.length,
                     itemBuilder: (context, index) {
-                      List<Widget> chips = new List();
+                      List<Widget> chips = [];
                       List<String> att =
                           widget.model.attributeList[index].value.split(',');
                       List<String> attId =
@@ -1637,7 +1631,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               notificationisloadmore = false;
               notificationisgettingdata = true;
               if (notificationoffset == 0) {
-                productList = new List<Product>();
+                productList = [];
               }
             });
 
@@ -1658,7 +1652,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
           var getdata = json.decode(response.body);
 
           bool error = getdata["error"];
-          String msg = getdata["message"];
+          // String msg = getdata["message"];
 
           notificationisgettingdata = false;
           if (notificationoffset == 0) notificationisnodata = error;
@@ -1671,8 +1665,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                         List mainlist = getdata['data'];
 
                         if (mainlist.length != 0) {
-                          List<Product> items = new List<Product>();
-                          List<Product> allitems = new List<Product>();
+                          List<Product> items = [];
+                          List<Product> allitems = [];
 
                           items.addAll(mainlist
                               .map((data) => new Product.fromJson(data))
@@ -1961,7 +1955,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   _tags() {
     if (widget.model.tagList != null) {
-      List<Widget> chips = new List();
+      List<Widget> chips = [];
       for (int i = 0; i < widget.model.tagList.length; i++) {
         tagChip = ChoiceChip(
           selected: false,
@@ -2006,7 +2000,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
 
   _gaurantee() {
     String gaurantee = widget.model.gurantee;
-
 
     return gaurantee != null && gaurantee.isNotEmpty
         ? Padding(

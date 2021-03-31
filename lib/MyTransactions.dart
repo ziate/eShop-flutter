@@ -26,8 +26,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+
   List<TransactionModel> tempList = [];
 
   @override
@@ -98,11 +97,10 @@ class _TransactionHistoryState extends State<TransactionHistory> {
             await post(getWalTranApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
-
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
-          String msg = getdata["message"];
+          // String msg = getdata["message"];
 
           if (!error) {
             total = int.parse(getdata["total"]);
@@ -143,7 +141,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
   }
 
   setSnackbar(String msg) {
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -173,10 +171,10 @@ class _TransactionHistoryState extends State<TransactionHistory> {
     Color back;
     if (tranList[index].status.toLowerCase().contains("success")) {
       back = Colors.green;
-    } else if(tranList[index].status.toLowerCase().contains("failure"))
+    } else if (tranList[index].status.toLowerCase().contains("failure"))
       back = Colors.red;
     else
-      back=Colors.orange;
+      back = Colors.orange;
     return Card(
       elevation: 0,
       margin: EdgeInsets.all(5.0),
@@ -206,7 +204,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                     ),
                     Divider(),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical:4.0),
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
@@ -217,8 +215,8 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                           ),
                           Container(
                             margin: EdgeInsets.only(left: 8),
-                            padding:
-                                EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 2),
                             decoration: BoxDecoration(
                                 color: back,
                                 borderRadius: new BorderRadius.all(
@@ -238,7 +236,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                             tranList[index].type)
                         : Container(),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical:4.0),
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: tranList[index].msg != null &&
                               tranList[index].msg.isNotEmpty
                           ? Text(getTranslated(context, 'MSG') +
