@@ -37,6 +37,8 @@ class StatePayPalWebview extends State<PaypalWebview> {
 
   @override
   Widget build(BuildContext context) {
+
+    print(widget.url);
     return new Scaffold(
       key: scaffoldKey,
         appBar:  AppBar(

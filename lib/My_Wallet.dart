@@ -129,18 +129,29 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   }
 
   Widget paymentItem(int index) {
-    return new InkWell(
-      onTap: () {
-        if (mounted)
-          dialogState(() {
-            selectedMethod = index;
-            payMethod = paymentMethodList[selectedMethod];
-            payModel.forEach((element) => element.isSelected = false);
-            payModel[index].isSelected = true;
-          });
-      },
-      child: new RadioItem(payModel[index]),
-    );
+
+    if (index == 0 && paypal ||
+        index == 1 && razorpay ||
+        index == 2 && paystack ||
+        index == 3 && flutterwave ||
+        index == 4 && stripe ||
+        index == 5 && paytm) {
+
+
+      return InkWell(
+        onTap: () {
+          if (mounted)
+            dialogState(() {
+              selectedMethod = index;
+              payMethod = paymentMethodList[selectedMethod];
+              payModel.forEach((element) => element.isSelected = false);
+              payModel[index].isSelected = true;
+            });
+        },
+        child: new RadioItem(payModel[index]),
+      );
+    } else
+      return Container();
   }
 
   Future<Null> sendRequest(String txnId, String payMethod) async {
@@ -520,10 +531,8 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
           price.toString(), callBackUrl, payTesting);
 
       paytmResponse.then((value) {
-
         setState(() {
           _isProgress = false;
-
 
           if (value['error']) {
             payment_response = value['errorMessage'];
@@ -762,8 +771,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
   Future<Null> getTransaction() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
-
- CUR_USERID = await getPrefrence(ID);
+      CUR_USERID = await getPrefrence(ID);
       try {
         var parameter = {
           LIMIT: perPage.toString(),
@@ -775,15 +783,18 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
         var response =
             await post(getWalTranApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-         if (response.statusCode == 200) {
+
+        print("val****$parameter***${response.body.toString()}");
+        if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
           // String msg = getdata["message"];
 
           if (!error) {
             total = int.parse(getdata["total"]);
-      getdata.containsKey("balance");   
-       CUR_BALANCE = getdata["balance"];
+            getdata.containsKey("balance");
+            CUR_BALANCE = getdata["balance"];
+
             if ((offset) < total) {
               tempList.clear();
               var data = getdata["data"];

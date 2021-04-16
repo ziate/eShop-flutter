@@ -24,7 +24,6 @@ class SectionModel {
       this.perItemTotal,
       this.perItemPrice,
       this.style,
-
       this.totalItem,
       this.offset,
       this.selectedId,
@@ -46,7 +45,6 @@ class SectionModel {
         id: parsedJson[ID],
         title: parsedJson[TITLE],
         style: parsedJson[STYLE],
-     
         productList: productList,
         offset: 0,
         totalItem: 0,
@@ -92,12 +90,15 @@ class Product {
       attrIds,
       tax,
       categoryId,
-      shortDescription;
+      shortDescription,
+      qtyStepSize;
+  List<String> itemsCounter;
   List<String> otherImage;
   List<Product_Varient> prVarientList;
   List<Attribute> attributeList;
   List<String> selectedId = [];
   List<String> tagList = [];
+  int minOrderQuntity;
   String isFav,
       isReturnable,
       isCancelable,
@@ -161,6 +162,9 @@ class Product {
       this.videType,
       this.tagList,
       this.warranty,
+      this.qtyStepSize,
+      this.minOrderQuntity,
+      this.itemsCounter,
       this.gurantee});
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -183,6 +187,13 @@ class Product {
     List<String> selected = [];
 
     List<String> tags = List<String>.from(json[TAG]);
+
+    List<String> items = new List<String>.generate(
+        json[TOTALALOOW] != null ? int.parse(json[TOTALALOOW]) : 10, (i) {
+
+      return ((i + 1) * int.parse(json[QTYSTEP])).toString();
+      
+    });
 
     return new Product(
         id: json[ID],
@@ -218,7 +229,10 @@ class Product {
         video: json[VIDEO],
         videType: json[VIDEO_TYPE],
         tagList: tags,
+        itemsCounter: items,
         warranty: json[WARRANTY],
+        minOrderQuntity: int.parse(json[MINORDERQTY]),
+        qtyStepSize: json[QTYSTEP],
         gurantee: json[GAURANTEE]);
   }
 

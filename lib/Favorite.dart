@@ -203,7 +203,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                     fontWeight: FontWeight.w600),
                               ),
                               Text(
-                                int.parse(favList[index]
+                                double.parse(favList[index]
                                             .productList[0]
                                             .prVarientList[selectedPos]
                                             .disPrice) !=
@@ -409,15 +409,23 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           setState(() {
             _isProgress = true;
           });
-        var parameter = {
-          PRODUCT_VARIENT_ID: favList[index].productList[0].prVarientList[0].id,
-          USER_ID: CUR_USERID,
-          QTY: (int.parse(favList[index]
+String qty=(int.parse(favList[index]
                       .productList[0]
                       .prVarientList[0]
                       .cartCount) +
-                  1)
-              .toString(),
+                  int.parse(favList[index].productList[0].qtyStepSize))
+              .toString();
+
+
+ if (int.parse(qty) < favList[index].productList[0].minOrderQuntity) {
+            qty = favList[index].productList[0].minOrderQuntity.toString();
+            setSnackbar('Minimum order quantity is $qty');
+          }
+
+        var parameter = {
+          PRODUCT_VARIENT_ID: favList[index].productList[0].prVarientList[0].id,
+          USER_ID: CUR_USERID,
+          QTY: qty,
         };
 
         Response response =
@@ -472,73 +480,73 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
     ));
   }
 
-  removeFromCart(int index, bool remove) async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      try {
-        if (mounted)
-          setState(() {
-            _isProgress = true;
-          });
+  // removeFromCart(int index, bool remove) async {
+  //   _isNetworkAvail = await isNetworkAvailable();
+  //   if (_isNetworkAvail) {
+  //     try {
+  //       if (mounted)
+  //         setState(() {
+  //           _isProgress = true;
+  //         });
 
-        var parameter = {
-          USER_ID: CUR_USERID,
-          QTY: remove
-              ? "0"
-              : (int.parse(favList[index]
-                          .productList[0]
-                          .prVarientList[0]
-                          .cartCount) -
-                      1)
-                  .toString(),
-          PRODUCT_VARIENT_ID: favList[index].productList[0].prVarientList[0].id
-        };
+  //       var parameter = {
+  //         USER_ID: CUR_USERID,
+  //         QTY: remove
+  //             ? "0"
+  //             : (int.parse(favList[index]
+  //                         .productList[0]
+  //                         .prVarientList[0]
+  //                         .cartCount) -
+  //                     1)
+  //                 .toString(),
+  //         PRODUCT_VARIENT_ID: favList[index].productList[0].prVarientList[0].id
+  //       };
 
-        Response response =
-            await post(manageCartApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
-        if (response.statusCode == 200) {
-          var getdata = json.decode(response.body);
+  //       Response response =
+  //           await post(manageCartApi, body: parameter, headers: headers)
+  //               .timeout(Duration(seconds: timeOut));
+  //       if (response.statusCode == 200) {
+  //         var getdata = json.decode(response.body);
 
-          bool error = getdata["error"];
-          String msg = getdata["message"];
-          if (!error) {
-            var data = getdata["data"];
+  //         bool error = getdata["error"];
+  //         String msg = getdata["message"];
+  //         if (!error) {
+  //           var data = getdata["data"];
 
-            String qty = data['total_quantity'];
-            CUR_CART_COUNT = data['cart_count'];
+  //           String qty = data['total_quantity'];
+  //           CUR_CART_COUNT = data['cart_count'];
 
-            if (remove)
-              favList.removeWhere(
-                  (item) => item.varientId == favList[index].varientId);
-            else {
-              favList[index].productList[0].prVarientList[0].cartCount =
-                  qty.toString();
-            }
+  //           if (remove)
+  //             favList.removeWhere(
+  //                 (item) => item.varientId == favList[index].varientId);
+  //           else {
+  //             favList[index].productList[0].prVarientList[0].cartCount =
+  //                 qty.toString();
+  //           }
 
-            widget.update();
-          } else {
-            setSnackbar(msg);
-          }
-          if (mounted)
-            setState(() {
-              _isProgress = false;
-            });
-        }
-      } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-          });
-      }
-    } else {
-      if (mounted)
-        setState(() {
-          _isNetworkAvail = false;
-        });
-    }
-  }
+  //           widget.update();
+  //         } else {
+  //           setSnackbar(msg);
+  //         }
+  //         if (mounted)
+  //           setState(() {
+  //             _isProgress = false;
+  //           });
+  //       }
+  //     } on TimeoutException catch (_) {
+  //       setSnackbar(getTranslated(context, 'somethingMSg'));
+  //       if (mounted)
+  //         setState(() {
+  //           _isProgress = false;
+  //         });
+  //     }
+  //   } else {
+  //     if (mounted)
+  //       setState(() {
+  //         _isNetworkAvail = false;
+  //       });
+  //   }
+  // }
 
   _removeFav(int index) async {
     _isNetworkAvail = await isNetworkAvailable();

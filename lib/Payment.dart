@@ -469,7 +469,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                 .timeout(Duration(seconds: timeOut));
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
-
+print("res****${response.body.toString()}");
           bool error = getdata["error"];
           // String msg = getdata["message"];
           if (!error) {

@@ -42,7 +42,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
   String sortBy = 'p.id', orderBy = "DESC";
-  var items;
+ 
   List<String> attsubList;
   List<String> attListId;
   String filter = "", selId = "";
@@ -350,6 +350,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                   child: Material(
                       color: Colors.transparent,
                       child: PopupMenuButton(
+                        
                         padding: EdgeInsets.zero,
                         onSelected: (value) {
                           switch (value) {
@@ -467,9 +468,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       _controller.add(new TextEditingController());
 
     _controller[index].text = model.prVarientList[model.selVarient].cartCount;
-    items = new List<String>.generate(
-        model.totalAllow != null ? int.parse(model.totalAllow) : 10,
-        (i) => (i + 1).toString());
+   
 
 
     return Card(
@@ -728,7 +727,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                                                   },
                                                   itemBuilder:
                                                       (BuildContext context) {
-                                                    return items.map<
+                                                    return model.itemsCounter.map<
                                                             PopupMenuItem<
                                                                 String>>(
                                                         (String value) {
@@ -762,11 +761,11 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                                               if (_isProgress == false)
                                                 addToCart(
                                                     index,
-                                                    (int.parse(model
+                                                    ((int.parse(model
                                                                 .prVarientList[model
                                                                     .selVarient]
-                                                                .cartCount) +
-                                                            1)
+                                                                .cartCount)) +
+                                                           int.parse(model.qtyStepSize) )
                                                         .toString());
                                             },
                                           )
@@ -813,6 +812,14 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
             setState(() {
               _isProgress = true;
             });
+
+
+  if (int.parse(qty) < model.minOrderQuntity) {
+            qty = model.minOrderQuntity.toString();
+            setSnackbar('Minimum order quantity is $qty');
+          }
+          
+
           var parameter = {
             USER_ID: CUR_USERID,
             PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
@@ -873,11 +880,21 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
               _isProgress = true;
             });
 
+ int qty;
+
+          qty =  (int.parse(model.prVarientList[model.selVarient].cartCount) -   int.parse(model.qtyStepSize));
+
+          if (qty <model.minOrderQuntity) {
+            qty = 0;
+          }
+
+
+
           var parameter = {
             PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
             USER_ID: CUR_USERID,
             QTY:
-                (int.parse(model.prVarientList[model.selVarient].cartCount) - 1)
+               qty
                     .toString()
           };
 
@@ -1318,9 +1335,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
       _controller.add(new TextEditingController());
 
     _controller[index].text = model.prVarientList[model.selVarient].cartCount;
-    items = new List<String>.generate(
-        model.totalAllow != null ? int.parse(model.totalAllow) : 10,
-        (i) => (i + 1).toString());
+   
 
     if (price == 0)
       price = double.parse(model.prVarientList[model.selVarient].price);
@@ -1594,7 +1609,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                                                 },
                                                 itemBuilder:
                                                     (BuildContext context) {
-                                                  return items.map<
+                                                  return model.itemsCounter.map<
                                                           PopupMenuItem<
                                                               String>>(
                                                       (String value) {
@@ -1626,11 +1641,11 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                                             if (_isProgress == false)
                                               addToCart(
                                                   index,
-                                                  (int.parse(model
+                                                  ((int.parse(model
                                                               .prVarientList[model
                                                                   .selVarient]
-                                                              .cartCount) +
-                                                          1)
+                                                              .cartCount)) +
+                                                         int.parse(model.qtyStepSize) )
                                                       .toString());
                                           },
                                         )

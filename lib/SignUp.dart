@@ -584,7 +584,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       var data = {
         REFERCODE: refer,
       };
-
+      print("refer****$data");
       Response response =
           await post(validateReferalApi, body: data, headers: headers)
               .timeout(Duration(seconds: timeOut));
@@ -592,7 +592,6 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       var getdata = json.decode(response.body);
 
       bool error = getdata["error"];
-     
 
       if (!error) {
         referCode = refer;

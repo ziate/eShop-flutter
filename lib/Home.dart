@@ -294,7 +294,6 @@ class StateHome extends State<Home> {
         }
       }
     }, onError: (OnLinkErrorException e) async {
-
       print(e.message);
     });
 
@@ -459,10 +458,24 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                             _slider(),
                             _catHeading(),
                             _catList(),
-                            _section()
+                            _section(),
+                            _esxtraOffer()
                           ],
                         )))
             : noInternet(context));
+  }
+
+  _esxtraOffer() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: offerImages.length >= sectionList.length
+          ? offerImages.length - sectionList.length
+          : 0,
+      physics: NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return _getOfferImage(sectionList.length + index);
+      },
+    );
   }
 
   Widget noInternet(BuildContext context) {
@@ -1321,7 +1334,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
-
+        print("url***$getSliderApi***$jwtKey");
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
@@ -1438,6 +1451,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           CUR_CURRENCY = data["currency"];
           RETURN_DAYS = data['max_product_return_days'];
           MAX_ITEMS = data["max_items_cart"];
+          MIN_AMT = data['min_amount'];
+          CUR_DEL_CHR = data['delivery_charge'];
+          print("res***$data***$MIN_AMT");
           extendImg = data["expand_product_images"] == "1" ? true : false;
           String del = data["area_wise_delivery_charge"];
           if (del == "0")

@@ -120,6 +120,8 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
             await post(getAddressApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
+print("res***${response.body.toString()}");
+
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
         // String msg = getdata["message"];
@@ -344,6 +346,8 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
                 delCharge = 0;
               totalPrice = totalPrice - delCharge;
 
+
+ addressList.removeWhere((item) => item.id == addressList[index].id);
               selectedAddress = 0;
               selAddress = addressList[0].id;
 
@@ -355,13 +359,17 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
                 delCharge = 0;
 
               totalPrice = totalPrice + delCharge;
-            } else
+            } else{
+               addressList.removeWhere((item) => item.id == addressList[index].id);
               selAddress = null;
+
+          }
           } else {
+             addressList.removeWhere((item) => item.id == addressList[index].id);
             selAddress = null;
           }
 
-          addressList.removeWhere((item) => item.id == addressList[index].id);
+         // addressList.removeWhere((item) => item.id == addressList[index].id);
 
           addModel.clear();
           addAddressModel();

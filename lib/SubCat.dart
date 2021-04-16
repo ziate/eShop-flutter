@@ -61,7 +61,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
 
   _SubCatState({this.subList});
 
-  var items;
+
 
   @override
   void initState() {
@@ -495,9 +495,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
       _controller.add(new TextEditingController());
 
     _controller[index].text = model.prVarientList[model.selVarient].cartCount;
-    items = new List<String>.generate(
-        model.totalAllow != null ? int.parse(model.totalAllow) : 10,
-        (i) => (i + 1).toString());
+   
     return subItem.length >= index
         ? Card(
             elevation: 0,
@@ -755,7 +753,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                                             itemBuilder:
                                                                 (BuildContext
                                                                     context) {
-                                                              return items.map<
+                                                              return model.itemsCounter.map<
                                                                   PopupMenuItem<
                                                                       String>>((String
                                                                   value) {
@@ -798,10 +796,12 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                                           addToCart(
                                                               index,
                                                               (int.parse(model
-                                                                          .prVarientList[
-                                                                              model.selVarient]
+                                                                          .prVarientList[model
+                                                                              .selVarient]
                                                                           .cartCount) +
-                                                                      1)
+                                                                      int.parse(
+                                                                          model
+                                                                              .qtyStepSize))
                                                                   .toString(),
                                                               model);
                                                       },
@@ -841,6 +841,12 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
               _isProgress = true;
               _views[_tc.index] = createTabContent(_tc.index, subList);
             });
+
+              if (int.parse(qty) < model.minOrderQuntity) {
+            qty = model.minOrderQuntity.toString();
+            setSnackbar('Minimum order quantity is $qty');
+          }
+          
           var parameter = {
             USER_ID: CUR_USERID,
             PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
@@ -904,12 +910,22 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
               _views[_tc.index] = createTabContent(_tc.index, subList);
             });
 
+     int qty;
+
+          qty =  (int.parse(model.prVarientList[model.selVarient].cartCount) -
+                    int.parse(model.qtyStepSize));
+
+          if (qty < model.minOrderQuntity) {
+            qty = 0;
+          }
+
+
+
           var parameter = {
             PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
             USER_ID: CUR_USERID,
             QTY:
-                (int.parse(model.prVarientList[model.selVarient].cartCount) - 1)
-                    .toString()
+                qty.toString()
           };
 
           Response response =

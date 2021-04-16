@@ -41,7 +41,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   bool notificationisloadmore = true,
       notificationisgettingdata = false,
       notificationisnodata = false;
-  var items;
+
   AnimationController _animationController;
 
   @override
@@ -50,7 +50,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     productList.clear();
 
     notificationoffset = 0;
-  
+
     notificationcontroller = ScrollController(keepScrollOffset: true);
     notificationcontroller.addListener(_transactionscrollListener);
 
@@ -58,18 +58,16 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
       if (_controller.text.isEmpty) {
         if (mounted)
           setState(() {
-         
             _searchText = "";
           });
       } else {
         if (mounted)
           setState(() {
-   
             _searchText = _controller.text;
           });
       }
 
-      if (_lastsearch != _searchText) {
+      if (_lastsearch != _searchText && (_searchText.length > 2)) {
         _lastsearch = _searchText;
         notificationisloadmore = true;
         notificationoffset = 0;
@@ -197,6 +195,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                 borderSide: BorderSide(color: colors.white),
               ),
             ),
+            // onChanged: (query) => updateSearchQuery(query),
           ),
           titleSpacing: 0,
           actions: [
@@ -278,10 +277,6 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
 
     _controllerList[index].text =
         model.prVarientList[model.selVarient].cartCount;
-
-    items = new List<String>.generate(
-        model.totalAllow != null ? int.parse(model.totalAllow) : 10,
-        (i) => (i + 1).toString());
 
     double price = double.parse(model.prVarientList[model.selVarient].disPrice);
     if (price == 0)
@@ -525,10 +520,12 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                                                           itemBuilder:
                                                               (BuildContext
                                                                   context) {
-                                                            return items.map<
+                                                            return model
+                                                                .itemsCounter
+                                                                .map<
                                                                     PopupMenuItem<
-                                                                        String>>(
-                                                                (String value) {
+                                                                        String>>((String
+                                                                    value) {
                                                               return new PopupMenuItem(
                                                                   child:
                                                                       new Text(
@@ -565,11 +562,12 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                                                       if (_isProgress == false)
                                                         addToCart(
                                                             index,
-                                                            (int.parse(model
-                                                                        .prVarientList[
-                                                                            model.selVarient]
-                                                                        .cartCount) +
-                                                                    1)
+                                                            ((int.parse(model
+                                                                        .prVarientList[model
+                                                                            .selVarient]
+                                                                        .cartCount)) +
+                                                                    int.parse(model
+                                                                        .qtyStepSize))
                                                                 .toString());
                                                     },
                                                   )
@@ -628,6 +626,12 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             setState(() {
               _isProgress = true;
             });
+
+          if (int.parse(qty) < productList[index].minOrderQuntity) {
+            qty = productList[index].minOrderQuntity.toString();
+            setSnackbar('Minimum order quantity is $qty');
+          }
+
           var parameter = {
             USER_ID: CUR_USERID,
             PRODUCT_VARIENT_ID: productList[index]
@@ -685,14 +689,22 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             setState(() {
               _isProgress = true;
             });
+
+          int qty;
+
+          qty = (int.parse(productList[index]
+                  .prVarientList[model.selVarient]
+                  .cartCount) -
+              int.parse(productList[index].qtyStepSize));
+
+          if (qty < productList[index].minOrderQuntity) {
+            qty = 0;
+          }
+
           var parameter = {
             PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
             USER_ID: CUR_USERID,
-            QTY: (int.parse(productList[index]
-                        .prVarientList[model.selVarient]
-                        .cartCount) -
-                    1)
-                .toString()
+            QTY: qty.toString()
           };
 
           Response response =

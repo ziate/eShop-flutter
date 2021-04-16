@@ -25,37 +25,40 @@ class AppBtn extends StatelessWidget {
 
 
   Widget _buildBtnAnimation(BuildContext context, Widget child) {
-    return CupertinoButton(
-      child: Container(
-        width: btnAnim.value,
-        height: 45,
-        margin: EdgeInsetsDirectional.only(top:25),
-        alignment: FractionalOffset.center,
-        decoration: new BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [colors.grad1Color, colors.grad2Color],
-              stops: [0, 1]),
+    return Padding(
+      padding: EdgeInsets.only(top: 25),
+      child: CupertinoButton(
+        child: Container(
+          width: btnAnim.value,
+          height: 45,
 
-          borderRadius: new BorderRadius.all(const Radius.circular(10.0)),
+          alignment: FractionalOffset.center,
+          decoration: new BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [colors.grad1Color, colors.grad2Color],
+                stops: [0, 1]),
+
+            borderRadius: new BorderRadius.all(const Radius.circular(10.0)),
+          ),
+          child: btnAnim.value > 75.0
+              ? Text(title,
+              textAlign: TextAlign.center,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline6
+                  .copyWith(color: colors.white, fontWeight: FontWeight.normal))
+              : new CircularProgressIndicator(
+            valueColor: new AlwaysStoppedAnimation<Color>(colors.white),
+          ),
         ),
-        child: btnAnim.value > 75.0
-            ? Text(title,
-            textAlign: TextAlign.center,
-            style: Theme
-                .of(context)
-                .textTheme
-                .headline6
-                .copyWith(color: colors.white, fontWeight: FontWeight.normal))
-            : new CircularProgressIndicator(
-          valueColor: new AlwaysStoppedAnimation<Color>(colors.white),
-        ),
+
+        onPressed: () {
+          onBtnSelected();
+        },
       ),
-
-      onPressed: () {
-        onBtnSelected();
-      },
     );
   }
 

@@ -1177,7 +1177,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
         String msg = getdata["message"];
-       if (!error) {
+        if (!error) {
           Future.delayed(Duration(seconds: 1)).then((_) async {
             Navigator.pop(context);
           });
@@ -1258,9 +1258,13 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
 
               var targetFileName = "Invoice_${widget.model.id}";
               var generatedPdfFile;
-
-              generatedPdfFile = await FlutterHtmlToPdf.convertFromHtmlContent(
-                  widget.model.invoice, targetPath, targetFileName);
+              try {
+                generatedPdfFile =
+                    await FlutterHtmlToPdf.convertFromHtmlContent(
+                        widget.model.invoice, targetPath, targetFileName);
+              } catch (Exception) {
+                print("exception***");
+              }
 
               if (mounted)
                 setState(() {

@@ -1,3 +1,7 @@
+
+
+
+
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -412,7 +416,7 @@ String getToken() {
       new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
 
   String token = issueJwtHS256(claimSet, jwtKey);
-
+print("token****$token");
   return token;
 }
 

@@ -2,6 +2,7 @@ import 'package:eshop/Helper/Color.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:video_player/video_player.dart';
 import 'Helper/vimeoplayer.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -97,6 +98,45 @@ class StatePreview extends State<ProductPreview> {
               .id}${widget.secPos}${widget.index}",
           child: Stack(
             children: <Widget>[
+             widget.video == ""?
+               Container(
+                   child: PhotoViewGallery.builder(
+                     scrollPhysics: const BouncingScrollPhysics(),
+                     builder: (BuildContext context, int index) {
+                       return PhotoViewGalleryPageOptions(
+
+                           initialScale: PhotoViewComputedScale.contained * 0.9,
+                           minScale: PhotoViewComputedScale.contained * 0.9,
+                           imageProvider: NetworkImage(widget.imgList[index])
+
+                       );
+                     },
+                     itemCount: widget.imgList.length,
+                     loadingBuilder: (context, event) =>
+                         Center(
+                           child: Container(
+                             width: 20.0,
+                             height: 20.0,
+                             child: CircularProgressIndicator(
+                               value: event == null
+                                   ? 0
+                                   : event.cumulativeBytesLoaded / event
+                                   .expectedTotalBytes,
+                             ),
+                           ),
+                         ),
+                     backgroundDecoration: BoxDecoration(
+                         color: colors.white),
+                     pageController: PageController(initialPage: curPos),
+                     onPageChanged: (index) {
+                       if (mounted)
+                         setState(() {
+                           curPos = index;
+                         });
+                     },
+                   )
+               )
+             :
               PageView.builder(
                   itemCount: widget.imgList.length,
                   controller: PageController(initialPage: curPos),
@@ -160,6 +200,8 @@ class StatePreview extends State<ProductPreview> {
                             color: colors.white),
                         initialScale: PhotoViewComputedScale.contained * 0.9,
                         minScale: PhotoViewComputedScale.contained * 0.9,
+                        gaplessPlayback: false,
+                        customSize: MediaQuery.of(context).size,
                         imageProvider: NetworkImage(widget.imgList[index]));
                   }),
               Positioned(
