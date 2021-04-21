@@ -31,6 +31,7 @@ class PushNotificationService {
   Future initialise() async {
     iOSPermission();
     messaging.getToken().then((token) async {
+      print("fireabse token**$token");
       CUR_USERID = await getPrefrence(ID);
       if (CUR_USERID != null && CUR_USERID != "") _registerToken(token);
     });
@@ -70,7 +71,9 @@ class PushNotificationService {
 
     messaging.getInitialMessage().then((RemoteMessage message) async {
       bool back = await getPrefrenceBool(ISFROMBACK);
-     if (message != null && back) {
+
+      print("on msg***inital app**$back");
+      if (message != null && back) {
         var type = message.data['type'] ?? '';
         var id = '';
         id = message.data['type_id'] ?? '';
@@ -87,13 +90,15 @@ class PushNotificationService {
           Navigator.push(
               context, (MaterialPageRoute(builder: (context) => Splash())));
         }
+        setPrefrenceBool(ISFROMBACK, false);
       }
-      setPrefrenceBool(ISFROMBACK, false);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
-      bool back = await getPrefrenceBool(ISFROMBACK);
-      if (back && message != null) {
+    //  bool back = await getPrefrenceBool(ISFROMBACK, "open");
+
+      print("on msg***open app**$back");
+      if ( message != null) {
         var type = message.data['type'] ?? '';
         var id = '';
 
@@ -115,8 +120,8 @@ class PushNotificationService {
             MaterialPageRoute(builder: (context) => MyApp()),
           );
         }
+        setPrefrenceBool(ISFROMBACK, false);
       }
-      setPrefrenceBool(ISFROMBACK, false);
     });
   }
 
@@ -140,7 +145,6 @@ class PushNotificationService {
 
   Future onSelectNotification(String payload) {
     if (payload != null) {
-
       List<String> pay = payload.split(",");
       if (pay[0] == "products") {
         getProduct(pay[1], 0, 0, true);
@@ -149,13 +153,10 @@ class PushNotificationService {
           context,
           MaterialPageRoute(builder: (context) => AllCategory()),
         );
-      }
-      else if (pay[0]  == "wallet") {
+      } else if (pay[0] == "wallet") {
         Navigator.push(
             context, (MaterialPageRoute(builder: (context) => MyWallet())));
-      }
-
-      else {
+      } else {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => Splash()),
@@ -179,7 +180,7 @@ class PushNotificationService {
       Response response =
           await post(getProductApi, headers: headers, body: parameter)
               .timeout(Duration(seconds: timeOut));
-     var getdata = json.decode(response.body);
+      var getdata = json.decode(response.body);
       bool error = getdata["error"];
       String msg = getdata["message"];
       if (!error) {
@@ -207,8 +208,10 @@ class PushNotificationService {
 }
 
 Future<dynamic> myForgroundMessageHandler(RemoteMessage message) async {
-  setPrefrenceBool(ISFROMBACK, true);
- return Future<void>.value();
+  await setPrefrenceBool(ISFROMBACK, true);
+  bool back = await getPrefrenceBool(ISFROMBACK);
+  print("on msg***back**true***$back");
+  return Future<void>.value();
 }
 
 Future<String> _downloadAndSaveImage(String url, String fileName) async {

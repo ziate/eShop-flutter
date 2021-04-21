@@ -29,7 +29,7 @@ dependencies:
   jaguar_jwt: ^2.1.6
   flutter_local_notifications: 5.0.0
   path_provider: 2.0.1
-  firebase_messaging: 9.0.1
+  firebase_messaging: 9.1.2
   cached_network_image: ^2.5.0
   flutter_rating_bar: ^4.0.0
   flutter_html: 1.2.0

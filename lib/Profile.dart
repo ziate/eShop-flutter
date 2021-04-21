@@ -275,6 +275,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     http.Response response = await http
         .post(getUpdateUserApi, body: data, headers: headers)
         .timeout(Duration(seconds: timeOut));
+
+    print("response******${response.body.toString()}");
     if (response.statusCode == 200) {
       var getdata = json.decode(response.body);
 

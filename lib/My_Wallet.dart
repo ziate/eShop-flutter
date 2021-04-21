@@ -784,7 +784,6 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
             await post(getWalTranApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
-        print("val****$parameter***${response.body.toString()}");
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];

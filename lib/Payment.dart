@@ -467,9 +467,11 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         Response response =
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
+
+        print("response**${response.body.toString()}");
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
-print("res****${response.body.toString()}");
+
           bool error = getdata["error"];
           // String msg = getdata["message"];
           if (!error) {

@@ -1701,10 +1701,12 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
           parameter[ATTRIBUTE_VALUE_ID] = selId;
         }
 
+
+
         Response response =
             await post(getSectionApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
+        print("section***$parameter***${response.body.toString()}");
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];

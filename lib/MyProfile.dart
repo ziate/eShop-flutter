@@ -500,7 +500,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       final form = _formkey.currentState;
                       if (form.validate()) {
                         form.save();
-                        if (mounted) if (mounted)
+                        if (mounted) 
                           setState(() {
                             Navigator.pop(context);
                           });

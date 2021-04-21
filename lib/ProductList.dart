@@ -599,10 +599,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         }
         if (widget.tag) parameter[TAG] = widget.name;
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
-
-        print("param***$parameter**$headers");
-
-        Response response =
+ Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
@@ -874,7 +871,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   Widget productItem(int index, bool pad) {
     Product model = productList[index];
 
-    print("value***${model.qtyStepSize}");
+
 
     double price = double.parse(model.prVarientList[model.selVarient].disPrice);
     if (price == 0) {

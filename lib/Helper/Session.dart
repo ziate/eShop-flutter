@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,12 +25,15 @@ Future<String> getPrefrence(String key) async {
 }
 
 setPrefrenceBool(String key, bool value) async {
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool(key, value);
 }
 
 Future<bool> getPrefrenceBool(String key) async {
+   
   SharedPreferences prefs = await SharedPreferences.getInstance();
+   
   return prefs.getBool(key) ?? false;
 }
 
@@ -204,16 +203,16 @@ Future<void> saveUserDetail(
   final waitList = <Future<void>>[];
   SharedPreferences prefs = await SharedPreferences.getInstance();
   waitList.add(prefs.setString(ID, userId));
-  waitList.add(prefs.setString(USERNAME, name));
-  waitList.add(prefs.setString(EMAIL, email));
-  waitList.add(prefs.setString(MOBILE, mobile));
-  waitList.add(prefs.setString(CITY, city));
-  waitList.add(prefs.setString(AREA, area));
-  waitList.add(prefs.setString(ADDRESS, address));
-  waitList.add(prefs.setString(PINCODE, pincode));
-  waitList.add(prefs.setString(LATITUDE, latitude));
-  waitList.add(prefs.setString(LONGITUDE, longitude));
-  waitList.add(prefs.setString(IMAGE, image));
+  waitList.add(prefs.setString(USERNAME, name)??'');
+  waitList.add(prefs.setString(EMAIL, email)??'');
+  waitList.add(prefs.setString(MOBILE, mobile)??"");
+  waitList.add(prefs.setString(CITY, city)??"");
+  waitList.add(prefs.setString(AREA, area)??'');
+  waitList.add(prefs.setString(ADDRESS, address)??"");
+  waitList.add(prefs.setString(PINCODE, pincode)??"");
+  waitList.add(prefs.setString(LATITUDE, latitude)??"");
+  waitList.add(prefs.setString(LONGITUDE, longitude)??"");
+  waitList.add(prefs.setString(IMAGE, image)??'');
 
   await Future.wait(waitList);
 }
@@ -416,7 +415,7 @@ String getToken() {
       new JwtClaim(issuer: 'eshop', maxAge: const Duration(minutes: 5));
 
   String token = issueJwtHS256(claimSet, jwtKey);
-print("token****$token");
+
   return token;
 }
 

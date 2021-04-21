@@ -26,8 +26,12 @@ class _GettingStartedScreenState extends State<IntroSlider>
   void initState() {
     super.initState();
 
+
+
     new Future.delayed(Duration.zero,() {
+  setState(() {
        slideList = [
+
         Slide(
           imageUrl: 'assets/images/introimage_a.png',
           title: getTranslated(context, 'TITLE1_LBL'),
@@ -44,6 +48,7 @@ class _GettingStartedScreenState extends State<IntroSlider>
           description: getTranslated(context, 'DISCRIPTION3'),
         ),
       ];
+  });
     });
 
     buttonController = new AnimationController(

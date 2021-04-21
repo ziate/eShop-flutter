@@ -444,11 +444,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               state = placemark[0].administrativeArea;
               country = placemark[0].country;
               pincode = placemark[0].postalCode;
+            //  address = placemark[0].name;
               if (mounted)
                 setState(() {
                   countryC.text = country;
                   stateC.text = state;
                   pincodeC.text = pincode;
+                 // addressC.text = address;
                 });
             },
           ),
@@ -985,11 +987,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     state = placemark[0].administrativeArea;
     country = placemark[0].country;
     pincode = placemark[0].postalCode;
+     // address = placemark[0].name;
     if (mounted)
       setState(() {
         countryC.text = country;
         stateC.text = state;
         pincodeC.text = pincode;
+        // addressC.text = address;
       });
   }
 }

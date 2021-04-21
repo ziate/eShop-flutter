@@ -119,6 +119,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         style: TextStyle(color: colors.fontColor),
       ),
       elevation: 1.0,
+      backgroundColor: colors.lightWhite,
     ));
   }
 
@@ -584,7 +585,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
       var data = {
         REFERCODE: refer,
       };
-      print("refer****$data");
+
       Response response =
           await post(validateReferalApi, body: data, headers: headers)
               .timeout(Duration(seconds: timeOut));

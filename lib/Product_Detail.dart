@@ -1058,19 +1058,26 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       if (CUR_USERID != null) {
         try {
-          if (mounted) if (mounted)
+          if (mounted)
             setState(() {
               _isProgress = true;
             });
 
+          Product model = widget.model;
+          String qty =
+              ((int.parse(model.prVarientList[model.selVarient].cartCount)) +
+                      (int.parse(model.qtyStepSize)))
+                  .toString();
+
+          if (int.parse(qty) < model.minOrderQuntity) {
+            qty = model.minOrderQuntity.toString();
+            setSnackbar('Minimum order quantity is $qty');
+          }
+          
           var parameter = {
             USER_ID: CUR_USERID,
-            PRODUCT_VARIENT_ID:
-                widget.model.prVarientList[widget.model.selVarient].id,
-            QTY: (int.parse(widget.model.prVarientList[widget.model.selVarient]
-                        .cartCount) +
-                    1)
-                .toString(),
+            PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
+            QTY: qty,
           };
 
           Response response =
@@ -1878,14 +1885,26 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               physics: NeverScrollableScrollPhysics(),
               itemCount: widget.model.attributeList.length,
               itemBuilder: (context, i) {
-                return ListTile(
-                  trailing: Text(widget.model.attributeList[i].value),
-                  dense: true,
-                  title: Text(
-                    widget.model.attributeList[i].name,
-                    style: Theme.of(context).textTheme.subtitle2,
-                  ),
+                return  Padding(
+                  padding: const EdgeInsets.symmetric(horizontal:10.0),
+                  child: Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+
+                            widget.model.attributeList[i].name,
+                            style: Theme.of(context).textTheme.subtitle2,
+                          ),
+                        ),
+                        Expanded(
+                            flex: 2,
+                            child: Text(widget.model.attributeList[i].value,textAlign: TextAlign.right,)),
+                      ],
+                    ),
                 );
+
+
               },
             ),
           )

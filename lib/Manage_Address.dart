@@ -120,7 +120,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
             await post(getAddressApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
-print("res***${response.body.toString()}");
+
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];

@@ -1453,7 +1453,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           MAX_ITEMS = data["max_items_cart"];
           MIN_AMT = data['min_amount'];
           CUR_DEL_CHR = data['delivery_charge'];
-          print("res***$data***$MIN_AMT");
+
           extendImg = data["expand_product_images"] == "1" ? true : false;
           String del = data["area_wise_delivery_charge"];
           if (del == "0")

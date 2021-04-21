@@ -10,7 +10,7 @@ final String appStoreId = '123456789';
 final String deepLinkUrlPrefix = 'https://eshopwrteamin.page.link';
 final String deepLinkName = 'eshop';
 
-//final String baseUrl = 'http://eshop.wrteam.in/app/v1/api/';
+
 final String baseUrl = 'https://eshopweb.store/app/v1/api/';
 
 final int timeOut = 50;

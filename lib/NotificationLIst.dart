@@ -221,7 +221,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
             isLoadingmore = false;
           }
         }
-        if (mounted) if (mounted)
+        if (mounted)
           setState(() {
             _isLoading = false;
           });

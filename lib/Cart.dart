@@ -955,7 +955,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           taxAmt = double.parse(getdata[TAX_AMT]);
           taxPer = double.parse(getdata[TAX_PER]);
 
-          print("flat del***$delCharge***$totalPrice");
 
           totalPrice = delCharge + oriPrice + taxAmt;
           cartList = (data as List)
@@ -1008,7 +1007,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           if (msg != 'Cart Is Empty !') setSnackbar(msg, _scaffoldKey);
         }
         if (mounted) setState(() {});
-        if (mounted) setState(() {});
+      
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'), _scaffoldKey);
       }
@@ -1340,8 +1339,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
               await post(manageCartApi, body: parameter, headers: headers)
                   .timeout(Duration(seconds: timeOut));
 
-          print("resp***${response.body.toString()}");
-          if (response.statusCode == 200) {
+            if (response.statusCode == 200) {
             var getdata = json.decode(response.body);
 
             bool error = getdata["error"];
@@ -1376,8 +1374,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                   delCharge = 0;
               }
 
-              print("amount***$delCharge***$oriPrice***$taxAmt**");
-              totalPrice = 0;
+               totalPrice = 0;
 
               totalPrice = delCharge + oriPrice + taxAmt;
 
@@ -1991,8 +1988,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
               else
                 delCharge = 0;
             }
-            print("min***$oriPrice***$delCharge***$MIN_AMT***$CUR_DEL_CHR");
-            totalPrice = totalPrice + delCharge;
+             totalPrice = totalPrice + delCharge;
           } else {
             if (ISFLAT_DEL) {
               if ((oriPrice + taxAmt) < double.parse(MIN_AMT))
@@ -2000,8 +1996,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
               else
                 delCharge = 0;
             }
-            print("min***$oriPrice***$delCharge***$MIN_AMT***$CUR_DEL_CHR");
-            totalPrice = totalPrice + delCharge;
+             totalPrice = totalPrice + delCharge;
           }
           if (mounted) {
             setState(() {
@@ -2225,7 +2220,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           else
             parameter[ACTIVE_STATUS] = WAITING;
         }
-        print("param****$parameter");
 
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)

@@ -810,7 +810,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                               .toList());
 
                           allitems.addAll(items);
-
+print("length****${productList.length}");
                           for (Product item in items) {
                             productList
                                 .where((i) => i.id == item.id)
