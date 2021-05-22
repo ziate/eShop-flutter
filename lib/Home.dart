@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -19,7 +20,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
+import 'package:package_info/package_info.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:version/version.dart';
 
 import 'Cart.dart';
 import 'Helper/AppBtn.dart';
@@ -1334,7 +1338,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           .timeout(Duration(seconds: timeOut));
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
-        print("url***$getSliderApi***$jwtKey");
+
         bool error = getdata["error"];
         String msg = getdata["message"];
         if (!error) {
@@ -1356,7 +1360,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     return null;
   }
 
-  Future<void> getCat() async {
+  Future<Null> getCat() async {
     try {
       var parameter = {
         CAT_FILTER: "false",
@@ -1389,13 +1393,15 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           _isCatLoading = false;
         });
     }
+    return null;
   }
 
-  Future<void> getSection() async {
+  Future<Null> getSection() async {
     try {
       var parameter = {PRODUCT_LIMIT: "4", PRODUCT_OFFSET: "0"};
 
       if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
+
       Response response =
           await post(getSectionApi, body: parameter, headers: headers)
               .timeout(Duration(seconds: timeOut));
@@ -1427,9 +1433,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           _isCatLoading = false;
         });
     }
+    return null;
   }
 
-  Future<void> getSetting() async {
+  Future<Null> getSetting() async {
     try {
       CUR_USERID = await getPrefrence(ID);
 
@@ -1453,7 +1460,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           MAX_ITEMS = data["max_items_cart"];
           MIN_AMT = data['min_amount'];
           CUR_DEL_CHR = data['delivery_charge'];
-
+          String isVerion = data['is_version_system_on'];
           extendImg = data["expand_product_images"] == "1" ? true : false;
           String del = data["area_wise_delivery_charge"];
           if (del == "0")
@@ -1469,6 +1476,23 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
             CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
           }
           widget.updateHome();
+
+          if (isVerion == "1") {
+            String verionAnd = data['current_version'];
+            String verionIOS = data['current_version_ios'];
+
+            PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+            String version = packageInfo.version;
+
+            final Version currentVersion = Version.parse(version);
+            final Version latestVersionAnd = Version.parse(verionAnd);
+            final Version latestVersionIos = Version.parse(verionIOS);
+
+            if ((Platform.isAndroid && latestVersionAnd > currentVersion) ||
+                (Platform.isIOS && latestVersionIos > currentVersion))
+              updateDailog();
+          }
         } else {
           setSnackbar(msg);
         }
@@ -1476,9 +1500,73 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
     } on TimeoutException catch (_) {
       setSnackbar(getTranslated(context, 'somethingMSg'));
     }
+    return null;
   }
 
-  Future<void> generateReferral() async {
+  updateDailog() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
+              title: Text(getTranslated(context, 'UPDATE_APP')),
+              content: Text(
+                getTranslated(context, 'UPDATE_AVAIL'),
+                style: Theme.of(this.context)
+                    .textTheme
+                    .subtitle1
+                    .copyWith(color: colors.fontColor),
+              ),
+              actions: <Widget>[
+                new TextButton(
+                    child: Text(
+                      getTranslated(context, 'NO'),
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                              color: colors.lightBlack,
+                              fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    }),
+                new TextButton(
+                    child: Text(
+                      getTranslated(context, 'YES'),
+                      style: Theme.of(this.context)
+                          .textTheme
+                          .subtitle2
+                          .copyWith(
+                              color: colors.fontColor,
+                              fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop(false);
+
+                      String _url = '';
+                      if (Platform.isAndroid) {
+                        _url = androidLink + packageName;
+                      } else if (Platform.isIOS) {
+                        _url = iosLink;
+                      }
+
+                      if (await canLaunch(_url)) {
+                        await launch(_url);
+                      } else {
+                        throw 'Could not launch $_url';
+                      }
+                    })
+              ],
+            );
+          });
+        });
+  }
+
+  Future<Null> generateReferral() async {
     String refer = getRandomString(8);
 
     try {
@@ -1502,6 +1590,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         count++;
       }
     } on TimeoutException catch (_) {}
+    return null;
   }
 
   final _chars =
@@ -1511,7 +1600,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
       length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 
-  Future<void> setUpdateUser(String code) async {
+  Future<Null> setUpdateUser(String code) async {
     var data = {
       USER_ID: CUR_USERID,
       REFERCODE: code,

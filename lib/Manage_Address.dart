@@ -290,7 +290,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
             if (mounted)
               setState(() {
                 if (!ISFLAT_DEL) {
-                  if (oriPrice + taxAmt <
+                  if (oriPrice  <
                       double.parse(addressList[selectedAddress].freeAmt)) {
                     delCharge = double.parse(
                         addressList[selectedAddress].deliveryCharge);
@@ -338,7 +338,7 @@ class StateAddress extends State<ManageAddress> with TickerProviderStateMixin {
         if (!error) {
           if (!ISFLAT_DEL) {
             if (addressList.length != 1) {
-              if (oriPrice + taxAmt <
+              if (oriPrice  <
                   double.parse(addressList[selectedAddress].freeAmt)) {
                 delCharge =
                     double.parse(addressList[selectedAddress].deliveryCharge);

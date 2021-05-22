@@ -38,7 +38,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
   @override
   Widget build(BuildContext context) {
 
-    print(widget.url);
+
     return new Scaffold(
       key: scaffoldKey,
         appBar:  AppBar(
@@ -337,7 +337,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
         QUANTITY: quantity,
         TOTAL: oriPrice.toString(),
         DEL_CHARGE: delCharge.toString(),
-        TAX_AMT: taxAmt.toString(),
+
         TAX_PER: taxPer.toString(),
         FINAL_TOTAL: totalPrice.toString(),
         PAYMENT_METHOD: payVia,
@@ -419,7 +419,7 @@ class StatePayPalWebview extends State<PaypalWebview> {
           selectedMethod = null;
           totalPrice = 0;
           oriPrice = 0;
-          taxAmt = 0;
+
           taxPer = 0;
           delCharge = 0;
 

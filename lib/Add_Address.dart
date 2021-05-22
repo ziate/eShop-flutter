@@ -298,7 +298,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
             .subtitle2
             .copyWith(color: colors.fontColor),
         onSaved: (String value) {
-          print(altMobC.text);
+      
           altMob = value;
         },
         onFieldSubmitted: (v) {
@@ -444,13 +444,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               state = placemark[0].administrativeArea;
               country = placemark[0].country;
               pincode = placemark[0].postalCode;
-            //  address = placemark[0].name;
+              //  address = placemark[0].name;
               if (mounted)
                 setState(() {
                   countryC.text = country;
                   stateC.text = state;
                   pincodeC.text = pincode;
-                 // addressC.text = address;
+                  // addressC.text = address;
                 });
             },
           ),
@@ -463,7 +463,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     return TextFormField(
       keyboardType: TextInputType.number,
       controller: pincodeC,
-      readOnly: true,
       style: Theme.of(context)
           .textTheme
           .subtitle2
@@ -683,7 +682,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               addressList[widget.index].isDefault = "1";
 
               if (!ISFLAT_DEL) {
-                if (oriPrice + taxAmt <
+                if (oriPrice  <
                     double.parse(addressList[selectedAddress].freeAmt)) {
                   delCharge =
                       double.parse(addressList[selectedAddress].deliveryCharge);
@@ -723,7 +722,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               addressList[widget.index].isDefault = "1";
 
               if (!ISFLAT_DEL && addressList.length != 1) {
-                if (oriPrice + taxAmt <
+                if (oriPrice  <
                     double.parse(addressList[selectedAddress].freeAmt)) {
                   delCharge =
                       double.parse(addressList[selectedAddress].deliveryCharge);
@@ -786,8 +785,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   typeOfAddress() {
     return Row(
       children: [
-        Flexible(
-          fit: FlexFit.loose,
+        Expanded(
+          flex: 1,
           child: InkWell(
             child: Row(
               children: [
@@ -804,7 +803,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                       });
                   },
                 ),
-                Text(getTranslated(context, 'HOME_LBL'))
+                Expanded(child: Text(getTranslated(context, 'HOME_LBL')))
               ],
             ),
             onTap: () {
@@ -816,8 +815,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
             },
           ),
         ),
-        Flexible(
-          fit: FlexFit.loose,
+        Expanded(
+          flex: 1,
           child: InkWell(
             child: Row(
               children: [
@@ -834,7 +833,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                       });
                   },
                 ),
-                Text(getTranslated(context, 'OFFICE_LBL'))
+                Expanded(child: Text(getTranslated(context, 'OFFICE_LBL')))
               ],
             ),
             onTap: () {
@@ -846,8 +845,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
             },
           ),
         ),
-        Flexible(
-          fit: FlexFit.loose,
+        Expanded(
+          flex: 1,
           child: InkWell(
             child: Row(
               children: [
@@ -864,7 +863,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
                       });
                   },
                 ),
-                Text(getTranslated(context, 'OTHER_LBL'))
+                Expanded(child: Text(getTranslated(context, 'OTHER_LBL')))
               ],
             ),
             onTap: () {
@@ -987,7 +986,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
     state = placemark[0].administrativeArea;
     country = placemark[0].country;
     pincode = placemark[0].postalCode;
-     // address = placemark[0].name;
+    // address = placemark[0].name;
     if (mounted)
       setState(() {
         countryC.text = country;

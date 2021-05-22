@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:eshop/Model/Section_Model.dart';
+import 'package:eshop/MyOrder.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -31,7 +32,6 @@ class PushNotificationService {
   Future initialise() async {
     iOSPermission();
     messaging.getToken().then((token) async {
-      print("fireabse token**$token");
       CUR_USERID = await getPrefrence(ID);
       if (CUR_USERID != null && CUR_USERID != "") _registerToken(token);
     });
@@ -53,7 +53,6 @@ class PushNotificationService {
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       var data = message.notification;
-
       var title = data.title.toString();
       var body = data.body.toString();
       var image = message.data['image'] ?? '';
@@ -72,7 +71,6 @@ class PushNotificationService {
     messaging.getInitialMessage().then((RemoteMessage message) async {
       bool back = await getPrefrenceBool(ISFROMBACK);
 
-      print("on msg***inital app**$back");
       if (message != null && back) {
         var type = message.data['type'] ?? '';
         var id = '';
@@ -86,6 +84,9 @@ class PushNotificationService {
         } else if (type == "wallet") {
           Navigator.push(
               context, (MaterialPageRoute(builder: (context) => MyWallet())));
+        } else if (type == 'order') {
+          Navigator.push(
+              context, (MaterialPageRoute(builder: (context) => MyOrder())));
         } else {
           Navigator.push(
               context, (MaterialPageRoute(builder: (context) => Splash())));
@@ -95,10 +96,9 @@ class PushNotificationService {
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
-    //  bool back = await getPrefrenceBool(ISFROMBACK, "open");
+      //  bool back = await getPrefrenceBool(ISFROMBACK, "open");
 
-      print("on msg***open app**$back");
-      if ( message != null) {
+      if (message != null) {
         var type = message.data['type'] ?? '';
         var id = '';
 
@@ -114,6 +114,9 @@ class PushNotificationService {
         } else if (type == "wallet") {
           Navigator.push(
               context, (MaterialPageRoute(builder: (context) => MyWallet())));
+        } else if (type == 'order') {
+          Navigator.push(
+              context, (MaterialPageRoute(builder: (context) => MyOrder())));
         } else {
           Navigator.push(
             context,
@@ -156,6 +159,9 @@ class PushNotificationService {
       } else if (pay[0] == "wallet") {
         Navigator.push(
             context, (MaterialPageRoute(builder: (context) => MyWallet())));
+      } else if (pay[0] == 'order') {
+        Navigator.push(
+            context, (MaterialPageRoute(builder: (context) => MyOrder())));
       } else {
         Navigator.push(
           context,
@@ -210,7 +216,6 @@ class PushNotificationService {
 Future<dynamic> myForgroundMessageHandler(RemoteMessage message) async {
   await setPrefrenceBool(ISFROMBACK, true);
   bool back = await getPrefrenceBool(ISFROMBACK);
-  print("on msg***back**true***$back");
   return Future<void>.value();
 }
 

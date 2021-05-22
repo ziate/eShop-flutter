@@ -90,8 +90,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
 
     selectLan = langCode.indexOf(getlng ?? "en");
 
-    // print("get***$get***$prevTheme***${getTranslated(context, 'SYSTEM_DEFAULT')}");
-    if (mounted) setState(() {});
+     if (mounted) setState(() {});
   }
 
   getUserDetails() async {
@@ -99,6 +98,9 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     CUR_USERNAME = await getPrefrence(USERNAME);
     email = await getPrefrence(EMAIL);
     profile = await getPrefrence(IMAGE);
+
+
+    
     if (mounted) setState(() {});
   }
 
@@ -500,7 +502,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                       final form = _formkey.currentState;
                       if (form.validate()) {
                         form.save();
-                        if (mounted) 
+                        if (mounted)
                           setState(() {
                             Navigator.pop(context);
                           });

@@ -76,6 +76,8 @@ class User {
     );
   }
 
+
+
   factory User.fromJson(Map<String, dynamic> parsedJson) {
     return new User(
       id: parsedJson[ID],
@@ -120,4 +122,18 @@ class User {
         freeAmt: parsedJson[FREE_AMT],
         isDefault: parsedJson[ISDEFAULT]);
   }
+}
+
+class imgModel{
+  int index;
+  String img;
+
+  imgModel({this.index,this.img});
+  factory imgModel.fromJson(int i,String image) {
+    return new imgModel(
+      index: i,
+      img:image
+    );
+  }
+
 }

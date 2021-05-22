@@ -18,14 +18,36 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>Bundle id</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.wrteam.eshop</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app requires access to Location of user to check network connectivity</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app requires access to Location of user to check network connectivity</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>this require to get profile picture</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
@@ -41,15 +63,6 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-        <key>NSAllowsArbitraryLoadsInWebContent</key>
-        <true/>
-    </dict>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>this require to get profile picture</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -59,7 +72,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-    <key>io.flutter.embedded_views_preview</key>
-    <true/>
 </dict>
 </plist>

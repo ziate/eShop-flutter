@@ -77,7 +77,8 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
           });
       }
 
-      if (_lastsearch != _searchText && (_searchText.length > 2)) {
+      if (_lastsearch != _searchText &&
+          ((_searchText.length > 2) || (_searchText == ""))) {
         _lastsearch = _searchText;
         isLoadingmore = true;
         offset = 0;
@@ -93,8 +94,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
         !scrollController.position.outOfRange) {
       if (this.mounted) {
         setState(() {
-          // isLoadingmore = true;
-          print("scroll***");
           getOrder();
         });
       }
@@ -172,104 +171,84 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
               ? shimmer()
               : Padding(
                   padding: const EdgeInsets.all(10.0),
-                 
-                      child: Column(
-                       // crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                              padding: EdgeInsetsDirectional.only(
-                                  start: 5.0, end: 5.0),
-                              child: TextField(
-                                controller: _controller,
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  isDense: true,
-                                  fillColor: colors.white,
-                                  prefixIconConstraints: BoxConstraints(
-                                      minWidth: 40, maxHeight: 20),
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 10),
-                                  prefixIcon: SvgPicture.asset(
-                                    'assets/images/search.svg',
-                                    color: colors.primary,
-                                  ),
-                                  hintText: getTranslated(
-                                      context, 'FIND_ORDER_ITEMS_LBL'),
-                                  hintStyle: TextStyle(
-                                      color: colors.fontColor.withOpacity(0.3),
-                                      fontWeight: FontWeight.normal),
-                                  border: new OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      width: 0,
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
+                  child: Column(
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                          padding:
+                              EdgeInsetsDirectional.only(start: 5.0, end: 5.0),
+                          child: TextField(
+                            controller: _controller,
+                            decoration: InputDecoration(
+                              filled: true,
+                              isDense: true,
+                              fillColor: colors.white,
+                              prefixIconConstraints:
+                                  BoxConstraints(minWidth: 40, maxHeight: 20),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              prefixIcon: SvgPicture.asset(
+                                'assets/images/search.svg',
+                                color: colors.primary,
+                              ),
+                              hintText: getTranslated(
+                                  context, 'FIND_ORDER_ITEMS_LBL'),
+                              hintStyle: TextStyle(
+                                  color: colors.fontColor.withOpacity(0.3),
+                                  fontWeight: FontWeight.normal),
+                              border: new OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  width: 0,
+                                  style: BorderStyle.none,
                                 ),
-                              )),
-                          Expanded(
-                            child: searchList.length == 0
-                                ? Center(
-                                    child:
-                                        Text(getTranslated(context, 'noItem')))
-                                : RefreshIndicator(
-                                    key: _refreshIndicatorKey,
-                                    onRefresh: _refresh,
-                                    child: ListView.builder(
-                                      shrinkWrap: true,
-                                      controller: scrollController,
-                                      padding:
-                                          EdgeInsetsDirectional.only(top: 5.0),
-                                      itemCount: searchList.length,
-                                      physics: AlwaysScrollableScrollPhysics(),
-                                      itemBuilder: (context, index) {
-                                        OrderItem orderItem;
-                                        try {
-                                          if (searchList[index] != null &&
-                                              searchList[index]
-                                                      .itemList
-                                                      .length >
-                                                  0)
-                                            orderItem =
-                                                searchList[index].itemList[0];
-                                          if (isLoadingmore &&
-                                              index ==
-                                                  (searchList.length - 1) &&
-                                              scrollController
-                                                      .position.pixels <=
-                                                  0) {
-                                            getOrder();
-                                          }
-                                        } on Exception catch (_) {}
+                              ),
+                            ),
+                          )),
+                      Expanded(
+                        child: searchList.length == 0
+                            ? Center(
+                                child: Text(getTranslated(context, 'noItem')))
+                            : RefreshIndicator(
+                                key: _refreshIndicatorKey,
+                                onRefresh: _refresh,
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  controller: scrollController,
+                                  padding: EdgeInsetsDirectional.only(top: 5.0),
+                                  itemCount: searchList.length,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                   OrderItem orderItem;
+                                    try {
+                                      if (searchList[index] != null &&
+                                          searchList[index].itemList.length > 0)
+                                        orderItem =
+                                            searchList[index].itemList[0];
+                                      if (isLoadingmore &&
+                                          index == (searchList.length - 1) &&
+                                          scrollController.position.pixels <=
+                                              0) {
+                                        getOrder();
+                                      }
+                                    } on Exception catch (_) {}
 
-                                        return orderItem == null
-                                            ? Container()
-                                            : productItem(index, orderItem);
+                                    return orderItem == null
+                                        ? Container()
+                                        : productItem(index, orderItem);
 
-                                        // OrderItem orderItem;
-                                        // if (index != searchList.length &&
-                                        //     isLoadingmore) {
-                                        //   if (searchList[index] != null &&
-                                        //       searchList[index].itemList.length > 0)
-                                        //     orderItem =
-                                        //         searchList[index].itemList[0];
-                                        // }
-                                        // return (index == searchList.length &&
-                                        //         isLoadingmore)
-                                        //     ? Center(
-                                        //         child: CircularProgressIndicator())
-                                        //     : productItem(index, orderItem);
-                                      },
-                                    )),
-                          ),
-                          isGettingdata
-                              ? Padding(
-                                  padding: EdgeInsetsDirectional.only(
-                                      top: 5, bottom: 5),
-                                  child: CircularProgressIndicator(),
-                                )
-                              : Container(),
-                        ],
+
+                                  },
+                                )),
                       ),
+                      isGettingdata
+                          ? Padding(
+                              padding:
+                                  EdgeInsetsDirectional.only(top: 5, bottom: 5),
+                              child: CircularProgressIndicator(),
+                            )
+                          : Container(),
+                    ],
+                  ),
                 )
           //))
           : noInternet(context),
@@ -284,7 +263,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
         _isLoading = true;
       });
 
-    searchList.clear();
+
     return getOrder();
   }
 
@@ -292,7 +271,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
       try {
-        print("scroll******$isLoadingmore");
         if (isLoadingmore) {
           if (mounted)
             setState(() {
@@ -311,10 +289,11 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
               SEARCH: _searchText.trim(),
             };
 
+
             Response response =
                 await post(getOrderApi, body: parameter, headers: headers)
                     .timeout(Duration(seconds: timeOut));
-            print("param***$parameter**${response.body.toString()}");
+
             var getdata = json.decode(response.body);
             bool error = getdata["error"];
 
@@ -399,23 +378,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     return null;
   }
 
-  // getSearch(String searchText) {
-  //   orderList.addAll(searchList);
-  //   searchList.clear();
-  //   for (int i = 0; i < orderList.length; i++) {
-  //     for (int j = 0; j < orderList[i].itemList.length; j++) {
-  //       OrderModel map = orderList[i];
-
-  //       if (map.id.toLowerCase().contains(searchText) ||
-  //           map.itemList[j].name.toLowerCase().contains(searchText)) {
-  //         searchList.add(map);
-  //       }
-  //     }
-  //   }
-
-  //   if (mounted) setState(() {});
-  // }
-
   setSnackbar(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
@@ -430,6 +392,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
 
   productItem(int index, OrderItem orderItem) {
     if (orderItem != null) {
+    
       String sDate = orderItem.listDate.last;
       String proStatus = orderItem.listStatus.last;
       if (proStatus == 'received') {
@@ -454,7 +417,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                           image: NetworkImage(orderItem.image),
                           height: 90.0,
                           width: 90.0,
-                          fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                          fit: BoxFit.cover,
                           // errorWidget:(context, url,e) => placeHolder(90) ,
                           placeholder: placeHolder(90),
                         ),
@@ -501,17 +464,20 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                 ]),
               ])),
           onTap: () async {
-             Navigator.push(
+            FocusScope.of(context).unfocus();
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => OrderDetail(model: searchList[index])),
             );
-            // if (mounted)
-            //   setState(() {
-            //     _isLoading = true;
-            //   });
-
-            // getOrder();
+            if (mounted && result == "update")
+              setState(() {
+                _isLoading = true;
+                offset = 0;
+                total = 0;
+                searchList.clear();
+                getOrder();
+              });
           },
         ),
       );

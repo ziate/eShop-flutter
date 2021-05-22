@@ -14,7 +14,7 @@ class OrderModel {
       subTotal,
       payable,
       address,
-      taxAmt,
+    //  taxAmt,
       taxPer,
       orderDate,
       dateTime,
@@ -25,7 +25,8 @@ class OrderModel {
       rtnReqSubmitted,
       activeStatus,
       otp,
-      deliveryBoyId,invoice;
+      deliveryBoyId,invoice, delDate,
+      delTime;
 
   List<OrderItem> itemList;
   List<String> listStatus = [];
@@ -45,7 +46,7 @@ class OrderModel {
         this.payable,
         this.address,
         this.taxPer,
-        this.taxAmt,
+       // this.taxAmt,
         this.orderDate,
         this.dateTime,
         this.itemList,
@@ -57,7 +58,7 @@ class OrderModel {
         this.isAlrReturned,
         this.rtnReqSubmitted,
         this.activeStatus,
-        this.otp,this.invoice,
+        this.otp,this.invoice,this.delDate,this.delTime,
         this.deliveryBoyId});
 
   factory OrderModel.fromJson(Map<String, dynamic> parsedJson) {
@@ -91,7 +92,7 @@ class OrderModel {
         subTotal: parsedJson[TOTAL],
         payable: parsedJson[TOTAL_PAYABLE],
         address: parsedJson[ADDRESS],
-        taxAmt: parsedJson[TOTAL_TAX_AMT],
+     //   taxAmt: parsedJson[TOTAL_TAX_AMT],
         taxPer: parsedJson[TOTAL_TAX_PER],
         dateTime: parsedJson[DATE_ADDED],
         isCancleable: parsedJson[ISCANCLEABLE],
@@ -106,6 +107,8 @@ class OrderModel {
         invoice: parsedJson[INVOICE],
         activeStatus: parsedJson[ACTIVE_STATUS],
         otp: parsedJson[OTP],
+        delDate:parsedJson[DEL_DATE]!=null?DateFormat('dd-MM-yyyy').format(DateTime.parse(parsedJson[DEL_DATE])):'',
+        delTime: parsedJson[DEL_TIME]!=null?parsedJson[DEL_TIME]:'',
         deliveryBoyId: parsedJson[DELIVERY_BOY_ID]);
   }
 }

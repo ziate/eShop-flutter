@@ -13,10 +13,10 @@ import 'Product_Detail.dart';
 import 'Model/User.dart';
 import 'Product_Preview.dart';
 
-class RatingReview extends StatefulWidget {
+class ReviewList extends StatefulWidget {
   final String id;
 
-  const RatingReview({Key key, this.id}) : super(key: key);
+  const ReviewList({Key key, this.id}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -24,7 +24,7 @@ class RatingReview extends StatefulWidget {
   }
 }
 
-class StateRate extends State<RatingReview> {
+class StateRate extends State<ReviewList> {
   bool _isNetworkAvail = true;
  // bool _isProgress = false, _isLoading = true;
   bool isLoadingmore = true;

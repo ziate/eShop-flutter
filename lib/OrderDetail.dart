@@ -314,6 +314,26 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                                                             colors.lightBlack2),
                                               ))))
                                   : Container(),
+                              model.delDate != null && model.delDate.isNotEmpty
+                                  ? Card(
+                                      elevation: 0,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Text(
+                                          getTranslated(
+                                                  context, 'PREFER_DATE_TIME') +
+                                              ": " +
+                                              model.delDate +
+                                              " - " +
+                                              model.delTime,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .subtitle2
+                                              .copyWith(
+                                                  color: colors.lightBlack2),
+                                        ),
+                                      ))
+                                  : Container(),
                               ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: model.itemList.length,
@@ -479,30 +499,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                        getTranslated(context, 'TAXPER') +
-                            " (" +
-                            widget.model.taxPer +
-                            ")" +
-                            " " +
-                            ":",
-                        style: Theme.of(context)
-                            .textTheme
-                            .button
-                            .copyWith(color: colors.lightBlack2)),
-                    Text("+ " + CUR_CURRENCY + " " + widget.model.taxAmt,
-                        style: Theme.of(context)
-                            .textTheme
-                            .button
-                            .copyWith(color: colors.lightBlack2))
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsetsDirectional.only(start: 15.0, end: 15.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
                         getTranslated(context, 'PROMO_CODE_DIS_LBL') +
                             " " +
                             ":",
@@ -649,7 +645,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           image: NetworkImage(orderItem.image),
                           height: 90.0,
                           width: 90.0,
-                          fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                          fit: BoxFit.cover,
                           placeholder: placeHolder(90),
                         )),
                     Expanded(
@@ -911,6 +907,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   getProcessed(String prDate, String cDate) {
+  
     return cDate == null
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -951,29 +948,48 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           )
         : prDate == null
             ? Container()
-            : Column(
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 30,
+                        child: VerticalDivider(
+                          thickness: 2,
+                          color: colors.primary,
+                        ),
+                      ),
+                      Icon(
+                        Icons.circle,
+                        color: colors.primary,
+                        size: 15,
+                      ),
+                    ],
+                  ),
                   Container(
-                    height: 30,
-                    child: VerticalDivider(
-                      thickness: 2,
-                      color: colors.primary,
+                    margin: const EdgeInsetsDirectional.only(start: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          getTranslated(context, 'ORDER_PROCESSED'),
+                          style: TextStyle(fontSize: 8),
+                        ),
+                        Text(
+                          prDate ?? " ",
+                          style: TextStyle(fontSize: 8),
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    getTranslated(context, 'ORDER_PROCESSED'),
-                    style: TextStyle(fontSize: 8),
-                  ),
-                  Icon(
-                    Icons.circle,
-                    color: colors.primary,
-                    size: 15,
                   ),
                 ],
               );
   }
 
   getShipped(String sDate, String cDate) {
+
     return cDate == null
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1015,23 +1031,41 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
           )
         : sDate == null
             ? Container()
-            : Column(
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  Column(
+                    children: [
+                      Container(
+                        height: 30,
+                        child: VerticalDivider(
+                          thickness: 2,
+                          color: colors.primary,
+                        ),
+                      ),
+                      Icon(
+                        Icons.circle,
+                        color: colors.primary,
+                        size: 15,
+                      ),
+                    ],
+                  ),
                   Container(
-                    height: 30,
-                    child: VerticalDivider(
-                      thickness: 2,
+                    margin: const EdgeInsetsDirectional.only(start: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          getTranslated(context, 'ORDER_SHIPPED'),
+                          style: TextStyle(fontSize: 8),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          sDate ?? " ",
+                          style: TextStyle(fontSize: 8),
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    getTranslated(context, 'ORDER_SHIPPED'),
-                    style: TextStyle(fontSize: 8),
-                    textAlign: TextAlign.center,
-                  ),
-                  Icon(
-                    Icons.circle,
-                    color: colors.primary,
-                    size: 15,
                   ),
                 ],
               );
@@ -1082,6 +1116,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   getCanceled(String cDate) {
+
     return cDate != null
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1179,7 +1214,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         String msg = getdata["message"];
         if (!error) {
           Future.delayed(Duration(seconds: 1)).then((_) async {
-            Navigator.pop(context);
+            Navigator.pop(context, 'update');
           });
         }
 
@@ -1257,13 +1292,16 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
               }
 
               var targetFileName = "Invoice_${widget.model.id}";
-              var generatedPdfFile;
+              var generatedPdfFile,filePath;
               try {
                 generatedPdfFile =
                     await FlutterHtmlToPdf.convertFromHtmlContent(
                         widget.model.invoice, targetPath, targetFileName);
+                filePath=generatedPdfFile.path;
               } catch (Exception) {
-                print("exception***");
+
+                filePath=targetPath+"/"+targetFileName+".html";
+
               }
 
               if (mounted)
@@ -1279,7 +1317,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                 action: SnackBarAction(
                     label: getTranslated(context, 'VIEW'),
                     onPressed: () async {
-                      final result = await OpenFile.open(generatedPdfFile.path);
+                      final result = await OpenFile.open(filePath);
                     }),
                 backgroundColor: colors.white,
                 elevation: 1.0,

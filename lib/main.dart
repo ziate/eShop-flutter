@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> {
       );
     } else {
       return MaterialApp(
-        scaffoldMessengerKey: rootScaffoldMessengerKey,
+        //scaffoldMessengerKey: rootScaffoldMessengerKey,
         locale: _locale,
         supportedLocales: [
           Locale("en", "US"),

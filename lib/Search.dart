@@ -307,7 +307,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                             image: NetworkImage(productList[index].image),
                             height: 80.0,
                             width: 80.0,
-                            fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                            fit:  BoxFit.cover,
                             //errorWidget:(context, url,e) => placeHolder(80) ,
                             placeholder: placeHolder(80),
                           ))),
@@ -810,8 +810,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                               .toList());
 
                           allitems.addAll(items);
-print("length****${productList.length}");
-                          for (Product item in items) {
+                           for (Product item in items) {
                             productList
                                 .where((i) => i.id == item.id)
                                 .map((obj) {

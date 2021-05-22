@@ -14,6 +14,7 @@ final Uri getVerifyUserApi = Uri.parse(baseUrl + 'verify_user');
 final Uri setFavoriteApi = Uri.parse(baseUrl + 'add_to_favorites');
 final Uri removeFavApi = Uri.parse(baseUrl + 'remove_from_favorites');
 final Uri getRatingApi = Uri.parse(baseUrl + 'get_product_rating');
+final Uri getReviewImgApi= Uri.parse(baseUrl+ 'get_product_review_images');
 final Uri getCartApi = Uri.parse(baseUrl + 'get_user_cart');
 final Uri getFavApi = Uri.parse(baseUrl + 'get_favorites');
 final Uri setRatingApi = Uri.parse(baseUrl + 'set_product_rating');
@@ -81,6 +82,9 @@ const String DEL_CHARGES = 'delivery_charges';
 const String FREE_AMT = 'minimum_free_delivery_order_amount';
 final String ISFROMBACK = "isfrombackground$appName";
 
+
+
+
 const String LIMIT = 'limit';
 const String OFFSET = 'offset';
 const String PRIVACY_POLLICY = 'privacy_policy';
@@ -113,6 +117,9 @@ const String ORDER_ITEMS = 'order_items';
 const String TOP_RETAED = 'top_rated_product';
 const String WALLET = 'wallet';
 const String CREDIT = 'credit';
+const String REV_IMG='review_images';
+
+
 
 const String USER_NAME = 'user_name';
 const String USERNAME = 'username';
@@ -234,6 +241,13 @@ const String AREANAME = "areaName";
 const String LAGUAGE_CODE = 'languageCode';
 const String MINORDERQTY = 'minimum_order_quantity';
 const String QTYSTEP = 'quantity_step_size';
+const String DEL_DATE='delivery_date';
+const String DEL_TIME='delivery_time';
+const String TOTALIMG='total_images';
+const String TOTALIMGREVIEW='total_reviews_with_images';
+const String PRODUCTRATING='product_rating';
+
+
 
 const String DEFAULT_SYSTEM = "System default";
 const String LIGHT = "Light";

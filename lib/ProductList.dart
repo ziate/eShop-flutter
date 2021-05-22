@@ -212,7 +212,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           image: NetworkImage(model.image),
                           height: 80.0,
                           width: 80.0,
-                          fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                          fit:  BoxFit.cover,
                           placeholder: placeHolder(80),
                         )),
                   ),
@@ -869,328 +869,341 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   }
 
   Widget productItem(int index, bool pad) {
-    Product model = productList[index];
+
+    if (index < productList.length) {
+      Product model = productList[index];
 
 
+      double price = double.parse(
+          model.prVarientList[model.selVarient].disPrice);
+      if (price == 0) {
+        price = double.parse(model.prVarientList[model.selVarient].price);
+      }
+      if (_controller.length < index + 1)
+        _controller.add(new TextEditingController());
 
-    double price = double.parse(model.prVarientList[model.selVarient].disPrice);
-    if (price == 0) {
-      price = double.parse(model.prVarientList[model.selVarient].price);
-    }
-    if (_controller.length < index + 1)
-      _controller.add(new TextEditingController());
+      _controller[index].text = model.prVarientList[model.selVarient].cartCount;
 
-    _controller[index].text = model.prVarientList[model.selVarient].cartCount;
+      List att, val;
+      if (model.prVarientList[model.selVarient].attr_name != null) {
+        att = model.prVarientList[model.selVarient].attr_name.split(',');
+        val = model.prVarientList[model.selVarient].varient_value.split(',');
+      }
+      double width = deviceWidth * 0.5;
 
-    List att, val;
-    if (model.prVarientList[model.selVarient].attr_name != null) {
-      att = model.prVarientList[model.selVarient].attr_name.split(',');
-      val = model.prVarientList[model.selVarient].varient_value.split(',');
-    }
-    double width = deviceWidth * 0.5;
-
-    return Card(
-      elevation: 0.2,
-      margin: EdgeInsetsDirectional.only(bottom: 5, end: pad ? 5 : 0),
-      child: InkWell(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              child: Stack(
-                alignment: Alignment.topRight,
-                children: [
-                  ClipRRect(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(5),
-                          topRight: Radius.circular(5)),
-                      child: Hero(
-                        tag: "$index${model.id}",
-                        child: FadeInImage(
-                          fadeInDuration: Duration(milliseconds: 150),
-                          image: NetworkImage(model.image),
-                          height: double.maxFinite,
-                          width: double.maxFinite,
-                          fit: extendImg ? BoxFit.fill : BoxFit.contain,
-                          placeholder: placeHolder(width),
-                        ),
-                      )),
-                  Align(
-                    alignment: AlignmentDirectional.topStart,
-                    child: model.availability == "0"
-                        ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold))
-                        : Container(),
-                  ),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(1.5),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.star,
-                            color: colors.primary,
-                            size: 10,
+      return Card(
+        elevation: 0.2,
+        margin: EdgeInsetsDirectional.only(bottom: 5, end: pad ? 5 : 0),
+        child: InkWell(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    ClipRRect(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(5),
+                            topRight: Radius.circular(5)),
+                        child: Hero(
+                          tag: "$index${model.id}",
+                          child: FadeInImage(
+                            fadeInDuration: Duration(milliseconds: 150),
+                            image: NetworkImage(model.image),
+                            height: double.maxFinite,
+                            width: double.maxFinite,
+                            fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                            placeholder: placeHolder(width),
                           ),
-                          Text(
-                            model.rating,
-                            style: Theme.of(context)
-                                .textTheme
-                                .overline
-                                .copyWith(letterSpacing: 0.2),
-                          ),
-                        ],
-                      ),
+                        )),
+                    Align(
+                      alignment: AlignmentDirectional.topStart,
+                      child: model.availability == "0"
+                          ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+                          style: Theme
+                              .of(context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold))
+                          : Container(),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsetsDirectional.only(
-                  start: 5.0, top: 5, bottom: 5),
-              child: Text(
-                model.name,
-                style: Theme.of(context)
-                    .textTheme
-                    .subtitle2
-                    .copyWith(color: colors.lightBlack),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Row(
-              children: [
-                Text(" " + CUR_CURRENCY + " " + price.toString() + " ",
-                    style: TextStyle(
-                        color: colors.fontColor, fontWeight: FontWeight.bold)),
-                double.parse(model.prVarientList[model.selVarient].disPrice) !=
-                        0
-                    ? Flexible(
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(1.5),
                         child: Row(
-                          children: <Widget>[
-                            Flexible(
-                              child: Text(
-                                double.parse(model
-                                            .prVarientList[model.selVarient]
-                                            .disPrice) !=
-                                        0
-                                    ? CUR_CURRENCY +
-                                        "" +
-                                        model.prVarientList[model.selVarient]
-                                            .price
-                                    : "",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .overline
-                                    .copyWith(
-                                        decoration: TextDecoration.lineThrough,
-                                        letterSpacing: 0),
-                              ),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: colors.primary,
+                              size: 10,
+                            ),
+                            Text(
+                              model.rating,
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(letterSpacing: 0.2),
                             ),
                           ],
                         ),
-                      )
-                    : Container()
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5.0),
-              child: Row(
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                    start: 5.0, top: 5, bottom: 5),
+                child: Text(
+                  model.name,
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .subtitle2
+                      .copyWith(color: colors.lightBlack),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Row(
                 children: [
-                  Expanded(
-                    child: model.prVarientList[model.selVarient].attr_name !=
-                                null &&
-                            model.prVarientList[model.selVarient].attr_name
-                                .isNotEmpty
-                        ? ListView.builder(
-                            padding: const EdgeInsets.only(bottom: 5.0),
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: att.length,
-                            itemBuilder: (context, index) {
-                              return Row(children: [
-                                Flexible(
-                                  child: Text(
-                                    att[index].trim() + ":",
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .caption
-                                        .copyWith(color: colors.lightBlack),
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsetsDirectional.only(start: 5.0),
-                                    child: Text(
-                                      val[index],
-                                      maxLines: 1,
-                                      overflow: TextOverflow.visible,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .caption
-                                          .copyWith(
-                                              color: colors.lightBlack,
-                                              fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                )
-                              ]);
-                            })
-                        : Container(),
-                  ),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                        start: 3.0, bottom: 5, top: 3),
-                    child: model.availability == "0"
-                        ? Container()
-                        : cartBtnList
-                            ? Row(
-                                children: <Widget>[
-                                  GestureDetector(
-                                    child: Container(
-                                      padding: EdgeInsets.all(2),
-                                      margin:
-                                          EdgeInsetsDirectional.only(end: 8),
-                                      child: Icon(
-                                        Icons.remove,
-                                        size: 14,
-                                        color: colors.fontColor,
-                                      ),
-                                      decoration: BoxDecoration(
-                                          color: colors.lightWhite,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(3))),
-                                    ),
-                                    onTap: () {
-                                      if (_isProgress == false &&
-                                          (int.parse(productList[index]
-                                                  .prVarientList[
-                                                      model.selVarient]
-                                                  .cartCount)) >
-                                              0) removeFromCart(index);
-                                    },
-                                  ),
-                                  Container(
-                                    width: 40,
-                                    height: 20,
-                                    child: Stack(
-                                      children: [
-                                        TextField(
-                                          textAlign: TextAlign.center,
-                                          readOnly: true,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                          ),
-                                          controller: _controller[index],
-                                          decoration: InputDecoration(
-                                            contentPadding: EdgeInsets.all(5.0),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: colors.fontColor,
-                                                  width: 0.5),
-                                              borderRadius:
-                                                  BorderRadius.circular(5.0),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: colors.fontColor,
-                                                  width: 0.5),
-                                              borderRadius:
-                                                  BorderRadius.circular(5.0),
-                                            ),
-                                          ),
-                                        ),
-                                        PopupMenuButton<String>(
-                                          tooltip: '',
-                                          icon: const Icon(
-                                            Icons.arrow_drop_down,
-                                            size: 1,
-                                          ),
-                                          onSelected: (String value) {
-                                            if (_isProgress == false)
-                                              addToCart(index, value);
-                                          },
-                                          itemBuilder: (BuildContext context) {
-                                            return model.itemsCounter
-                                                .map<PopupMenuItem<String>>(
-                                                    (String value) {
-                                              return new PopupMenuItem(
-                                                  child: new Text(value),
-                                                  value: value);
-                                            }).toList();
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ), // ),
-
-                                  GestureDetector(
-                                    child: Container(
-                                      padding: EdgeInsets.all(2),
-                                      margin: EdgeInsets.only(left: 8),
-                                      child: Icon(
-                                        Icons.add,
-                                        size: 14,
-                                        color: colors.fontColor,
-                                      ),
-                                      decoration: BoxDecoration(
-                                          color: colors.lightWhite,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(3))),
-                                    ),
-                                    onTap: () {
-                                      if (_isProgress == false)
-                                        addToCart(
-                                            index,
-                                            (int.parse(model
-                                                        .prVarientList[
-                                                            model.selVarient]
-                                                        .cartCount) +
-                                                    int.parse(
-                                                        model.qtyStepSize))
-                                                .toString());
-                                    },
-                                  )
-                                ],
-                              )
-                            : Container(),
+                  Text(" " + CUR_CURRENCY + " " + price.toString() + " ",
+                      style: TextStyle(
+                          color: colors.fontColor,
+                          fontWeight: FontWeight.bold)),
+                  double.parse(
+                      model.prVarientList[model.selVarient].disPrice) !=
+                      0
+                      ? Flexible(
+                    child: Row(
+                      children: <Widget>[
+                        Flexible(
+                          child: Text(
+                            double.parse(model
+                                .prVarientList[model.selVarient]
+                                .disPrice) !=
+                                0
+                                ? CUR_CURRENCY +
+                                "" +
+                                model.prVarientList[model.selVarient]
+                                    .price
+                                : "",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme
+                                .of(context)
+                                .textTheme
+                                .overline
+                                .copyWith(
+                                decoration: TextDecoration.lineThrough,
+                                letterSpacing: 0),
+                          ),
+                        ),
+                      ],
+                    ),
                   )
+                      : Container()
                 ],
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: model.prVarientList[model.selVarient].attr_name !=
+                          null &&
+                          model.prVarientList[model.selVarient].attr_name
+                              .isNotEmpty
+                          ? ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 5.0),
+                          physics: NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: att.length,
+                          itemBuilder: (context, index) {
+                            return Row(children: [
+                              Flexible(
+                                child: Text(
+                                  att[index].trim() + ":",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme
+                                      .of(context)
+                                      .textTheme
+                                      .caption
+                                      .copyWith(color: colors.lightBlack),
+                                ),
+                              ),
+                              Flexible(
+                                child: Padding(
+                                  padding:
+                                  EdgeInsetsDirectional.only(start: 5.0),
+                                  child: Text(
+                                    val[index],
+                                    maxLines: 1,
+                                    overflow: TextOverflow.visible,
+                                    style: Theme
+                                        .of(context)
+                                        .textTheme
+                                        .caption
+                                        .copyWith(
+                                        color: colors.lightBlack,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              )
+                            ]);
+                          })
+                          : Container(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                          start: 3.0, bottom: 5, top: 3),
+                      child: model.availability == "0"
+                          ? Container()
+                          : cartBtnList
+                          ? Row(
+                        children: <Widget>[
+                          GestureDetector(
+                            child: Container(
+                              padding: EdgeInsets.all(2),
+                              margin:
+                              EdgeInsetsDirectional.only(end: 8),
+                              child: Icon(
+                                Icons.remove,
+                                size: 14,
+                                color: colors.fontColor,
+                              ),
+                              decoration: BoxDecoration(
+                                  color: colors.lightWhite,
+                                  borderRadius: BorderRadius.all(
+                                      Radius.circular(3))),
+                            ),
+                            onTap: () {
+                              if (_isProgress == false &&
+                                  (int.parse(productList[index]
+                                      .prVarientList[
+                                  model.selVarient]
+                                      .cartCount)) >
+                                      0) removeFromCart(index);
+                            },
+                          ),
+                          Container(
+                            width: 40,
+                            height: 20,
+                            child: Stack(
+                              children: [
+                                TextField(
+                                  textAlign: TextAlign.center,
+                                  readOnly: true,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                  ),
+                                  controller: _controller[index],
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.all(5.0),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: colors.fontColor,
+                                          width: 0.5),
+                                      borderRadius:
+                                      BorderRadius.circular(5.0),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: colors.fontColor,
+                                          width: 0.5),
+                                      borderRadius:
+                                      BorderRadius.circular(5.0),
+                                    ),
+                                  ),
+                                ),
+                                PopupMenuButton<String>(
+                                  tooltip: '',
+                                  icon: const Icon(
+                                    Icons.arrow_drop_down,
+                                    size: 1,
+                                  ),
+                                  onSelected: (String value) {
+                                    if (_isProgress == false)
+                                      addToCart(index, value);
+                                  },
+                                  itemBuilder: (BuildContext context) {
+                                    return model.itemsCounter
+                                        .map<PopupMenuItem<String>>(
+                                            (String value) {
+                                          return new PopupMenuItem(
+                                              child: new Text(value),
+                                              value: value);
+                                        }).toList();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ), // ),
+
+                          GestureDetector(
+                            child: Container(
+                              padding: EdgeInsets.all(2),
+                              margin: EdgeInsets.only(left: 8),
+                              child: Icon(
+                                Icons.add,
+                                size: 14,
+                                color: colors.fontColor,
+                              ),
+                              decoration: BoxDecoration(
+                                  color: colors.lightWhite,
+                                  borderRadius: BorderRadius.all(
+                                      Radius.circular(3))),
+                            ),
+                            onTap: () {
+                              if (_isProgress == false)
+                                addToCart(
+                                    index,
+                                    (int.parse(model
+                                        .prVarientList[
+                                    model.selVarient]
+                                        .cartCount) +
+                                        int.parse(
+                                            model.qtyStepSize))
+                                        .toString());
+                            },
+                          )
+                        ],
+                      )
+                          : Container(),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+          onTap: () async {
+            Product model = productList[index];
+            await Navigator.push(
+              context,
+              PageRouteBuilder(
+                  pageBuilder: (_, __, ___) =>
+                      ProductDetail(
+                        model: model,
+                        updateParent: updateProductList,
+                        index: index,
+                        secPos: 0,
+                        updateHome: widget.updateHome,
+                        list: true,
+                      )),
+            );
+            setState(() {});
+          },
         ),
-        onTap: () async {
-          Product model = productList[index];
-          await Navigator.push(
-            context,
-            PageRouteBuilder(
-                pageBuilder: (_, __, ___) => ProductDetail(
-                      model: model,
-                      updateParent: updateProductList,
-                      index: index,
-                      secPos: 0,
-                      updateHome: widget.updateHome,
-                      list: true,
-                    )),
-          );
-          setState(() {});
-        },
-      ),
-    );
+      );
+    }else
+      return Container();
   }
 
   void sortDialog() {

@@ -69,8 +69,6 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     super.dispose();
   }
 
-
-
   Future<Null> _playAnimation() async {
     try {
       await buttonController.forward();
@@ -91,9 +89,10 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     } else {
       Future.delayed(Duration(seconds: 2)).then((_) async {
         await buttonController.reverse();
-        if (mounted) setState(() {
-          _isNetworkAvail = false;
-        });
+        if (mounted)
+          setState(() {
+            _isNetworkAvail = false;
+          });
       });
     }
   }
@@ -108,7 +107,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
   }
 
   setSnackbar(String msg) {
-   ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
         textAlign: TextAlign.center,
@@ -157,9 +156,11 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     var data = {MOBILE: mobile, PASSWORD: password};
 
     Response response =
-    await post(getUserLoginApi, body: data, headers: headers)
-        .timeout(Duration(seconds: timeOut));
+        await post(getUserLoginApi, body: data, headers: headers)
+            .timeout(Duration(seconds: timeOut));
     var getdata = json.decode(response.body);
+    
+
 
     bool error = getdata["error"];
     String msg = getdata["message"];
@@ -195,7 +196,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
     return Expanded(
       flex: 4,
       child: Center(
-        child:  SvgPicture.asset(
+        child: SvgPicture.asset(
           'assets/images/homelogo.svg',
         ),
       ),
@@ -231,11 +232,15 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         },
         keyboardType: TextInputType.number,
         controller: mobileController,
-        style: TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
+        style:
+            TextStyle(color: colors.fontColor, fontWeight: FontWeight.normal),
         focusNode: monoFocus,
         textInputAction: TextInputAction.next,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        validator:(val)=> validateMob(val,getTranslated(context,'MOB_REQUIRED'),getTranslated(context,'VALID_MOB')),
+        validator: (val) => validateMob(
+            val,
+            getTranslated(context, 'MOB_REQUIRED'),
+            getTranslated(context, 'VALID_MOB')),
         onSaved: (String value) {
           mobile = value;
         },
@@ -277,7 +282,10 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
           focusNode: passFocus,
           style: TextStyle(color: colors.fontColor),
           controller: passwordController,
-          validator:(val)=> validatePass(val,getTranslated(context, 'PWD_REQUIRED'),getTranslated(context, 'PWD_LENGTH')),
+          validator: (val) => validatePass(
+              val,
+              getTranslated(context, 'PWD_REQUIRED'),
+              getTranslated(context, 'PWD_LENGTH')),
           onSaved: (String value) {
             password = value;
           },
@@ -288,10 +296,8 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
               size: 17,
             ),
             hintText: getTranslated(context, 'PASSHINT_LBL'),
-            hintStyle: Theme.of(this.context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal),
+            hintStyle: Theme.of(this.context).textTheme.subtitle2.copyWith(
+                color: colors.fontColor, fontWeight: FontWeight.normal),
             filled: true,
             fillColor: colors.lightWhite,
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -323,8 +329,9 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
                     context,
                     MaterialPageRoute(
                         builder: (context) => SendOtp(
-                          title: getTranslated(context, 'FORGOT_PASS_TITLE'),
-                        )));
+                              title:
+                                  getTranslated(context, 'FORGOT_PASS_TITLE'),
+                            )));
               },
               child: Text(getTranslated(context, 'FORGOT_PASSWORD_LBL'),
                   style: Theme.of(context).textTheme.subtitle2.copyWith(
@@ -336,16 +343,14 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
 
   termAndPolicyTxt() {
     return Padding(
-      padding:
-      EdgeInsetsDirectional.only(bottom: 20.0, start: 25.0, end: 25.0, top: 10.0),
+      padding: EdgeInsetsDirectional.only(
+          bottom: 20.0, start: 25.0, end: 25.0, top: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(getTranslated(context, 'DONT_HAVE_AN_ACC'),
-              style: Theme.of(context)
-                  .textTheme
-                  .caption
-                  .copyWith(color: colors.fontColor, fontWeight: FontWeight.normal)),
+              style: Theme.of(context).textTheme.caption.copyWith(
+                  color: colors.fontColor, fontWeight: FontWeight.normal)),
           InkWell(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
@@ -355,7 +360,7 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
                 ));
               },
               child: Text(
-                getTranslated(context,'SIGN_UP_LBL'),
+                getTranslated(context, 'SIGN_UP_LBL'),
                 style: Theme.of(context).textTheme.caption.copyWith(
                     color: colors.fontColor,
                     decoration: TextDecoration.underline,
@@ -382,31 +387,31 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
       flex: 6,
       child: Container(
         alignment: Alignment.bottomCenter,
-        child:
-        ScrollConfiguration(
-        behavior: MyBehavior(),child:
-        SingleChildScrollView(
-          child: Form(
-            key: _formkey,
-            child: Card(
-              elevation: 0.5,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              margin: EdgeInsetsDirectional.only(start: 20.0, end: 20.0, top: 20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  signInTxt(),
-                  setMobileNo(),
-                  setPass(),
-                  forgetPass(),
-                  loginBtn(),
-                  termAndPolicyTxt(),
-                ],
+        child: ScrollConfiguration(
+            behavior: MyBehavior(),
+            child: SingleChildScrollView(
+              child: Form(
+                key: _formkey,
+                child: Card(
+                  elevation: 0.5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  margin: EdgeInsetsDirectional.only(
+                      start: 20.0, end: 20.0, top: 20.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      signInTxt(),
+                      setMobileNo(),
+                      setPass(),
+                      forgetPass(),
+                      loginBtn(),
+                      termAndPolicyTxt(),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        )),
+            )),
       ),
     );
   }
@@ -417,16 +422,16 @@ class _LoginPageState extends State<Login> with TickerProviderStateMixin {
         key: _scaffoldKey,
         body: _isNetworkAvail
             ? Container(
-            color: colors.lightWhite,
-            padding: EdgeInsetsDirectional.only(
-              bottom: 20.0,
-            ),
-            child: Column(
-              children: <Widget>[
-                _subLogo(),
-                _expandedBottomView(),
-              ],
-            ))
+                color: colors.lightWhite,
+                padding: EdgeInsetsDirectional.only(
+                  bottom: 20.0,
+                ),
+                child: Column(
+                  children: <Widget>[
+                    _subLogo(),
+                    _expandedBottomView(),
+                  ],
+                ))
             : noInternet(context));
   }
 }

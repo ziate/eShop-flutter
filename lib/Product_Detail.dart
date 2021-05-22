@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:eshop/Cart.dart';
+import 'package:eshop/CompareList.dart';
 import 'package:eshop/ProductList.dart';
-import 'package:eshop/Rating_Review.dart';
+import 'package:eshop/ReviewList.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -16,7 +18,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
-
+import 'Review_Preview.dart';
 import 'Favorite.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
@@ -28,6 +30,7 @@ import 'Login.dart';
 import 'Model/Section_Model.dart';
 import 'Model/User.dart';
 import 'Product_Preview.dart';
+import 'Review_Gallary.dart';
 
 class ProductDetail extends StatefulWidget {
   final Product model;
@@ -53,6 +56,7 @@ class ProductDetail extends StatefulWidget {
 
 List<String> sliderList = [];
 List<User> reviewList = [];
+List<imgModel> revImgList = [];
 int offset = 0;
 int total = 0;
 
@@ -97,6 +101,20 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       }
     }
 
+    revImgList.clear();
+    if (widget.model.reviewList.length > 0)
+      for (int i = 0;
+          i < widget.model.reviewList[0].productRating.length;
+          i++) {
+        for (int j = 0;
+            j < widget.model.reviewList[0].productRating[i].imgList.length;
+            j++) {
+          imgModel m = imgModel.fromJson(
+              i, widget.model.reviewList[0].productRating[i].imgList[j]);
+          revImgList.add(m);
+        }
+      }
+
     getShare();
 
     _oldSelVarient = widget.model.selVarient;
@@ -105,6 +123,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     offset = 0;
     total = 0;
     getReview();
+    //getReviewImg();
     notificationoffset = 0;
     getProduct();
 
@@ -284,7 +303,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           ),
                           height: height,
                           width: double.maxFinite,
-                          fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                          fit: BoxFit.cover,
+                        //  fit: extendImg ? BoxFit.fill : BoxFit.contain,
                         ),
                         index == 1 ? playIcon() : Container()
                       ],
@@ -543,10 +563,14 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     double price = double.parse(widget.model.prVarientList[pos].disPrice);
     if (price == 0) price = double.parse(widget.model.prVarientList[pos].price);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Text(CUR_CURRENCY + " " + price.toString(),
-          style: Theme.of(context).textTheme.headline6),
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Text(CUR_CURRENCY + " " + price.toString(),
+              style: Theme.of(context).textTheme.headline6),
+        ),
+      ],
     );
   }
 
@@ -1073,7 +1097,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             qty = model.minOrderQuntity.toString();
             setSnackbar('Minimum order quantity is $qty');
           }
-          
+
           var parameter = {
             USER_ID: CUR_USERID,
             PRODUCT_VARIENT_ID: model.prVarientList[model.selVarient].id,
@@ -1179,6 +1203,60 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     }
   }
 
+  /* Future<void> getReviewImg() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          PRODUCT_ID: widget.model.id,
+          LIMIT: perPage.toString(),
+          OFFSET: offset.toString(),
+        };
+
+        Response response =
+            await post(getReviewImgApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+        print("img res***${response.body.toString()}");
+
+        var getdata = json.decode(response.body);
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        if (!error) {
+          total = int.parse(getdata["total"]);
+
+          if ((offset) < total) {
+            var data = getdata["data"];
+            reviewImgList = data["review_images"];
+
+            //(data as List).map((data) => new User.forReview(data)).toList();
+
+            offset = offset + perPage;
+          }
+        } else {
+          if (msg != "No review images found !") setSnackbar(msg);
+          isLoadingmore = false;
+        }
+        if (mounted) if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+        if (mounted)
+          setState(() {
+            _isLoading = false;
+          });
+      }
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+*/
   _setFav() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
@@ -1285,6 +1363,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       _price(widget.model.selVarient),
                       _offPrice(widget.model.selVarient),
                       _shortDesc(),
+                      _compareProduct(),
+
                       widget.model.type == "variable_product"
                           ? Divider()
                           : Container(),
@@ -1310,6 +1390,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _reviewTitle(),
+                            _reviewImg(),
                             _review(),
                             InkWell(
                               child: Padding(
@@ -1324,7 +1405,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                          RatingReview(id: widget.model.id)),
+                                          ReviewList(id: widget.model.id)),
                                 );
                               },
                             )
@@ -1452,7 +1533,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               trailing: Text(madeIn),
               dense: true,
               title: Text(
-                'Made In',
+               getTranslated(context, 'MADE_IN'),
                 style: Theme.of(context).textTheme.subtitle2,
               ),
             ),
@@ -1729,7 +1810,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         trailing: Text(returnable),
         dense: true,
         title: Text(
-          'Returnable',
+          getTranslated(context, 'RETURNABLE'),
+       
           style: Theme.of(context).textTheme.subtitle2,
         ),
       ),
@@ -1748,7 +1830,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         trailing: Text(cancleable),
         dense: true,
         title: Text(
-          'Cancellable',
+         getTranslated(context, 'CANCELLABLE') ,
           style: Theme.of(context).textTheme.subtitle2,
         ),
       ),
@@ -1867,7 +1949,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   _shortDesc() {
     return widget.model.shortDescription.isNotEmpty
         ? Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsetsDirectional.only(start: 8, end: 8, top: 8),
             child: Text(
               widget.model.shortDescription,
               style: Theme.of(context).textTheme.subtitle2,
@@ -1885,26 +1967,26 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               physics: NeverScrollableScrollPhysics(),
               itemCount: widget.model.attributeList.length,
               itemBuilder: (context, i) {
-                return  Padding(
-                  padding: const EdgeInsets.symmetric(horizontal:10.0),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   child: Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: Text(
-
-                            widget.model.attributeList[i].name,
-                            style: Theme.of(context).textTheme.subtitle2,
-                          ),
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          widget.model.attributeList[i].name,
+                          style: Theme.of(context).textTheme.subtitle2,
                         ),
-                        Expanded(
-                            flex: 2,
-                            child: Text(widget.model.attributeList[i].value,textAlign: TextAlign.right,)),
-                      ],
-                    ),
+                      ),
+                      Expanded(
+                          flex: 2,
+                          child: Text(
+                            widget.model.attributeList[i].value,
+                            textAlign: TextAlign.right,
+                          )),
+                    ],
+                  ),
                 );
-
-
               },
             ),
           )
@@ -1949,7 +2031,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               trailing: Text(warranty),
               dense: true,
               title: Text(
-                'Warranty',
+               getTranslated(context, 'WARRENTY') ,
                 style: Theme.of(context).textTheme.subtitle2,
               ),
             ),
@@ -1979,10 +2061,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         tagChip = ChoiceChip(
           selected: false,
           label: Text(widget.model.tagList[i],
-              style: TextStyle(color: colors.white)),
-          backgroundColor: colors.primary,
-          // selectedColor: colors.grad2Color,
-          // disabledColor: colors.grad2Color.withOpacity(0.5),
+              style: TextStyle(color: colors.fontColor,fontSize: 11)),
+          backgroundColor: colors.fontColor.withOpacity(0.2),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(5))),
           onSelected: (bool selected) {
@@ -2004,17 +2086,88 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             padding: EdgeInsets.symmetric(horizontal: 5), child: tagChip));
       }
 
-      return Wrap(
-        children: chips.map<Widget>((Widget chip) {
-          return Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: chip,
-          );
-        }).toList(),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical:8.0),
+        child: Wrap(
+          children: chips.map<Widget>((Widget chip) {
+            return Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: chip,
+            );
+          }).toList(),
+        ),
       );
     } else {
       return Container();
     }
+  }
+
+  _reviewImg() {
+    return revImgList.length > 0
+        ? Container(
+            height: 100,
+            child: ListView.builder(
+              itemCount: revImgList.length > 5 ? 5 : revImgList.length,
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              physics: AlwaysScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (index == 4) {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ReviewGallary(model: widget.model)));
+                      } else {
+
+                        Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              // transitionDuration: Duration(seconds: 1),
+                              pageBuilder: (_, __, ___) => ReviewPreview(index:index,model: widget.model,)
+                            ));
+
+                      }
+                    },
+                    child: Stack(
+                      children: [
+                        FadeInImage(
+                          fadeInDuration: Duration(milliseconds: 150),
+                          image: NetworkImage(
+                            revImgList[index].img,
+                          ),
+                          height: 100.0,
+                          width: 80.0,
+                          fit: BoxFit.cover,
+                          //  errorWidget: (context, url, e) => placeHolder(50),
+                          placeholder: placeHolder(80),
+                        ),
+                        index == 4
+                            ? Container(
+                                height: 100.0,
+                                width: 80.0,
+                                color: colors.black54,
+                                child: Center(
+                                    child: Text(
+                                  "+${revImgList.length - 5}",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                )),
+                              )
+                            : Container()
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          )
+        : Container();
   }
 
   _gaurantee() {
@@ -2027,11 +2180,57 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               trailing: Text(gaurantee),
               dense: true,
               title: Text(
-                'Gurantee',
+              getTranslated(context, 'GAURANTEE'),
                 style: Theme.of(context).textTheme.subtitle2,
               ),
             ),
           )
         : Container();
+  }
+
+  _compareProduct() {
+    return Container(
+      height: 25,
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(end: 8.0),
+        child: TextButton.icon(
+            onPressed: () {
+              if (compareList.length > 0 &&
+                  compareList.contains(widget.model)) {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => CompareList()));
+              } else {
+                setState(() {
+                  compareList.add(widget.model);
+                });
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              primary: colors.lightWhite,
+              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5.0)),
+            ),
+            icon: Icon(
+              (compareList.length > 0 && compareList.contains(widget.model))
+                  ? Icons.login
+                  : Icons.compare,
+              size: 15,
+              color: colors.fontColor,
+            ),
+            label: Text(
+              (compareList.length > 0 && compareList.contains(widget.model))
+                  ? getTranslated(context, 'GOTO_COMPARE')
+                  : getTranslated(context, 'COMPARE_PRO'),
+              style: Theme.of(context)
+                  .textTheme
+                  .caption
+                  .copyWith(color: colors.fontColor),
+            )),
+      ),
+    );
   }
 }

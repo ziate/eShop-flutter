@@ -166,7 +166,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                                 favList[index].productList[0].image),
                             height: 80.0,
                             width: 80.0,
-                            fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                            fit: BoxFit.cover,
                             // errorWidget: (context, url, e) => placeHolder(80),
                             placeholder: placeHolder(80),
                           ))),

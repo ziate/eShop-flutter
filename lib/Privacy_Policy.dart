@@ -153,6 +153,7 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
+         _isLoading = false;
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {

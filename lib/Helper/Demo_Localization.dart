@@ -10,9 +10,7 @@ class DemoLocalization {
   static DemoLocalization of(BuildContext context) {
     return Localizations.of<DemoLocalization>(context, DemoLocalization);
   }
-  // static DemoLocalization () {
-  //return Localizations.of<DemoLocalization>(DemoLocalization);
-  //}
+
 
   static Map<String, String> _localizedValues;
 

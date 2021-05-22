@@ -282,7 +282,7 @@ class _SignUpPageState extends State<SignUp> with TickerProviderStateMixin {
         end: 25.0,
       ),
       child: TextFormField(
-        keyboardType: TextInputType.text,
+        keyboardType: TextInputType.emailAddress,
         focusNode: emailFocus,
         textInputAction: TextInputAction.next,
         controller: emailController,

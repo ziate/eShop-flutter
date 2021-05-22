@@ -31,6 +31,7 @@ class Payment extends StatefulWidget {
 
 List<Model> timeSlotList = [];
 String allowDay;
+bool codAllowed=true;
 
 class StatePayment extends State<Payment> with TickerProviderStateMixin {
   bool _isLoading = true;
@@ -463,13 +464,13 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       try {
         var parameter = {
           TYPE: PAYMENT_METHOD,
+          USER_ID:CUR_USERID
         };
         Response response =
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
-        print("response**${response.body.toString()}");
-        if (response.statusCode == 200) {
+         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
           bool error = getdata["error"];
@@ -481,6 +482,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             isTimeSlot =
                 time_slot["is_time_slots_enabled"] == "1" ? true : false;
             startingDate = time_slot["starting_date"];
+            codAllowed=data["is_cod_allowed"]==1?true:false;
+
             var timeSlots = data["time_slots"];
             timeSlotList = (timeSlots as List)
                 .map((timeSlots) => new Model.fromTimeSlot(timeSlots))
@@ -529,7 +532,10 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             }
 
             var payment = data["payment_method"];
-            cod = payment["cod_method"] == "1" ? true : false;
+
+
+
+            cod = codAllowed?payment["cod_method"] == "1" ? true : false:false;
             paypal = payment["paypal_payment_method"] == "1" ? true : false;
             paumoney =
                 payment["payumoney_payment_method"] == "1" ? true : false;
