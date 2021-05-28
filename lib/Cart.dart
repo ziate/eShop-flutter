@@ -501,6 +501,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                     ),
                                   ),
                                   onTap: () {
+
+
+
                                     saveForLater(
                                         cartList[index].varientId,
                                         "1",
@@ -509,6 +512,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                             cartList[index].perItemTotal),
                                         cartList[index]);
                                   },
+
+
                                 ),
                               ),
                             ],
@@ -1791,7 +1796,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                CUR_CURRENCY + " $oriPrice",
+                                CUR_CURRENCY + " ${oriPrice.toStringAsFixed(2)}",
                                 style: TextStyle(
                                     color: colors.fontColor,
                                     fontWeight: FontWeight.bold),
@@ -2840,7 +2845,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                           style: Theme.of(context).textTheme.caption,
                         ),
                         Text(
-                          CUR_CURRENCY + " " + usedBal.toString(),
+                          CUR_CURRENCY + " " + usedBal.toStringAsFixed(2),
                           style: Theme.of(context).textTheme.caption,
                         )
                       ],

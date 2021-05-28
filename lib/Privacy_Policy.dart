@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:eshop/Helper/Session.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:http/http.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
@@ -30,11 +32,15 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
+  final flutterWebViewPlugin = FlutterWebviewPlugin();
+  StreamSubscription<WebViewStateChanged> _onStateChanged;
 
   @override
   void initState() {
     super.initState();
+   
     getSetting();
+    flutterWebViewPlugin.close();
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
 
@@ -48,11 +54,44 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
         0.150,
       ),
     ));
+
+    _onStateChanged =
+        flutterWebViewPlugin.onStateChanged.listen((WebViewStateChanged state) {
+   
+
+      if (state.type == WebViewState.abortLoad) {
+        _launchSocialNativeLink(state.url);
+      }
+    });
+  }
+
+  Future<void> _launchSocialNativeLink(String url) async {
+
+    if (Platform.isIOS) {
+      if (url.contains("tel:")) {
+        _launchUrl(url);
+      }
+    } else if (Platform.isAndroid) {
+      if (url.contains("tel:") ||
+          url.contains("https://api.whatsapp.com/send")) {
+        _launchUrl(url);
+      }
+    }
+  }
+
+  Future<void> _launchUrl(String url) async {
+ 
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   @override
   void dispose() {
     buttonController.dispose();
+    _onStateChanged.cancel();
     super.dispose();
   }
 
@@ -112,6 +151,9 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
                 url: new Uri.dataFromString(privacy,
                         mimeType: 'text/html', encoding: utf8)
                     .toString(),
+                invalidUrlRegex: Platform.isAndroid
+                    ? "^tel:|^https:\/\/api.whatsapp.com\/send|^mailto:"
+                    : "^tel:|^mailto:",
               )
             : Scaffold(
                 key: _scaffoldKey,
@@ -153,7 +195,7 @@ class StatePrivacy extends State<PrivacyPolicy> with TickerProviderStateMixin {
             _isLoading = false;
           });
       } on TimeoutException catch (_) {
-         _isLoading = false;
+        _isLoading = false;
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
     } else {

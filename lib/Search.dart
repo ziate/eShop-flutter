@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -18,13 +19,15 @@ import 'Cart.dart';
 class Search extends StatefulWidget {
   final Function updateHome;
 
-  Search({this.updateHome});
+  const Search({Key key, this.updateHome}) : super(key: key);
 
   @override
-  _StateSearch createState() => _StateSearch();
+  _SearchState createState() => _SearchState();
 }
 
-class _StateSearch extends State<Search> with TickerProviderStateMixin {
+bool buildResult = false;
+
+class _SearchState extends State<Search> with TickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   int pos = 0;
@@ -35,7 +38,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
   AnimationController buttonController;
   bool _isNetworkAvail = true;
 
-  String _searchText = "", _lastsearch = "";
+  String query = "";
   int notificationoffset = 0;
   ScrollController notificationcontroller;
   bool notificationisloadmore = true,
@@ -43,6 +46,8 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
       notificationisnodata = false;
 
   AnimationController _animationController;
+  Timer _debounce;
+  List<Product> history = [];
 
   @override
   void initState() {
@@ -58,20 +63,23 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
       if (_controller.text.isEmpty) {
         if (mounted)
           setState(() {
-            _searchText = "";
+            query = "";
           });
       } else {
-        if (mounted)
-          setState(() {
-            _searchText = _controller.text;
-          });
-      }
-
-      if (_lastsearch != _searchText && (_searchText.length > 2)) {
-        _lastsearch = _searchText;
-        notificationisloadmore = true;
+        query = _controller.text;
         notificationoffset = 0;
-        getProduct();
+        buildResult = false;
+        if (query.trim().length > 0) {
+          if (_debounce?.isActive ?? false) _debounce.cancel();
+          _debounce = Timer(const Duration(milliseconds: 500), () {
+            if (query.trim().length > 0) {
+              notificationisloadmore = true;
+              notificationoffset = 0;
+
+              getProduct();
+            }
+          });
+        }
       }
     });
 
@@ -185,7 +193,6 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             autofocus: true,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.fromLTRB(0, 15.0, 0, 15.0),
-              prefixIcon: Icon(Icons.search, color: colors.primary, size: 17),
               hintText: 'Search',
               hintStyle: TextStyle(color: colors.primary.withOpacity(0.5)),
               enabledBorder: UnderlineInputBorder(
@@ -271,7 +278,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
 
   Widget listItem(int index) {
     Product model = productList[index];
-
+    print("model*****${model.name}");
     if (_controllerList.length < index + 1)
       _controllerList.add(new TextEditingController());
 
@@ -307,7 +314,7 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                             image: NetworkImage(productList[index].image),
                             height: 80.0,
                             width: 80.0,
-                            fit:  BoxFit.cover,
+                            fit: BoxFit.cover,
                             //errorWidget:(context, url,e) => placeHolder(80) ,
                             placeholder: placeHolder(80),
                           ))),
@@ -757,7 +764,26 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
         }
       }
     }
+    if (notificationoffset == 0) {
+      productList = [];
+    }
+
+    if (notificationoffset == 0 && !buildResult) {
+      Product element = Product(
+          name: 'Search Result for "$query"',
+          image: "",
+          catName: "All Categories",
+          history: false);
+      productList.insert(0, element);
+      for (int i = 0; i < history.length; i++) {
+        if (history[i].name == query) productList.insert(0, history[i]);
+      }
+    }
+
     productList.addAll(tempList);
+
+    notificationisloadmore = true;
+    notificationoffset = notificationoffset + perPage;
   }
 
   Future getProduct() async {
@@ -769,16 +795,15 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             setState(() {
               notificationisloadmore = false;
               notificationisgettingdata = true;
-              if (notificationoffset == 0) {
-                productList = [];
-              }
             });
 
           var parameter = {
-            SEARCH: _searchText.trim(),
+            SEARCH: query.trim(),
             LIMIT: perPage.toString(),
             OFFSET: notificationoffset.toString(),
           };
+
+          print("response****$parameter****$buildResult");
 
           if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
@@ -790,11 +815,13 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
 
           bool error = getdata["error"];
           String msg = getdata["message"];
+          
+          String search = getdata['search'];
 
           notificationisgettingdata = false;
           if (notificationoffset == 0) notificationisnodata = error;
 
-          if (!error) {
+          if (!error && search.trim() == query.trim()) {
             if (mounted) {
               new Future.delayed(
                   Duration.zero,
@@ -810,19 +837,10 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
                               .toList());
 
                           allitems.addAll(items);
-                           for (Product item in items) {
-                            productList
-                                .where((i) => i.id == item.id)
-                                .map((obj) {
-                              allitems.remove(item);
-                              return obj;
-                            }).toList();
-                          }
+                          print(
+                              "current detail****$notificationoffset***$query***${productList.length}");
 
                           getAvailVarient(allitems);
-
-                          notificationisloadmore = true;
-                          notificationoffset = notificationoffset + perPage;
                         } else {
                           notificationisloadmore = false;
                         }
@@ -860,7 +878,90 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
     ));
   }
 
+  clearAll() {
+    setState(() {
+      query = _controller.text;
+      notificationoffset = 0;
+      notificationisloadmore = true;
+      productList.clear();
+    });
+  }
+
   _showContent() {
+    if (_controller.text == "") {
+      return FutureBuilder<List<String>>(
+          future: getPrefrenceList(HISTORYLIST),
+          builder:
+              (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.done &&
+                snapshot.hasData) {
+              final entities = snapshot.data;
+              List<Product> itemList = [];
+              for (int i = 0; i < entities.length; i++) {
+                Product item = Product.history(entities[i]);
+                itemList.add(item);
+              }
+              history.clear();
+              history.addAll(itemList);
+
+              return _SuggestionList(
+                query: query,
+                suggestions: itemList,
+                updateHome: widget.updateHome,
+                notificationcontroller: notificationcontroller,
+                getProduct: getProduct,
+                clearAll: clearAll,
+                // onSelected: (String suggestion) {
+                //   query = suggestion;
+
+                //   //showResults(context);
+                // },
+              );
+            } else {
+              return Column();
+            }
+          });
+    } else if (buildResult) {
+      print("product list length***${productList.length}");
+      return notificationisnodata
+          ? getNoItem(context)
+          : NotificationListener<ScrollNotification>(
+              onNotification: (scrollNotification) {},
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: ListView.builder(
+                        padding: EdgeInsetsDirectional.only(
+                            bottom: 5, start: 10, end: 10, top: 12),
+                        controller: notificationcontroller,
+                        physics: BouncingScrollPhysics(),
+                        itemCount: productList.length,
+                        itemBuilder: (context, index) {
+                          Product item;
+                          try {
+                            item =
+                                productList.isEmpty ? null : productList[index];
+                            if (notificationisloadmore &&
+                                index == (productList.length - 1) &&
+                                notificationcontroller.position.pixels <= 0) {
+                              getProduct();
+                            }
+                          } on Exception catch (_) {}
+
+                          return item == null ? Container() : listItem(index);
+                        }),
+                  ),
+                  notificationisgettingdata
+                      ? Padding(
+                          padding:
+                              EdgeInsetsDirectional.only(top: 5, bottom: 5),
+                          child: CircularProgressIndicator(),
+                        )
+                      : Container(),
+                ],
+              ),
+            );
+    }
     return notificationisnodata
         ? getNoItem(context)
         : NotificationListener<ScrollNotification>(
@@ -868,27 +969,17 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
             child: Column(
               children: <Widget>[
                 Expanded(
-                  child: ListView.builder(
-                      padding: EdgeInsetsDirectional.only(
-                          bottom: 5, start: 10, end: 10, top: 12),
-                      controller: notificationcontroller,
-                      physics: BouncingScrollPhysics(),
-                      itemCount: productList.length,
-                      itemBuilder: (context, index) {
-                        Product item;
-                        try {
-                          item =
-                              productList.isEmpty ? null : productList[index];
-                          if (notificationisloadmore &&
-                              index == (productList.length - 1) &&
-                              notificationcontroller.position.pixels <= 0) {
-                            getProduct();
-                          }
-                        } on Exception catch (_) {}
-
-                        return item == null ? Container() : listItem(index);
-                      }),
-                ),
+                    child: _SuggestionList(
+                  query: query,
+                  suggestions: productList,
+                  notificationcontroller: notificationcontroller,
+                  updateHome: widget.updateHome,
+                  getProduct: getProduct,
+                  clearAll: clearAll,
+                  // onSelected: (String suggestion) {
+                  //   query = suggestion;
+                  // },
+                )),
                 notificationisgettingdata
                     ? Padding(
                         padding: EdgeInsetsDirectional.only(top: 5, bottom: 5),
@@ -898,5 +989,103 @@ class _StateSearch extends State<Search> with TickerProviderStateMixin {
               ],
             ),
           );
+  }
+}
+
+class _SuggestionList extends StatelessWidget {
+  const _SuggestionList(
+      {this.suggestions,
+      this.query,
+      this.searchDelegate,
+      this.updateHome,
+      this.notificationcontroller,
+      this.getProduct,
+      this.clearAll});
+  final List<Product> suggestions;
+  final String query;
+
+  final notificationcontroller;
+  final SearchDelegate<Product> searchDelegate;
+  final Function updateHome, getProduct, clearAll;
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemCount: suggestions.length,
+      shrinkWrap: true,
+      controller: notificationcontroller,
+      separatorBuilder: (BuildContext context, int index) => Divider(),
+      itemBuilder: (BuildContext context, int i) {
+        final Product suggestion = suggestions[i];
+
+        return ListTile(
+            title: Text(
+              suggestion.name,
+              style: Theme.of(context).textTheme.subtitle2.copyWith(
+                  color: colors.lightBlack, fontWeight: FontWeight.bold),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: query.isEmpty || suggestion.history
+                ? null
+                : Text(
+                    "In " + suggestion.catName,
+                    style: TextStyle(color: colors.fontColor),
+                  ),
+            leading: query.isEmpty || suggestion.history
+                ? Icon(Icons.history)
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(7.0),
+                    child: suggestion.image == ''
+                        ? Image.asset(
+                            'assets/images/placeholder.png',
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          )
+                        : FadeInImage(
+                            image: NetworkImage(suggestion.image),
+                            fadeInDuration: Duration(milliseconds: 10),
+                            fit: BoxFit.cover,
+                            height: 50,
+                            width: 50,
+                            placeholder: placeHolder(50),
+                          )),
+            trailing: Icon(
+              Icons.reply,
+            ),
+            onTap: () async {
+              print("touched**$query");
+              if (suggestion.name.startsWith('Search Result for ')) {
+                await setPrefrenceList(HISTORYLIST, query);
+                //onSelected(query);
+                buildResult = true;
+                clearAll();
+                getProduct();
+              } else if (suggestion.history) {
+                // onSelected(suggestion.name);
+                buildResult = true;
+                clearAll();
+                getProduct();
+              } else {
+                await setPrefrenceList(HISTORYLIST, query);
+                buildResult = false;
+                Product model = suggestion;
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                      // transitionDuration: Duration(seconds: 1),
+                      pageBuilder: (_, __, ___) => ProductDetail(
+                            model: model,
+                            updateParent: updateHome,
+                            updateHome: updateHome,
+                            secPos: 0,
+                            index: i,
+                            list: true,
+                          )),
+                );
+              }
+            });
+      },
+    );
   }
 }

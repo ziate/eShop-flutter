@@ -29,6 +29,23 @@ setPrefrenceBool(String key, bool value) async {
   await prefs.setBool(key, value);
 }
 
+setPrefrenceList(String key, String query) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  List<String> valueList = await getPrefrenceList(key);
+  if (!valueList.contains(query)) {
+    if (valueList.length > 4) valueList.removeAt(0);
+    valueList.add(query);
+
+    prefs.setStringList(key, valueList);
+  }
+}
+
+Future<List<String>> getPrefrenceList(String key) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getStringList(key) ?? [];
+}
+
 Future<bool> getPrefrenceBool(String key) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -205,7 +222,7 @@ Future<void> saveUserDetail(
   waitList.add(prefs.setString(EMAIL, email ?? ""));
   waitList.add(prefs.setString(MOBILE, mobile ?? ""));
   waitList.add(prefs.setString(CITY, city ?? ""));
-  waitList.add(prefs.setString(AREA, area??""));
+  waitList.add(prefs.setString(AREA, area ?? ""));
   waitList.add(prefs.setString(ADDRESS, address ?? ""));
   waitList.add(prefs.setString(PINCODE, pincode ?? ""));
   waitList.add(prefs.setString(LATITUDE, latitude ?? ""));

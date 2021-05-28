@@ -93,6 +93,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         widget.model.video != null &&
         widget.model.video.isNotEmpty &&
         widget.model.video != "") sliderList.add(widget.model.image);
+    if(widget.model.otherImage!=null && widget.model.otherImage.length>0)
     sliderList.addAll(widget.model.otherImage);
 
     for (int i = 0; i < widget.model.prVarientList.length; i++) {

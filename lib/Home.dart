@@ -12,7 +12,9 @@ import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/MyProfile.dart';
 import 'package:eshop/ProductList.dart';
 import 'package:eshop/Product_Detail.dart';
+
 import 'package:eshop/SectionList.dart';
+import 'package:eshop/Test.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +37,7 @@ import 'Login.dart';
 import 'Model/Model.dart';
 import 'Model/Section_Model.dart';
 import 'NotificationLIst.dart';
+
 import 'Search.dart';
 import 'SubCat.dart';
 
@@ -401,6 +404,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
   var isDarkTheme;
+ 
 
   @override
   void initState() {
@@ -733,6 +737,11 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
       onTap: () async {
+      // showSearch<Product>(
+      //     context: context,
+      //     delegate: _delegate,
+      //   );
+
         await Navigator.push(
             context,
             MaterialPageRoute(

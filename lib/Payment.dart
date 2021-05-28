@@ -237,7 +237,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                                       " : " +
                                                       CUR_CURRENCY +
                                                       " " +
-                                                      CUR_BALANCE,
+                                                      double.parse(CUR_BALANCE).toStringAsFixed(2),
                                               style: TextStyle(
                                                   fontSize: 15,
                                                   color: colors.black),

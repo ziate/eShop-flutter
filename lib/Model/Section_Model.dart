@@ -17,19 +17,20 @@ class SectionModel {
   List<String> selectedId = [];
   int offset, totalItem;
 
-  SectionModel({this.id,
-    this.title,
-    this.productList,
-    this.varientId,
-    this.qty,
-    this.productId,
-    this.perItemTotal,
-    this.perItemPrice,
-    this.style,
-    this.totalItem,
-    this.offset,
-    this.selectedId,
-    this.filterList});
+  SectionModel(
+      {this.id,
+      this.title,
+      this.productList,
+      this.varientId,
+      this.qty,
+      this.productId,
+      this.perItemTotal,
+      this.perItemPrice,
+      this.style,
+      this.totalItem,
+      this.offset,
+      this.selectedId,
+      this.filterList});
 
   factory SectionModel.fromJson(Map<String, dynamic> parsedJson) {
     List<Product> productList = (parsedJson[PRODUCT_DETAIL] as List)
@@ -121,59 +122,61 @@ class Product {
   String totalImg;
   List<ReviewImg> reviewList;
 
-  bool isFavLoading = false,
-      isFromProd = false;
+  bool isFavLoading = false, isFromProd = false;
   int offset, totalItem, selVarient;
 
   List<Product> subList;
   List<Filter> filterList;
+  bool history = false;
+  // String historyList;
 
-  Product({this.id,
-    this.name,
-    this.desc,
-    this.image,
-    this.catName,
-    this.type,
-    this.otherImage,
-    this.prVarientList,
-    this.attributeList,
-    this.isFav,
-    this.isCancelable,
-    this.isReturnable,
-    this.isPurchased,
-    this.availability,
-    this.noOfRating,
-    this.attrIds,
-    this.selectedId,
-    this.rating,
-    this.isFavLoading,
-    this.indicator,
-    this.madein,
-    this.tax,
-    this.shortDescription,
-    this.total,
-    this.categoryId,
-    this.subList,
-    this.filterList,
-    this.stockType,
-    this.isFromProd,
-    this.cancleTill,
-    this.totalItem,
-    this.offset,
-    this.totalAllow,
-    this.banner,
-    this.selVarient,
-    this.video,
-    this.videType,
-    this.tagList,
-    this.warranty,
-    this.qtyStepSize,
-    this.minOrderQuntity,
-    this.itemsCounter,
-
-
-    this.reviewList,
-    this.gurantee});
+  Product(
+      {this.id,
+      this.name,
+      this.desc,
+      this.image,
+      this.catName,
+      this.type,
+      this.otherImage,
+      this.prVarientList,
+      this.attributeList,
+      this.isFav,
+      this.isCancelable,
+      this.isReturnable,
+      this.isPurchased,
+      this.availability,
+      this.noOfRating,
+      this.attrIds,
+      this.selectedId,
+      this.rating,
+      this.isFavLoading,
+      this.indicator,
+      this.madein,
+      this.tax,
+      this.shortDescription,
+      this.total,
+      this.categoryId,
+      this.subList,
+      this.filterList,
+      this.stockType,
+      this.isFromProd,
+      this.cancleTill,
+      this.totalItem,
+      this.offset,
+      this.totalAllow,
+      this.banner,
+      this.selVarient,
+      this.video,
+      this.videType,
+      this.tagList,
+      this.warranty,
+      this.qtyStepSize,
+      this.minOrderQuntity,
+      this.itemsCounter,
+      this.reviewList,
+      this.history,
+      //  this.historyList,
+      this.gurantee});
 
   factory Product.fromJson(Map<String, dynamic> json) {
     List<Product_Varient> varientList = (json[PRODUCT_VARIENT] as List)
@@ -208,10 +211,6 @@ class Product {
     else
       reviewList =
           reviewImg.map((data) => new ReviewImg.fromJson(data)).toList();
-
-
-
-
 
     return new Product(
         id: json[ID],
@@ -252,11 +251,20 @@ class Product {
         minOrderQuntity: int.parse(json[MINORDERQTY]),
         qtyStepSize: json[QTYSTEP],
         gurantee: json[GAURANTEE],
-       reviewList:reviewList
-       // totalImg: tImg,
+        reviewList: reviewList,
+        history: false
+        // totalImg: tImg,
         // totalReviewImg: json[REV_IMG][TOTALIMGREVIEW],
-       // productRating: reviewList
-    );
+        // productRating: reviewList
+        );
+  }
+
+  factory Product.all(String name, String img, cat) {
+    return new Product(name: name, catName: cat, image: img,history: false);
+  }
+
+  factory Product.history(String history) {
+    return new Product(name: history,history: true);
   }
 
   factory Product.fromCat(Map<String, dynamic> parsedJson) {
@@ -272,7 +280,6 @@ class Product {
       subList: createSubList(parsedJson["children"]),
     );
   }
-
 
   static List<Product> createSubList(List parsedJson) {
     if (parsedJson == null || parsedJson.isEmpty) return null;
@@ -294,16 +301,17 @@ class Product_Varient {
       cartCount;
   List<String> images;
 
-  Product_Varient({this.id,
-    this.productId,
-    this.attr_name,
-    this.varient_value,
-    this.price,
-    this.disPrice,
-    this.attribute_value_ids,
-    this.availability,
-    this.cartCount,
-    this.images});
+  Product_Varient(
+      {this.id,
+      this.productId,
+      this.attr_name,
+      this.varient_value,
+      this.price,
+      this.disPrice,
+      this.attribute_value_ids,
+      this.availability,
+      this.cartCount,
+      this.images});
 
   factory Product_Varient.fromJson(Map<String, dynamic> json) {
     List<String> images = List<String>.from(json[IMAGES]);
@@ -356,20 +364,14 @@ class ReviewImg {
 
   ReviewImg({this.totalImg, this.productRating});
 
-
   factory ReviewImg.fromJson(Map<String, dynamic> json) {
     var reviewImg = (json[PRODUCTRATING] as List);
     List<User> reviewList = [];
     if (reviewImg == null || reviewImg.isEmpty)
       reviewList = [];
     else
-      reviewList =
-          reviewImg.map((data) => new User.forReview(data)).toList();
+      reviewList = reviewImg.map((data) => new User.forReview(data)).toList();
 
-    return new ReviewImg(
-        totalImg: json[TOTALIMG],
-        productRating:reviewList
-    );
+    return new ReviewImg(totalImg: json[TOTALIMG], productRating: reviewList);
   }
 }
-

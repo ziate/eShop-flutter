@@ -766,6 +766,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   color: colors.lightBlack,
                 ),
                 onPressed: () {
+                  print("city**$city");
                   showDialog(
                     context: context,
                     barrierDismissible: false,
@@ -822,7 +823,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                               color: colors.fontColor,
                                               fontWeight: FontWeight.bold),
                                     ),
-                                    value: city,
+                                    value: city==""?null:city,
                                     onChanged: (newValue) {
                                       if (mounted)
                                         setState(() {

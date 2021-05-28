@@ -262,7 +262,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     _isReturnable = model.isReturnable == "1" ? true : false;
 
     return Scaffold(
-      key: scaffoldMessengerKey,
+      
       appBar: _getAppbar(),
       body: _isNetworkAvail
           ? Stack(
