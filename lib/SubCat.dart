@@ -19,7 +19,7 @@ import 'Login.dart';
 import 'ProductList.dart';
 import 'Product_Detail.dart';
 
-import 'SearchOld.dart';
+import 'Search.dart';
 
 class SubCat extends StatefulWidget {
   String title;
@@ -273,7 +273,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => SearchOld(
+                        builder: (context) => Search(
                           updateHome: widget.updateHome,
                         ),
                       ));
@@ -417,6 +417,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                   height: 150,
                   width: double.maxFinite,
                   fit: BoxFit.fill,
+                  imageErrorBuilder: (context, error, stackTrace) =>
+                      erroWidget(),
                   placeholder: AssetImage(
                     "assets/images/sliderph.png",
                   ),
@@ -448,6 +450,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                       height: 150,
                       width: double.maxFinite,
                       fit: BoxFit.fill,
+                      imageErrorBuilder: (context, error, stackTrace) =>
+                          erroWidget(),
                       placeholder: AssetImage(
                         "assets/images/sliderph.png",
                       ),
@@ -533,6 +537,9 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                 height: 80.0,
                                 width: 80.0,
                                 fit: BoxFit.cover,
+                                imageErrorBuilder:
+                                    (context, error, stackTrace) =>
+                                        erroWidget(),
                                 placeholder: placeHolder(80),
                               )),
                         ),
@@ -1008,6 +1015,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                     height: double.maxFinite,
                     width: double.maxFinite,
                     placeholder: placeHolder(100),
+                    imageErrorBuilder: (context, error, stackTrace) =>
+                        erroWidget(),
                   ),
                 ),
               ),
@@ -1419,7 +1428,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
-      
+
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];

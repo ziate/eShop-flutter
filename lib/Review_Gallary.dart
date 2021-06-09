@@ -6,11 +6,9 @@ import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
 
 class ReviewGallary extends StatefulWidget {
-
- final Product model;
+  final Product model;
 
   const ReviewGallary({Key key, this.model}) : super(key: key);
-
 
   @override
   _ReviewImageState createState() => _ReviewImageState();
@@ -34,19 +32,21 @@ class _ReviewImageState extends State<ReviewGallary> {
               return InkWell(
                 child: FadeInImage(
                   image: NetworkImage(revImgList[index].img),
+                  imageErrorBuilder: (context, error, stackTrace) =>
+                      erroWidget(),
                   placeholder: AssetImage(
-                    "assets/images/sliderph.svg",
+                    "assets/images/sliderph.png",
                   ),
                   fit: BoxFit.cover,
                 ),
-                onTap: (){
-
-                   Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                  
-                              pageBuilder: (_, __, ___) => ReviewPreview(index:index,model: widget.model,)
-                            ));
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => ReviewPreview(
+                                index: index,
+                                model: widget.model,
+                              )));
                 },
               );
             },

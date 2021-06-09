@@ -1,11 +1,25 @@
+import 'package:intl/intl.dart';
+
 import '../Helper/String.dart';
 import 'Section_Model.dart';
 
 class Model {
-  String id, type, typeId, image, fromTime, lastTime;
+  String id,
+      type,
+      typeId,
+      image,
+      fromTime,
+      lastTime,
+      title,
+      desc,
+      status,
+      email,
+      date,
+      msg,
+      uid;
   var list;
   String name, banner;
-
+  List<String> attach;
   Model(
       {this.id,
       this.type,
@@ -14,8 +28,16 @@ class Model {
       this.name,
       this.banner,
       this.list,
+      this.title,
       this.fromTime,
-      this.lastTime});
+      this.desc,
+      this.email,
+      this.status,
+      this.lastTime,
+      this.msg,
+      this.attach,
+      this.uid,
+      this.date});
 
   factory Model.fromSlider(Map<String, dynamic> parsedJson) {
     var listContent = parsedJson["data"];
@@ -43,6 +65,49 @@ class Model {
         name: parsedJson[TITLE],
         fromTime: parsedJson[FROMTIME],
         lastTime: parsedJson[TOTIME]);
+  }
+
+  factory Model.fromTicket(Map<String, dynamic> parsedJson) {
+    String date = parsedJson[DATE_CREATED];
+    date = DateFormat('dd-MM-yyyy').format(DateTime.parse(date));
+    return new Model(
+        id: parsedJson[ID],
+        title: parsedJson[SUB],
+        desc: parsedJson[DESC],
+        typeId: parsedJson[TICKET_TYPE],
+        email: parsedJson[EMAIL],
+        status: parsedJson[STATUS],
+        date: date,
+        type: parsedJson[TIC_TYPE]);
+  }
+
+  factory Model.fromSupport(Map<String, dynamic> parsedJson) {
+    return new Model(
+      id: parsedJson[ID],
+      title: parsedJson[TITLE],
+    );
+  }
+
+  factory Model.fromChat(Map<String, dynamic> parsedJson) {
+    var listContent = parsedJson["attachments"];
+
+     List<String> item = [];
+
+    if (listContent == null || listContent.isEmpty) listContent = [];
+    String date = parsedJson[DATE_CREATED];
+
+    
+    for (String i in listContent) item.add(i);
+
+    date = DateFormat('dd-MM-yyyy hh:mm a').format(DateTime.parse(date));
+    return new Model(
+        id: parsedJson[ID],
+        title: parsedJson[TITLE],
+        msg: parsedJson[MESSAGE],
+        uid: parsedJson[USER_ID],
+        name: parsedJson[NAME],
+        date: date,
+        attach: item);
   }
 
   factory Model.setAllCat(String id, String name) {

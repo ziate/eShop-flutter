@@ -86,6 +86,13 @@ placeHolder(double height) {
   );
 }
 
+erroWidget(){
+   return Image.asset(
+            'assets/images/placeholder.png',
+           );
+      
+}
+
 errorWidget(double size) {
   return Icon(
     Icons.account_circle,
@@ -101,6 +108,7 @@ class MyBehavior extends ScrollBehavior {
     return child;
   }
 }
+String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 
 getAppBar(String title, BuildContext context) {
   return AppBar(
@@ -432,7 +440,7 @@ String getToken() {
       issuedAt: DateTime.now().toUtc());
 
   String token = issueJwtHS256(claimSet, jwtKey);
-
+ // print("token****$token");
   return token;
 }
 

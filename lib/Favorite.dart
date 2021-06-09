@@ -167,6 +167,9 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                             height: 80.0,
                             width: 80.0,
                             fit: BoxFit.cover,
+                            imageErrorBuilder: (context, error, stackTrace) =>
+                                erroWidget(),
+
                             // errorWidget: (context, url, e) => placeHolder(80),
                             placeholder: placeHolder(80),
                           ))),
@@ -409,18 +412,15 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
           setState(() {
             _isProgress = true;
           });
-String qty=(int.parse(favList[index]
-                      .productList[0]
-                      .prVarientList[0]
-                      .cartCount) +
-                  int.parse(favList[index].productList[0].qtyStepSize))
-              .toString();
+        String qty = (int.parse(
+                    favList[index].productList[0].prVarientList[0].cartCount) +
+                int.parse(favList[index].productList[0].qtyStepSize))
+            .toString();
 
-
- if (int.parse(qty) < favList[index].productList[0].minOrderQuntity) {
-            qty = favList[index].productList[0].minOrderQuntity.toString();
-            setSnackbar('Minimum order quantity is $qty');
-          }
+        if (int.parse(qty) < favList[index].productList[0].minOrderQuntity) {
+          qty = favList[index].productList[0].minOrderQuntity.toString();
+          setSnackbar('Minimum order quantity is $qty');
+        }
 
         var parameter = {
           PRODUCT_VARIENT_ID: favList[index].productList[0].prVarientList[0].id,

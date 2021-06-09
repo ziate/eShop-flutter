@@ -5,7 +5,6 @@ import 'package:eshop/Helper/AppBtn.dart';
 import 'package:eshop/Helper/SimBtn.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
@@ -19,7 +18,7 @@ import 'Login.dart';
 import 'Model/Section_Model.dart';
 import 'Product_Detail.dart';
 
-import 'SearchOld.dart';
+import 'Search.dart';
 
 class ProductList extends StatefulWidget {
   final String name, id;
@@ -213,7 +212,9 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           image: NetworkImage(model.image),
                           height: 80.0,
                           width: 80.0,
-                          fit:  BoxFit.cover,
+                          fit: BoxFit.cover,
+                          imageErrorBuilder: (context, error, stackTrace) =>
+                              erroWidget(),
                           placeholder: placeHolder(80),
                         )),
                   ),
@@ -484,6 +485,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           ]),
           onTap: () {
             Product model = productList[index];
+
+            print("value***$index***${model.name}");
             Navigator.push(
               context,
               PageRouteBuilder(
@@ -520,9 +523,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                   .cartCount) -
               int.parse(productList[index].qtyStepSize));
 
-        
-
-          if ( qty < productList[index].minOrderQuntity) {
+          if (qty < productList[index].minOrderQuntity) {
             qty = 0;
           }
 
@@ -600,7 +601,10 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         }
         if (widget.tag) parameter[TAG] = widget.name;
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
- Response response =
+
+        print("param***$parameter");
+
+        Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
@@ -722,7 +726,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          SearchOld(updateHome: widget.updateHome),
+                          Search(updateHome: widget.updateHome),
                     ));
               },
               child: Padding(
@@ -870,13 +874,11 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   }
 
   Widget productItem(int index, bool pad) {
-
     if (index < productList.length) {
       Product model = productList[index];
 
-
-      double price = double.parse(
-          model.prVarientList[model.selVarient].disPrice);
+      double price =
+          double.parse(model.prVarientList[model.selVarient].disPrice);
       if (price == 0) {
         price = double.parse(model.prVarientList[model.selVarient].price);
       }
@@ -917,19 +919,20 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             width: double.maxFinite,
                             fit: extendImg ? BoxFit.fill : BoxFit.contain,
                             placeholder: placeHolder(width),
+                            imageErrorBuilder: (context, error, stackTrace) =>
+                                erroWidget(),
                           ),
                         )),
                     Align(
                       alignment: AlignmentDirectional.topStart,
                       child: model.availability == "0"
                           ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .subtitle2
-                              .copyWith(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold))
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold))
                           : Container(),
                     ),
                     Card(
@@ -945,8 +948,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             ),
                             Text(
                               model.rating,
-                              style: Theme
-                                  .of(context)
+                              style: Theme.of(context)
                                   .textTheme
                                   .overline
                                   .copyWith(letterSpacing: 0.2),
@@ -963,8 +965,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                     start: 5.0, top: 5, bottom: 5),
                 child: Text(
                   model.name,
-                  style: Theme
-                      .of(context)
+                  style: Theme.of(context)
                       .textTheme
                       .subtitle2
                       .copyWith(color: colors.lightBlack),
@@ -979,36 +980,36 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           color: colors.fontColor,
                           fontWeight: FontWeight.bold)),
                   double.parse(
-                      model.prVarientList[model.selVarient].disPrice) !=
-                      0
+                              model.prVarientList[model.selVarient].disPrice) !=
+                          0
                       ? Flexible(
-                    child: Row(
-                      children: <Widget>[
-                        Flexible(
-                          child: Text(
-                            double.parse(model
-                                .prVarientList[model.selVarient]
-                                .disPrice) !=
-                                0
-                                ? CUR_CURRENCY +
-                                "" +
-                                model.prVarientList[model.selVarient]
-                                    .price
-                                : "",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .overline
-                                .copyWith(
-                                decoration: TextDecoration.lineThrough,
-                                letterSpacing: 0),
+                          child: Row(
+                            children: <Widget>[
+                              Flexible(
+                                child: Text(
+                                  double.parse(model
+                                              .prVarientList[model.selVarient]
+                                              .disPrice) !=
+                                          0
+                                      ? CUR_CURRENCY +
+                                          "" +
+                                          model.prVarientList[model.selVarient]
+                                              .price
+                                      : "",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .overline
+                                      .copyWith(
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                          letterSpacing: 0),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  )
+                        )
                       : Container()
                 ],
               ),
@@ -1018,48 +1019,46 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                   children: [
                     Expanded(
                       child: model.prVarientList[model.selVarient].attr_name !=
-                          null &&
-                          model.prVarientList[model.selVarient].attr_name
-                              .isNotEmpty
+                                  null &&
+                              model.prVarientList[model.selVarient].attr_name
+                                  .isNotEmpty
                           ? ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 5.0),
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: att.length,
-                          itemBuilder: (context, index) {
-                            return Row(children: [
-                              Flexible(
-                                child: Text(
-                                  att[index].trim() + ":",
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme
-                                      .of(context)
-                                      .textTheme
-                                      .caption
-                                      .copyWith(color: colors.lightBlack),
-                                ),
-                              ),
-                              Flexible(
-                                child: Padding(
-                                  padding:
-                                  EdgeInsetsDirectional.only(start: 5.0),
-                                  child: Text(
-                                    val[index],
-                                    maxLines: 1,
-                                    overflow: TextOverflow.visible,
-                                    style: Theme
-                                        .of(context)
-                                        .textTheme
-                                        .caption
-                                        .copyWith(
-                                        color: colors.lightBlack,
-                                        fontWeight: FontWeight.bold),
+                              padding: const EdgeInsets.only(bottom: 5.0),
+                              physics: NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: att.length,
+                              itemBuilder: (context, index) {
+                                return Row(children: [
+                                  Flexible(
+                                    child: Text(
+                                      att[index].trim() + ":",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .caption
+                                          .copyWith(color: colors.lightBlack),
+                                    ),
                                   ),
-                                ),
-                              )
-                            ]);
-                          })
+                                  Flexible(
+                                    child: Padding(
+                                      padding: EdgeInsetsDirectional.only(
+                                          start: 5.0),
+                                      child: Text(
+                                        val[index],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.visible,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .caption
+                                            .copyWith(
+                                                color: colors.lightBlack,
+                                                fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  )
+                                ]);
+                              })
                           : Container(),
                     ),
                     Padding(
@@ -1068,116 +1067,118 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                       child: model.availability == "0"
                           ? Container()
                           : cartBtnList
-                          ? Row(
-                        children: <Widget>[
-                          GestureDetector(
-                            child: Container(
-                              padding: EdgeInsets.all(2),
-                              margin:
-                              EdgeInsetsDirectional.only(end: 8),
-                              child: Icon(
-                                Icons.remove,
-                                size: 14,
-                                color: colors.fontColor,
-                              ),
-                              decoration: BoxDecoration(
-                                  color: colors.lightWhite,
-                                  borderRadius: BorderRadius.all(
-                                      Radius.circular(3))),
-                            ),
-                            onTap: () {
-                              if (_isProgress == false &&
-                                  (int.parse(productList[index]
-                                      .prVarientList[
-                                  model.selVarient]
-                                      .cartCount)) >
-                                      0) removeFromCart(index);
-                            },
-                          ),
-                          Container(
-                            width: 40,
-                            height: 20,
-                            child: Stack(
-                              children: [
-                                TextField(
-                                  textAlign: TextAlign.center,
-                                  readOnly: true,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                  ),
-                                  controller: _controller[index],
-                                  decoration: InputDecoration(
-                                    contentPadding: EdgeInsets.all(5.0),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
+                              ? Row(
+                                  children: <Widget>[
+                                    GestureDetector(
+                                      child: Container(
+                                        padding: EdgeInsets.all(2),
+                                        margin:
+                                            EdgeInsetsDirectional.only(end: 8),
+                                        child: Icon(
+                                          Icons.remove,
+                                          size: 14,
                                           color: colors.fontColor,
-                                          width: 0.5),
-                                      borderRadius:
-                                      BorderRadius.circular(5.0),
+                                        ),
+                                        decoration: BoxDecoration(
+                                            color: colors.lightWhite,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(3))),
+                                      ),
+                                      onTap: () {
+                                        if (_isProgress == false &&
+                                            (int.parse(productList[index]
+                                                    .prVarientList[
+                                                        model.selVarient]
+                                                    .cartCount)) >
+                                                0) removeFromCart(index);
+                                      },
                                     ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color: colors.fontColor,
-                                          width: 0.5),
-                                      borderRadius:
-                                      BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                ),
-                                PopupMenuButton<String>(
-                                  tooltip: '',
-                                  icon: const Icon(
-                                    Icons.arrow_drop_down,
-                                    size: 1,
-                                  ),
-                                  onSelected: (String value) {
-                                    if (_isProgress == false)
-                                      addToCart(index, value);
-                                  },
-                                  itemBuilder: (BuildContext context) {
-                                    return model.itemsCounter
-                                        .map<PopupMenuItem<String>>(
-                                            (String value) {
-                                          return new PopupMenuItem(
-                                              child: new Text(value),
-                                              value: value);
-                                        }).toList();
-                                  },
-                                ),
-                              ],
-                            ),
-                          ), // ),
+                                    Container(
+                                      width: 40,
+                                      height: 20,
+                                      child: Stack(
+                                        children: [
+                                          TextField(
+                                            textAlign: TextAlign.center,
+                                            readOnly: true,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                            ),
+                                            controller: _controller[index],
+                                            decoration: InputDecoration(
+                                              contentPadding:
+                                                  EdgeInsets.all(5.0),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: colors.fontColor,
+                                                    width: 0.5),
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: colors.fontColor,
+                                                    width: 0.5),
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
+                                              ),
+                                            ),
+                                          ),
+                                          PopupMenuButton<String>(
+                                            tooltip: '',
+                                            icon: const Icon(
+                                              Icons.arrow_drop_down,
+                                              size: 1,
+                                            ),
+                                            onSelected: (String value) {
+                                              if (_isProgress == false)
+                                                addToCart(index, value);
+                                            },
+                                            itemBuilder:
+                                                (BuildContext context) {
+                                              return model.itemsCounter
+                                                  .map<PopupMenuItem<String>>(
+                                                      (String value) {
+                                                return new PopupMenuItem(
+                                                    child: new Text(value),
+                                                    value: value);
+                                              }).toList();
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ), // ),
 
-                          GestureDetector(
-                            child: Container(
-                              padding: EdgeInsets.all(2),
-                              margin: EdgeInsets.only(left: 8),
-                              child: Icon(
-                                Icons.add,
-                                size: 14,
-                                color: colors.fontColor,
-                              ),
-                              decoration: BoxDecoration(
-                                  color: colors.lightWhite,
-                                  borderRadius: BorderRadius.all(
-                                      Radius.circular(3))),
-                            ),
-                            onTap: () {
-                              if (_isProgress == false)
-                                addToCart(
-                                    index,
-                                    (int.parse(model
-                                        .prVarientList[
-                                    model.selVarient]
-                                        .cartCount) +
-                                        int.parse(
-                                            model.qtyStepSize))
-                                        .toString());
-                            },
-                          )
-                        ],
-                      )
-                          : Container(),
+                                    GestureDetector(
+                                      child: Container(
+                                        padding: EdgeInsets.all(2),
+                                        margin: EdgeInsets.only(left: 8),
+                                        child: Icon(
+                                          Icons.add,
+                                          size: 14,
+                                          color: colors.fontColor,
+                                        ),
+                                        decoration: BoxDecoration(
+                                            color: colors.lightWhite,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(3))),
+                                      ),
+                                      onTap: () {
+                                        if (_isProgress == false)
+                                          addToCart(
+                                              index,
+                                              (int.parse(model
+                                                          .prVarientList[
+                                                              model.selVarient]
+                                                          .cartCount) +
+                                                      int.parse(
+                                                          model.qtyStepSize))
+                                                  .toString());
+                                      },
+                                    )
+                                  ],
+                                )
+                              : Container(),
                     )
                   ],
                 ),
@@ -1189,8 +1190,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             await Navigator.push(
               context,
               PageRouteBuilder(
-                  pageBuilder: (_, __, ___) =>
-                      ProductDetail(
+                  pageBuilder: (_, __, ___) => ProductDetail(
                         model: model,
                         updateParent: updateProductList,
                         index: index,
@@ -1203,7 +1203,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           },
         ),
       );
-    }else
+    } else
       return Container();
   }
 

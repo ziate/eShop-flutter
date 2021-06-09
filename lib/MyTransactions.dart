@@ -26,12 +26,13 @@ class _TransactionHistoryState extends State<TransactionHistory> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
-
+ ScrollController controller = new ScrollController();
   List<TransactionModel> tempList = [];
 
   @override
   void initState() {
     getTransaction();
+     controller.addListener(_scrollListener);
     super.initState();
   }
 
@@ -157,6 +158,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
         ? getNoItem(context)
         : ListView.builder(
             shrinkWrap: true,
+                controller: controller,
             itemCount: (offset < total) ? tranList.length + 1 : tranList.length,
             physics: AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) {
@@ -252,5 +254,18 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                         : Container(),
                   ]))),
     );
+  }
+    _scrollListener() {
+    if (controller.offset >= controller.position.maxScrollExtent &&
+        !controller.position.outOfRange) {
+      if (this.mounted) {
+        if (mounted)
+          setState(() {
+            isLoadingmore = true;
+
+            if (offset < total) getTransaction();
+          });
+      }
+    }
   }
 }

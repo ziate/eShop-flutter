@@ -48,6 +48,12 @@
 	<string>This app requires access to Location of user to check network connectivity</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>this require to get profile picture</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This require listens for speech on the device microphone on your request for voice search.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This require recognizes words as you speak them and displays them for voice search </string>
+	
+
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

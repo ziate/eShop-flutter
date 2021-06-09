@@ -298,7 +298,6 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
             .subtitle2
             .copyWith(color: colors.fontColor),
         onSaved: (String value) {
-      
           altMob = value;
         },
         onFieldSubmitted: (v) {
@@ -682,7 +681,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               addressList[widget.index].isDefault = "1";
 
               if (!ISFLAT_DEL) {
-                if (oriPrice  <
+                if (oriPrice <
                     double.parse(addressList[selectedAddress].freeAmt)) {
                   delCharge =
                       double.parse(addressList[selectedAddress].deliveryCharge);
@@ -700,7 +699,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               selAddress = addressList[widget.index].id;
 
               if (!ISFLAT_DEL) {
-                if (totalPrice <
+                if (oriPrice <
                     double.parse(addressList[selectedAddress].freeAmt)) {
                   delCharge =
                       double.parse(addressList[selectedAddress].deliveryCharge);
@@ -722,7 +721,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               addressList[widget.index].isDefault = "1";
 
               if (!ISFLAT_DEL && addressList.length != 1) {
-                if (oriPrice  <
+                if (oriPrice <
                     double.parse(addressList[selectedAddress].freeAmt)) {
                   delCharge =
                       double.parse(addressList[selectedAddress].deliveryCharge);

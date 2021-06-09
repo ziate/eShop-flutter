@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -7,14 +9,20 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'Helper/AppBtn.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Helper/String.dart';
+import 'Home.dart';
 import 'Model/Section_Model.dart';
+import 'ProductList.dart';
 import 'Product_Detail.dart';
 import 'Login.dart';
 import 'Cart.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class Search extends StatefulWidget {
   final Function updateHome;
@@ -48,10 +56,23 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
   AnimationController _animationController;
   Timer _debounce;
   List<Product> history = [];
+  bool _hasSpeech = false;
+  double level = 0.0;
+  double minSoundLevel = 50000;
+  double maxSoundLevel = -50000;
+
+  String lastStatus = '';
+  String _currentLocaleId = '';
+  String lastWords = '';
+  List<LocaleName> _localeNames = [];
+  final SpeechToText speech = SpeechToText();
+  StateSetter setStater;
+  ChoiceChip tagChip;
 
   @override
   void initState() {
     super.initState();
+
     productList.clear();
 
     notificationoffset = 0;
@@ -68,6 +89,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
       } else {
         query = _controller.text;
         notificationoffset = 0;
+        notificationisnodata = false;
         buildResult = false;
         if (query.trim().length > 0) {
           if (_debounce?.isActive ?? false) _debounce.cancel();
@@ -206,64 +228,88 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
           ),
           titleSpacing: 0,
           actions: [
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-              decoration: shadow(),
-              child: Card(
-                elevation: 0,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(4),
-                  onTap: () {
-                    CUR_USERID == null
-                        ? Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Login(),
-                            ))
-                        : Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  Cart(widget.updateHome, null),
-                            )).then((val) => widget.updateHome);
-                  },
-                  child: new Stack(children: <Widget>[
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: SvgPicture.asset(
-                          'assets/images/noti_cart.svg',
-                        ),
-                      ),
+            // Container(
+            //   margin: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+            //   decoration: shadow(),
+            //   child: Card(
+            //     elevation: 0,
+            //     child: InkWell(
+            //       borderRadius: BorderRadius.circular(4),
+            //       onTap: () {
+            //         CUR_USERID == null
+            //             ? Navigator.push(
+            //                 context,
+            //                 MaterialPageRoute(
+            //                   builder: (context) => Login(),
+            //                 ))
+            //             : Navigator.push(
+            //                 context,
+            //                 MaterialPageRoute(
+            //                   builder: (context) =>
+            //                       Cart(widget.updateHome, null),
+            //                 )).then((val) => widget.updateHome);
+            //       },
+            //       child: new Stack(children: <Widget>[
+            //         Center(
+            //           child: Padding(
+            //             padding: const EdgeInsets.all(5.0),
+            //             child: SvgPicture.asset(
+            //               'assets/images/noti_cart.svg',
+            //             ),
+            //           ),
+            //         ),
+            //         (CUR_CART_COUNT != null &&
+            //                 CUR_CART_COUNT.isNotEmpty &&
+            //                 CUR_CART_COUNT != "0")
+            //             ? new Positioned(
+            //                 top: 0.0,
+            //                 right: 5.0,
+            //                 bottom: 10,
+            //                 child: Container(
+            //                     decoration: BoxDecoration(
+            //                         shape: BoxShape.circle,
+            //                         color: colors.primary.withOpacity(0.5)),
+            //                     child: new Center(
+            //                       child: Padding(
+            //                         padding: EdgeInsets.all(3),
+            //                         child: new Text(
+            //                           CUR_CART_COUNT,
+            //                           style: TextStyle(
+            //                               fontSize: 7,
+            //                               fontWeight: FontWeight.bold),
+            //                         ),
+            //                       ),
+            //                     )),
+            //               )
+            //             : Container()
+            //       ]),
+            //     ),
+            //   ),
+            // ),
+
+            _controller.text != ""
+                ? IconButton(
+                    onPressed: () {
+                      _controller.text = '';
+                    },
+                    icon: Icon(
+                      Icons.close,
+                      color: colors.primary,
                     ),
-                    (CUR_CART_COUNT != null &&
-                            CUR_CART_COUNT.isNotEmpty &&
-                            CUR_CART_COUNT != "0")
-                        ? new Positioned(
-                            top: 0.0,
-                            right: 5.0,
-                            bottom: 10,
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: colors.primary.withOpacity(0.5)),
-                                child: new Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(3),
-                                    child: new Text(
-                                      CUR_CART_COUNT,
-                                      style: TextStyle(
-                                          fontSize: 7,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                )),
-                          )
-                        : Container()
-                  ]),
-                ),
-              ),
-            ),
+                  )
+                : IconButton(
+                    icon: Icon(
+                      Icons.mic,
+                      color: colors.primary,
+                    ),
+                    onPressed: () {
+                      lastWords = '';
+                      if (!_hasSpeech)
+                        initSpeechState();
+                      else
+                        showSpeechDialog();
+                    },
+                  )
           ],
         ),
         body: _isNetworkAvail
@@ -278,7 +324,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
 
   Widget listItem(int index) {
     Product model = productList[index];
-    print("model*****${model.name}");
+
     if (_controllerList.length < index + 1)
       _controllerList.add(new TextEditingController());
 
@@ -315,6 +361,9 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
                             height: 80.0,
                             width: 80.0,
                             fit: BoxFit.cover,
+                            imageErrorBuilder: (context, error, stackTrace) =>
+                                erroWidget(),
+
                             //errorWidget:(context, url,e) => placeHolder(80) ,
                             placeholder: placeHolder(80),
                           ))),
@@ -803,8 +852,6 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
             OFFSET: notificationoffset.toString(),
           };
 
-          print("response****$parameter****$buildResult");
-
           if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
           Response response =
@@ -815,7 +862,13 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
 
           bool error = getdata["error"];
           String msg = getdata["message"];
-          
+
+          Map<String, Object> tempData = getdata;
+          if (tempData.containsKey(TAG)) {
+            List<String> tempList = List<String>.from(getdata[TAG]);
+            if (tempList != null && tempList.length > 0) tagList = tempList;
+          }
+
           String search = getdata['search'];
 
           notificationisgettingdata = false;
@@ -837,8 +890,6 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
                               .toList());
 
                           allitems.addAll(items);
-                          print(
-                              "current detail****$notificationoffset***$query***${productList.length}");
 
                           getAvailVarient(allitems);
                         } else {
@@ -887,6 +938,66 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
     });
   }
 
+  _tags() {
+    print("value***${tagList.length}");
+    if (tagList != null) {
+      List<Widget> chips = [];
+      for (int i = 0; i < tagList.length; i++) {
+        tagChip = ChoiceChip(
+          selected: false,
+          label: Text(tagList[i],
+              style: TextStyle(color: colors.fontColor, fontSize: 11)),
+          backgroundColor: colors.fontColor.withOpacity(0.1),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5))),
+          onSelected: (bool selected) {
+            if (selected) if (mounted)
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductList(
+                      name: tagList[i],
+                      //id: catList[index].id,
+                      updateHome: widget.updateHome,
+                      tag: true,
+                    ),
+                  ));
+          },
+        );
+
+        chips.add(Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5), child: tagChip));
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Divider(),
+          tagList.length > 0
+              ? Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 8.0),
+                  child: Text('Discover more'),
+                )
+              : Container(),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Wrap(
+              children: chips.map<Widget>((Widget chip) {
+                return Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: chip,
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Container();
+    }
+  }
+
   _showContent() {
     if (_controller.text == "") {
       return FutureBuilder<List<String>>(
@@ -904,25 +1015,24 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
               history.clear();
               history.addAll(itemList);
 
-              return _SuggestionList(
-                query: query,
-                suggestions: itemList,
-                updateHome: widget.updateHome,
-                notificationcontroller: notificationcontroller,
-                getProduct: getProduct,
-                clearAll: clearAll,
-                // onSelected: (String suggestion) {
-                //   query = suggestion;
-
-                //   //showResults(context);
-                // },
+              return Column(
+                children: [
+                  _SuggestionList(
+                    textController: _controller,
+                    suggestions: itemList,
+                    updateHome: widget.updateHome,
+                    notificationcontroller: notificationcontroller,
+                    getProduct: getProduct,
+                    clearAll: clearAll,
+                  ),
+                  _tags()
+                ],
               );
             } else {
               return Column();
             }
           });
     } else if (buildResult) {
-      print("product list length***${productList.length}");
       return notificationisnodata
           ? getNoItem(context)
           : NotificationListener<ScrollNotification>(
@@ -970,7 +1080,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
               children: <Widget>[
                 Expanded(
                     child: _SuggestionList(
-                  query: query,
+                  textController: _controller,
                   suggestions: productList,
                   notificationcontroller: notificationcontroller,
                   updateHome: widget.updateHome,
@@ -990,19 +1100,191 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
             ),
           );
   }
+
+  Future<void> initSpeechState() async {
+    var hasSpeech = await speech.initialize(
+        onError: errorListener,
+        onStatus: statusListener,
+        debugLogging: false,
+        finalTimeout: Duration(milliseconds: 0));
+    if (hasSpeech) {
+      _localeNames = await speech.locales();
+
+      var systemLocale = await speech.systemLocale();
+      _currentLocaleId = systemLocale?.localeId ?? '';
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _hasSpeech = hasSpeech;
+    });
+    if (hasSpeech) showSpeechDialog();
+  }
+
+  void errorListener(SpeechRecognitionError error) {
+    setState(() {
+      // lastError = '${error.errorMsg} - ${error.permanent}';
+      setSnackbar(error.errorMsg);
+    });
+  }
+
+  void statusListener(String status) {
+    // print(
+    // 'Received listener status: $status, listening: ${speech.isListening}');
+    setStater(() {
+      lastStatus = '$status';
+    });
+  }
+
+  void startListening() {
+    lastWords = '';
+    speech.listen(
+        onResult: resultListener,
+        listenFor: Duration(seconds: 30),
+        pauseFor: Duration(seconds: 5),
+        partialResults: true,
+        localeId: _currentLocaleId,
+        onSoundLevelChange: soundLevelListener,
+        cancelOnError: true,
+        listenMode: ListenMode.confirmation);
+    setStater(() {});
+  }
+
+  void soundLevelListener(double level) {
+    minSoundLevel = min(minSoundLevel, level);
+    maxSoundLevel = max(maxSoundLevel, level);
+    // print("sound level $level: $minSoundLevel - $maxSoundLevel ");
+    setStater(() {
+      this.level = level;
+    });
+  }
+
+  void stopListening() {
+    speech.stop();
+    setStater(() {
+      level = 0.0;
+    });
+  }
+
+  void cancelListening() {
+    speech.cancel();
+    setStater(() {
+      level = 0.0;
+    });
+  }
+
+  void resultListener(SpeechRecognitionResult result) {
+    print('Result listener ${result.recognizedWords} - ${result.finalResult}');
+    setStater(() {
+      lastWords = '${result.recognizedWords}';
+      query = lastWords;
+    });
+
+    if (result.finalResult) {
+      Future.delayed(Duration(seconds: 1)).then((_) async {
+        clearAll();
+
+        _controller.text = lastWords;
+        _controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: _controller.text.length));
+
+        setState(() {});
+        Navigator.of(context).pop();
+      });
+    }
+  }
+
+  showSpeechDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setStater1) {
+            setStater = setStater1;
+            return AlertDialog(
+              backgroundColor: colors.lightWhite,
+              title: Text(
+                'Search for desired product',
+                style: Theme.of(context).textTheme.subtitle1,
+                textAlign: TextAlign.center,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                            blurRadius: .26,
+                            spreadRadius: level * 1.5,
+                            color: Colors.black.withOpacity(.05))
+                      ],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                    ),
+                    child: IconButton(
+                        icon: Icon(
+                          Icons.mic,
+                          color: colors.primary,
+                        ),
+                        onPressed: () {
+                          if (!_hasSpeech)
+                            initSpeechState();
+                          else
+                            !_hasSpeech || speech.isListening
+                                ? null
+                                : startListening();
+                        }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(lastWords),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    color: colors.fontColor.withOpacity(0.1),
+                    child: Center(
+                      child: speech.isListening
+                          ? Text(
+                              "I'm listening...",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
+                                      color: colors.fontColor,
+                                      fontWeight: FontWeight.bold),
+                            )
+                          : Text(
+                              'Not listening',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
+                                      color: colors.fontColor,
+                                      fontWeight: FontWeight.bold),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          });
+        });
+  }
 }
 
 class _SuggestionList extends StatelessWidget {
   const _SuggestionList(
       {this.suggestions,
-      this.query,
+      this.textController,
       this.searchDelegate,
       this.updateHome,
       this.notificationcontroller,
       this.getProduct,
       this.clearAll});
   final List<Product> suggestions;
-  final String query;
+  final TextEditingController textController;
 
   final notificationcontroller;
   final SearchDelegate<Product> searchDelegate;
@@ -1025,13 +1307,15 @@ class _SuggestionList extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            subtitle: query.isEmpty || suggestion.history
+            subtitle: textController.text.toString().trim().isEmpty ||
+                    suggestion.history
                 ? null
                 : Text(
                     "In " + suggestion.catName,
                     style: TextStyle(color: colors.fontColor),
                   ),
-            leading: query.isEmpty || suggestion.history
+            leading: textController.text.toString().trim().isEmpty ||
+                    suggestion.history
                 ? Icon(Icons.history)
                 : ClipRRect(
                     borderRadius: BorderRadius.circular(7.0),
@@ -1049,25 +1333,31 @@ class _SuggestionList extends StatelessWidget {
                             height: 50,
                             width: 50,
                             placeholder: placeHolder(50),
+                            imageErrorBuilder: (context, error, stackTrace) =>
+                                erroWidget(),
                           )),
             trailing: Icon(
               Icons.reply,
             ),
             onTap: () async {
-              print("touched**$query");
               if (suggestion.name.startsWith('Search Result for ')) {
-                await setPrefrenceList(HISTORYLIST, query);
+                await setPrefrenceList(
+                    HISTORYLIST, textController.text.toString().trim());
                 //onSelected(query);
+                //   print("value***start${suggestion.history}**$query");
                 buildResult = true;
                 clearAll();
                 getProduct();
               } else if (suggestion.history) {
-                // onSelected(suggestion.name);
-                buildResult = true;
                 clearAll();
-                getProduct();
+
+                buildResult = true;
+                textController.text = suggestion.name;
+                textController.selection = TextSelection.fromPosition(
+                    TextPosition(offset: textController.text.length));
               } else {
-                await setPrefrenceList(HISTORYLIST, query);
+                await setPrefrenceList(
+                    HISTORYLIST, textController.text.toString().trim());
                 buildResult = false;
                 Product model = suggestion;
                 Navigator.push(

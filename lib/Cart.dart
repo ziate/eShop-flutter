@@ -257,6 +257,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       height: 80.0,
                       width: 80.0,
                       fit: BoxFit.cover,
+                      imageErrorBuilder: (context, error, stackTrace) =>
+                          erroWidget(),
                       placeholder: placeHolder(80),
                     ))),
             Expanded(
@@ -500,20 +502,17 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                           fontSize: 11),
                                     ),
                                   ),
-                                  onTap: () {
-
-
-
-                                    saveForLater(
-                                        cartList[index].varientId,
-                                        "1",
-                                        cartList[index].qty,
-                                        double.parse(
-                                            cartList[index].perItemTotal),
-                                        cartList[index]);
-                                  },
-
-
+                                  onTap: !_isProgress
+                                      ? () {
+                                          saveForLater(
+                                              cartList[index].varientId,
+                                              "1",
+                                              cartList[index].qty,
+                                              double.parse(
+                                                  cartList[index].perItemTotal),
+                                              cartList[index]);
+                                        }
+                                      : null,
                                 ),
                               ),
                             ],
@@ -582,6 +581,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                           height: 80.0,
                           width: 80.0,
                           fit: BoxFit.cover,
+                          imageErrorBuilder: (context, error, stackTrace) =>
+                              erroWidget(),
+
                           // errorWidget: (context, url, e) => placeHolder(60),
                           placeholder: placeHolder(80),
                         ))),
@@ -690,7 +692,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                                   .prVarientList[selectedPos]
                                                   .price
                                           : "",
-
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: Theme.of(context)
@@ -963,6 +964,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       height: 80.0,
                       width: 80.0,
                       fit: BoxFit.cover,
+                      imageErrorBuilder: (context, error, stackTrace) =>
+                          erroWidget(),
                       placeholder: placeHolder(80),
                     ))),
             Expanded(
@@ -1051,15 +1054,17 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                         color: colors.fontColor, fontSize: 11),
                                   ),
                                 ),
-                                onTap: () {
-                                  saveForLater(
-                                      saveLaterList[index].varientId,
-                                      "0",
-                                      saveLaterList[index].qty,
-                                      double.parse(
-                                          saveLaterList[index].perItemTotal),
-                                      saveLaterList[index]);
-                                },
+                                onTap: !_isProgress
+                                    ? () {
+                                        saveForLater(
+                                            saveLaterList[index].varientId,
+                                            "0",
+                                            saveLaterList[index].qty,
+                                            double.parse(saveLaterList[index]
+                                                .perItemTotal),
+                                            saveLaterList[index]);
+                                      }
+                                    : null,
                               ),
                             ],
                           )
@@ -1796,7 +1801,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                CUR_CURRENCY + " ${oriPrice.toStringAsFixed(2)}",
+                                CUR_CURRENCY +
+                                    " ${oriPrice.toStringAsFixed(2)}",
                                 style: TextStyle(
                                     color: colors.fontColor,
                                     fontWeight: FontWeight.bold),
@@ -2210,7 +2216,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     String contact = await getPrefrence(MOBILE);
     String email = await getPrefrence(EMAIL);
 
-    double amt = totalPrice * 100;
+    double amt = double.parse(totalPrice.toStringAsFixed(2)) * 100;
 
     if (contact != '' && email != '') {
       if (mounted)
@@ -2392,7 +2398,6 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
 
         _placeOrder = true;
         if (response.statusCode == 200) {
@@ -2958,7 +2963,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         var parameter = {
           USER_ID: CUR_USERID,
           PROMOCODE: promoC.text,
-          FINAL_TOTAL: totalPrice.toString()
+          FINAL_TOTAL: oriPrice.toString()
         };
         Response response =
             await post(validatePromoApi, body: parameter, headers: headers)
@@ -2972,7 +2977,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           if (!error) {
             var data = getdata["data"][0];
 
-            totalPrice = double.parse(data["final_total"]);
+            totalPrice = double.parse(data["final_total"]) + delCharge;
+
             promoAmt = double.parse(data["final_discount"]);
             promocode = data["promo_code"];
             isPromoValid = true;
@@ -2992,7 +2998,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             isUseWallet = false;
             isPayLayShow = true;
             _isProgress = false;
-
+            selectedMethod = null;
             if (mounted && check) checkoutState(() {});
             setState(() {});
           } else {

@@ -16,16 +16,17 @@ class ProductPreview extends StatefulWidget {
   final String id, video, videoType;
   final List<String> imgList;
 
-  const ProductPreview({Key key,
-    this.pos,
-    this.secPos,
-    this.index,
-    this.list,
-    this.id,
-    this.imgList,
-    this.video,
-    this.videoType,
-    this.from})
+  const ProductPreview(
+      {Key key,
+      this.pos,
+      this.secPos,
+      this.index,
+      this.list,
+      this.id,
+      this.imgList,
+      this.video,
+      this.videoType,
+      this.from})
       : super(key: key);
 
   @override
@@ -36,7 +37,6 @@ class StatePreview extends State<ProductPreview> {
   int curPos;
   YoutubePlayerController _controller;
   VideoPlayerController _videoController;
-
 
   @override
   void initState() {
@@ -50,10 +50,10 @@ class StatePreview extends State<ProductPreview> {
             mute: false,
             forceHD: false,
             loop: false,
-
             disableDragSeek: true),
       );
-    } else if (widget.from && widget.videoType == "self_hosted" &&
+    } else if (widget.from &&
+        widget.videoType == "self_hosted" &&
         widget.video != "") {
       _videoController = VideoPlayerController.network(
         widget.video,
@@ -74,17 +74,14 @@ class StatePreview extends State<ProductPreview> {
   @override
   void dispose() {
     super.dispose();
-    if (_controller != null)
-      _controller.dispose();
-    if (_videoController != null)
-      _videoController.dispose();
+    if (_controller != null) _controller.dispose();
+    if (_videoController != null) _videoController.dispose();
   }
 
   @override
   void deactivate() {
     // Pauses video while navigating to next page.
-    if (_controller != null)
-      _controller.pause();
+    if (_controller != null) _controller.pause();
     super.deactivate();
   }
 
@@ -92,52 +89,44 @@ class StatePreview extends State<ProductPreview> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Hero(
-          tag: widget.list
-              ? "${widget.id}"
-              : "${sectionList[widget.secPos].productList[widget.index]
-              .id}${widget.secPos}${widget.index}",
-          child: Stack(
-            children: <Widget>[
-             widget.video == ""?
-               Container(
-                   child: PhotoViewGallery.builder(
-                     scrollPhysics: const BouncingScrollPhysics(),
-                     builder: (BuildContext context, int index) {
-                       return PhotoViewGalleryPageOptions(
-
-                           initialScale: PhotoViewComputedScale.contained * 0.9,
-                           minScale: PhotoViewComputedScale.contained * 0.9,
-                           imageProvider: NetworkImage(widget.imgList[index])
-
-                       );
-                     },
-                     itemCount: widget.imgList.length,
-                     loadingBuilder: (context, event) =>
-                         Center(
-                           child: Container(
-                             width: 20.0,
-                             height: 20.0,
-                             child: CircularProgressIndicator(
-                               value: event == null
-                                   ? 0
-                                   : event.cumulativeBytesLoaded / event
-                                   .expectedTotalBytes,
-                             ),
-                           ),
-                         ),
-                     backgroundDecoration: BoxDecoration(
-                         color: colors.white),
-                     pageController: PageController(initialPage: curPos),
-                     onPageChanged: (index) {
-                       if (mounted)
-                         setState(() {
-                           curPos = index;
-                         });
-                     },
-                   )
-               )
-             :
-              PageView.builder(
+      tag: widget.list
+          ? "${widget.id}"
+          : "${sectionList[widget.secPos].productList[widget.index].id}${widget.secPos}${widget.index}",
+      child: Stack(
+        children: <Widget>[
+          widget.video == ""
+              ? Container(
+                  child: PhotoViewGallery.builder(
+                  scrollPhysics: const BouncingScrollPhysics(),
+                  builder: (BuildContext context, int index) {
+                    return PhotoViewGalleryPageOptions(
+                        initialScale: PhotoViewComputedScale.contained * 0.9,
+                        minScale: PhotoViewComputedScale.contained * 0.9,
+                        imageProvider: NetworkImage(widget.imgList[index]));
+                  },
+                  itemCount: widget.imgList.length,
+                  loadingBuilder: (context, event) => Center(
+                    child: Container(
+                      width: 20.0,
+                      height: 20.0,
+                      child: CircularProgressIndicator(
+                        value: event == null
+                            ? 0
+                            : event.cumulativeBytesLoaded /
+                                event.expectedTotalBytes,
+                      ),
+                    ),
+                  ),
+                  backgroundDecoration: BoxDecoration(color: colors.white),
+                  pageController: PageController(initialPage: curPos),
+                  onPageChanged: (index) {
+                    if (mounted)
+                      setState(() {
+                        curPos = index;
+                      });
+                  },
+                ))
+              : PageView.builder(
                   itemCount: widget.imgList.length,
                   controller: PageController(initialPage: curPos),
                   onPageChanged: (index) {
@@ -162,82 +151,85 @@ class StatePreview extends State<ProductPreview> {
                           ),
                         );
                       } else if (widget.videoType == "vimeo") {
-                        List<String> id = widget.video.split(
-                            "https://vimeo.com/");
+                        List<String> id =
+                            widget.video.split("https://vimeo.com/");
 
                         return SafeArea(
                             child: Container(
-                              width: double.maxFinite,
-                              height: double.maxFinite,
-                              child: Center(
-                                child: VimeoPlayer(
-                                  id: id[1],
-                                  autoPlay: true,
-                                  looping: false,
-                                ),
-                              ),
-                            ));
+                          width: double.maxFinite,
+                          height: double.maxFinite,
+                          child: Center(
+                            child: VimeoPlayer(
+                              id: id[1],
+                              autoPlay: true,
+                              looping: false,
+                            ),
+                          ),
+                        ));
                       } else {
                         return _videoController.value.initialized
                             ? AspectRatio(
-                          aspectRatio: _videoController.value.aspectRatio,
-                          child: Stack(
-                            alignment: Alignment.bottomCenter,
-                            children: <Widget>[
-                              VideoPlayer(_videoController,),
-                              _ControlsOverlay(controller: _videoController),
-                              VideoProgressIndicator(_videoController,
-                                  allowScrubbing: true),
-                            ],
-                          ),
-                        )
+                                aspectRatio: _videoController.value.aspectRatio,
+                                child: Stack(
+                                  alignment: Alignment.bottomCenter,
+                                  children: <Widget>[
+                                    VideoPlayer(
+                                      _videoController,
+                                    ),
+                                    _ControlsOverlay(
+                                        controller: _videoController),
+                                    VideoProgressIndicator(_videoController,
+                                        allowScrubbing: true),
+                                  ],
+                                ),
+                              )
                             : Container();
                       }
                     }
 
                     return PhotoView(
-                        backgroundDecoration: BoxDecoration(
-                            color: colors.white),
+                        backgroundDecoration:
+                            BoxDecoration(color: colors.white),
                         initialScale: PhotoViewComputedScale.contained * 0.9,
                         minScale: PhotoViewComputedScale.contained * 0.9,
                         gaplessPlayback: false,
                         customSize: MediaQuery.of(context).size,
                         imageProvider: NetworkImage(widget.imgList[index]));
                   }),
-              Positioned(
-                top: 34.0,
-                left: 5.0,
-                child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      margin: EdgeInsets.all(10),
-                      decoration: shadow(),
-                      child: Card(
-                        elevation: 0,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(4),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Center(
-                            child: Icon(
-                              Icons.keyboard_arrow_left,
-                              color: colors.primary,
-                            ),
-                          ),
+          Positioned(
+            top: 34.0,
+            left: 5.0,
+            child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  margin: EdgeInsets.all(10),
+                  decoration: shadow(),
+                  child: Card(
+                    elevation: 0,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Center(
+                        child: Icon(
+                          Icons.keyboard_arrow_left,
+                          color: colors.primary,
                         ),
                       ),
-                    )),
-              ),
-              Positioned(
-                  bottom: 10.0,
-                  left: 25.0,
-                  right: 25.0,
-                  child: SelectedPhoto(
-                    numberOfDots: widget.imgList.length,
-                    photoIndex: curPos,
-                  )),
-            ],
+                    ),
+                  ),
+                )),
           ),
-        ));
+          Positioned(
+              bottom: 10.0,
+              left: 25.0,
+              right: 25.0,
+              child: SelectedPhoto(
+                numberOfDots: widget.imgList.length,
+                photoIndex: curPos,
+              )),
+        ],
+      ),
+    ));
   }
 }
 
@@ -267,18 +259,17 @@ class _ControlsOverlay extends StatelessWidget {
           child: controller.value.isPlaying
               ? SizedBox.shrink()
               : Container(
-            color: Colors.black26,
-            child: Center(
-              child: Icon(
-                Icons.play_arrow,
-                color: Colors.white,
-                size: 100.0,
-              ),
-            ),
-          ),
+                  color: Colors.black26,
+                  child: Center(
+                    child: Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 100.0,
+                    ),
+                  ),
+                ),
         ),
         GestureDetector(
-
           onTap: () {
             controller.value.isPlaying ? controller.pause() : controller.play();
           },

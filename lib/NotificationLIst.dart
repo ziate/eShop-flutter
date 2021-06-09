@@ -166,15 +166,65 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
               ),
             ),
             model.img != null && model.img != ''
-                ? Container(
-                    width: 50,
-                    height: 50,
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(3.0),
+                ? GestureDetector(
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      child: Hero(
+                        tag: model.id,
                         child: CircleAvatar(
-                          backgroundImage: NetworkImage(model.img),
+                          backgroundImage: NetworkImage(
+                            model.img,
+                          ),
                           radius: 25,
-                        )),
+                        ),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(new PageRouteBuilder(
+                          opaque: false,
+                          barrierDismissible: true,
+                          pageBuilder: (BuildContext context, _, __) {
+                            return new AlertDialog(
+                              elevation: 0,
+                              contentPadding: EdgeInsets.all(0),
+                              backgroundColor: Colors.transparent,
+                              content: new Hero(
+                                tag: model.id,
+                                child: FadeInImage(
+                                  image: NetworkImage(model.img),
+                                  fadeInDuration: Duration(milliseconds: 150),
+                                  placeholder: placeHolder(150),
+                                  imageErrorBuilder:
+                                      (context, error, stackTrace) =>
+                                          erroWidget(),
+                                ),
+                              ),
+                            );
+                          }));
+
+                      // return showDialog(
+                      //     context: context,
+                      //     builder: (BuildContext context) {
+                      //       return StatefulBuilder(builder:
+                      //           (BuildContext context, StateSetter setStater) {
+                      //         return AlertDialog(
+                      //             backgroundColor: Colors.transparent,
+                      //             shape: RoundedRectangleBorder(
+                      //                 borderRadius: BorderRadius.all(
+                      //                     Radius.circular(5.0))),
+                      //             content: Hero(
+                      //               tag: model.id,
+                      //               child: FadeInImage(
+                      //                 image: NetworkImage(model.img),
+                      //                 fadeInDuration:
+                      //                     Duration(milliseconds: 150),
+                      //                 placeholder: placeHolder(150),
+                      //               ),
+                      //             ));
+                      //       });
+                      //     });
+                    },
                   )
                 : Container(
                     height: 0,

@@ -42,6 +42,18 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
   ScrollController scrollController = new ScrollController();
   String _searchText = "", _lastsearch = "";
   bool isLoadingmore = true, isGettingdata = false, isNodata = false;
+  String activeStatus;
+
+  List<String> statusList = [
+    ALL,
+    PLACED,
+    PROCESSED,
+    SHIPED,
+    DELIVERD,
+    CANCLED,
+    RETURNED,
+    awaitingPayment
+  ];
 
   @override
   void initState() {
@@ -165,7 +177,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: colors.lightWhite,
-      appBar: getAppBar(getTranslated(context, 'MY_ORDERS_LBL'), context),
+      appBar: getAppbar(),
       body: _isNetworkAvail
           ? _isLoading
               ? shimmer()
@@ -218,7 +230,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                                   itemCount: searchList.length,
                                   physics: AlwaysScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
-                                   OrderItem orderItem;
+                                    OrderItem orderItem;
                                     try {
                                       if (searchList[index] != null &&
                                           searchList[index].itemList.length > 0)
@@ -235,8 +247,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                                     return orderItem == null
                                         ? Container()
                                         : productItem(index, orderItem);
-
-
                                   },
                                 )),
                       ),
@@ -263,7 +273,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
         _isLoading = true;
       });
 
-
     return getOrder();
   }
 
@@ -288,8 +297,10 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
               LIMIT: perPage.toString(),
               SEARCH: _searchText.trim(),
             };
-
-
+            if (activeStatus != null) {
+              if (activeStatus == awaitingPayment) activeStatus = "awaiting";
+              parameter[ACTIVE_STATUS] = activeStatus;
+            }
             Response response =
                 await post(getOrderApi, body: parameter, headers: headers)
                     .timeout(Duration(seconds: timeOut));
@@ -392,7 +403,6 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
 
   productItem(int index, OrderItem orderItem) {
     if (orderItem != null) {
-    
       String sDate = orderItem.listDate.last;
       String proStatus = orderItem.listStatus.last;
       if (proStatus == 'received') {
@@ -418,6 +428,9 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                           height: 90.0,
                           width: 90.0,
                           fit: BoxFit.cover,
+                          imageErrorBuilder: (context, error, stackTrace) =>
+                              erroWidget(),
+
                           // errorWidget:(context, url,e) => placeHolder(90) ,
                           placeholder: placeHolder(90),
                         ),
@@ -442,9 +455,9 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                                     padding: const EdgeInsetsDirectional.only(
                                         top: 10.0),
                                     child: Text(
-                                      orderItem.name ??
-                                          '' +
-                                              "${searchList[index].itemList.length > 1 ? " and more items" : ""} ",
+                                      orderItem.name +
+                                              " ${searchList[index].itemList.length > 1 ? " and more items" : ""} " ??
+                                          '',
                                       style: Theme.of(context)
                                           .textTheme
                                           .subtitle2
@@ -484,5 +497,136 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
     } else {
       return null;
     }
+  }
+
+  getAppbar() {
+    return AppBar(
+      titleSpacing: 0,
+      leading: Builder(builder: (BuildContext context) {
+        return Container(
+          margin: EdgeInsets.all(10),
+          decoration: shadow(),
+          child: Card(
+            elevation: 0,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(4),
+              onTap: () => Navigator.of(context).pop(),
+              child: Center(
+                child: Icon(
+                  Icons.keyboard_arrow_left,
+                  color: colors.primary,
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+      title: Text(
+        getTranslated(context, 'MY_ORDERS_LBL'),
+        style: TextStyle(
+          color: colors.fontColor,
+        ),
+      ),
+      actions: [
+        Container(
+          margin: EdgeInsets.all(10),
+          decoration: shadow(),
+          child: Card(
+            elevation: 0,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(4),
+              onTap: filterDialog,
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Icon(
+                  Icons.tune,
+                  color: colors.primary,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void filterDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return ButtonBarTheme(
+            data: ButtonBarThemeData(
+              alignment: MainAxisAlignment.center,
+            ),
+            child: new AlertDialog(
+                elevation: 2.0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                contentPadding: const EdgeInsets.all(0.0),
+                content: SingleChildScrollView(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Padding(
+                        padding:
+                            EdgeInsetsDirectional.only(top: 19.0, bottom: 16.0),
+                        child: Text(
+                          'Filter By',
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle1
+                              .copyWith(color: colors.fontColor),
+                        )),
+                    Divider(color: colors.lightBlack),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: getStatusList()),
+                      ),
+                    ),
+                  ]),
+                )),
+          );
+        });
+  }
+
+  List<Widget> getStatusList() {
+    return statusList
+        .asMap()
+        .map(
+          (index, element) => MapEntry(
+            index,
+            Column(
+              children: [
+                Container(
+                  width: double.maxFinite,
+                  child: TextButton(
+                      child: Text(capitalize(statusList[index]),
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(color: colors.lightBlack)),
+                      onPressed: () {
+                        setState(() {
+                          activeStatus = index == 0 ? null : statusList[index];
+                          isLoadingmore = true;
+                          offset = 0;
+                        });
+
+                        getOrder();
+
+                        Navigator.pop(context, 'option $index');
+                      }),
+                ),
+                Divider(
+                  color: colors.lightBlack,
+                  height: 1,
+                ),
+              ],
+            ),
+          ),
+        )
+        .values
+        .toList();
   }
 }

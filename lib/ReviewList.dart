@@ -26,7 +26,7 @@ class ReviewList extends StatefulWidget {
 
 class StateRate extends State<ReviewList> {
   bool _isNetworkAvail = true;
- // bool _isProgress = false, _isLoading = true;
+  // bool _isProgress = false, _isLoading = true;
   bool isLoadingmore = true;
   ScrollController controller = new ScrollController();
   List<User> tempList = [];
@@ -153,6 +153,8 @@ class StateRate extends State<ReviewList> {
                     height: 50.0,
                     width: 50.0,
                     placeholder: placeHolder(50),
+                    imageErrorBuilder: (context, error, stackTrace) =>
+                        erroWidget(),
                   ),
                 ),
               ),
@@ -198,16 +200,10 @@ class StateRate extends State<ReviewList> {
           if (msg != "No ratings found !") setSnackbar(msg);
           isLoadingmore = false;
         }
-        if (mounted) if (mounted)
-          setState(() {
-           
-          });
+        if (mounted) if (mounted) setState(() {});
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
-        if (mounted)
-          setState(() {
-           
-          });
+        if (mounted) setState(() {});
       }
     } else {
       if (mounted)

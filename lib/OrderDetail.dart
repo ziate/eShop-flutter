@@ -262,7 +262,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
     _isReturnable = model.isReturnable == "1" ? true : false;
 
     return Scaffold(
-      
       appBar: _getAppbar(),
       body: _isNetworkAvail
           ? Stack(
@@ -646,6 +645,8 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           height: 90.0,
                           width: 90.0,
                           fit: BoxFit.cover,
+                          imageErrorBuilder: (context, error, stackTrace) =>
+                              erroWidget(),
                           placeholder: placeHolder(90),
                         )),
                     Expanded(
@@ -907,7 +908,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   getProcessed(String prDate, String cDate) {
-  
     return cDate == null
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -989,7 +989,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   getShipped(String sDate, String cDate) {
-
     return cDate == null
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1116,7 +1115,6 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   getCanceled(String cDate) {
-
     return cDate != null
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1292,16 +1290,14 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
               }
 
               var targetFileName = "Invoice_${widget.model.id}";
-              var generatedPdfFile,filePath;
+              var generatedPdfFile, filePath;
               try {
                 generatedPdfFile =
                     await FlutterHtmlToPdf.convertFromHtmlContent(
                         widget.model.invoice, targetPath, targetFileName);
-                filePath=generatedPdfFile.path;
+                filePath = generatedPdfFile.path;
               } catch (Exception) {
-
-                filePath=targetPath+"/"+targetFileName+".html";
-
+                filePath = targetPath + "/" + targetFileName + ".html";
               }
 
               if (mounted)

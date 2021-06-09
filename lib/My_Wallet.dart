@@ -315,28 +315,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                             ])),
                       ),
 
-                      /*ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemCount: paymentMethodList.length,
-                                    itemBuilder: (context, index) {
-                                      if (index == 1 && paypal)
-                                        return paymentItem(index);
-                                      else if (index == 2 && paumoney)
-                                        return paymentItem(index);
-                                      else if (index == 3 && razorpay)
-                                        return paymentItem(index);
-                                      else if (index == 4 && paystack)
-                                        return paymentItem(index);
-                                      else if (index == 5 && flutterwave)
-                                        return paymentItem(index);
-                                      else if (index == 6 && stripe)
-                                        return paymentItem(index);
-                                      else if (index == 7 && paytm)
-                                        return paymentItem(index);
-                                      else
-                                        return Container();
-                                    }),*/
+             
                     )
                   ]),
               actions: <Widget>[

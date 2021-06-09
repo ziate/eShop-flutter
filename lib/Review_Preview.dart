@@ -40,8 +40,8 @@ class StatePreview extends State<ReviewPreview> {
 
   @override
   Widget build(BuildContext context) {
-    User model = widget
-        .model.reviewList[0].productRating[revImgList[curPos].index];
+    User model =
+        widget.model.reviewList[0].productRating[revImgList[curPos].index];
 
     return Scaffold(
         body: Hero(
@@ -49,7 +49,6 @@ class StatePreview extends State<ReviewPreview> {
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: <Widget>[
-          
           Container(
               child: PhotoViewGallery.builder(
             scrollPhysics: const BouncingScrollPhysics(),
@@ -104,13 +103,11 @@ class StatePreview extends State<ReviewPreview> {
                 )),
           ),
           Container(
-            
             color: Colors.black87,
             padding: const EdgeInsets.all(10.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-           
-               crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 RatingBarIndicator(
                   rating: double.parse(model.rating),
@@ -124,18 +121,14 @@ class StatePreview extends State<ReviewPreview> {
                 ),
                 model.comment != null && model.comment.isNotEmpty
                     ? Container(
-                         width: MediaQuery.of(context).size.width - 20,
-                    
-                      child: GestureDetector(
+                        width: MediaQuery.of(context).size.width - 20,
+                        child: GestureDetector(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 5.0),
                             child: Text(
                               model.comment ?? '',
-                             // "ggggggggggggggggggggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhlllllllllllllllllllllllllll",
-                               style: TextStyle(color: Colors.white),
-                           // softWrap: true,
-                          maxLines: flag ? 2 : null,
-              
+                              style: TextStyle(color: Colors.white),
+                              maxLines: flag ? 2 : null,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -145,7 +138,7 @@ class StatePreview extends State<ReviewPreview> {
                             });
                           },
                         ),
-                    )
+                      )
                     : Container(),
                 Container(
                     width: MediaQuery.of(context).size.width - 20,

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:eshop/Customer_Support.dart';
 import 'package:eshop/Favorite.dart';
 import 'package:eshop/Helper/Color.dart';
 import 'package:eshop/Helper/Session.dart';
@@ -90,7 +91,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
 
     selectLan = langCode.indexOf(getlng ?? "en");
 
-     if (mounted) setState(() {});
+    if (mounted) setState(() {});
   }
 
   getUserDetails() async {
@@ -99,8 +100,6 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
     email = await getPrefrence(EMAIL);
     profile = await getPrefrence(IMAGE);
 
-
-    
     if (mounted) setState(() {});
   }
 
@@ -223,6 +222,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                           height: 64.0,
                           width: 64.0,
                           fit: BoxFit.cover,
+                          imageErrorBuilder: (context, error, stackTrace) =>
+                              erroWidget(),
                           placeholder: placeHolder(64),
                         )
                       : imagePlaceHolder(62),
@@ -609,6 +610,9 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
               : _getDrawerItem(getTranslated(context, 'REFEREARN'),
                   'assets/images/pro_referral.svg'),
           CUR_USERID == "" || CUR_USERID == null ? Container() : _getDivider(),
+          _getDrawerItem(getTranslated(context, 'CUSTOMER_SUPPORT'),
+              'assets/images/pro_customersupport.svg'),
+          _getDivider(),
           _getDrawerItem(getTranslated(context, 'ABOUT_LBL'),
               'assets/images/pro_aboutus.svg'),
           _getDivider(),
@@ -715,6 +719,15 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                   title: getTranslated(context, 'CONTACT_LBL'),
                 ),
               ));
+        } else if (title == getTranslated(context, 'CUSTOMER_SUPPORT')) {
+          CUR_USERID == null
+              ? Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Login(),
+                  ))
+              : Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => CustomerSupport()));
         } else if (title == getTranslated(context, 'TERM')) {
           Navigator.push(
               context,

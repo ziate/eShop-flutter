@@ -81,7 +81,7 @@ class StateCat extends State<AllCategory> {
           catList =
               (data as List).map((data) => new Product.fromCat(data)).toList();
 
-         if (!error) {
+          if (!error) {
             total = int.parse(getdata["total"]);
 
             if ((offset) < total) {
@@ -135,6 +135,8 @@ class StateCat extends State<AllCategory> {
                     image: NetworkImage(catList[index].image),
                     fadeInDuration: Duration(milliseconds: 150),
                     fit: BoxFit.fill,
+                    imageErrorBuilder: (context, error, stackTrace) =>
+                        erroWidget(),
                     placeholder: placeHolder(50),
                   )),
             ),

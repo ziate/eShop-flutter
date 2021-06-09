@@ -766,7 +766,6 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   color: colors.lightBlack,
                 ),
                 onPressed: () {
-                  print("city**$city");
                   showDialog(
                     context: context,
                     barrierDismissible: false,
@@ -823,7 +822,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                               color: colors.fontColor,
                                               fontWeight: FontWeight.bold),
                                     ),
-                                    value: city==""?null:city,
+                                    value: city == "" ? null : city,
                                     onChanged: (newValue) {
                                       if (mounted)
                                         setState(() {
@@ -1197,6 +1196,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                         width: 100.0,
                         fit: BoxFit.cover,
                         placeholder: placeHolder(100),
+                        imageErrorBuilder: (context, error, stackTrace) =>
+                            erroWidget(),
                       ),
                     ))
                 : Container(
@@ -1276,9 +1277,9 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                     _getDivider(),
                                     setEmail(),
                                     _getDivider(),
-                                    setMobileNo(),
-                                    _getDivider(),
                                     setLocation(),
+                                    _getDivider(),
+                                    setMobileNo(),
                                   ],
                                 )))),
                     changePass()

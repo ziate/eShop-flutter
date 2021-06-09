@@ -53,6 +53,7 @@ List<Product> catList = [];
 List<Model> homeSliderList = [];
 List<SectionModel> sectionList = [];
 List<Model> offerImages = [];
+List<String> tagList = [];
 List<Widget> pages = [];
 bool _isCatLoading = true;
 bool _isNetworkAvail = true;
@@ -404,7 +405,6 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
   var isDarkTheme;
- 
 
   @override
   void initState() {
@@ -637,25 +637,29 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                 left: 0,
                 width: deviceWidth,
                 child: Row(
-                  mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: map<Widget>(
-                    homeSliderList,
-                    (index, url) {
-                      return Container(
-                          width: 8.0,
-                          height: 8.0,
-                          margin: EdgeInsets.symmetric(
-                              vertical: 10.0, horizontal: 2.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _curSlider == index
-                                ? colors.fontColor
-                                : colors.lightBlack,
-                          ));
-                    },
-                  ),
+                  children: _buildIndicator(),
                 ),
+                // child: Row(
+                //   mainAxisSize: MainAxisSize.max,
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   children: map<Widget>(
+                //     homeSliderList,
+                //     (index, url) {
+                //       return Container(
+                //           width: 8.0,
+                //           height: 8.0,
+                //           margin: EdgeInsets.symmetric(
+                //               vertical: 10.0, horizontal: 2.0),
+                //           decoration: BoxDecoration(
+                //             shape: BoxShape.circle,
+                //             color: _curSlider == index
+                //                 ? colors.fontColor
+                //                 : colors.lightBlack,
+                //           ));
+                //     },
+                //   ),
+                // ),
               ),
             ],
           )
@@ -671,6 +675,32 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
           );
+  }
+
+  List<Widget> _buildIndicator() {
+    List<Widget> indicators = [];
+    for (int i = 0; i < pages.length; i++) {
+      if (_curSlider == i) {
+        indicators.add(_indicator(true));
+      } else {
+        indicators.add(_indicator(false));
+      }
+    }
+
+    return indicators;
+  }
+
+  Widget _indicator(bool isActive) {
+    return AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        height: 6,
+        width: isActive ? 25 : 7,
+        margin: EdgeInsets.only(right: 5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          color:
+              isActive ? colors.fontColor : colors.fontColor.withOpacity(0.5),
+        ));
   }
 
   List<T> map<T>(List list, Function handler) {
@@ -737,10 +767,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
       onTap: () async {
-      // showSearch<Product>(
-      //     context: context,
-      //     delegate: _delegate,
-      //   );
+        // showSearch<Product>(
+        //     context: context,
+        //     delegate: _delegate,
+        //   );
 
         await Navigator.push(
             context,
@@ -844,6 +874,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                         height: 50.0,
                         width: 50.0,
                         fit: BoxFit.cover,
+                        imageErrorBuilder: (context, error, stackTrace) =>
+                            erroWidget(),
+
                         //  errorWidget: (context, url, e) => placeHolder(50),
                         placeholder: placeHolder(50),
                       ),
@@ -952,6 +985,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           fadeInDuration: Duration(milliseconds: 150),
           image: NetworkImage(offerImages[index].image),
           width: double.maxFinite,
+          imageErrorBuilder: (context, error, stackTrace) => erroWidget(),
+
           // errorWidget: (context, url, e) => placeHolder(50),
           placeholder: AssetImage(
             "assets/images/sliderph.png",
@@ -1216,6 +1251,9 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                         height: double.maxFinite,
                         width: double.maxFinite,
                         fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                        imageErrorBuilder: (context, error, stackTrace) =>
+                            erroWidget(),
+
                         // errorWidget: (context, url, e) => placeHolder(width),
                         placeholder: placeHolder(width),
                       ),
@@ -1484,6 +1522,10 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
               generateReferral();
             CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
           }
+          Map<String, Object> tempData = getdata["data"];
+          if (tempData.containsKey(TAG))
+            tagList = List<String>.from(getdata["data"][TAG]);
+
           widget.updateHome();
 
           if (isVerion == "1") {

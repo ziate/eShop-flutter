@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,10 +21,10 @@ import 'Home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  initializedDownload();
   await Firebase.initializeApp();
 
   FirebaseMessaging.onBackgroundMessage(myForgroundMessageHandler);
-
 
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     statusBarColor: Colors.transparent, // status bar color
@@ -58,6 +59,13 @@ void main() async {
   });
 }
 
+Future<void> initializedDownload() async {
+  await FlutterDownloader.initialize(
+      debug: true // optional: set false to disable printing logs to console
+      );
+}
+
+
 final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
@@ -77,7 +85,6 @@ class _MyAppState extends State<MyApp> {
   Locale _locale;
 
   setLocale(Locale locale) {
-
     if (mounted)
       setState(() {
         _locale = locale;

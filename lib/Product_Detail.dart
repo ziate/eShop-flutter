@@ -92,9 +92,11 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     if (widget.model.videType != null &&
         widget.model.video != null &&
         widget.model.video.isNotEmpty &&
-        widget.model.video != "") sliderList.add(widget.model.image);
-    if(widget.model.otherImage!=null && widget.model.otherImage.length>0)
-    sliderList.addAll(widget.model.otherImage);
+        widget.model.video != "") {
+      sliderList.add(widget.model.image);
+    }
+    if (widget.model.otherImage != null && widget.model.otherImage.length > 0)
+      sliderList.addAll(widget.model.otherImage);
 
     for (int i = 0; i < widget.model.prVarientList.length; i++) {
       for (int j = 0; j < widget.model.prVarientList[i].images.length; j++) {
@@ -300,12 +302,15 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                         FadeInImage(
                           image: NetworkImage(sliderList[index]),
                           placeholder: AssetImage(
-                            "assets/images/sliderph.svg",
+                            "assets/images/sliderph.png",
                           ),
                           height: height,
                           width: double.maxFinite,
                           fit: BoxFit.cover,
-                        //  fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                          imageErrorBuilder: (context, error, stackTrace) =>
+                              erroWidget(),
+
+                          //  fit: extendImg ? BoxFit.fill : BoxFit.contain,
                         ),
                         index == 1 ? playIcon() : Container()
                       ],
@@ -620,6 +625,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   }
 
   _desc() {
+    print("value inside*******************${widget.model.desc}");
     return widget.model.desc.isNotEmpty
         ? Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -1534,7 +1540,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               trailing: Text(madeIn),
               dense: true,
               title: Text(
-               getTranslated(context, 'MADE_IN'),
+                getTranslated(context, 'MADE_IN'),
                 style: Theme.of(context).textTheme.subtitle2,
               ),
             ),
@@ -1578,6 +1584,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       height: double.maxFinite,
                       width: double.maxFinite,
                       fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                      imageErrorBuilder: (context, error, stackTrace) =>
+                          erroWidget(),
+
                       //errorWidget: (context, url, e) => placeHolder(width),
                       placeholder: placeHolder(width),
                     ),
@@ -1812,7 +1821,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         dense: true,
         title: Text(
           getTranslated(context, 'RETURNABLE'),
-       
           style: Theme.of(context).textTheme.subtitle2,
         ),
       ),
@@ -1831,7 +1839,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         trailing: Text(cancleable),
         dense: true,
         title: Text(
-         getTranslated(context, 'CANCELLABLE') ,
+          getTranslated(context, 'CANCELLABLE'),
           style: Theme.of(context).textTheme.subtitle2,
         ),
       ),
@@ -1937,6 +1945,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     height: 50.0,
                     width: 50.0,
                     placeholder: placeHolder(50),
+                    imageErrorBuilder: (context, error, stackTrace) =>
+                        erroWidget(),
                   ),
                 ),
               ),
@@ -1948,7 +1958,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   }
 
   _shortDesc() {
-    return widget.model.shortDescription.isNotEmpty
+    return widget.model.shortDescription != null &&
+            widget.model.shortDescription.isNotEmpty
         ? Padding(
             padding: const EdgeInsetsDirectional.only(start: 8, end: 8, top: 8),
             child: Text(
@@ -2032,7 +2043,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               trailing: Text(warranty),
               dense: true,
               title: Text(
-               getTranslated(context, 'WARRENTY') ,
+                getTranslated(context, 'WARRENTY'),
                 style: Theme.of(context).textTheme.subtitle2,
               ),
             ),
@@ -2062,10 +2073,9 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         tagChip = ChoiceChip(
           selected: false,
           label: Text(widget.model.tagList[i],
-              style: TextStyle(color: colors.fontColor,fontSize: 11)),
-          backgroundColor: colors.fontColor.withOpacity(0.2),
+              style: TextStyle(color: colors.fontColor, fontSize: 11)),
+          backgroundColor: colors.fontColor.withOpacity(0.1),
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(5))),
           onSelected: (bool selected) {
@@ -2088,7 +2098,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
       }
 
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical:8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Wrap(
           children: chips.map<Widget>((Widget chip) {
             return Padding(
@@ -2122,16 +2132,17 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => ReviewGallary(model: widget.model)));
+                                builder: (context) =>
+                                    ReviewGallary(model: widget.model)));
                       } else {
-
                         Navigator.push(
                             context,
                             PageRouteBuilder(
-                              // transitionDuration: Duration(seconds: 1),
-                              pageBuilder: (_, __, ___) => ReviewPreview(index:index,model: widget.model,)
-                            ));
-
+                                // transitionDuration: Duration(seconds: 1),
+                                pageBuilder: (_, __, ___) => ReviewPreview(
+                                      index: index,
+                                      model: widget.model,
+                                    )));
                       }
                     },
                     child: Stack(
@@ -2146,6 +2157,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           fit: BoxFit.cover,
                           //  errorWidget: (context, url, e) => placeHolder(50),
                           placeholder: placeHolder(80),
+                          imageErrorBuilder: (context, error, stackTrace) =>
+                              erroWidget(),
                         ),
                         index == 4
                             ? Container(
@@ -2181,7 +2194,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
               trailing: Text(gaurantee),
               dense: true,
               title: Text(
-              getTranslated(context, 'GAURANTEE'),
+                getTranslated(context, 'GAURANTEE'),
                 style: Theme.of(context).textTheme.subtitle2,
               ),
             ),

@@ -36,9 +36,7 @@ class _GiveRatingState extends State<GiveRating> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: getAppBar(getTranslated(context, 'PRODUCT_REVIEW'), context),
-      body:
-
-      Stack(
+      body: Stack(
         children: [
           SingleChildScrollView(
             child: Column(
@@ -58,6 +56,9 @@ class _GiveRatingState extends State<GiveRating> {
                                   width: 50.0,
                                   fit: extendImg ? BoxFit.fill : BoxFit.contain,
                                   placeholder: placeHolder(90),
+                                  imageErrorBuilder:
+                                      (context, error, stackTrace) =>
+                                          erroWidget(),
                                 )),
                             Expanded(
                               child: Padding(
@@ -98,12 +99,13 @@ class _GiveRatingState extends State<GiveRating> {
                                       start: 20.0, end: 20.0),
                                   child: TextField(
                                     controller: _commentC,
-                                    style: Theme.of(context).textTheme.subtitle2,
+                                    style:
+                                        Theme.of(context).textTheme.subtitle2,
                                     keyboardType: TextInputType.multiline,
                                     maxLines: null,
                                     decoration: InputDecoration(
-                                      hintText:
-                                          getTranslated(context, 'REVIEW_HINT_LBL'),
+                                      hintText: getTranslated(
+                                          context, 'REVIEW_HINT_LBL'),
                                       hintStyle: Theme.of(context)
                                           .textTheme
                                           .subtitle2
@@ -115,8 +117,9 @@ class _GiveRatingState extends State<GiveRating> {
                               Container(
                                 padding: EdgeInsetsDirectional.only(
                                     start: 20.0, end: 20.0, top: 5),
-                                height:
-                                    files != null && files.length > 0 ? 180 : 80,
+                                height: files != null && files.length > 0
+                                    ? 180
+                                    : 80,
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -127,7 +130,8 @@ class _GiveRatingState extends State<GiveRating> {
                                       itemBuilder: (context, i) {
                                         return InkWell(
                                           child: Stack(
-                                            alignment: AlignmentDirectional.topEnd,
+                                            alignment:
+                                                AlignmentDirectional.topEnd,
                                             children: [
                                               Image.file(
                                                 files[i],
@@ -187,7 +191,8 @@ class _GiveRatingState extends State<GiveRating> {
                                     if (curRating != 0 ||
                                         _commentC.text != '' ||
                                         (files != null && files.length > 0))
-                                      setRating(curRating, _commentC.text, files);
+                                      setRating(
+                                          curRating, _commentC.text, files);
                                     else
                                       setSnackbar(
                                           getTranslated(context, 'REVIEW_W'));

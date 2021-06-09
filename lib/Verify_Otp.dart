@@ -40,7 +40,6 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
 
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
- 
 
   @override
   void initState() {
@@ -86,10 +85,7 @@ class _MobileOTPState extends State<VerifyOtp> with TickerProviderStateMixin {
         setSnackbar(getTranslated(context, 'OTPWR'));
       }
     } else {
-      if (mounted)
-        setState(() {
- 
-        });
+      if (mounted) setState(() {});
 
       Future.delayed(Duration(seconds: 60)).then((_) async {
         bool avail = await isNetworkAvailable();
