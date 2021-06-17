@@ -331,15 +331,17 @@ class Product_Varient {
 }
 
 class Attribute {
-  String id, value, name;
+  String id, value, name,sType,sValue;
 
-  Attribute({this.id, this.value, this.name});
+  Attribute({this.id, this.value, this.name,this.sType,this.sValue});
 
   factory Attribute.fromJson(Map<String, dynamic> json) {
     return new Attribute(
       id: json[IDS],
       name: json[NAME],
       value: json[VALUE],
+      sType: json[STYPE],
+      sValue: json[SVALUE]
     );
   }
 }

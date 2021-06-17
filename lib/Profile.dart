@@ -461,11 +461,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                 color: colors.lightBlack,
               ),
               onPressed: () {
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
+                dialogAnimate(context,  AlertDialog(
                         contentPadding: const EdgeInsets.all(0),
                         elevation: 2.0,
                         shape: RoundedRectangleBorder(
@@ -545,8 +541,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                 }
                               })
                         ],
-                      );
-                    });
+                      ));
+                    
               },
             )
           ],
@@ -591,11 +587,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                 color: colors.lightBlack,
               ),
               onPressed: () {
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
+                dialogAnimate(context, AlertDialog(
                         contentPadding: const EdgeInsets.all(0.0),
                         elevation: 2.0,
                         shape: RoundedRectangleBorder(
@@ -675,8 +667,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                 }
                               })
                         ],
-                      );
-                    });
+                      ));
+                    
               },
             )
           ],
@@ -766,11 +758,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                   color: colors.lightBlack,
                 ),
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return StatefulBuilder(builder:
+                  dialogAnimate(context,  StatefulBuilder(builder:
                           (BuildContext context, StateSetter setStater) {
                         return AlertDialog(
                           contentPadding: const EdgeInsets.all(0.0),
@@ -946,9 +934,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                                 })
                           ],
                         );
-                      });
-                    },
-                  );
+                      }));
+                   
                 })
           ],
         ));
@@ -979,10 +966,7 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
   }
 
   _showDialog() async {
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
+    await dialogAnimate(context,  StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater) {
             return AlertDialog(
               contentPadding: const EdgeInsets.all(0.0),
@@ -1174,8 +1158,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
                     })
               ],
             );
-          });
-        });
+          }));
+       
   }
 
   profileImage() {

@@ -11,9 +11,9 @@ final String deepLinkUrlPrefix = 'https://eshopwrteamin.page.link';
 final String deepLinkName = 'eshop';
 
 final String baseUrl = 'https://eshopweb.store/app/v1/api/';
-//final String baseUrl = 'https://admin.meeyal.com/app/v1/api/';
+//final String baseUrl = 'https://sifbasket.com/app/v1/api/';
 
 final int timeOut = 50;
 const int perPage = 10;
 final String jwtKey = "68f05dec6014f68e760c5c5fa3e31bcf391a2e10";
-//final String jwtKey = "8df43385c5c906bf31a29bcf9f9ca8418b8e76e8";
+//final String jwtKey = "9e35dc5fd1403e1f12cebbbe1418cf16ffe6bfff";

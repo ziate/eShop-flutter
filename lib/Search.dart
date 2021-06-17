@@ -1196,10 +1196,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
   }
 
   showSpeechDialog() {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
+    return dialogAnimate(context, StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater1) {
             setStater = setStater1;
             return AlertDialog(
@@ -1269,8 +1266,8 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
                 ],
               ),
             );
-          });
-        });
+          }));
+        
   }
 }
 

@@ -2216,7 +2216,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     String contact = await getPrefrence(MOBILE);
     String email = await getPrefrence(EMAIL);
 
-    double amt = double.parse(totalPrice.toStringAsFixed(2)) * 100;
+    String amt = ((totalPrice) * 100).toStringAsFixed(2);
 
     if (contact != '' && email != '') {
       if (mounted)
@@ -2226,7 +2226,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
       checkoutState(() {});
       var options = {
         KEY: razorpayId,
-        AMOUNT: amt.toString(),
+        AMOUNT: amt,
         NAME: CUR_USERNAME,
         'prefill': {CONTACT: contact, EMAIL: email},
       };

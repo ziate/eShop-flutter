@@ -167,7 +167,7 @@ class StatePreview extends State<ProductPreview> {
                           ),
                         ));
                       } else {
-                        return _videoController.value.initialized
+                        return _videoController.value.isInitialized
                             ? AspectRatio(
                                 aspectRatio: _videoController.value.aspectRatio,
                                 child: Stack(

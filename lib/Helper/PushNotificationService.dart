@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:eshop/Model/Model.dart';
 import 'package:eshop/Model/Section_Model.dart';
 import 'package:eshop/MyOrder.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -8,9 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../All_Category.dart';
+import '../Chat.dart';
 import '../My_Wallet.dart';
 import '../Product_Detail.dart';
 import '../Splash.dart';
@@ -61,7 +64,38 @@ class PushNotificationService {
       var id = '';
       id = message.data['type_id'] ?? '';
 
-      if (image != null && image != 'null' && image != '') {
+      print("noti******$type****$id***${message.data}");
+
+      if (type == "ticket_message") {
+        if (CUR_TICK_ID == id) {
+          if (chatstreamdata != null) {
+            var parsedJson = json.decode(message.data['chat']);
+            parsedJson = parsedJson[0];
+    
+
+            Map<String, dynamic> sendata = {
+              "id": parsedJson[ID],
+              "title": parsedJson[TITLE],
+              "message": parsedJson[MESSAGE],
+              "user_id": parsedJson[USER_ID],
+              "name": parsedJson[NAME],
+             "date_created":  parsedJson[DATE_CREATED],
+              "attachments": parsedJson["attachments"]
+            };
+            var chat = {};
+
+            chat["data"] = sendata;
+
+            chatstreamdata.sink.add(jsonEncode(chat));
+          }
+        } else {
+          if (image != null && image != 'null' && image != '') {
+            generateImageNotication(title, body, image, type, id);
+          } else {
+            generateSimpleNotication(title, body, type, id);
+          }
+        }
+      } else if (image != null && image != 'null' && image != '') {
         generateImageNotication(title, body, image, type, id);
       } else {
         generateSimpleNotication(title, body, type, id);
@@ -87,6 +121,15 @@ class PushNotificationService {
         } else if (type == 'order') {
           Navigator.push(
               context, (MaterialPageRoute(builder: (context) => MyOrder())));
+        } else if (type == "ticket_message") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Chat(
+                      id: id,
+                      status: "",
+                    )),
+          );
         } else {
           Navigator.push(
               context, (MaterialPageRoute(builder: (context) => Splash())));
@@ -117,6 +160,15 @@ class PushNotificationService {
         } else if (type == 'order') {
           Navigator.push(
               context, (MaterialPageRoute(builder: (context) => MyOrder())));
+        } else if (type == "ticket_message") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Chat(
+                      id: id,
+                      status: "",
+                    )),
+          );
         } else {
           Navigator.push(
             context,
@@ -162,6 +214,15 @@ class PushNotificationService {
       } else if (pay[0] == 'order') {
         Navigator.push(
             context, (MaterialPageRoute(builder: (context) => MyOrder())));
+      } else if (pay[0] == "ticket_message") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Chat(
+                    id: pay[1],
+                    status: "",
+                  )),
+        );
       } else {
         Navigator.push(
           context,

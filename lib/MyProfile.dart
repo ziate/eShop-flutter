@@ -315,10 +315,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   _showDialog() async {
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
+    await dialogAnimate(context,
+           StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater) {
             return AlertDialog(
               contentPadding: const EdgeInsets.all(0.0),
@@ -512,8 +510,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                     })
               ],
             );
-          });
-        });
+          }));
+        
   }
 
   Future<void> setUpdateUser() async {
@@ -781,10 +779,8 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
   }
 
   languageDialog() async {
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
+    await dialogAnimate(context,
+           StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater) {
             return AlertDialog(
               contentPadding: const EdgeInsets.all(0.0),
@@ -814,48 +810,44 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                 ],
               ),
             );
-          });
-        });
+          }));
+        
   }
 
   themeDialog() async {
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setStater) {
-            isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-            themeNotifier = Provider.of<ThemeNotifier>(context);
-            return AlertDialog(
-              contentPadding: const EdgeInsets.all(0.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              content: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
-                      child: Text(
-                        getTranslated(context, 'CHOOSE_THEME_LBL'),
-                        style: Theme.of(this.context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(color: colors.fontColor),
-                      )),
-                  Divider(color: colors.lightBlack),
-                  Flexible(
-                      child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: themeListView(),
-                    ),
-                  )),
-                ],
+    await dialogAnimate(context,
+        StatefulBuilder(builder: (BuildContext context, StateSetter setStater) {
+      isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+      themeNotifier = Provider.of<ThemeNotifier>(context);
+      return AlertDialog(
+        contentPadding: const EdgeInsets.all(0.0),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5.0))),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+                padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                child: Text(
+                  getTranslated(context, 'CHOOSE_THEME_LBL'),
+                  style: Theme.of(this.context)
+                      .textTheme
+                      .subtitle1
+                      .copyWith(color: colors.fontColor),
+                )),
+            Divider(color: colors.lightBlack),
+            Flexible(
+                child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: themeListView(),
               ),
-            );
-          });
-        });
+            )),
+          ],
+        ),
+      );
+    }));
   }
 
   List<Widget> themeListView() {
@@ -972,55 +964,46 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
       );
 
   logOutDailog() async {
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setStater) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              content: Text(
-                getTranslated(context, 'LOGOUTTXT'),
-                style: Theme.of(this.context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(color: colors.fontColor),
-              ),
-              actions: <Widget>[
-                new TextButton(
-                    child: Text(
-                      getTranslated(context, 'NO'),
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: colors.lightBlack,
-                              fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    }),
-                new TextButton(
-                    child: Text(
-                      getTranslated(context, 'YES'),
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: colors.fontColor,
-                              fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      clearUserSession();
-                      favList.clear();
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                          '/home', (Route<dynamic> route) => false);
-                    })
-              ],
-            );
-          });
-        });
+    await dialogAnimate(context,
+        StatefulBuilder(builder: (BuildContext context, StateSetter setStater) {
+      return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setStater) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0))),
+          content: Text(
+            getTranslated(context, 'LOGOUTTXT'),
+            style: Theme.of(this.context)
+                .textTheme
+                .subtitle1
+                .copyWith(color: colors.fontColor),
+          ),
+          actions: <Widget>[
+            new TextButton(
+                child: Text(
+                  getTranslated(context, 'NO'),
+                  style: Theme.of(this.context).textTheme.subtitle2.copyWith(
+                      color: colors.lightBlack, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                }),
+            new TextButton(
+                child: Text(
+                  getTranslated(context, 'YES'),
+                  style: Theme.of(this.context).textTheme.subtitle2.copyWith(
+                      color: colors.fontColor, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  clearUserSession();
+                  favList.clear();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/home', (Route<dynamic> route) => false);
+                })
+          ],
+        );
+      });
+    }));
   }
 
   @override

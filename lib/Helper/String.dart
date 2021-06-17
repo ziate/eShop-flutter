@@ -260,6 +260,10 @@ const String TIC_TYPE = 'ticket_type';
 const String TICKET_ID = 'ticket_id';
 const String USER_TYPE = 'user_type';
 const String USER = 'user';
+const String MEDIA = 'media';
+const String ICON = 'type';
+const String STYPE = 'swatche_type';
+const String SVALUE = 'swatche_value';
 
 String ISDARK = "";
 final String PAYPAL_RESPONSE_URL = "$baseUrl" + "app_payment_status";
@@ -275,6 +279,8 @@ String MAX_ITEMS = '';
 String REFER_CODE = '';
 String MIN_AMT = '';
 String CUR_DEL_CHR = '';
+
+String CUR_TICK_ID = '';
 
 bool ISFLAT_DEL = true;
 bool extendImg = true;

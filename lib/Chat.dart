@@ -14,17 +14,20 @@ import 'package:http/http.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'Helper/Color.dart';
 import 'Helper/Constant.dart';
 import 'Model/Model.dart';
 
 class Chat extends StatefulWidget {
-  final String id,status;
+  final String id, status;
   const Chat({Key key, this.id, this.status}) : super(key: key);
 
   @override
   _ChatState createState() => _ChatState();
 }
+
+StreamController<String> chatstreamdata;
 
 class _ChatState extends State<Chat> {
   TextEditingController msgController = new TextEditingController();
@@ -33,13 +36,25 @@ class _ChatState extends State<Chat> {
   Map<String, String> downloadlist;
   String _filePath = "";
 
+  ScrollController _scrollController = new ScrollController();
+
   @override
   void initState() {
     super.initState();
     downloadlist = new Map<String, String>();
-
+    CUR_TICK_ID = widget.id;
     FlutterDownloader.registerCallback(downloadCallback);
+    setupChannel();
+
     getMsg();
+  }
+
+  @override
+  void dispose() {
+    CUR_TICK_ID = '';
+    if (chatstreamdata != null) chatstreamdata.sink.close();
+
+    super.dispose();
   }
 
   static void downloadCallback(
@@ -62,6 +77,31 @@ class _ChatState extends State<Chat> {
     );
   }
 
+  void setupChannel() {
+    print("===setchannel---");
+    chatstreamdata = StreamController<String>(); //.broadcast();
+    chatstreamdata.stream.listen((response) {
+      print("===streamtestmainsocket---${response.toString()}");
+      setState(() {
+        final res = json.decode(response);
+        Model message;
+        String mid;
+        print("msg***********${res["data"]}}");
+        message = Model.fromChat(res["data"]);
+
+        chatList.insert(0, message);
+        files.clear();
+      });
+    });
+  }
+
+  void insertItem(String response) {
+    print("===testsocket-nullcheck--${chatstreamdata == null}");
+    if (chatstreamdata != null) chatstreamdata.sink.add(response);
+    _scrollController.animateTo(0.0,
+        duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+  }
+
   Widget buildListMessage() {
     return Flexible(
       child: ListView.builder(
@@ -69,7 +109,7 @@ class _ChatState extends State<Chat> {
         itemBuilder: (context, index) => msgItem(index, chatList[index]),
         itemCount: chatList.length,
         reverse: true,
-        //  controller: _scrollController,
+        controller: _scrollController,
       ),
     );
   }
@@ -152,31 +192,33 @@ class _ChatState extends State<Chat> {
             itemCount: message.attach.length,
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true),
-        Card(
-          //margin: EdgeInsets.only(right: message.sender_id == myid ? 10 : 50, left: message.sender_id == myid ? 50 : 10, bottom: 10),
-          elevation: 0.0,
-          color: message.uid == CUR_USERID
-              ? colors.fontColor.withOpacity(0.1)
-              : colors.white,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
-            child: Column(
-              crossAxisAlignment: message.uid == CUR_USERID
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: <Widget>[
-                //_messages[index].issend ? Container() : Center(child: SizedBox(height:20,width: 20,child: new CircularProgressIndicator(backgroundColor: ColorsRes.secondgradientcolor,))),
-
-                Text("${message.msg}", style: TextStyle(color: colors.black)),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(top: 5),
-                  child: Text((message.date),
-                      style: TextStyle(color: colors.lightBlack, fontSize: 9)),
+        message.msg != null && message.msg.isNotEmpty
+            ? Card(
+                elevation: 0.0,
+                color: message.uid == CUR_USERID
+                    ? colors.fontColor.withOpacity(0.1)
+                    : colors.white,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+                  child: Column(
+                    crossAxisAlignment: message.uid == CUR_USERID
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text("${message.msg}",
+                          style: TextStyle(color: colors.black)),
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(top: 5),
+                        child: Text((message.date),
+                            style: TextStyle(
+                                color: colors.lightBlack, fontSize: 9)),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              )
+            : Container(),
       ],
     );
   }
@@ -209,11 +251,9 @@ class _ChatState extends State<Chat> {
       if (hasExisted) {
         final _openFile = await OpenFile.open(_filePath + "/" + fileName);
       } else if (downloadlist.containsKey(mid)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(getTranslated(context, 'Downloading'))));
+        setSnackbar(getTranslated(context, 'Downloading'));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(getTranslated(context, 'Downloading'))));
+        setSnackbar(getTranslated(context, 'Downloading'));
         final taskid = await FlutterDownloader.enqueue(
             url: url,
             savedDir: _filePath,
@@ -286,34 +326,9 @@ class _ChatState extends State<Chat> {
   }
 
   Future<void> sendMessage(String message) async {
-    //   try {
-    //     var data = {
-    //       USER_ID: CUR_USERID,
-    //       TICKET_ID: widget.id,
-    //       USER_TYPE: USER,
-    //       MESSAGE: msg,
-    //     };
-
-    //     Response response = await post(sendMsgApi, body: data, headers: headers)
-    //         .timeout(Duration(seconds: timeOut));
-    //     print("res***${response.body.toString()}");
-    //     if (response.statusCode == 200) {
-    //       var getdata = json.decode(response.body);
-
-    //       bool error = getdata["error"];
-    //       String msg = getdata["message"];
-
-    //       if (mounted) setState(() {});
-
-    //       // setSnackbar(msg);
-    //     }
-    //   } on TimeoutException catch (_) {
-    //     //  setSnackbar(getTranslated(context, 'somethingMSg'));
-    //   }
-    // }
- setState(() {
-                      msgController.text = "";
-                  });
+    setState(() {
+      msgController.text = "";
+    });
     var request = http.MultipartRequest("POST", sendMsgApi);
     request.headers.addAll(headers);
     request.fields[USER_ID] = CUR_USERID;
@@ -335,28 +350,23 @@ class _ChatState extends State<Chat> {
     var getdata = json.decode(responseString);
     bool error = getdata["error"];
     String msg = getdata['message'];
-    // if (!error) {
-    //   setSnackbar(msg);
-    // } else {
-    //   setSnackbar(msg);
-    //   initialRate = 0;
-    // }
-    print("res***${responseString.toString()}");
-
-    files.clear();
-    if (mounted)
-      setState(() {
-        //  _isProgress = false;
-      });
+    var data = getdata["data"];
+    if (!error) {
+      insertItem(responseString);
+      // files.clear();
+      // if (mounted)
+      //   setState(() {
+      //     chatList.insert(0, Model.fromChat(data[0]));
+      //     //  _isProgress = false;
+      //   });
+    }
+    print("res***${responseString.toString()}**${data[0]}");
   }
 
   Future<void> getMsg() async {
     try {
       var data = {
-        // USER_ID: CUR_USERID,
         TICKET_ID: widget.id,
-        // USER_TYPE: USER,
-        // MESSAGE: msg,
       };
 
       Response response = await post(getMsgApi, body: data, headers: headers)
@@ -372,86 +382,111 @@ class _ChatState extends State<Chat> {
           var data = getdata["data"];
           chatList =
               (data as List).map((data) => new Model.fromChat(data)).toList();
+        } else {
+          setSnackbar(msg);
         }
-        // setSnackbar(msg);
         if (mounted) setState(() {});
       }
     } on TimeoutException catch (_) {
-      //  setSnackbar(getTranslated(context, 'somethingMSg'));
+      setSnackbar(getTranslated(context, 'somethingMSg'));
     }
   }
 
-  msgRow() {
-    return 
-    widget.status=="2"?
-    Align(
-      alignment: Alignment.bottomLeft,
-      child: Container(
-        padding: EdgeInsets.only(left: 10, bottom: 10, top: 10),
-        height: 60,
-        width: double.infinity,
-        color: colors.white,
-        child: Row(
-          children: <Widget>[
-            GestureDetector(
-              onTap: () {
-                _imgFromGallery();
-              },
-              child: Container(
-                height: 30,
-                width: 30,
-                decoration: BoxDecoration(
-                  color: colors.primary,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Icon(
-                  Icons.add,
-                  color: colors.white,
-                  size: 20,
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 15,
-            ),
-            Expanded(
-              child: TextField(
-                controller: msgController,
-                decoration: InputDecoration(
-                    hintText: "Write message...",
-                    hintStyle: TextStyle(color: colors.lightBlack),
-                    border: InputBorder.none),
-              ),
-            ),
-            SizedBox(
-              width: 15,
-            ),
-            FloatingActionButton(
-              onPressed: () {
-                if (msgController.text.trim().length > 0 || files.length > 0) {
-                 
-                  sendMessage(msgController.text.trim());
-                }
-              },
-              child: Icon(
-                Icons.send,
-                color: colors.white,
-                size: 18,
-              ),
-              backgroundColor: colors.primary,
-              elevation: 0,
-            ),
-          ],
-        ),
+  setSnackbar(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
+      content: new Text(
+        msg,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: colors.black),
       ),
-    ):Container();
+      backgroundColor: colors.white,
+      elevation: 1.0,
+    ));
   }
 
-  Widget attachItem(List<String> attach, int index, Model message) {
-    String file = attach[index];
+  msgRow() {
+    print("status***${widget.status}");
+    return widget.status != "4"
+        ? Align(
+            alignment: Alignment.bottomLeft,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              width: double.infinity,
+              color: colors.white,
+              child: Row(
+                children: <Widget>[
+                  GestureDetector(
+                    onTap: () {
+                      _imgFromGallery();
+                    },
+                    child: Container(
+                      height: 30,
+                      width: 30,
+                      decoration: BoxDecoration(
+                        color: colors.primary,
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Icon(
+                        Icons.add,
+                        color: colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 15,
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: msgController,
+                      maxLines: null,
+                      decoration: InputDecoration(
+                          hintText: "Write message...",
+                          hintStyle: TextStyle(color: colors.lightBlack),
+                          border: InputBorder.none),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 15,
+                  ),
+                  FloatingActionButton(
+                    mini: true,
+                    onPressed: () {
+                      if (msgController.text.trim().length > 0 ||
+                          files.length > 0) {
+                        sendMessage(msgController.text.trim());
+                      }
+                    },
+                    child: Icon(
+                      Icons.send,
+                      color: colors.white,
+                      size: 18,
+                    ),
+                    backgroundColor: colors.primary,
+                    elevation: 0,
+                  ),
+                ],
+              ),
+            ),
+          )
+        : Container();
+  }
 
-    print("file****$file");
-    return file.isEmpty
+  Widget attachItem(List<attachment> attach, int index, Model message) {
+    String file = attach[index].media;
+    String type = attach[index].type;
+    String icon;
+    if (type == "video")
+      icon = "assets/images/video.png";
+    else if (type == "document")
+      icon = "assets/images/doc.png";
+    else if (type == "spreadsheet")
+      icon = "assets/images/sheet.png";
+    else
+      icon = "assets/images/zip.png";
+
+    print("file****$file*******");
+    return file == null
         ? Container()
         : Stack(
             alignment: Alignment.bottomRight,
@@ -473,19 +508,20 @@ class _ChatState extends State<Chat> {
 
                       GestureDetector(
                         onTap: () {
-                          _requestDownload(file, message.id);
+                          _requestDownload(attach[index].media, message.id);
                         },
-                        child: Container(
-                            child: Image.network(
-                          file,
-                          width: 250,
-                          height: 150,
-                          fit: BoxFit.cover,
-                        )
-                            // child: filetype == Constant.fileimage ? FadeInImage.assetNetwork(image: file, placeholder: "assets/images/splash_logo.png",width: 250,height: 150, fit: BoxFit.cover,) :
-                            // filetype == Constant.filevideo ? Image.asset("assets/images/defaultvideo.png",width: 250,height: 150,fit: BoxFit.cover) :
-                            // filetype == Constant.filedoc ? Image.asset("assets/images/defaultdoc.png",width: 250,height: 150,fit: BoxFit.cover) : Container()
-                            ),
+                        child: type == "image"
+                            ? Image.network(
+                                file,
+                                width: 250,
+                                height: 150,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.asset(
+                                icon,
+                                width: 100,
+                                height: 100,
+                              ),
                       ),
                     ],
                   ),

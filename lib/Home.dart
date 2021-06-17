@@ -1555,10 +1555,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   updateDailog() async {
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
+    await dialogAnimate(context,
+           StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater) {
             return AlertDialog(
               shape: RoundedRectangleBorder(
@@ -1613,8 +1611,8 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                     })
               ],
             );
-          });
-        });
+          }));
+        
   }
 
   Future<Null> generateReferral() async {

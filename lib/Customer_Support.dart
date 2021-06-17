@@ -28,6 +28,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
   List<Model> typeList = [];
   List<Model> ticketList = [];
   List<Model> statusList = [];
+  List<Model> tempList = [];
   String type, email, title, desc, status, id;
   FocusNode nameFocus, emailFocus, descFocus;
   final nameController = TextEditingController();
@@ -37,6 +38,9 @@ class _CustomerSupportState extends State<CustomerSupport> {
   bool edit = false, show = false;
   bool fabIsVisible = true;
   ScrollController controller = new ScrollController();
+  int offset = 0;
+  int total = 0, curEdit;
+  bool isLoadingmore = true;
 
   @override
   void initState() {
@@ -50,6 +54,13 @@ class _CustomerSupportState extends State<CustomerSupport> {
       setState(() {
         fabIsVisible =
             controller.position.userScrollDirection == ScrollDirection.forward;
+
+        if (controller.offset >= controller.position.maxScrollExtent &&
+            !controller.position.outOfRange) {
+          isLoadingmore = true;
+
+          if (offset < total) getTicket();
+        }
       });
     });
     getType();
@@ -58,7 +69,6 @@ class _CustomerSupportState extends State<CustomerSupport> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     nameController.dispose();
     emailController.dispose();
@@ -139,9 +149,15 @@ class _CustomerSupportState extends State<CustomerSupport> {
                                         Divider(),
                                 physics: NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: ticketList.length,
+                                itemCount: (offset < total)
+                                    ? ticketList.length + 1
+                                    : ticketList.length,
                                 itemBuilder: (context, index) {
-                                  return ticketItem(index);
+                                  return (index == ticketList.length &&
+                                          isLoadingmore)
+                                      ? Center(
+                                          child: CircularProgressIndicator())
+                                      : ticketItem(index);
                                 })
                             : getNoItem(context)
                       ],
@@ -409,6 +425,8 @@ class _CustomerSupportState extends State<CustomerSupport> {
       try {
         var parameter = {
           USER_ID: CUR_USERID,
+          LIMIT: perPage.toString(),
+          OFFSET: offset.toString(),
         };
 
         print("resp****$parameter");
@@ -421,13 +439,24 @@ class _CustomerSupportState extends State<CustomerSupport> {
         String msg = getdata["message"];
         if (!error) {
           var data = getdata["data"];
+          total = int.parse(getdata["total"]);
+
+          if ((offset) < total) {
+            tempList.clear();
+            var data = getdata["data"];
+            tempList = (data as List)
+                .map((data) => new Model.fromTicket(data))
+                .toList();
+
+            ticketList.addAll(tempList);
+
+            offset = offset + perPage;
+          }
 
           print("response***${response.body.toString()}");
-
-          ticketList =
-              (data as List).map((data) => new Model.fromTicket(data)).toList();
         } else {
           setSnackbar(msg);
+          isLoadingmore = false;
         }
         if (mounted)
           setState(() {
@@ -484,25 +513,31 @@ class _CustomerSupportState extends State<CustomerSupport> {
         data[STATUS] = status;
       }
 
-      print("status update****$data***$edit***$editTicketApi");
-
       Response response = await post(edit ? editTicketApi : addTicketApi,
               body: data, headers: headers)
           .timeout(Duration(seconds: timeOut));
+
+      print("status update****${response.body.toString()}");
+
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
         String msg = getdata["message"];
-
-        if (mounted)
-          setState(() {
-            _isProgress = false;
-            clearAll();
-            ticketList.clear();
-            getTicket();
-          });
-
+        if (!error) {
+          var data = getdata["data"];
+          if (mounted)
+            setState(() {
+              print("data***$edit**$curEdit");
+              if (edit)
+                ticketList[curEdit] = Model.fromTicket(data[0]);
+              else
+                ticketList.add(Model.fromTicket(data[0]));
+              edit = false;
+              _isProgress = false;
+              clearAll();
+            });
+        }
         setSnackbar(msg);
       }
     } on TimeoutException catch (_) {
@@ -533,6 +568,9 @@ class _CustomerSupportState extends State<CustomerSupport> {
     } else if (status == "3") {
       back = Colors.green;
       status = "Resolved";
+    } else if (status == "5") {
+      back = Colors.cyan;
+      status = "Reopen";
     } else {
       back = Colors.red;
       status = "Close";
@@ -541,6 +579,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
       elevation: 0,
       child: InkWell(
         onTap: () {
+           FocusScope.of(context).unfocus();
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -611,6 +650,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
                           setState(() {
                             edit = true;
                             show = true;
+                            curEdit = index;
                             id = ticketList[index].id;
                             emailController.text = ticketList[index].email;
                             nameController.text = ticketList[index].title;
@@ -641,7 +681,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
                               MaterialPageRoute(
                                 builder: (context) => Chat(
                                   id: ticketList[index].id,
-                                    status: ticketList[index].status,
+                                  status: ticketList[index].status,
                                 ),
                               ));
                         }),

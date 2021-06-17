@@ -211,10 +211,7 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
 
   _showDialog() async {
     bool payWarn = false;
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
+    await dialogAnimate(context, StatefulBuilder(
               builder: (BuildContext context, StateSetter setStater) {
             dialogState = setStater;
             return AlertDialog(
@@ -375,8 +372,8 @@ class StateWallet extends State<MyWallet> with TickerProviderStateMixin {
                     })
               ],
             );
-          });
-        });
+          }));
+        
   }
 
   List<Widget> getPayList() {

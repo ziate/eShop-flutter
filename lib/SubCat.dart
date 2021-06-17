@@ -1052,10 +1052,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
   }
 
   void sortDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return ButtonBarTheme(
+    dialogAnimate(context, ButtonBarTheme(
             data: ButtonBarThemeData(
               alignment: MainAxisAlignment.center,
             ),
@@ -1148,8 +1145,8 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                             Navigator.pop(context, 'option 4');
                           })),
                 ])),
-          );
-        });
+          ));
+        
   }
 
   void filterDialog() {
@@ -1425,6 +1422,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         }
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
+        print("cur****$parameter");
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));

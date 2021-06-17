@@ -19,7 +19,7 @@ class Model {
       uid;
   var list;
   String name, banner;
-  List<String> attach;
+  List<attachment> attach;
   Model(
       {this.id,
       this.type,
@@ -89,15 +89,17 @@ class Model {
   }
 
   factory Model.fromChat(Map<String, dynamic> parsedJson) {
-    var listContent = parsedJson["attachments"];
+    //var listContent = parsedJson["attachments"];
 
-     List<String> item = [];
+    List<attachment> attachList;
+    var listContent = (parsedJson["attachments"] as List);
+    if (listContent == null || listContent.isEmpty)
+      attachList = [];
+    else
+      attachList =
+          listContent.map((data) => new attachment.setJson(data)).toList();
 
-    if (listContent == null || listContent.isEmpty) listContent = [];
     String date = parsedJson[DATE_CREATED];
-
-    
-    for (String i in listContent) item.add(i);
 
     date = DateFormat('dd-MM-yyyy hh:mm a').format(DateTime.parse(date));
     return new Model(
@@ -107,13 +109,26 @@ class Model {
         uid: parsedJson[USER_ID],
         name: parsedJson[NAME],
         date: date,
-        attach: item);
+        attach: attachList);
   }
 
   factory Model.setAllCat(String id, String name) {
     return new Model(
       id: id,
       name: name,
+    );
+  }
+}
+
+class attachment {
+  String media, type;
+
+  attachment({this.media, this.type});
+
+  factory attachment.setJson(Map<String, dynamic> parsedJson) {
+    return new attachment(
+      media: parsedJson[MEDIA],
+      type: parsedJson[ICON],
     );
   }
 }

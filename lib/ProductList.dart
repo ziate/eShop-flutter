@@ -1208,10 +1208,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
   }
 
   void sortDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return ButtonBarTheme(
+    dialogAnimate(context, ButtonBarTheme(
             data: ButtonBarThemeData(
               alignment: MainAxisAlignment.center,
             ),
@@ -1339,8 +1336,8 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             })),
                   ]),
                 )),
-          );
-        });
+          ));
+        
   }
 
   _scrollListener() {

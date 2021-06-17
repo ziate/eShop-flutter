@@ -952,10 +952,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
   }
 
   void sortDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return ButtonBarTheme(
+    dialogAnimate(context,  ButtonBarTheme(
             data: ButtonBarThemeData(
               alignment: MainAxisAlignment.center,
             ),
@@ -1051,8 +1048,8 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                             Navigator.pop(context, 'option 4');
                           })),
                 ])),
-          );
-        });
+          ));
+        
   }
 
   void filterDialog() {

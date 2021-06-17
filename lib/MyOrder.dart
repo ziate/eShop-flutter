@@ -552,10 +552,8 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
   }
 
   void filterDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return ButtonBarTheme(
+    dialogAnimate(context, 
+           ButtonBarTheme(
             data: ButtonBarThemeData(
               alignment: MainAxisAlignment.center,
             ),
@@ -586,8 +584,8 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                     ),
                   ]),
                 )),
-          );
-        });
+          ));
+      
   }
 
   List<Widget> getStatusList() {
