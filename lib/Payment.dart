@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:http/http.dart';
@@ -31,7 +31,7 @@ class Payment extends StatefulWidget {
 
 List<Model> timeSlotList = [];
 String allowDay;
-bool codAllowed=true;
+bool codAllowed = true;
 
 class StatePayment extends State<Payment> with TickerProviderStateMixin {
   bool _isLoading = true;
@@ -44,7 +44,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       paystack,
       flutterwave,
       stripe,
-      paytm = true;
+      paytm = true,
+      gpay = true;
   List<RadioModel> timeModel = [];
   List<RadioModel> payModel = [];
   List<RadioModel> timeModelList = [];
@@ -61,6 +62,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
     'assets/images/flutterwave.svg',
     'assets/images/stripe.svg',
     'assets/images/paytm.svg',
+    Platform.isIOS ? 'assets/images/applepay.svg' : 'assets/images/gpay.svg',
   ];
 
   Animation buttonSqueezeanimation;
@@ -84,6 +86,9 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         getTranslated(context, 'FLUTTERWAVE_LBL'),
         getTranslated(context, 'STRIPE_LBL'),
         getTranslated(context, 'PAYTM_LBL'),
+        Platform.isIOS
+            ? getTranslated(context, 'APPLEPAY')
+            : getTranslated(context, 'GPAY'),
       ];
     });
     if (widget.msg != '')
@@ -237,7 +242,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                                       " : " +
                                                       CUR_CURRENCY +
                                                       " " +
-                                                      double.parse(CUR_BALANCE).toStringAsFixed(2),
+                                                      double.parse(CUR_BALANCE)
+                                                          .toStringAsFixed(2),
                                               style: TextStyle(
                                                   fontSize: 15,
                                                   color: colors.black),
@@ -334,6 +340,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                                 else if (index == 6 && stripe)
                                                   return paymentItem(index);
                                                 else if (index == 7 && paytm)
+                                                  return paymentItem(index);
+                                                else if (index == 8 && gpay)
                                                   return paymentItem(index);
                                                 else
                                                   return Container();
@@ -462,15 +470,12 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
     if (_isNetworkAvail) {
       timeSlotList.clear();
       try {
-        var parameter = {
-          TYPE: PAYMENT_METHOD,
-          USER_ID:CUR_USERID
-        };
+        var parameter = {TYPE: PAYMENT_METHOD, USER_ID: CUR_USERID};
         Response response =
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
-         if (response.statusCode == 200) {
+        if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
           bool error = getdata["error"];
@@ -482,7 +487,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             isTimeSlot =
                 time_slot["is_time_slots_enabled"] == "1" ? true : false;
             startingDate = time_slot["starting_date"];
-            codAllowed=data["is_cod_allowed"]==1?true:false;
+            codAllowed = data["is_cod_allowed"] == 1 ? true : false;
 
             var timeSlots = data["time_slots"];
             timeSlotList = (timeSlots as List)
@@ -533,9 +538,11 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
 
             var payment = data["payment_method"];
 
-
-
-            cod = codAllowed?payment["cod_method"] == "1" ? true : false:false;
+            cod = codAllowed
+                ? payment["cod_method"] == "1"
+                    ? true
+                    : false
+                : false;
             paypal = payment["paypal_payment_method"] == "1" ? true : false;
             paumoney =
                 payment["payumoney_payment_method"] == "1" ? true : false;
@@ -598,9 +605,12 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         if (mounted)
           setState(() {
             selectedTime = index;
-            selTime = timeSlotList[selectedTime].name;
+            selTime = timeModel[selectedTime].name;
+            //timeSlotList[selectedTime].name;
             timeModel.forEach((element) => element.isSelected = false);
             timeModel[index].isSelected = true;
+
+          
           });
       },
       child: new RadioItem(timeModel[index]),

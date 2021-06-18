@@ -429,7 +429,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
                           width: 90.0,
                           fit: BoxFit.cover,
                           imageErrorBuilder: (context, error, stackTrace) =>
-                              erroWidget(),
+                              erroWidget(90),
 
                           // errorWidget:(context, url,e) => placeHolder(90) ,
                           placeholder: placeHolder(90),

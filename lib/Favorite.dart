@@ -169,7 +169,7 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
                               width: 80.0,
                               fit: BoxFit.cover,
                               imageErrorBuilder: (context, error, stackTrace) =>
-                                  erroWidget(),
+                                  erroWidget(80),
 
                               // errorWidget: (context, url, e) => placeHolder(80),
                               placeholder: placeHolder(80),

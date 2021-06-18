@@ -308,7 +308,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           width: double.maxFinite,
                           fit: BoxFit.cover,
                           imageErrorBuilder: (context, error, stackTrace) =>
-                              erroWidget(),
+                              erroWidget(height),
 
                           //  fit: extendImg ? BoxFit.fill : BoxFit.contain,
                         ),
@@ -683,10 +683,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           widget.model.attributeList[index].value.split(',');
                       List<String> attId =
                           widget.model.attributeList[index].id.split(',');
-                       List<String> attSType =
+                      List<String> attSType =
                           widget.model.attributeList[index].sType.split(',');
 
-                      List<String> attSValue = 
+                      List<String> attSValue =
                           widget.model.attributeList[index].sValue.split(',');
 
                       int varSelected;
@@ -706,11 +706,13 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                 color: Color(int.parse(color))),
                           );
                         } else if (attSType[i] == "2") {
-                          itemLabel = Image.network(
-                            attSValue[i],
-                            width: 80,
-                            height: 80,
-                          );
+                          itemLabel = ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: Image.network(attSValue[i],
+                                  width: 80,
+                                  height: 80,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      erroWidget(80)));
                         } else {
                           itemLabel = Text(att[i],
                               style: TextStyle(
@@ -722,24 +724,20 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                         if (_selectedIndex[index] != null) if (wholeAtt
                             .contains(attId[i])) {
                           choiceChip = ChoiceChip(
-                           selected: _selectedIndex.length > index
+                            selected: _selectedIndex.length > index
                                 ? _selectedIndex[index] == i
                                 : false,
                             label: itemLabel,
                             labelPadding: EdgeInsets.all(0),
-                        
-                            selectedColor:
-                                 colors.fontColor.withOpacity(0.1),
-                             
+                            selectedColor: colors.fontColor.withOpacity(0.1),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
                                   attSType[i] == "1" ? 100 : 10),
                               side: BorderSide(
                                   color: _selectedIndex[index] == (i)
                                       ? colors.fontColor
-                                      : colors.black12),
+                                      : colors.black12,width: 1.5),
                             ),
-
                             onSelected: att.length == 1
                                 ? null
                                 : (bool selected) {
@@ -1077,60 +1075,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     }
   }
 
-  /* Future<void> getReviewImg() async {
-    _isNetworkAvail = await isNetworkAvailable();
-    if (_isNetworkAvail) {
-      try {
-        var parameter = {
-          PRODUCT_ID: widget.model.id,
-          LIMIT: perPage.toString(),
-          OFFSET: offset.toString(),
-        };
 
-        Response response =
-            await post(getReviewImgApi, body: parameter, headers: headers)
-                .timeout(Duration(seconds: timeOut));
-
-        print("img res***${response.body.toString()}");
-
-        var getdata = json.decode(response.body);
-
-        bool error = getdata["error"];
-        String msg = getdata["message"];
-        if (!error) {
-          total = int.parse(getdata["total"]);
-
-          if ((offset) < total) {
-            var data = getdata["data"];
-            reviewImgList = data["review_images"];
-
-            //(data as List).map((data) => new User.forReview(data)).toList();
-
-            offset = offset + perPage;
-          }
-        } else {
-          if (msg != "No review images found !") setSnackbar(msg);
-          isLoadingmore = false;
-        }
-        if (mounted) if (mounted)
-          setState(() {
-            _isLoading = false;
-          });
-      } on TimeoutException catch (_) {
-        setSnackbar(getTranslated(context, 'somethingMSg'));
-        if (mounted)
-          setState(() {
-            _isLoading = false;
-          });
-      }
-    } else {
-      if (mounted)
-        setState(() {
-          _isNetworkAvail = false;
-        });
-    }
-  }
-*/
   _setFav() async {
     _isNetworkAvail = await isNetworkAvailable();
     if (_isNetworkAvail) {
@@ -1604,7 +1549,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       width: double.maxFinite,
                       fit: extendImg ? BoxFit.fill : BoxFit.contain,
                       imageErrorBuilder: (context, error, stackTrace) =>
-                          erroWidget(),
+                          erroWidget(width),
 
                       //errorWidget: (context, url, e) => placeHolder(width),
                       placeholder: placeHolder(width),
@@ -1965,7 +1910,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                     width: 50.0,
                     placeholder: placeHolder(50),
                     imageErrorBuilder: (context, error, stackTrace) =>
-                        erroWidget(),
+                        erroWidget(50),
                   ),
                 ),
               ),
@@ -2177,7 +2122,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           //  errorWidget: (context, url, e) => placeHolder(50),
                           placeholder: placeHolder(80),
                           imageErrorBuilder: (context, error, stackTrace) =>
-                              erroWidget(),
+                              erroWidget(80),
                         ),
                         index == 4
                             ? Container(

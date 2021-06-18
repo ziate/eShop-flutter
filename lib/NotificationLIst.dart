@@ -197,7 +197,7 @@ class StateNoti extends State<NotificationList> with TickerProviderStateMixin {
                                   placeholder: placeHolder(150),
                                   imageErrorBuilder:
                                       (context, error, stackTrace) =>
-                                          erroWidget(),
+                                          erroWidget(150),
                                 ),
                               ),
                             );

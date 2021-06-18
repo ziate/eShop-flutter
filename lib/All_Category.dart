@@ -136,7 +136,7 @@ class StateCat extends State<AllCategory> {
                     fadeInDuration: Duration(milliseconds: 150),
                     fit: BoxFit.fill,
                     imageErrorBuilder: (context, error, stackTrace) =>
-                        erroWidget(),
+                        erroWidget(50),
                     placeholder: placeHolder(50),
                   )),
             ),

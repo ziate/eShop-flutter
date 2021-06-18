@@ -154,7 +154,7 @@ class StateRate extends State<ReviewList> {
                     width: 50.0,
                     placeholder: placeHolder(50),
                     imageErrorBuilder: (context, error, stackTrace) =>
-                        erroWidget(),
+                        erroWidget(50),
                   ),
                 ),
               ),

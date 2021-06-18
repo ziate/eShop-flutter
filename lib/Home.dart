@@ -14,7 +14,7 @@ import 'package:eshop/ProductList.dart';
 import 'package:eshop/Product_Detail.dart';
 
 import 'package:eshop/SectionList.dart';
-import 'package:eshop/Test.dart';
+
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -875,7 +875,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                         width: 50.0,
                         fit: BoxFit.cover,
                         imageErrorBuilder: (context, error, stackTrace) =>
-                            erroWidget(),
+                            erroWidget(50),
 
                         //  errorWidget: (context, url, e) => placeHolder(50),
                         placeholder: placeHolder(50),
@@ -985,7 +985,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           fadeInDuration: Duration(milliseconds: 150),
           image: NetworkImage(offerImages[index].image),
           width: double.maxFinite,
-          imageErrorBuilder: (context, error, stackTrace) => erroWidget(),
+          imageErrorBuilder: (context, error, stackTrace) => erroWidget(50),
 
           // errorWidget: (context, url, e) => placeHolder(50),
           placeholder: AssetImage(
@@ -1252,7 +1252,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
                         width: double.maxFinite,
                         fit: extendImg ? BoxFit.fill : BoxFit.contain,
                         imageErrorBuilder: (context, error, stackTrace) =>
-                            erroWidget(),
+                            erroWidget(width),
 
                         // errorWidget: (context, url, e) => placeHolder(width),
                         placeholder: placeHolder(width),

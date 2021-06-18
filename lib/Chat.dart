@@ -59,9 +59,7 @@ class _ChatState extends State<Chat> {
 
   static void downloadCallback(
       String id, DownloadTaskStatus status, int progress) {
-    print(
-        'Background Isolate Callback: task ($id) is in status ($status) and process ($progress)');
-
+  
     final SendPort send =
         IsolateNameServer.lookupPortByName('downloader_send_port');
     send.send([id, status, progress]);
@@ -78,15 +76,15 @@ class _ChatState extends State<Chat> {
   }
 
   void setupChannel() {
-    print("===setchannel---");
+  
     chatstreamdata = StreamController<String>(); //.broadcast();
     chatstreamdata.stream.listen((response) {
-      print("===streamtestmainsocket---${response.toString()}");
+   
       setState(() {
         final res = json.decode(response);
         Model message;
         String mid;
-        print("msg***********${res["data"]}}");
+      
         message = Model.fromChat(res["data"]);
 
         chatList.insert(0, message);
@@ -96,7 +94,7 @@ class _ChatState extends State<Chat> {
   }
 
   void insertItem(String response) {
-    print("===testsocket-nullcheck--${chatstreamdata == null}");
+  
     if (chatstreamdata != null) chatstreamdata.sink.add(response);
     _scrollController.animateTo(0.0,
         duration: Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -238,7 +236,7 @@ class _ChatState extends State<Chat> {
       String fileName = url.substring(url.lastIndexOf("/") + 1);
       File file = new File(_filePath + "/" + fileName);
       bool hasExisted = await file.exists();
-      print("===test===$hasExisted=======$url***$_filePath");
+  
 
       if (downloadlist.containsKey(mid)) {
         final tasks = await FlutterDownloader.loadTasksWithRawQuery(
@@ -260,7 +258,7 @@ class _ChatState extends State<Chat> {
             headers: {"auth": "test_for_sql_encoding"},
             showNotification: true,
             openFileFromNotification: true);
-        print("====taskid==" + taskid + "=====" + mid);
+    
         setState(() {
           downloadlist[mid] = taskid.toString();
         });
@@ -270,7 +268,7 @@ class _ChatState extends State<Chat> {
 
   Future<bool> Checkpermission() async {
     var status = await Permission.storage.status;
-    print("permission==$status");
+  
     if (status != PermissionStatus.granted) {
       Map<Permission, PermissionStatus> statuses = await [
         Permission.storage,
@@ -338,7 +336,7 @@ class _ChatState extends State<Chat> {
 
     if (files != null) {
       for (int i = 0; i < files.length; i++) {
-        print("res****uploading**${files[i].path}");
+      
         var pic = await http.MultipartFile.fromPath(ATTACH, files[i].path);
         request.files.add(pic);
       }
@@ -353,14 +351,9 @@ class _ChatState extends State<Chat> {
     var data = getdata["data"];
     if (!error) {
       insertItem(responseString);
-      // files.clear();
-      // if (mounted)
-      //   setState(() {
-      //     chatList.insert(0, Model.fromChat(data[0]));
-      //     //  _isProgress = false;
-      //   });
+    
     }
-    print("res***${responseString.toString()}**${data[0]}");
+  
   }
 
   Future<void> getMsg() async {
@@ -371,7 +364,7 @@ class _ChatState extends State<Chat> {
 
       Response response = await post(getMsgApi, body: data, headers: headers)
           .timeout(Duration(seconds: timeOut));
-      print("res***${response.body.toString()}");
+  
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
 
@@ -383,7 +376,7 @@ class _ChatState extends State<Chat> {
           chatList =
               (data as List).map((data) => new Model.fromChat(data)).toList();
         } else {
-          setSnackbar(msg);
+         if(msg!="Ticket Message(s) does not exist") setSnackbar(msg);
         }
         if (mounted) setState(() {});
       }
@@ -405,7 +398,7 @@ class _ChatState extends State<Chat> {
   }
 
   msgRow() {
-    print("status***${widget.status}");
+
     return widget.status != "4"
         ? Align(
             alignment: Alignment.bottomLeft,
@@ -485,7 +478,6 @@ class _ChatState extends State<Chat> {
     else
       icon = "assets/images/zip.png";
 
-    print("file****$file*******");
     return file == null
         ? Container()
         : Stack(
@@ -516,6 +508,8 @@ class _ChatState extends State<Chat> {
                                 width: 250,
                                 height: 150,
                                 fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      erroWidget(150)
                               )
                             : Image.asset(
                                 icon,

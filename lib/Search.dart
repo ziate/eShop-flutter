@@ -362,7 +362,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
                             width: 80.0,
                             fit: BoxFit.cover,
                             imageErrorBuilder: (context, error, stackTrace) =>
-                                erroWidget(),
+                                erroWidget(80),
 
                             //errorWidget:(context, url,e) => placeHolder(80) ,
                             placeholder: placeHolder(80),
@@ -939,7 +939,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
   }
 
   _tags() {
-    print("value***${tagList.length}");
+ 
     if (tagList != null) {
       List<Widget> chips = [];
       for (int i = 0; i < tagList.length; i++) {
@@ -1130,8 +1130,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
   }
 
   void statusListener(String status) {
-    // print(
-    // 'Received listener status: $status, listening: ${speech.isListening}');
+   
     setStater(() {
       lastStatus = '$status';
     });
@@ -1154,7 +1153,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
   void soundLevelListener(double level) {
     minSoundLevel = min(minSoundLevel, level);
     maxSoundLevel = max(maxSoundLevel, level);
-    // print("sound level $level: $minSoundLevel - $maxSoundLevel ");
+   
     setStater(() {
       this.level = level;
     });
@@ -1175,7 +1174,7 @@ class _SearchState extends State<Search> with TickerProviderStateMixin {
   }
 
   void resultListener(SpeechRecognitionResult result) {
-    print('Result listener ${result.recognizedWords} - ${result.finalResult}');
+  
     setStater(() {
       lastWords = '${result.recognizedWords}';
       query = lastWords;
@@ -1331,7 +1330,7 @@ class _SuggestionList extends StatelessWidget {
                             width: 50,
                             placeholder: placeHolder(50),
                             imageErrorBuilder: (context, error, stackTrace) =>
-                                erroWidget(),
+                                erroWidget(50),
                           )),
             trailing: Icon(
               Icons.reply,
@@ -1340,8 +1339,7 @@ class _SuggestionList extends StatelessWidget {
               if (suggestion.name.startsWith('Search Result for ')) {
                 await setPrefrenceList(
                     HISTORYLIST, textController.text.toString().trim());
-                //onSelected(query);
-                //   print("value***start${suggestion.history}**$query");
+             
                 buildResult = true;
                 clearAll();
                 getProduct();

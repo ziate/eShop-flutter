@@ -33,7 +33,7 @@ class _ReviewImageState extends State<ReviewGallary> {
                 child: FadeInImage(
                   image: NetworkImage(revImgList[index].img),
                   imageErrorBuilder: (context, error, stackTrace) =>
-                      erroWidget(),
+                      erroWidget(double.maxFinite),
                   placeholder: AssetImage(
                     "assets/images/sliderph.png",
                   ),

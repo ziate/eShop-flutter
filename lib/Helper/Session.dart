@@ -86,9 +86,11 @@ placeHolder(double height) {
   );
 }
 
-erroWidget(){
+erroWidget(double size){
    return Image.asset(
             'assets/images/placeholder.png',
+            height: size,
+            width: size,
            );
       
 }
@@ -440,7 +442,7 @@ String getToken() {
       issuedAt: DateTime.now().toUtc());
 
   String token = issueJwtHS256(claimSet, jwtKey);
-  print("token****$token");
+
   return token;
 }
 

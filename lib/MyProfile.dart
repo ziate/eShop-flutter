@@ -223,7 +223,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
                           width: 64.0,
                           fit: BoxFit.cover,
                           imageErrorBuilder: (context, error, stackTrace) =>
-                              erroWidget(),
+                              erroWidget(64),
                           placeholder: placeHolder(64),
                         )
                       : imagePlaceHolder(62),

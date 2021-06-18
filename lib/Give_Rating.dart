@@ -58,7 +58,7 @@ class _GiveRatingState extends State<GiveRating> {
                                   placeholder: placeHolder(90),
                                   imageErrorBuilder:
                                       (context, error, stackTrace) =>
-                                          erroWidget(),
+                                          erroWidget(50),
                                 )),
                             Expanded(
                               child: Padding(

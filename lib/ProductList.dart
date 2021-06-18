@@ -214,7 +214,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                           width: 80.0,
                           fit: BoxFit.cover,
                           imageErrorBuilder: (context, error, stackTrace) =>
-                              erroWidget(),
+                              erroWidget(80),
                           placeholder: placeHolder(80),
                         )),
                   ),
@@ -486,7 +486,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
           onTap: () {
             Product model = productList[index];
 
-            print("value***$index***${model.name}");
+      
             Navigator.push(
               context,
               PageRouteBuilder(
@@ -602,7 +602,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
         if (widget.tag) parameter[TAG] = widget.name;
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
-        print("param***$parameter");
+    
 
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
@@ -920,7 +920,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             fit: extendImg ? BoxFit.fill : BoxFit.contain,
                             placeholder: placeHolder(width),
                             imageErrorBuilder: (context, error, stackTrace) =>
-                                erroWidget(),
+                                erroWidget(width),
                           ),
                         )),
                     Align(

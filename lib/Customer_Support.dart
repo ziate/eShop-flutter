@@ -159,7 +159,9 @@ class _CustomerSupportState extends State<CustomerSupport> {
                                           child: CircularProgressIndicator())
                                       : ticketItem(index);
                                 })
-                            : getNoItem(context)
+                            : Container(
+                              height: deviceHeight-kToolbarHeight-MediaQuery.of(context).padding.top,
+                              child: getNoItem(context))
                       ],
                     ),
                   )),
@@ -429,10 +431,11 @@ class _CustomerSupportState extends State<CustomerSupport> {
           OFFSET: offset.toString(),
         };
 
-        print("resp****$parameter");
+      
         Response response =
             await post(getTicketApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
+
 
         var getdata = json.decode(response.body);
         bool error = getdata["error"];
@@ -453,9 +456,9 @@ class _CustomerSupportState extends State<CustomerSupport> {
             offset = offset + perPage;
           }
 
-          print("response***${response.body.toString()}");
+          
         } else {
-          setSnackbar(msg);
+         if(msg!="Ticket(s) does not exist") setSnackbar(msg);
           isLoadingmore = false;
         }
         if (mounted)
@@ -517,7 +520,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
               body: data, headers: headers)
           .timeout(Duration(seconds: timeOut));
 
-      print("status update****${response.body.toString()}");
+   
 
       if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
@@ -528,7 +531,7 @@ class _CustomerSupportState extends State<CustomerSupport> {
           var data = getdata["data"];
           if (mounted)
             setState(() {
-              print("data***$edit**$curEdit");
+           
               if (edit)
                 ticketList[curEdit] = Model.fromTicket(data[0]);
               else

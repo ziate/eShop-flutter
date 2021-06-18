@@ -489,7 +489,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                           width: 80.0,
                           placeholder: placeHolder(80),
                           imageErrorBuilder: (context, error, stackTrace) =>
-                              erroWidget(),
+                              erroWidget(80),
                         )),
                   ),
                   Expanded(
@@ -1370,7 +1370,7 @@ class StateSection extends State<SectionList> with TickerProviderStateMixin {
                         fadeInDuration: Duration(milliseconds: 150),
                         fit: extendImg ? BoxFit.fill : BoxFit.contain,
                         imageErrorBuilder: (context, error, stackTrace) =>
-                            erroWidget(),
+                            erroWidget(width),
 
                         //errorWidget:(context, url,e) => placeHolder(width) ,
                         placeholder: placeHolder(width),
