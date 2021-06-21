@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart';
+
 import 'package:paytm/paytm.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
@@ -50,6 +51,7 @@ String latitude,
     promocode;
 bool isTimeSlot, isPromoValid = false, isUseWallet = false, isPayLayShow = true;
 int selectedTime, selectedDate, selectedMethod;
+
 double promoAmt = 0;
 double remWalBal, usedBal = 0;
 String razorpayId,
@@ -62,6 +64,11 @@ String razorpayId,
     paytmMerId,
     paytmMerKey;
 bool payTesting = true;
+String gpayEnv = "TEST",
+    gpayCcode = "US",
+    gpaycur = "USD",
+    gpayMerId = "01234567890123456789",
+    gpayMerName = "Example Merchant Name";
 
 class StateCart extends State<Cart> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
@@ -87,6 +94,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   TextEditingController promoC = new TextEditingController();
   StateSetter checkoutState;
   final paystackPlugin = PaystackPlugin();
+
+  //List<PaymentItem> _gpaytItems = [];
+  //Pay _gpayClient;
 
   @override
   void initState() {
@@ -258,7 +268,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       width: 80.0,
                       fit: BoxFit.cover,
                       imageErrorBuilder: (context, error, stackTrace) =>
-                          erroWidget(),
+                          erroWidget(80),
                       placeholder: placeHolder(80),
                     ))),
             Expanded(
@@ -582,7 +592,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                           width: 80.0,
                           fit: BoxFit.cover,
                           imageErrorBuilder: (context, error, stackTrace) =>
-                              erroWidget(),
+                              erroWidget(80),
 
                           // errorWidget: (context, url, e) => placeHolder(60),
                           placeholder: placeHolder(80),
@@ -965,7 +975,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                       width: 80.0,
                       fit: BoxFit.cover,
                       imageErrorBuilder: (context, error, stackTrace) =>
-                          erroWidget(),
+                          erroWidget(80),
                       placeholder: placeHolder(80),
                     ))),
             Expanded(
@@ -2088,7 +2098,18 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                                         getTranslated(context,
                                                             'PAYTM_LBL'))
                                                       paytmPayment();
-                                                    else
+                                                  /*  else if (payMethod ==
+                                                        getTranslated(
+                                                            context, 'GPAY')) {
+                                                      googlePayment(
+                                                          "google_pay");
+                                                    } else if (payMethod ==
+                                                        getTranslated(context,
+                                                            'APPLEPAY')) {
+                                                      googlePayment(
+                                                          "apple_pay");
+                                                    }
+                                                    else*/
                                                       placeOrder('');
                                                   }
                                                 : null)
@@ -2399,6 +2420,8 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
+       
+
         _placeOrder = true;
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
@@ -2420,7 +2443,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             } else {
               CUR_CART_COUNT = "0";
               clearAll();
-
+              widget.updateHome();
               //  CUR_BALANCE = getdata['balance'][0]["balance"];
               Navigator.pushAndRemoveUntil(
                   context,
@@ -2514,6 +2537,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         if (redirect) {
           CUR_CART_COUNT = "0";
           clearAll();
+            widget.updateHome();
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
@@ -3071,4 +3095,62 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         });
     }
   }
+
+  /*Future<void> googlePayment(String provider) async {
+    _gpaytItems.add(PaymentItem(
+      amount: totalPrice.toString(),
+      label: cartList[0].productList[0].name,
+      status: PaymentItemStatus.final_price,
+    ));
+
+    PaymentConfiguration googlePay =
+        PaymentConfiguration.fromJsonString(jsonEncode({
+      "provider": provider,
+      "data": {
+        "environment": gpayEnv,
+        "apiVersion": 2,
+        "apiVersionMinor": 0,
+        "allowedPaymentMethods": [
+          {
+            "type": "CARD",
+            "tokenizationSpecification": {
+              "type": "PAYMENT_GATEWAY",
+              "parameters": {
+                "gateway": "example",
+                "gatewayMerchantId": "gatewayMerchantId"
+              }
+            },
+            "parameters": {
+              "allowedCardNetworks": ["VISA", "MASTERCARD"],
+              "allowedAuthMethods": ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+              "billingAddressRequired": true,
+              "billingAddressParameters": {
+                "format": "FULL",
+                "phoneNumberRequired": true
+              }
+            }
+          }
+        ],
+        "merchantInfo": {"merchantId": gpayMerId, "merchantName": gpayMerName},
+        "transactionInfo": {"countryCode": gpayCcode, "currencyCode": gpaycur}
+      }
+    }));
+
+    _gpayClient = Pay([googlePay]);
+    try {
+      final result = await _gpayClient.userCanPay(PayProvider.google_pay);
+      print(result);
+      if (result) {
+        final output = await _gpayClient.showPaymentSelector(
+          provider: PayProvider.google_pay,
+          paymentItems: _gpaytItems,
+        );
+ 
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+*/
+
 }

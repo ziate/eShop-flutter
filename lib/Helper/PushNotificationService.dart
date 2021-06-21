@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../All_Category.dart';
 import '../Chat.dart';
+import '../Customer_Support.dart';
 import '../My_Wallet.dart';
 import '../Product_Detail.dart';
 import '../Splash.dart';
@@ -64,14 +65,14 @@ class PushNotificationService {
       var id = '';
       id = message.data['type_id'] ?? '';
 
-      print("noti******$type****$id***${message.data}");
-
-      if (type == "ticket_message") {
+      if (type == "ticket_status") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => CustomerSupport()));
+      } else if (type == "ticket_message") {
         if (CUR_TICK_ID == id) {
           if (chatstreamdata != null) {
             var parsedJson = json.decode(message.data['chat']);
             parsedJson = parsedJson[0];
-    
 
             Map<String, dynamic> sendata = {
               "id": parsedJson[ID],
@@ -79,14 +80,14 @@ class PushNotificationService {
               "message": parsedJson[MESSAGE],
               "user_id": parsedJson[USER_ID],
               "name": parsedJson[NAME],
-             "date_created":  parsedJson[DATE_CREATED],
+              "date_created": parsedJson[DATE_CREATED],
               "attachments": parsedJson["attachments"]
             };
             var chat = {};
 
             chat["data"] = sendata;
-
-            chatstreamdata.sink.add(jsonEncode(chat));
+            if (parsedJson[USER_ID] != CUR_USERID)
+              chatstreamdata.sink.add(jsonEncode(chat));
           }
         } else {
           if (image != null && image != 'null' && image != '') {
@@ -130,6 +131,9 @@ class PushNotificationService {
                       status: "",
                     )),
           );
+        } else if (type == "ticket_status") {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => CustomerSupport()));
         } else {
           Navigator.push(
               context, (MaterialPageRoute(builder: (context) => Splash())));
@@ -169,6 +173,9 @@ class PushNotificationService {
                       status: "",
                     )),
           );
+        } else if (type == "ticket_status") {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => CustomerSupport()));
         } else {
           Navigator.push(
             context,
@@ -223,6 +230,9 @@ class PushNotificationService {
                     status: "",
                   )),
         );
+      } else if (pay[0] == "ticket_status") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => CustomerSupport()));
       } else {
         Navigator.push(
           context,

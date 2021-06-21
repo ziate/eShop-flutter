@@ -2,6 +2,8 @@ import UIKit
 import Flutter
 import Firebase
 import GoogleMaps
+import flutter_downloader
+
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate { //, MessagingDelegate

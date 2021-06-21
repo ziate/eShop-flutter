@@ -16,7 +16,8 @@ class TransactionHistory extends StatefulWidget {
   _TransactionHistoryState createState() => _TransactionHistoryState();
 }
 
-class _TransactionHistoryState extends State<TransactionHistory> {
+class _TransactionHistoryState extends State<TransactionHistory>
+    with TickerProviderStateMixin {
   bool _isNetworkAvail = true;
   List<TransactionModel> tranList = [];
   int offset = 0;
@@ -26,14 +27,34 @@ class _TransactionHistoryState extends State<TransactionHistory> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
- ScrollController controller = new ScrollController();
+  ScrollController controller = new ScrollController();
   List<TransactionModel> tempList = [];
 
   @override
   void initState() {
     getTransaction();
-     controller.addListener(_scrollListener);
+    controller.addListener(_scrollListener);
+
+    buttonController = new AnimationController(
+        duration: new Duration(milliseconds: 2000), vsync: this);
+
+    buttonSqueezeanimation = new Tween(
+      begin: deviceWidth * 0.7,
+      end: 50.0,
+    ).animate(new CurvedAnimation(
+      parent: buttonController,
+      curve: new Interval(
+        0.0,
+        0.150,
+      ),
+    ));
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    buttonController.dispose();
+    super.dispose();
   }
 
   @override
@@ -158,7 +179,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
         ? getNoItem(context)
         : ListView.builder(
             shrinkWrap: true,
-                controller: controller,
+            controller: controller,
             itemCount: (offset < total) ? tranList.length + 1 : tranList.length,
             physics: AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) {
@@ -190,17 +211,19 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Text(
-                          getTranslated(context, 'AMOUNT') +
-                              " : " +
-                              CUR_CURRENCY +
-                              " " +
-                              tranList[index].amt,
-                          style: TextStyle(
-                              color: colors.fontColor,
-                              fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            getTranslated(context, 'AMOUNT') +
+                                " : " +
+                                CUR_CURRENCY +
+                                " " +
+                                tranList[index].amt,
+                            style: TextStyle(
+                                color: colors.fontColor,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        Spacer(),
+                      
                         Text(tranList[index].date),
                       ],
                     ),
@@ -255,7 +278,8 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                   ]))),
     );
   }
-    _scrollListener() {
+
+  _scrollListener() {
     if (controller.offset >= controller.position.maxScrollExtent &&
         !controller.position.outOfRange) {
       if (this.mounted) {

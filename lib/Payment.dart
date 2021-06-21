@@ -45,7 +45,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       flutterwave,
       stripe,
       paytm = true,
-      gpay = true;
+      gpay = false;
   List<RadioModel> timeModel = [];
   List<RadioModel> payModel = [];
   List<RadioModel> timeModelList = [];

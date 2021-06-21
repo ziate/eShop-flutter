@@ -13,6 +13,7 @@ import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -52,7 +53,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   bool isLoadingmore = true;
   bool _isReturnClick = true;
   String proId, image;
-
+ final InAppReview _inAppReview = InAppReview.instance;
   @override
   void initState() {
     super.initState();
@@ -149,7 +150,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       actions: <Widget>[
         Padding(
           padding:
-              const EdgeInsetsDirectional.only(top: 10.0, bottom: 10, end: 10),
+              const EdgeInsetsDirectional.only(top: 10.0, bottom: 10,),
           child: Container(
             decoration: shadow(),
             child: Card(
@@ -198,6 +199,33 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                         )
                       : Container()
                 ]),
+              ),
+            ),
+          ),
+        ),
+
+
+           Padding(
+          padding:
+              const EdgeInsetsDirectional.only(top: 10.0, bottom: 10, end: 10),
+          child: Container(
+            decoration: shadow(),
+            child: Card(
+              elevation: 0,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () async {
+               _inAppReview.openStoreListing(
+        appStoreId: appStoreId,
+        microsoftStoreId: 'microsoftStoreId',
+      );  
+                },
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Icon(Icons.star_half,size: 20,),
+                  ),
+                ),
               ),
             ),
           ),
@@ -646,7 +674,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                           width: 90.0,
                           fit: BoxFit.cover,
                           imageErrorBuilder: (context, error, stackTrace) =>
-                              erroWidget(),
+                              erroWidget(90),
                           placeholder: placeHolder(90),
                         )),
                     Expanded(

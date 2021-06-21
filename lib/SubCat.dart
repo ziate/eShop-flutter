@@ -418,7 +418,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                   width: double.maxFinite,
                   fit: BoxFit.fill,
                   imageErrorBuilder: (context, error, stackTrace) =>
-                      erroWidget(),
+                      erroWidget(double.maxFinite),
                   placeholder: AssetImage(
                     "assets/images/sliderph.png",
                   ),
@@ -451,7 +451,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                       width: double.maxFinite,
                       fit: BoxFit.fill,
                       imageErrorBuilder: (context, error, stackTrace) =>
-                          erroWidget(),
+                          erroWidget( double.maxFinite),
                       placeholder: AssetImage(
                         "assets/images/sliderph.png",
                       ),
@@ -539,7 +539,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                                 fit: BoxFit.cover,
                                 imageErrorBuilder:
                                     (context, error, stackTrace) =>
-                                        erroWidget(),
+                                        erroWidget(80),
                                 placeholder: placeHolder(80),
                               )),
                         ),
@@ -1016,7 +1016,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
                     width: double.maxFinite,
                     placeholder: placeHolder(100),
                     imageErrorBuilder: (context, error, stackTrace) =>
-                        erroWidget(),
+                        erroWidget(double.maxFinite),
                   ),
                 ),
               ),
@@ -1422,7 +1422,7 @@ class _SubCatState extends State<SubCat> with TickerProviderStateMixin {
         }
         if (CUR_USERID != null) parameter[USER_ID] = CUR_USERID;
 
-        print("cur****$parameter");
+
         Response response =
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
