@@ -1493,8 +1493,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
       Response response = await post(getSettingApi,
               body: CUR_USERID != null ? parameter : null, headers: headers)
           .timeout(Duration(seconds: timeOut));
-
-      if (response.statusCode == 200) {
+        if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
@@ -1502,6 +1501,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
         if (!error) {
           var data = getdata["data"]["system_settings"][0];
           cartBtnList = data["cart_btn_on_list"] == "1" ? true : false;
+          refer = data["is_refer_earn_on"] == "1" ? true : false;
           CUR_CURRENCY = data["currency"];
           RETURN_DAYS = data['max_product_return_days'];
           MAX_ITEMS = data["max_items_cart"];
@@ -1515,9 +1515,11 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
           else
             ISFLAT_DEL = false;
           if (CUR_USERID != null) {
+
             CUR_CART_COUNT =
                 getdata["data"]["user_data"][0]["cart_total_items"].toString();
             REFER_CODE = getdata['data']['user_data'][0]['referral_code'];
+            CUR_PINCODE = getdata["data"]["user_data"][0][PINCODE];
             if (REFER_CODE == null || REFER_CODE == '' || REFER_CODE.isEmpty)
               generateReferral();
             CUR_BALANCE = getdata["data"]["user_data"][0]["balance"];
@@ -1556,63 +1558,53 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
 
   updateDailog() async {
     await dialogAnimate(context,
-           StatefulBuilder(
-              builder: (BuildContext context, StateSetter setStater) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0))),
-              title: Text(getTranslated(context, 'UPDATE_APP')),
-              content: Text(
-                getTranslated(context, 'UPDATE_AVAIL'),
-                style: Theme.of(this.context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(color: colors.fontColor),
+        StatefulBuilder(builder: (BuildContext context, StateSetter setStater) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5.0))),
+        title: Text(getTranslated(context, 'UPDATE_APP')),
+        content: Text(
+          getTranslated(context, 'UPDATE_AVAIL'),
+          style: Theme.of(this.context)
+              .textTheme
+              .subtitle1
+              .copyWith(color: colors.fontColor),
+        ),
+        actions: <Widget>[
+          new TextButton(
+              child: Text(
+                getTranslated(context, 'NO'),
+                style: Theme.of(this.context).textTheme.subtitle2.copyWith(
+                    color: colors.lightBlack, fontWeight: FontWeight.bold),
               ),
-              actions: <Widget>[
-                new TextButton(
-                    child: Text(
-                      getTranslated(context, 'NO'),
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: colors.lightBlack,
-                              fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    }),
-                new TextButton(
-                    child: Text(
-                      getTranslated(context, 'YES'),
-                      style: Theme.of(this.context)
-                          .textTheme
-                          .subtitle2
-                          .copyWith(
-                              color: colors.fontColor,
-                              fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () async {
-                      Navigator.of(context).pop(false);
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              }),
+          new TextButton(
+              child: Text(
+                getTranslated(context, 'YES'),
+                style: Theme.of(this.context).textTheme.subtitle2.copyWith(
+                    color: colors.fontColor, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(false);
 
-                      String _url = '';
-                      if (Platform.isAndroid) {
-                        _url = androidLink + packageName;
-                      } else if (Platform.isIOS) {
-                        _url = iosLink;
-                      }
+                String _url = '';
+                if (Platform.isAndroid) {
+                  _url = androidLink + packageName;
+                } else if (Platform.isIOS) {
+                  _url = iosLink;
+                }
 
-                      if (await canLaunch(_url)) {
-                        await launch(_url);
-                      } else {
-                        throw 'Could not launch $_url';
-                      }
-                    })
-              ],
-            );
-          }));
-        
+                if (await canLaunch(_url)) {
+                  await launch(_url);
+                } else {
+                  throw 'Could not launch $_url';
+                }
+              })
+        ],
+      );
+    }));
   }
 
   Future<Null> generateReferral() async {
@@ -1695,7 +1687,7 @@ class StateHomePage extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildImagePageItem(Model slider) {
-    double height = deviceWidth / 2.2;
+    double height = deviceWidth / 0.5;
 
     return GestureDetector(
       child: ClipRRect(

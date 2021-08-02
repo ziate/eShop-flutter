@@ -22,6 +22,7 @@ import 'Helper/String.dart';
 import 'Helper/Stripe_Service.dart';
 import 'Home.dart';
 import 'Manage_Address.dart';
+import 'Model/Model.dart';
 import 'Model/Section_Model.dart';
 import 'Model/User.dart';
 import 'Order_Success.dart';
@@ -76,7 +77,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   bool _isProgress = false;
   final GlobalKey<ScaffoldMessengerState> _checkscaffoldKey =
       new GlobalKey<ScaffoldMessengerState>();
-
+  List<Model> deliverableList = [];
   bool _isCartLoad = true, _placeOrder = true;
   HomePage home;
   Animation buttonSqueezeanimation;
@@ -94,7 +95,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   TextEditingController promoC = new TextEditingController();
   StateSetter checkoutState;
   final paystackPlugin = PaystackPlugin();
-
+  bool deliverable = false;
   //List<PaymentItem> _gpaytItems = [];
   //Pay _gpayClient;
 
@@ -156,6 +157,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
   void dispose() {
     buttonController.dispose();
     for (int i = 0; i < _controller.length; i++) _controller[i].dispose();
+    _razorpay.clear();
     super.dispose();
   }
 
@@ -573,6 +575,23 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
           .varient_value
           .split(',');
     }
+
+    String id, varId;
+    bool avail = false;
+    if (deliverableList.length > 0) {
+      id = cartList[index].id;
+      varId = cartList[index].productList[0].prVarientList[selectedPos].id;
+
+      for (int i = 0; i < deliverableList.length; i++) {
+        if (id == deliverableList[i].prodId &&
+            varId == deliverableList[i].varId) {
+          avail = deliverableList[i].isDel;
+
+          break;
+        }
+      }
+    }
+
     return Card(
       elevation: 0.1,
       child: Padding(
@@ -918,6 +937,12 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                   style: Theme.of(context).textTheme.caption.copyWith(
                       fontWeight: FontWeight.bold, color: colors.lightBlack2),
                 ),
+                !avail && deliverableList.length > 0
+                    ? Text(
+                        getTranslated(context, 'NOT_DEL'),
+                        style: TextStyle(color: colors.red),
+                      )
+                    : Container(),
                 Text(
                   CUR_CURRENCY +
                       " " +
@@ -1245,6 +1270,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                 isUseWallet = false;
                 isPayLayShow = true;
                 _isProgress = false;
+                selectedMethod = null;
               });
           } else {
             if (mounted)
@@ -1347,6 +1373,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                   isUseWallet = false;
                   isPayLayShow = true;
                   _isProgress = false;
+                  selectedMethod = null;
                 });
               setState(() {});
             } else {
@@ -2074,43 +2101,10 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                                       checkoutState(() {
                                                         _placeOrder = true;
                                                       });
-                                                    } else if (payMethod ==
-                                                        getTranslated(context,
-                                                            'PAYPAL_LBL')) {
-                                                      placeOrder('');
-                                                    } else if (payMethod ==
-                                                        getTranslated(context,
-                                                            'RAZORPAY_LBL'))
-                                                      razorpayPayment();
-                                                    else if (payMethod ==
-                                                        getTranslated(context,
-                                                            'PAYSTACK_LBL'))
-                                                      paystackPayment(context);
-                                                    else if (payMethod ==
-                                                        getTranslated(context,
-                                                            'FLUTTERWAVE_LBL'))
-                                                      flutterwavePayment();
-                                                    else if (payMethod ==
-                                                        getTranslated(context,
-                                                            'STRIPE_LBL'))
-                                                      stripePayment();
-                                                    else if (payMethod ==
-                                                        getTranslated(context,
-                                                            'PAYTM_LBL'))
-                                                      paytmPayment();
-                                                  /*  else if (payMethod ==
-                                                        getTranslated(
-                                                            context, 'GPAY')) {
-                                                      googlePayment(
-                                                          "google_pay");
-                                                    } else if (payMethod ==
-                                                        getTranslated(context,
-                                                            'APPLEPAY')) {
-                                                      googlePayment(
-                                                          "apple_pay");
-                                                    }
-                                                    else*/
-                                                      placeOrder('');
+                                                    } else if (!deliverable) {
+                                                      checkDeliverable();
+                                                    } else
+                                                      doPayment();
                                                   }
                                                 : null)
                                         //}),
@@ -2122,6 +2116,37 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                 ));
           });
         });
+  }
+
+  doPayment() {
+    if (payMethod == getTranslated(context, 'PAYPAL_LBL')) {
+      placeOrder('');
+    } else if (payMethod == getTranslated(context, 'RAZORPAY_LBL'))
+      razorpayPayment();
+    else if (payMethod == getTranslated(context, 'PAYSTACK_LBL'))
+      paystackPayment(context);
+    else if (payMethod == getTranslated(context, 'FLUTTERWAVE_LBL'))
+      flutterwavePayment();
+    else if (payMethod == getTranslated(context, 'STRIPE_LBL'))
+      stripePayment();
+    else if (payMethod == getTranslated(context, 'PAYTM_LBL'))
+      paytmPayment();
+    /*  else if (payMethod ==
+                                                        getTranslated(
+                                                            context, 'GPAY')) {
+                                                      googlePayment(
+                                                          "google_pay");
+                                                    } else if (payMethod ==
+                                                        getTranslated(context,
+                                                            'APPLEPAY')) {
+                                                      googlePayment(
+                                                          "apple_pay");
+                                                    }*/
+
+    else if (payMethod == getTranslated(context, 'BANKTRAN'))
+      bankTransfer();
+    else
+      placeOrder('');
   }
 
   Future<void> _getAddress() async {
@@ -2380,7 +2405,10 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         payVia = "Stripe";
       else if (payMethod == getTranslated(context, 'PAYTM_LBL'))
         payVia = "Paytm";
-      else if (payMethod == "Wallet") payVia = "Wallet";
+      else if (payMethod == "Wallet")
+        payVia = "Wallet";
+      else if (payMethod == getTranslated(context, 'BANKTRAN'))
+        payVia = "bank_transfer";
       try {
         var parameter = {
           USER_ID: CUR_USERID,
@@ -2414,13 +2442,13 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             parameter[ACTIVE_STATUS] = PLACED;
           else
             parameter[ACTIVE_STATUS] = WAITING;
+        } else if (payMethod == getTranslated(context, 'BANKTRAN')) {
+          parameter[ACTIVE_STATUS] = WAITING;
         }
 
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
-       
 
         _placeOrder = true;
         if (response.statusCode == 200) {
@@ -2537,7 +2565,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         if (redirect) {
           CUR_CART_COUNT = "0";
           clearAll();
-            widget.updateHome();
+          widget.updateHome();
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
@@ -2699,7 +2727,9 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
                                                   home: false,
                                                 )));
 
-                                    checkoutState(() {});
+                                    checkoutState(() {
+                                      deliverable = false;
+                                    });
                                   },
                                 ),
                               ],
@@ -3091,6 +3121,193 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
     } else {
       if (mounted)
         checkoutState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  void bankTransfer() {
+    showGeneralDialog(
+        barrierColor: Colors.black.withOpacity(0.5),
+        transitionBuilder: (context, a1, a2, widget) {
+          return Transform.scale(
+            scale: a1.value,
+            child: Opacity(
+                opacity: a1.value,
+                child: AlertDialog(
+                  contentPadding: const EdgeInsets.all(0),
+                  elevation: 2.0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                  content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(20.0, 20.0, 0, 2.0),
+                            child: Text(
+                              getTranslated(context, 'BANKTRAN'),
+                              style: Theme.of(this.context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(color: colors.fontColor),
+                            )),
+                        Divider(color: colors.lightBlack),
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
+                            child: Text(getTranslated(context, 'BANK_INS'),
+                                style: Theme.of(context).textTheme.caption)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 10),
+                          child: Text(getTranslated(context, 'ACC_DETAIL')),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                          ),
+                          child: Text(
+                            getTranslated(context, 'ACCNAME') + " : " + acName,
+                            style: Theme.of(context).textTheme.subtitle2,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                          ),
+                          child: Text(
+                            getTranslated(context, 'ACCNO') + " : " + acNo,
+                            style: Theme.of(context).textTheme.subtitle2,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                          ),
+                          child: Text(
+                            getTranslated(context, 'BANKNAME') +
+                                " : " +
+                                bankName,
+                            style: Theme.of(context).textTheme.subtitle2,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                          ),
+                          child: Text(
+                            getTranslated(context, 'BANKCODE') + " : " + bankNo,
+                            style: Theme.of(context).textTheme.subtitle2,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20.0,
+                          ),
+                          child: Text(
+                            getTranslated(context, 'EXTRADETAIL') +
+                                " : " +
+                                exDetails,
+                            style: Theme.of(context).textTheme.subtitle2,
+                          ),
+                        )
+                      ]),
+                  actions: <Widget>[
+                    new TextButton(
+                        child: Text(getTranslated(context, 'CANCEL'),
+                            style: TextStyle(
+                                color: colors.lightBlack,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold)),
+                        onPressed: () {
+                          checkoutState(() {
+                            _placeOrder = true;
+                          });
+                          Navigator.pop(context);
+                        }),
+                    new TextButton(
+                        child: Text(getTranslated(context, 'DONE'),
+                            style: TextStyle(
+                                color: colors.fontColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold)),
+                        onPressed: () {
+                          setState(() {
+                            _isProgress = true;
+                          });
+                          checkoutState(() {});
+                          Navigator.pop(context);
+                          placeOrder('');
+                        })
+                  ],
+                )),
+          );
+        },
+        transitionDuration: Duration(milliseconds: 200),
+        barrierDismissible: false,
+        barrierLabel: '',
+        context: context,
+        pageBuilder: (context, animation1, animation2) {});
+  }
+
+  Future<void> checkDeliverable() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          USER_ID: CUR_USERID,
+          ADD_ID: selAddress,
+        };
+
+        Response response =
+            await post(checkCartDelApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+print("response del****${response.body.toString()}");
+
+        var getdata = json.decode(response.body);
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+        var data = getdata["data"];
+        if (error) {
+          deliverableList = (data as List)
+              .map((data) => new Model.checkDeliverable(data))
+              .toList();
+
+          checkoutState(() {
+            deliverable = false;
+            _placeOrder = true;
+          });
+
+          setSnackbar(msg, _checkscaffoldKey);
+        } else {
+          deliverableList = (data as List)
+              .map((data) => new Model.checkDeliverable(data))
+              .toList();
+
+          checkoutState(() {
+            deliverable = true;
+          });
+          doPayment();
+        }
+
+        // if (error) {
+        //   curPin = '';
+        // } else {
+        //   setPrefrence(PINCODE, curPin);
+        //   setState(() {
+        //     pin = curPin;
+        //   });
+        // }
+        // Navigator.pop(context);
+
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'), _checkscaffoldKey);
+      }
+    } else {
+      if (mounted)
+        setState(() {
           _isNetworkAvail = false;
         });
     }

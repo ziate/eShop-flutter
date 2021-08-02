@@ -608,6 +608,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
             await post(getProductApi, headers: headers, body: parameter)
                 .timeout(Duration(seconds: timeOut));
 
+
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
@@ -917,7 +918,7 @@ class StateProduct extends State<ProductList> with TickerProviderStateMixin {
                             image: NetworkImage(model.image),
                             height: double.maxFinite,
                             width: double.maxFinite,
-                            fit: extendImg ? BoxFit.fill : BoxFit.contain,
+                            fit: extendImg ? BoxFit.fill : BoxFit.cover,
                             placeholder: placeHolder(width),
                             imageErrorBuilder: (context, error, stackTrace) =>
                                 erroWidget(width),

@@ -144,25 +144,18 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
         elevation: 0.1,
         child: InkWell(
           borderRadius: BorderRadius.circular(4),
-          child: Stack(
-            children: [
-              favList[index].productList[0].availability == "0"
-                  ? Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
-                      style: Theme.of(context)
-                          .textTheme
-                          .subtitle1
-                          .copyWith(color: Colors.red))
-                  : Container(),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Hero(
-                        tag: "$index${favList[index].productList[0].id}",
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4.0),
-                            child: FadeInImage(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Hero(
+                    tag: "$index${favList[index].productList[0].id}",
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4.0),
+                        child: Stack(
+                          children: [
+                            FadeInImage(
                               image: NetworkImage(
                                   favList[index].productList[0].image),
                               height: 80.0,
@@ -173,141 +166,162 @@ class StateFav extends State<Favorite> with TickerProviderStateMixin {
 
                               // errorWidget: (context, url, e) => placeHolder(80),
                               placeholder: placeHolder(80),
-                            ))),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsetsDirectional.only(start: 8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsetsDirectional.only(
-                                        top: 5.0),
-                                    child: Text(
-                                      favList[index].productList[0].name,
-                                      style: TextStyle(
-                                          color: colors.lightBlack,
-                                          fontWeight: FontWeight.bold),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ),
-                            Row(
-                              children: <Widget>[
-                                Text(
-                                  CUR_CURRENCY + " " + price.toString() + " ",
+
+
+   Positioned.fill(child:
+       Align(
+                  alignment: AlignmentDirectional.center,
+                  child:  favList[index].productList[0].availability == "0"
+                      ? Container(
+                        color: colors.white70,
+                       // width: double.maxFinite,
+                        padding: EdgeInsets.all(2),
+                        child: Text(getTranslated(context, 'OUT_OF_STOCK_LBL'),
+                            style: Theme.of(context)
+                                .textTheme
+                                .caption
+                                .copyWith(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                      )
+                      : Container(),
+                  )),
+
+                          ],
+                        ))),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.only(
+                                    top: 5.0),
+                                child: Text(
+                                  favList[index].productList[0].name,
                                   style: TextStyle(
-                                      color: colors.fontColor,
-                                      fontWeight: FontWeight.w600),
+                                      color: colors.lightBlack,
+                                      fontWeight: FontWeight.bold),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                Text(
-                                  double.parse(favList[index]
-                                              .productList[0]
-                                              .prVarientList[selectedPos]
-                                              .disPrice) !=
-                                          0
-                                      ? CUR_CURRENCY +
-                                          "" +
-                                          favList[index]
-                                              .productList[0]
-                                              .prVarientList[selectedPos]
-                                              .price
-                                      : "",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .overline
-                                      .copyWith(
-                                          decoration:
-                                              TextDecoration.lineThrough,
-                                          letterSpacing: 0.7),
-                                ),
-                              ],
+                              ),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  height: 20,
-                                  child: PopupMenuButton(
-                                    padding: EdgeInsets.zero,
-                                    onSelected: (result) async {
-                                      if (result == 0) {
-                                        _removeFav(index);
-                                      }
-                                      if (result == 1) {
-                                        addToCart(index);
-                                      }
-                                      if (result == 2) {
-                                        if (mounted)
-                                          setState(() {
-                                            _isProgress = true;
-                                          });
-                                        createDynamicLink(index, 0, true,
-                                            favList[index].productList[0].id);
-                                      }
-                                    },
-                                    itemBuilder: (BuildContext context) =>
-                                        <PopupMenuEntry>[
-                                      PopupMenuItem(
-                                        value: 0,
-                                        child: ListTile(
-                                          dense: true,
-                                          contentPadding:
-                                              EdgeInsetsDirectional.only(
-                                                  start: 0.0, end: 0.0),
-                                          leading: Icon(
-                                            Icons.close,
-                                            color: colors.fontColor,
-                                            size: 20,
-                                          ),
-                                          title: Text('Remove'),
-                                        ),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 1,
-                                        child: ListTile(
-                                          dense: true,
-                                          contentPadding:
-                                              EdgeInsetsDirectional.only(
-                                                  start: 0.0, end: 0.0),
-                                          leading: Icon(Icons.shopping_cart,
-                                              color: colors.fontColor,
-                                              size: 20),
-                                          title: Text('Add to Cart'),
-                                        ),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 2,
-                                        child: ListTile(
-                                          dense: true,
-                                          contentPadding:
-                                              EdgeInsetsDirectional.only(
-                                                  start: 0.0, end: 0.0),
-                                          leading: Icon(Icons.share_outlined,
-                                              color: colors.fontColor,
-                                              size: 20),
-                                          title: Text('Share'),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            )
                           ],
                         ),
-                      ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              CUR_CURRENCY + " " + price.toString() + " ",
+                              style: TextStyle(
+                                  color: colors.fontColor,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            Text(
+                              double.parse(favList[index]
+                                          .productList[0]
+                                          .prVarientList[selectedPos]
+                                          .disPrice) !=
+                                      0
+                                  ? CUR_CURRENCY +
+                                      "" +
+                                      favList[index]
+                                          .productList[0]
+                                          .prVarientList[selectedPos]
+                                          .price
+                                  : "",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .overline
+                                  .copyWith(
+                                      decoration:
+                                          TextDecoration.lineThrough,
+                                      letterSpacing: 0.7),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Container(
+                              height: 20,
+                              child: PopupMenuButton(
+                                padding: EdgeInsets.zero,
+                                onSelected: (result) async {
+                                  if (result == 0) {
+                                    _removeFav(index);
+                                  }
+                                  if (result == 1) {
+                                    addToCart(index);
+                                  }
+                                  if (result == 2) {
+                                    if (mounted)
+                                      setState(() {
+                                        _isProgress = true;
+                                      });
+                                    createDynamicLink(index, 0, true,
+                                        favList[index].productList[0].id);
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry>[
+                                  PopupMenuItem(
+                                    value: 0,
+                                    child: ListTile(
+                                      dense: true,
+                                      contentPadding:
+                                          EdgeInsetsDirectional.only(
+                                              start: 0.0, end: 0.0),
+                                      leading: Icon(
+                                        Icons.close,
+                                        color: colors.fontColor,
+                                        size: 20,
+                                      ),
+                                      title: Text('Remove'),
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 1,
+                                    child: ListTile(
+                                      dense: true,
+                                      contentPadding:
+                                          EdgeInsetsDirectional.only(
+                                              start: 0.0, end: 0.0),
+                                      leading: Icon(Icons.shopping_cart,
+                                          color: colors.fontColor,
+                                          size: 20),
+                                      title: Text('Add to Cart'),
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 2,
+                                    child: ListTile(
+                                      dense: true,
+                                      contentPadding:
+                                          EdgeInsetsDirectional.only(
+                                              start: 0.0, end: 0.0),
+                                      leading: Icon(Icons.share_outlined,
+                                          color: colors.fontColor,
+                                          size: 20),
+                                      title: Text('Share'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           splashColor: colors.primary.withOpacity(0.2),
           onTap: () {

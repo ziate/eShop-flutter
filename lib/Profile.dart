@@ -258,20 +258,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
     if (area != null && area != "") {
       data[AREA] = area;
     }
-    if (address != null && address != "") {
-      data[ADDRESS] = address;
-    }
-    if (pincode != null && pincode != "") {
-      data[PINCODE] = pincode;
-    }
-
-    if (lat != null && lat != "") {
-      data[LATITUDE] = lat;
-    }
-    if (long != null && long != "") {
-      data[LONGITUDE] = long;
-    }
-
+  
+   
     http.Response response = await http
         .post(getUpdateUserApi, body: data, headers: headers)
         .timeout(Duration(seconds: timeOut));
@@ -293,9 +281,8 @@ class StateProfile extends State<Profile> with TickerProviderStateMixin {
         city = i[CITY];
         area = i[AREA];
         address = i[ADDRESS];
-        pincode = i[PINCODE];
-        lat = i[LATITUDE];
-        long = i[LONGITUDE];
+     
+     
 
         saveUserDetail(CUR_USERID, name, email, mobile, city, area, address,
             pincode, lat, long, image);

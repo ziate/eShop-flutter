@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:http/http.dart' as http;
 import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:eshop/Cart.dart';
 import 'package:eshop/Helper/Session.dart';
 import 'package:eshop/Model/Order_Model.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -53,10 +54,13 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   bool isLoadingmore = true;
   bool _isReturnClick = true;
   String proId, image;
- final InAppReview _inAppReview = InAppReview.instance;
+  final InAppReview _inAppReview = InAppReview.instance;
+  List<File> files = [];
+
   @override
   void initState() {
     super.initState();
+    files.clear();
     buttonController = new AnimationController(
         duration: new Duration(milliseconds: 2000), vsync: this);
     buttonSqueezeanimation = new Tween(
@@ -149,8 +153,10 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       }),
       actions: <Widget>[
         Padding(
-          padding:
-              const EdgeInsetsDirectional.only(top: 10.0, bottom: 10,),
+          padding: const EdgeInsetsDirectional.only(
+            top: 10.0,
+            bottom: 10,
+          ),
           child: Container(
             decoration: shadow(),
             child: Card(
@@ -203,9 +209,7 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             ),
           ),
         ),
-
-
-           Padding(
+        Padding(
           padding:
               const EdgeInsetsDirectional.only(top: 10.0, bottom: 10, end: 10),
           child: Container(
@@ -215,15 +219,18 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
               child: InkWell(
                 borderRadius: BorderRadius.circular(4),
                 onTap: () async {
-               _inAppReview.openStoreListing(
-        appStoreId: appStoreId,
-        microsoftStoreId: 'microsoftStoreId',
-      );  
+                  _inAppReview.openStoreListing(
+                    appStoreId: appStoreId,
+                    microsoftStoreId: 'microsoftStoreId',
+                  );
                 },
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(5.0),
-                    child: Icon(Icons.star_half,size: 20,),
+                    child: Icon(
+                      Icons.star_half,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
@@ -632,8 +639,11 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
   }
 
   productItem(OrderItem orderItem, OrderModel model) {
-    String pDate, prDate, sDate, dDate, cDate, rDate;
+    String pDate, prDate, sDate, dDate, cDate, rDate, aDate;
 
+    if (orderItem.listStatus.contains(WAITING)) {
+      aDate = orderItem.listDate[orderItem.listStatus.indexOf(WAITING)];
+    }
     if (orderItem.listStatus.contains(PLACED)) {
       pDate = orderItem.listDate[orderItem.listStatus.indexOf(PLACED)];
     }
@@ -657,6 +667,9 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
       att = orderItem.attr_name.split(',');
       val = orderItem.varient_values.split(',');
     }
+
+    print("system****${model.payMethod}");
+
     return Card(
         elevation: 0,
         child: Padding(
@@ -762,27 +775,102 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     )
                   ],
                 ),
-                pDate != null
-                    ? Divider(
-                        color: colors.lightBlack,
-                      )
-                    : Container(),
-                pDate != null
-                    ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            getPlaced(pDate),
-                            getProcessed(prDate, cDate),
-                            getShipped(sDate, cDate),
-                            getDelivered(dDate, cDate),
-                            getCanceled(cDate),
-                            getReturned(orderItem, rDate, model),
-                          ],
+                Divider(
+                  color: colors.lightBlack,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      pDate != null ? getPlaced(pDate) : getPlaced(aDate),
+                      getProcessed(prDate, cDate),
+                      getShipped(sDate, cDate),
+                      getDelivered(dDate, cDate),
+                      getCanceled(cDate),
+                      getReturned(orderItem, rDate, model),
+                    ],
+                  ),
+                ),
+                model.payMethod == "Bank Transfer"
+                    ? ListTile(
+                        dense: true,
+                        title: Text(
+                          getTranslated(context, 'BANKRECEIPT'),
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(color: colors.lightBlack),
                         ),
+                        trailing: IconButton(
+                            icon: Icon(
+                              Icons.add_photo_alternate,
+                              color: colors.primary,
+                              size: 25.0,
+                            ),
+                            onPressed: () {
+                              _imgFromGallery();
+                            }),
                       )
                     : Container(),
+                Container(
+                  padding: EdgeInsetsDirectional.only(
+                      start: 20.0, end: 20.0, top: 5),
+                  height: files != null && files.length > 0 ? 180 : 0,
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: files.length,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, i) {
+                          return InkWell(
+                            child: Stack(
+                              alignment: AlignmentDirectional.topEnd,
+                              children: [
+                                Image.file(
+                                  files[i],
+                                  width: 180,
+                                  height: 180,
+                                ),
+                                Container(
+                                    color: Colors.black26,
+                                    child: Icon(
+                                      Icons.clear,
+                                      size: 15,
+                                    ))
+                              ],
+                            ),
+                            onTap: () {
+                              if (mounted)
+                                setState(() {
+                                  files.removeAt(i);
+                                });
+                            },
+                          );
+                        },
+                      )),
+                      InkWell(
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                              color: colors.lightWhite,
+                              borderRadius: new BorderRadius.all(
+                                  const Radius.circular(4.0))),
+                          child: Text(
+                            getTranslated(context, 'SUBMIT_LBL'),
+                            style: TextStyle(color: colors.fontColor),
+                          ),
+                        ),
+                        onTap: () {
+                          sendBankProof();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
                 model.itemList.length > 1
                     ? (!orderItem.listStatus.contains(DELIVERD) &&
                             (!orderItem.listStatus.contains(RETURNED)) &&
@@ -904,6 +992,17 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                     : Container()
               ],
             )));
+  }
+
+  _imgFromGallery() async {
+    FilePickerResult result =
+        await FilePicker.platform.pickFiles(allowMultiple: true);
+    if (result != null) {
+      files = result.paths.map((path) => File(path)).toList();
+      if (mounted) setState(() {});
+    } else {
+      // User canceled the picker
+    }
   }
 
   getPlaced(String pDate) {
@@ -1325,7 +1424,13 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
                         widget.model.invoice, targetPath, targetFileName);
                 filePath = generatedPdfFile.path;
               } catch (Exception) {
-                filePath = targetPath + "/" + targetFileName + ".html";
+                print(
+                    "invoice ex***$Exception***${widget.model.invoice}***$targetPath****$targetFileName");
+                //  filePath = targetPath + "/" + targetFileName + ".html";
+                generatedPdfFile =
+                    await FlutterHtmlToPdf.convertFromHtmlContent(
+                        widget.model.invoice, targetPath, targetFileName);
+                filePath = generatedPdfFile.path;
               }
 
               if (mounted)
@@ -1349,5 +1454,47 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
             }
           }),
     );
+  }
+
+  Future<void> sendBankProof() async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        if (mounted)
+          setState(() {
+            _isProgress = true;
+          });
+        var request = http.MultipartRequest("POST", setBankProofApi);
+        request.headers.addAll(headers);
+        request.fields[ORDER_ID] = widget.model.id;
+
+        if (files != null) {
+          for (int i = 0; i < files.length; i++) {
+            var pic = await http.MultipartFile.fromPath(ATTACH, files[i].path);
+            request.files.add(pic);
+          }
+        }
+
+        var response = await request.send();
+        var responseData = await response.stream.toBytes();
+        var responseString = String.fromCharCodes(responseData);
+        var getdata = json.decode(responseString);
+        bool error = getdata["error"];
+        String msg = getdata['message'];
+
+        setSnackbar(msg);
+
+        files.clear();
+        if (mounted)
+          setState(() {
+            _isProgress = false;
+          });
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+      }
+    } else if (mounted)
+      setState(() {
+        _isNetworkAvail = false;
+      });
   }
 }

@@ -10,8 +10,13 @@ final String appStoreId = '123456789';
 final String deepLinkUrlPrefix = 'https://eshopwrteamin.page.link';
 final String deepLinkName = 'eshop';
 
-final String baseUrl = 'https://eshopweb.store/app/v1/api/';
+
 
 final int timeOut = 50;
 const int perPage = 10;
+
+
+final String baseUrl = 'https://eshopweb.store/app/v1/api/';
+
+
 final String jwtKey = "68f05dec6014f68e760c5c5fa3e31bcf391a2e10";

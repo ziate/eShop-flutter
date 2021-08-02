@@ -56,6 +56,7 @@ class PushNotificationService {
         onSelectNotification: onSelectNotification);
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+
       var data = message.notification;
       var title = data.title.toString();
       var body = data.body.toString();
@@ -285,6 +286,7 @@ class PushNotificationService {
 }
 
 Future<dynamic> myForgroundMessageHandler(RemoteMessage message) async {
+
   await setPrefrenceBool(ISFROMBACK, true);
   bool back = await getPrefrenceBool(ISFROMBACK);
   return Future<void>.value();

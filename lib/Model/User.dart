@@ -85,11 +85,11 @@ class User {
       email: parsedJson[EMAIL],
       mobile: parsedJson[MOBILE],
       address: parsedJson[ADDRESS],
-      dob: parsedJson[DOB],
+     
       city: parsedJson[CITY],
       area: parsedJson[AREA],
-      street: parsedJson[STREET],
-      password: parsedJson[PASSWORD],
+    
+    
       pincode: parsedJson[PINCODE],
       fcmId: parsedJson[FCM_ID],
       latitude: parsedJson[LATITUDE],

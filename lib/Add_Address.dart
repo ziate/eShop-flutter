@@ -30,7 +30,7 @@ class AddAddress extends StatefulWidget {
   }
 }
 
-String latitude, longitude, state, country, pincode;
+String latitude, longitude, state, country;
 
 class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
   String name,
@@ -68,7 +68,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       addFocus,
       landFocus,
       locationFocus = FocusNode();
-
+  User selArea;
   @override
   void initState() {
     super.initState();
@@ -99,6 +99,8 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
     if (widget.update) {
       User item = addressList[widget.index];
+
+
       mobileC.text = item.mobile;
       nameC.text = item.name;
       altMobC.text = item.altMob;
@@ -114,6 +116,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       type = item.type;
       city = item.cityId;
       area = item.areaId;
+
       if (type.toLowerCase() == HOME.toLowerCase())
         selectedType = 1;
       else if (type.toLowerCase() == OFFICE.toLowerCase())
@@ -358,18 +361,20 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         hint: new Text(
           getTranslated(context, 'AREASELECT_LBL'),
         ),
-        value: area,
+        value: selArea,
         onChanged: isArea
             ? (newValue) {
                 if (mounted)
                   setState(() {
-                    area = newValue;
+                    selArea = newValue;
+                    area = newValue.id;
+                    pincodeC.text = newValue.pincode;
                   });
               }
             : null,
         items: areaList.map((User user) {
-          return DropdownMenuItem<String>(
-            value: user.id,
+          return DropdownMenuItem<User>(
+            value: user,
             child: Text(
               user.name,
             ),
@@ -442,13 +447,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
               state = placemark[0].administrativeArea;
               country = placemark[0].country;
-              pincode = placemark[0].postalCode;
+              // pincode = placemark[0].postalCode;
               //  address = placemark[0].name;
               if (mounted)
                 setState(() {
                   countryC.text = country;
                   stateC.text = state;
-                  pincodeC.text = pincode;
+                  //  pincodeC.text = pincode;
                   // addressC.text = address;
                 });
             },
@@ -460,6 +465,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
   setPincode() {
     return TextFormField(
+      readOnly: true,
       keyboardType: TextInputType.number,
       controller: pincodeC,
       style: Theme.of(context)
@@ -468,10 +474,9 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
           .copyWith(color: colors.fontColor),
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       onSaved: (String value) {
-        pincode = value;
+        // pincode = value;
       },
-      validator: (val) =>
-          validatePincode(val, getTranslated(context, 'PIN_REQUIRED')),
+      // validator: (val) => validatePincode(val, getTranslated(context, 'PIN_REQUIRED')),
       decoration: InputDecoration(
         hintText: getTranslated(context, 'PINCODEHINT_LBL'),
         isDense: true,
@@ -533,12 +538,25 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
       bool error = getdata["error"];
       String msg = getdata["message"];
 
+
       if (!error) {
         var data = getdata["data"];
         areaList.clear();
-        if (clear) area = null;
+        if (clear) {
+          area = null;
+          selArea = null;
+        }
         areaList =
             (data as List).map((data) => new User.fromJson(data)).toList();
+
+     
+        for (User item in addressList) {
+          // dynamic temp = y.where((data) => data['id'] == action);
+
+          areaList.where((i) => i.id == item.areaId).map((obj) {
+            selArea = obj;
+          }).toList();
+        }
       } else {
         setSnackbar(msg);
       }
@@ -643,7 +661,7 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
         USER_ID: CUR_USERID,
         NAME: name,
         MOBILE: mobile,
-        PINCODE: pincode,
+        PINCODE: pincodeC.text,
         CITY_ID: city,
         AREA_ID: area,
         ADDRESS: address,
@@ -661,13 +679,16 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
               body: data,
               headers: headers)
           .timeout(Duration(seconds: timeOut));
-      if (response.statusCode == 200) {
+
+
+     if (response.statusCode == 200) {
         var getdata = json.decode(response.body);
 
         bool error = getdata["error"];
         String msg = getdata["message"];
 
         await buttonController.reverse();
+
         if (!error) {
           var data = getdata["data"];
 
@@ -984,13 +1005,13 @@ class StateAddress extends State<AddAddress> with TickerProviderStateMixin {
 
     state = placemark[0].administrativeArea;
     country = placemark[0].country;
-    pincode = placemark[0].postalCode;
+    // pincode = placemark[0].postalCode;
     // address = placemark[0].name;
     if (mounted)
       setState(() {
         countryC.text = country;
         stateC.text = state;
-        pincodeC.text = pincode;
+        //pincodeC.text = pincode;
         // addressC.text = address;
       });
   }

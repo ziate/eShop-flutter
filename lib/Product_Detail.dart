@@ -18,6 +18,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
+import 'Helper/SimBtn.dart';
 import 'Review_Preview.dart';
 import 'Favorite.dart';
 import 'Helper/AppBtn.dart';
@@ -72,7 +73,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   Animation buttonSqueezeanimation;
   AnimationController buttonController;
   bool _isNetworkAvail = true;
-
+  final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   int notificationoffset = 0;
   ScrollController notificationcontroller;
   bool notificationisloadmore = true,
@@ -83,6 +84,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   var isDarkTheme;
   ShortDynamicLink shortenedLink;
   String shareLink;
+  String curPin;
 
   @override
   void initState() {
@@ -127,6 +129,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     total = 0;
     getReview();
     //getReviewImg();
+    getDeliverable();
     notificationoffset = 0;
     getProduct();
 
@@ -564,6 +567,82 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     }
   }
 
+  void _pincodeCheck() {
+    showModalBottomSheet<dynamic>(
+        context: context,
+        isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10), topRight: Radius.circular(10))),
+        builder: (builder) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.9),
+              child: ListView(shrinkWrap: true, children: [
+                Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 40),
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom),
+                      child: Form(
+                          key: _formkey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextFormField(
+                                keyboardType: TextInputType.text,
+                                textCapitalization: TextCapitalization.words,
+                                validator: (val) => validatePincode(val,
+                                    getTranslated(context, 'PIN_REQUIRED')),
+                                onSaved: (String value) {
+                                  curPin = value;
+                                },
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .subtitle2
+                                    .copyWith(color: colors.fontColor),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  prefixIcon: Icon(Icons.location_on),
+                                  hintText:
+                                      getTranslated(context, 'PINCODEHINT_LBL'),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: SimBtn(
+                                    size: 1.0,
+                                    title: getTranslated(context, 'APPLY'),
+                                    onBtnSelected: () async {
+                                      if (validateAndSave()) {
+                                        validatePin(curPin, false);
+                                      }
+                                    }),
+                              ),
+                            ],
+                          )),
+                    ))
+              ]),
+            );
+            //});
+          });
+        });
+  }
+
+  bool validateAndSave() {
+    final form = _formkey.currentState;
+
+    form.save();
+    if (form.validate()) {
+      return true;
+    }
+    return false;
+  }
+
   void _extraDetail() {
     showModalBottomSheet<dynamic>(
         context: context,
@@ -603,31 +682,33 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
   }
 
   void _chooseVarient() {
-    bool available;
-
+    bool available, outOfStock;
+    int selectIndex = 0;
     //selList--selected list
     //sinList---single attribute list for compare
     _selectedIndex.clear();
     if (widget.model.stockType == "0" || widget.model.stockType == "1") {
       if (widget.model.availability == "1") {
         available = true;
-
+        outOfStock = false;
         _oldSelVarient = widget.model.selVarient;
       } else {
         available = false;
+        outOfStock = true;
       }
     } else if (widget.model.stockType == "null") {
       available = true;
-
+      outOfStock = false;
       _oldSelVarient = widget.model.selVarient;
     } else if (widget.model.stockType == "2") {
       if (widget.model.prVarientList[widget.model.selVarient].availability ==
           "1") {
         available = true;
-
+        outOfStock = false;
         _oldSelVarient = widget.model.selVarient;
       } else {
         available = false;
+        outOfStock = true;
       }
     }
 
@@ -671,8 +752,10 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                   ),
                   Divider(),
                   _title(),
-                  _price(_oldSelVarient),
-                  _offPrice(_oldSelVarient),
+                  available || outOfStock ? _price(selectIndex) : Container(),
+                  available || outOfStock
+                      ? _offPrice(_oldSelVarient)
+                      : Container(),
                   ListView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
@@ -736,7 +819,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                               side: BorderSide(
                                   color: _selectedIndex[index] == (i)
                                       ? colors.fontColor
-                                      : colors.black12,width: 1.5),
+                                      : colors.black12,
+                                  width: 1.5),
                             ),
                             onSelected: att.length == 1
                                 ? null
@@ -786,12 +870,13 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                                   check.length ==
                                                       selectedId.length) {
                                                 varSelected = i;
+                                                selectIndex = i;
                                                 break findMatch;
                                               }
                                             } else {
-                                              print(
-                                                  'match****not match==braek**$j');
+                                              print('match****not match');
                                               check.clear();
+                                              selectIndex = null;
                                               break;
                                             }
                                           }
@@ -804,15 +889,16 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                             if (widget.model.availability ==
                                                 "1") {
                                               available = true;
-
+                                              outOfStock = false;
                                               _oldSelVarient = varSelected;
                                             } else {
                                               available = false;
+                                              outOfStock = true;
                                             }
                                           } else if (widget.model.stockType ==
                                               "null") {
                                             available = true;
-
+                                            outOfStock = false;
                                             _oldSelVarient = varSelected;
                                           } else if (widget.model.stockType ==
                                               "2") {
@@ -822,14 +908,16 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                                     .availability ==
                                                 "1") {
                                               available = true;
-
+                                              outOfStock = false;
                                               _oldSelVarient = varSelected;
                                             } else {
                                               available = false;
+                                              outOfStock = true;
                                             }
                                           }
                                         } else {
                                           available = false;
+                                          outOfStock = false;
                                         }
                                         if (widget
                                                 .model
@@ -857,9 +945,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                   },
                           );
 
-                          chips.add(Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 5),
-                              child: choiceChip));
+                          chips.add(choiceChip);
                         }
                       }
 
@@ -895,12 +981,14 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                           : Container();
                     },
                   ),
-                  available == false
+                  available == false || outOfStock == true
                       ? Center(
                           child: Padding(
                           padding: const EdgeInsets.all(5.0),
                           child: Text(
-                            "This varient doesn't available.",
+                            outOfStock == true
+                                ? 'Out of Stock'
+                                : "This varient doesn't available.",
                             style: TextStyle(color: Colors.red),
                           ),
                         ))
@@ -932,6 +1020,7 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                                   color: colors.white,
                                 ))),
                     onPressed: available ? applyVarient : null,
+                    // onPressed: available ? applyVarient : null,
                   )
                 ],
               ),
@@ -1074,7 +1163,6 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
         });
     }
   }
-
 
   _setFav() async {
     _isNetworkAvail = await isNetworkAvailable();
@@ -1343,7 +1431,8 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
                       _specification(),
                       Divider(),
 //if you want to remove discount and coupon then just double slash below line
-                      _discountCoupon(),
+                      // _discountCoupon(),
+                      _deliverPincode(),
                       if (widget.model.tagList != null &&
                           widget.model.tagList.isNotEmpty)
                         Divider(),
@@ -1841,6 +1930,22 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
     );
   }
 
+  _deliverPincode() {
+    return GestureDetector(
+      child: ListTile(
+        dense: true,
+        title: Text(
+          CUR_PINCODE == null || CUR_PINCODE == ''
+              ? getTranslated(context, 'SELOC')
+              : getTranslated(context, 'DELIVERTO') + CUR_PINCODE,
+          style: TextStyle(color: colors.lightBlack),
+        ),
+        trailing: Icon(Icons.keyboard_arrow_right),
+      ),
+      onTap: _pincodeCheck,
+    );
+  }
+
   _reviewTitle() {
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
@@ -2210,5 +2315,53 @@ class StateItem extends State<ProductDetail> with TickerProviderStateMixin {
             )),
       ),
     );
+  }
+
+  Future<void> validatePin(String pin, bool first) async {
+    _isNetworkAvail = await isNetworkAvailable();
+    if (_isNetworkAvail) {
+      try {
+        var parameter = {
+          ZIPCODE: pin,
+          PRODUCT_ID: widget.model.id,
+        };
+
+        Response response =
+            await post(checkDeliverableApi, body: parameter, headers: headers)
+                .timeout(Duration(seconds: timeOut));
+
+
+        var getdata = json.decode(response.body);
+
+        bool error = getdata["error"];
+        String msg = getdata["message"];
+
+        if (error) {
+          curPin = '';
+        } else {
+          //setPrefrence(PINCODE, curPin);
+          setState(() {
+            CUR_PINCODE = pin;
+          });
+        }
+        if (!first) {
+          Navigator.pop(context);
+          setSnackbar(msg);
+        }
+      } on TimeoutException catch (_) {
+        setSnackbar(getTranslated(context, 'somethingMSg'));
+      }
+    } else {
+      if (mounted)
+        setState(() {
+          _isNetworkAvail = false;
+        });
+    }
+  }
+
+  Future<void> getDeliverable() async {
+    if (CUR_PINCODE != null && CUR_PINCODE != '') {
+      validatePin(CUR_PINCODE, true);
+    }
   }
 }

@@ -32,6 +32,7 @@ class Payment extends StatefulWidget {
 List<Model> timeSlotList = [];
 String allowDay;
 bool codAllowed = true;
+String bankName, bankNo, acName, acNo, exDetails;
 
 class StatePayment extends State<Payment> with TickerProviderStateMixin {
   bool _isLoading = true;
@@ -45,7 +46,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
       flutterwave,
       stripe,
       paytm = true,
-      gpay = false;
+      gpay = false,
+      bankTransfer = true;
   List<RadioModel> timeModel = [];
   List<RadioModel> payModel = [];
   List<RadioModel> timeModelList = [];
@@ -63,6 +65,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
     'assets/images/stripe.svg',
     'assets/images/paytm.svg',
     Platform.isIOS ? 'assets/images/applepay.svg' : 'assets/images/gpay.svg',
+    'assets/images/banktransfer.svg',
   ];
 
   Animation buttonSqueezeanimation;
@@ -89,6 +92,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
         Platform.isIOS
             ? getTranslated(context, 'APPLEPAY')
             : getTranslated(context, 'GPAY'),
+        getTranslated(context, 'BANKTRAN'),
       ];
     });
     if (widget.msg != '')
@@ -343,6 +347,9 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
                                                   return paymentItem(index);
                                                 else if (index == 8 && gpay)
                                                   return paymentItem(index);
+                                                else if (index == 9 &&
+                                                    bankTransfer)
+                                                  return paymentItem(index);
                                                 else
                                                   return Container();
                                               }),
@@ -475,6 +482,7 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             await post(getSettingApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
+    
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
 
@@ -552,6 +560,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             paystack = payment["paystack_payment_method"] == "1" ? true : false;
             stripe = payment["stripe_payment_method"] == "1" ? true : false;
             paytm = payment["paytm_payment_method"] == "1" ? true : false;
+            bankTransfer =
+                payment["direct_bank_transfer"] == "1" ? true : false;
 
             if (razorpay) razorpayId = payment["razorpay_key_id"];
             if (paystack) {
@@ -572,6 +582,16 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
               paytmMerKey = payment['paytm_merchant_key'];
               payTesting =
                   payment['paytm_payment_mode'] == 'sandbox' ? true : false;
+            }
+
+            if (bankTransfer) {
+
+              bankName = payment['bank_name'];
+              bankNo = payment['bank_code'];
+              acName = payment['account_name'];
+              acNo = payment['account_number'];
+              exDetails = payment['notes'];
+
             }
 
             for (int i = 0; i < paymentMethodList.length; i++) {
@@ -609,8 +629,6 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             //timeSlotList[selectedTime].name;
             timeModel.forEach((element) => element.isSelected = false);
             timeModel[index].isSelected = true;
-
-          
           });
       },
       child: new RadioItem(timeModel[index]),

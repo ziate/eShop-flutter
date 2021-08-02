@@ -86,13 +86,12 @@ placeHolder(double height) {
   );
 }
 
-erroWidget(double size){
-   return Image.asset(
-            'assets/images/placeholder.png',
-            height: size,
-            width: size,
-           );
-      
+erroWidget(double size) {
+  return Image.asset(
+    'assets/images/placeholder.png',
+    height: size,
+    width: size,
+  );
 }
 
 errorWidget(double size) {
@@ -110,6 +109,7 @@ class MyBehavior extends ScrollBehavior {
     return child;
   }
 }
+
 String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 
 getAppBar(String title, BuildContext context) {
@@ -209,6 +209,7 @@ Future<void> clearUserSession() async {
   CUR_USERNAME = "";
   CUR_CART_COUNT = "";
   CUR_BALANCE = '';
+  CUR_PINCODE = '';
 
   await prefs.clear();
 }
@@ -442,7 +443,7 @@ String getToken() {
       issuedAt: DateTime.now().toUtc());
 
   String token = issueJwtHS256(claimSet, jwtKey);
-
+  // print("Tokem****$token");
   return token;
 }
 
@@ -450,22 +451,18 @@ Map<String, String> get headers => {
       "Authorization": 'Bearer ' + getToken(),
     };
 
-
-
-dialogAnimate(BuildContext context,Widget dialge){
- return showGeneralDialog(barrierColor: Colors.black.withOpacity(0.5),
-        transitionBuilder: (context, a1, a2, widget) {
-          return Transform.scale(
-            scale: a1.value,
-            child: Opacity(
-              opacity: a1.value,
-              child: dialge
-            ),
-          );
-        },
-        transitionDuration: Duration(milliseconds: 200),
-        barrierDismissible: true,
-        barrierLabel: '',
-        context: context,
-        pageBuilder: (context, animation1, animation2) {});
+dialogAnimate(BuildContext context, Widget dialge) {
+  return showGeneralDialog(
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionBuilder: (context, a1, a2, widget) {
+        return Transform.scale(
+          scale: a1.value,
+          child: Opacity(opacity: a1.value, child: dialge),
+        );
+      },
+      transitionDuration: Duration(milliseconds: 200),
+      barrierDismissible: true,
+      barrierLabel: '',
+      context: context,
+      pageBuilder: (context, animation1, animation2) {});
 }

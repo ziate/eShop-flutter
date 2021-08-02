@@ -270,6 +270,7 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
       setState(() {
         offset = 0;
         total = 0;
+           isLoadingmore = true;
         _isLoading = true;
       });
 
@@ -304,6 +305,9 @@ class StateMyOrder extends State<MyOrder> with TickerProviderStateMixin {
             Response response =
                 await post(getOrderApi, body: parameter, headers: headers)
                     .timeout(Duration(seconds: timeOut));
+
+
+
 
             var getdata = json.decode(response.body);
             bool error = getdata["error"];

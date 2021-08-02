@@ -49,6 +49,10 @@ final Uri getTicketApi = Uri.parse(baseUrl + 'get_tickets');
 final Uri validateReferalApi = Uri.parse(baseUrl + 'validate_refer_code');
 final Uri flutterwaveApi = Uri.parse(baseUrl + 'flutterwave_webview');
 final Uri getMsgApi = Uri.parse(baseUrl + 'get_messages');
+final Uri setBankProofApi = Uri.parse(baseUrl + 'send_bank_transfer_proof');
+final Uri checkDeliverableApi = Uri.parse(baseUrl + "is_product_delivarable");
+final Uri checkCartDelApi =
+    Uri.parse(baseUrl + 'check_cart_products_delivarable');
 
 final String ISFIRSTTIME = 'isfirst$appName';
 final String HISTORYLIST = '$appName+historyList';
@@ -72,6 +76,10 @@ const String CAT_NAME = 'category_name';
 const String OTHER_IMAGE = 'other_images_md';
 const String PRODUCT_VARIENT = 'variants';
 const String PRODUCT_ID = 'product_id';
+const String VARIANT_ID = 'variant_id';
+const String IS_DELIVERABLE = 'is_deliverable';
+
+const String ZIPCODE = 'zipcode';
 const String PRICE = 'price';
 const String MEASUREMENT = 'measurement';
 const String MEAS_UNIT_ID = 'measurement_unit_id';
@@ -187,6 +195,7 @@ const String ORDER_ID = 'order_id';
 const String IS_SIMILAR = 'is_similar_products';
 const String ALL = 'all';
 const String PLACED = 'received';
+
 const String SHIPED = 'shipped';
 const String PROCESSED = 'processed';
 const String DELIVERD = 'delivered';
@@ -279,12 +288,14 @@ String MAX_ITEMS = '';
 String REFER_CODE = '';
 String MIN_AMT = '';
 String CUR_DEL_CHR = '';
+String CUR_PINCODE = '';
 
 String CUR_TICK_ID = '';
 
 bool ISFLAT_DEL = true;
 bool extendImg = true;
 bool cartBtnList = true;
+bool refer = true;
 
 double deviceHeight;
 double deviceWidth;

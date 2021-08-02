@@ -603,7 +603,7 @@ class StateProfile extends State<MyProfile> with TickerProviderStateMixin {
         shrinkWrap: true,
         physics: BouncingScrollPhysics(),
         children: <Widget>[
-          CUR_USERID == "" || CUR_USERID == null
+          CUR_USERID == "" || CUR_USERID == null || !refer
               ? Container()
               : _getDrawerItem(getTranslated(context, 'REFEREARN'),
                   'assets/images/pro_referral.svg'),

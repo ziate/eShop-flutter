@@ -16,7 +16,10 @@ class Model {
       email,
       date,
       msg,
-      uid;
+      uid,
+      prodId,
+      varId;
+  bool isDel;
   var list;
   String name, banner;
   List<attachment> attach;
@@ -37,7 +40,10 @@ class Model {
       this.msg,
       this.attach,
       this.uid,
-      this.date});
+      this.date,
+      this.prodId,
+      this.isDel,
+      this.varId});
 
   factory Model.fromSlider(Map<String, dynamic> parsedJson) {
     var listContent = parsedJson["data"];
@@ -117,6 +123,13 @@ class Model {
       id: id,
       name: name,
     );
+  }
+
+  factory Model.checkDeliverable(Map<String, dynamic> parsedJson) {
+    return Model(
+        prodId: parsedJson[PRODUCT_ID],
+        varId: parsedJson[VARIANT_ID],
+        isDel: parsedJson[IS_DELIVERABLE]);
   }
 }
 

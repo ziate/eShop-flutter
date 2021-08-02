@@ -27,9 +27,9 @@ dependencies:
   shared_preferences: ^2.0.5
   connectivity: 3.0.3
   jaguar_jwt: ^3.0.0
-  flutter_local_notifications: 5.0.0
+  flutter_local_notifications: 6.0.0
   path_provider: 2.0.1
-  firebase_messaging: 9.1.2
+  firebase_messaging: 10.0.2
   cached_network_image: ^3.0.0
   flutter_rating_bar: ^4.0.0
   flutter_html: 2.1.0
