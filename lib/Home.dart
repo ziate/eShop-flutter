@@ -126,6 +126,7 @@ class StateHome extends State<Home> {
   }
 
   setSnackbar(String msg) {
+    ////aaa
     ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
       content: new Text(
         msg,
