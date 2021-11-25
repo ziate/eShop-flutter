@@ -2449,8 +2449,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
         Response response =
             await post(placeOrderApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
-
-        _placeOrder = true;
+       _placeOrder = true;
         if (response.statusCode == 200) {
           var getdata = json.decode(response.body);
           bool error = getdata["error"];
@@ -3263,7 +3262,7 @@ class StateCart extends State<Cart> with TickerProviderStateMixin {
             await post(checkCartDelApi, body: parameter, headers: headers)
                 .timeout(Duration(seconds: timeOut));
 
-print("response del****${response.body.toString()}");
+
 
         var getdata = json.decode(response.body);
 

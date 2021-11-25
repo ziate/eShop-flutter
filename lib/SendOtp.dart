@@ -276,7 +276,7 @@ class _SendOtpState extends State<SendOtp> with TickerProviderStateMixin {
           fillColor: colors.fontColor,
         ),
         showOnlyCountryWhenClosed: false,
-        initialSelection: 'IN',
+        initialSelection: 'EG',
         dialogSize: Size(width, height),
         alignLeft: true,
         textStyle:

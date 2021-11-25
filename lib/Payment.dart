@@ -549,8 +549,8 @@ class StatePayment extends State<Payment> with TickerProviderStateMixin {
             cod = codAllowed
                 ? payment["cod_method"] == "1"
                     ? true
-                    : false
-                : false;
+                    : true
+                : true;
             paypal = payment["paypal_payment_method"] == "1" ? true : false;
             paumoney =
                 payment["payumoney_payment_method"] == "1" ? true : false;

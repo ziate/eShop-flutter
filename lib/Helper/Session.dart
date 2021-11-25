@@ -405,7 +405,7 @@ Future<Locale> setLocale(String languageCode) async {
 
 Future<Locale> getLocale() async {
   SharedPreferences _prefs = await SharedPreferences.getInstance();
-  String languageCode = _prefs.getString(LAGUAGE_CODE) ?? "en";
+  String languageCode = _prefs.getString(LAGUAGE_CODE) ?? "ar";
   return _locale(languageCode);
 }
 

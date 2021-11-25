@@ -27,7 +27,7 @@
 			<string>Bundle id</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.wrteam.eshop</string>
+				<string>com.elziatemakemf.eshop</string>
 			</array>
 		</dict>
 	</array>

@@ -1482,13 +1482,14 @@ class StateOrder extends State<OrderDetail> with TickerProviderStateMixin {
         bool error = getdata["error"];
         String msg = getdata['message'];
 
-        setSnackbar(msg);
+        
 
         files.clear();
         if (mounted)
           setState(() {
             _isProgress = false;
           });
+          setSnackbar(msg);
       } on TimeoutException catch (_) {
         setSnackbar(getTranslated(context, 'somethingMSg'));
       }
